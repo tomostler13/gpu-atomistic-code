@@ -19,39 +19,18 @@ NVCC_FLAGS=$(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 -
 OBJECTS= \
 obj/config.o \
 obj/error.o \
-obj/geom.o \
-obj/mat.o \
-obj/intmat.o \
-obj/maths.o \
-obj/random.o \
-obj/spins.o \
-obj/fields.o \
-obj/util.o \
-obj/neigh.o \
-obj/LLBCPU.o \
-obj/tdp.o \
-obj/sim.o \
-obj/nrutil.o \
-obj/mf.o \
-obj/nrf.o \
-obj/ellipse_grid.o
+obj/random.o
 
 SWITCHOBJ= \
-obj/LLB.o \
-obj/main.o \
-obj/testsuite.o \
-obj/testtempdepprop.o
+obj/main.o
 
-NVCCOBJ= \
-obj/cufields.o \
-obj/cuda.o \
-obj/cuint.o
+NVCCOBJ=
 
 CUDA_OBJECTS=$(OBJECTS:.o=_cuda.o)
 NVCC_OBJECTS=$(NVCCOBJ:.o=_cuda.o)
 SWITCH_OBJECTS=$(SWITCHOBJ:.o=_cuda.o)
 
-EXECUTABLE=LLBB
+EXECUTABLE=ASD
 
 all: $(OBJECTS) gcc
 
