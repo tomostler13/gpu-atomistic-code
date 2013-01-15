@@ -1,6 +1,6 @@
 // File: geom.cpp
 // Author:Tom Ostler
-// Last-modified: 04 Jan 2013 14:30:47
+// Last-modified: 15 Jan 2013 17:38:42
 #include "../inc/geom.h"
 #include "../inc/neigh.h"
 #include "../inc/error.h"
@@ -16,28 +16,26 @@
 #define FIXOUT(a,b) a.width(75);a << std::left << b;
 namespace geom
 {
-    //grain size (m)
-    double gs[3]={0,0,0};
-    //dimensions of system that exist (i.e. non-zero padded
+    //dimensions of system that exist (i.e. non-zero padded) in unit cells
     unsigned int dim[3]={0,0,0};
     //dimensions when zero padding is taken into account
     int zpdim[3]={0,0,0};
-	//for real to complex transform don't need such a large
-	//zpdim in z
-	unsigned int cplxzpdim=0;
     //number of zero pad units
     int zps=0;
     //number of macrospins that exist
     unsigned int ss=0;
+    //is geometry enabled?
+	bool gi=false;
+    std::string structure;
+    //number of atoms in the unit cell
+    unsigned int nauc=0;
+    //positions of my atoms in my unit cell
+    Array2D<double> atompos;
+    //scaling factor to take the unit cell to integer coordinates
+    Array<unsigned int> scalecoords;
     //number of spatial cells in total including those
     //that don't necessarily exist.
     unsigned int maxss=0;
-    //grain size volumne
-    double gsV=0.0;
-    //is geometry enabled?
-	bool gi=false;
-    //what structure are we creating
-    std::string structure;
 
     //When performing the numerical integration we loop over the number of atoms
     //in order. For the fourier transform method of calculating the dipolar
@@ -80,12 +78,14 @@ namespace geom
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Could not open file for writing structure");
         }
+        scalecoords.resize(3);
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
             try
             {
-                gs[i]=setting["grainsize"][i];
                 dim[i]=setting["dim"][i];
+                scalecoords[i]=setting["scalecoords"][i];
+
             }
             catch(const libconfig::SettingTypeException &stex)
             {
@@ -93,14 +93,38 @@ namespace geom
                 error::errMessage("Setting type error");
             }
         }
+        FIXOUT(config::Info,"Scale coords: " << "(" << scalecoords[0] << "," << scalecoords[1] << "," << scalecoords[2] << ")" << std::endl);
+        //get the number of atoms in the unit cell
+        nauc=setting["nauc"];
+        atompos.resize(nauc,3);
+        //read the atom positions in the unit cell
+        for(unsigned int i = 0 ; i < nauc ; i++)
+        {
+            std::stringstream sstr;
+            sstr << "atom" << i;
+            std::string str=sstr.str();
+            for(unsigned int j = 0 ; j < 3 ; j++)
+            {
+                atompos(i,j)=setting[str.c_str()][j];
+            }
+        }
+        FIXOUT(config::Info,"Number of atoms in the unit cell:" << nauc << std::endl);
+        for(unsigned int i = 0 ; i < nauc ; i++)
+        {
+            std::stringstream sstr;
+            sstr << "Position vector for atom " << i << "(;
+            std::string str=sstr.str();
+            FIXOUT(config::Info,str.c_str() << atompos(i,0) << "," << atompos(i,1) << "\t" << atompos(i,2) << ")" << std::endl);
+        }
         if(structure=="cuboid")
         {
-            ss=dim[0]*dim[1]*dim[2];
+            ss=dim[0]*dim[1]*dim[2]*nauc;
             maxss=ss;
         }
         else if(structure=="cylinder")
         {
-
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Cylinder not possible at the moment with atomistic spin dynamics. Some code exists but it needs checking.");
             //check that dim[0] and dim[1] are odd for cylinder
             if(dim[0]%2==0 || dim[1]%2==0 || dim[0] < 5 || dim[1] < 5 || dim[1]>dim[0])
             {
@@ -111,12 +135,12 @@ namespace geom
             //ss is not know yet.
         }
         //we are going to re-use the coords array.
-        coords.resize(dim[0],dim[1],dim[2]);
-        for(unsigned int i = 0 ; i < dim[0] ; i++)
+        coords.resize(dim[0]*scalecoords[0],dim[1]*scalecoords[1],dim[2]*scalecoords[2]);
+        for(unsigned int i = 0 ; i < dim[0]*scalecoords[0] ; i++)
         {
-            for(unsigned int j = 0 ; j < dim[1] ; j++)
+            for(unsigned int j = 0 ; j < dim[1]*scalecoords[1] ; j++)
             {
-                for(unsigned int k = 0 ; k < dim[2] ; k++)
+                for(unsigned int k = 0 ; k < dim[2]*scalecoords[2] ; k++)
                 {
                     coords(i,j,k)=0;
                 }
@@ -126,6 +150,9 @@ namespace geom
         double *xy;
         if(structure=="cylinder")
         {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Cylinder not possible at the moment with atomistic spin dynamics. Some code exists but it needs checking.");
+
             //This section of code uses the ELLIPSE_GRID routine from http://people.sc.fsu.edu/~jburkardt/cpp_src/ellipse_grid/ellipse_grid.html
             //radius of ellipse
             double r[2]={double(dim[0])/double(dim[1]),1.0};
@@ -189,7 +216,6 @@ namespace geom
                         std::string str=sstr.str();
                         error::errWarning(str.c_str());
                     }
-                    assert(dim[i]>1);
                 }
             }
 		}
@@ -200,16 +226,15 @@ namespace geom
 		}
         FIXOUT(config::Info,"System structure:" << structure << std::endl);
         FIXOUT(config::Info,"System dimensions (all):" << "(" << dim[0] << "," << dim[1] << "," << dim[2] << ")" << std::endl);
-        zpdim[0]=2*dim[0];
-        zpdim[1]=2*dim[1];
-        zpdim[2]=2*dim[2];
-        cplxzpdim=dim[2]+1;
-        zps=zpdim[0]*zpdim[1]*zpdim[2];
+        zpdim[0]=2*dim[0]*scalecoords[0];
+        zpdim[1]=2*dim[1]*scalecoords[1];
+        zpdim[2]=2*dim[2]*scalecoords[2];
+        zps=zpdim[0]*zpdim[1]*zpdim[2];*scalecoords[0]*scalecoords[1]*scalecoords[2];
         //should be multiplied by dim[2] as ss so far is in 2D
         lu.resize(ss*dim[2],4);
         lu.IFill(0);
         Array3D<int> tc;
-        tc.resize(dim[0],dim[1],dim[2]);
+        tc.resize(dim[0]*scalecoords[0],dim[1]*scalecoords[1],dim[2]*scalecoords[2]);
         unsigned int counter=0;
         for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
         {
@@ -225,14 +250,17 @@ namespace geom
                     */
                     if(structure=="cuboid")
                     {
-                        lu(counter,0)=i;
-                        lu(counter,1)=j;
-                        lu(counter,2)=k;
-                        //atom exists
-                        lu(counter,3)=1;
-                        coords(i,j,k)=counter;
-                        counter++;
-                        outstruc << i << "\t" << j << "\t" << k << std::endl;
+                        for(unsigned int uc = 0 ; uc < nauc ; uc++)
+                        {
+                            lu(counter,0)=(int(atompos(uc,0)*double(scalecoords[0])))*i;
+                            lu(counter,1)=(int(atompos(uc,1)*double(scalecoords[1])))*j;
+                            lu(counter,2)=(int(atompos(uc,2)*double(scalecoords[2])))*k;
+                            //atom exists
+                            lu(counter,3)=1;
+                            coords(i,j,k)=counter;
+                            outstruc << i << "\t" << j << "\t" << k << std::endl;
+                            counter++;
+                        }
                     }
                     else if(structure=="cylinder")
                     {
