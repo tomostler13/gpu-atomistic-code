@@ -1,12 +1,13 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 16 Jan 2013 16:47:27
+// Last-modified: 16 Jan 2013 17:47:11
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
 #include "../inc/util.h"
 #include "../inc/arrays.h"
+#include "../inc/unitcell.h"
 #include <sstream>
 #include <cstdlib>
 #include <iostream>
@@ -21,6 +22,8 @@ namespace geom
 
     //the number of unit cells
     unsigned int dim[3]={0,0,0};
+    //zero pad size
+    unsigned int zpdim[3]={0,0,0};
     //the number of atoms in the unit cell
     unsigned int nauc=0;
     //maximum system size
@@ -31,6 +34,8 @@ namespace geom
     Array<double> abc;
     //Number of K points
     Array<unsigned int> Nk;
+    //instance of the unit cell
+    unitCellMembers ucm;
     void initGeom(int argc,char *argv[])
     {
         assert(config::lcf);
@@ -76,6 +81,7 @@ namespace geom
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
             dim[i]=setting["dim"][i];
+            zpdim[i]=2*dim[i];
         }
         FIXOUT(config::Info,"Unit cell matrix (L):" << std::showpos << "[ " << L(0,0) << " , " << L(0,1) << " , " << L(0,2) << " ]" << std::endl);
         FIXOUT(config::Info,"" << "[ " << std::showpos << L(1,0) << " , " << L(1,1) << " , " << L(1,2) << " ]" << std::endl);
@@ -89,8 +95,8 @@ namespace geom
         setting.lookupValue("nauc",nauc);
         FIXOUT(config::Info,"Dimensions (unit cells):" << "[ " << dim[0] << " , " << dim[1] << " , " << dim[2] << " ]" << std::endl);
         FIXOUT(config::Info,"Number of atoms in primitive cell:" << nauc << std::endl);
-        unitCellMembers ucm(nauc);
 
+        ucm.init(nauc);
         config::Info << "Positions:" << std::endl;
         for(unsigned int i = 0 ; i < nauc ; i++)
         {

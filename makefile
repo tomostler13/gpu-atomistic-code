@@ -21,7 +21,9 @@ obj/config.o \
 obj/error.o \
 obj/random.o \
 obj/geom.o \
-obj/util.o
+obj/util.o \
+obj/mat.o \
+obj/intmat.o
 
 SWITCHOBJ= \
 obj/main.o
