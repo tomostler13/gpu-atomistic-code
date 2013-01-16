@@ -1,2 +1,22 @@
 OutputFile = "opf.dat";
 seed = 12345;
+system:
+{
+    //The unit vector
+    Lex = [ 1.0 , 0.0 , 0.0 ];
+    Ley = [ 0.0 , 1.0 , 0.0 ];
+    Lez = [ 0.0 , 0.0 , 1.0 ];
+    //number of unit cells
+    dim = [ 2 , 2 , 2 ];
+    //Number of atoms in the primitive cell
+    nauc = 4;
+    //The primitive cell
+    atom0 = [ 0.0 , 0.0 , 0.0 , 0.0 ];
+    atom1 = [ 0.5 , 0.5 , 0.0 , 1.0 ];
+    atom2 = [ 0.5 , 0.0 , 0.5 , 2.0 ];
+    atom3 = [ 0.0 , 0.5 , 0.5 , 3.0 ];
+    //Number of k-points in each direction
+    Nk = [ 2 , 2 , 2 ];
+    //lattice constants
+    abc = [ 0.251e-9 , 0.251e-9 , 0.251e-9 ];
+};

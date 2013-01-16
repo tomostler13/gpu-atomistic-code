@@ -1,0 +1,5 @@
+#include "../inc/array.h"
+#include "../inc/array2d.h"
+#include "../inc/array3d.h"
+#include "../inc/array4d.h"
+#include "../inc/array5d.h"

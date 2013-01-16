@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 03 Jan 2013 15:41:30
+// Last-modified: 16 Jan 2013 12:22:52
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -12,10 +12,6 @@
 #define _UTIL_H_
 namespace util
 {
-    extern bool ui;
-    extern bool pvout;
-    extern std::string pvf;
-    extern std::string dir;
     //convergence class
 	class RunningStat
     {
@@ -82,16 +78,7 @@ namespace util
         bool isconv;
         double m_oldM, m_newM, m_oldS, m_newS;
     };
+    void inverse(double*, int);
 
-    extern unsigned int update;
-    void initUtil(int argc,char *argv[]);
-    void outputSpinsVTU(unsigned int);
-    std::string getdir(unsigned int);
-    void calcm();
-    void fillfloat(int,double*,float*);
-    void fillfloat(int,int,int,Array3D<fftw_complex>,Array3D<fftwf_complex>);
-    void copy3vecto1(int,double*,double*,double*,double*);
-    void copy3vecto1(int,float*,float*,float*,float*);
-    void copy3vecto1(int,Array<double>,Array<double>,Array<double>,double*);
 }
 #endif /*_UTIL_H_*/
