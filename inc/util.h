@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 16 Jan 2013 12:22:52
+// Last-modified: 17 Jan 2013 14:26:02
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -79,6 +79,7 @@ namespace util
         double m_oldM, m_newM, m_oldS, m_newS;
     };
     void inverse(double*, int);
+    void cpuConvFourier();
 
 }
 #endif /*_UTIL_H_*/

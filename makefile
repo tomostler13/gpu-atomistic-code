@@ -23,7 +23,9 @@ obj/random.o \
 obj/geom.o \
 obj/util.o \
 obj/mat.o \
-obj/intmat.o
+obj/intmat.o \
+obj/spins.o \
+obj/fields.o
 
 SWITCHOBJ= \
 obj/main.o

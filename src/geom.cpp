@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 16 Jan 2013 17:47:11
+// Last-modified: 17 Jan 2013 16:57:26
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -27,13 +27,17 @@ namespace geom
     //the number of atoms in the unit cell
     unsigned int nauc=0;
     //maximum system size
-    unsigned int maxss=0;
+    unsigned int maxss=0,nspins=0,zps;
     //The unit vectors describing the lattice unit cell (unit vectors)
     Array2D<double> L,Linv;
     //The a,b and c values (i.e. lattice constants)
     Array<double> abc;
     //Number of K points
     Array<unsigned int> Nk;
+    //lookup array. Give atom number and return coordinates
+    Array2D<unsigned int> lu;
+    //Coords array. Give coords and returns atom number
+    Array3D<int> coords;
     //instance of the unit cell
     unitCellMembers ucm;
     void initGeom(int argc,char *argv[])
@@ -107,8 +111,32 @@ namespace geom
             FIXOUTVEC(config::Info,str,ucm.GetX(i),ucm.GetY(i),ucm.GetZ(i));
         }
         maxss=dim[0]*dim[1]*dim[2]*nauc;
+        Nk.resize(3);
+        abc.resize(3);
+        for(unsigned int i = 0 ; i < 3 ; i++)
+        {
+            Nk[i]=setting["Nk"][i];
+            abc[i]=setting["abc"][i];
+        }
+        FIXOUT(config::Info,"Number of K-points:" << "[ " << Nk[0] << " , " << Nk[1] << " , " << Nk[2] << " ]" << std::endl);
+        FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
+
+        nspins=maxss;
+        zps=0;
+        for(unsigned int i = 0 ; i < 3 ; i++)
+        {
+            zps+=2*dim[i]*Nk[i];
+        }
+
         FIXOUT(config::Info,"Maximum number of spins:" << maxss << std::endl);
+        FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
+        FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
         outstruc << maxss << std::endl << std::endl;
+        lu.resize(nspins,4);
+        lu.IFill(0);
+        coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2]);
+        coords.IFill(-1);
+        unsigned int atom_count=0;
         for(unsigned int i = 0 ; i < dim[0] ; i++)
         {
             for(unsigned int j = 0 ; j < dim[1] ; j++)
@@ -127,21 +155,17 @@ namespace geom
                             }
                             ri[a]+=ucm.GetComp(t,a);
                         }
+                        coords(Nk[0]*(i+ucm.GetX(t)),Nk[1]*(j+ucm.GetY(t)),Nk[2]*(k+ucm.GetZ(t)))=atom_count;
+                        lu(atom_counter,0)=Nk[0]*(i+ucm.GetX(t));
+                        lu(atom_counter,1)=Nk[1]*(j+ucm.GetY(t));
+                        lu(atom_counter,2)=Nk[2]*(k+ucm.GetZ(t));
+                        lu(atom_counter,3)=t;
                         // the *5 is just a scaling factor
                         outstruc << "Ag\t" << ri[0]*5 << "\t" << ri[1]*5 << "\t" << ri[2]*5 << std::endl;
                     }
                 }
             }
         }
-        Nk.resize(3);
-        abc.resize(3);
-        for(unsigned int i = 0 ; i < 3 ; i++)
-        {
-            Nk[i]=setting["Nk"][i];
-            abc[i]=setting["abc"][i];
-        }
-        FIXOUT(config::Info,"Number of K-points:" << "[ " << Nk[0] << " , " << Nk[1] << " , " << Nk[2] << " ]" << std::endl);
-        FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
 
 
     }

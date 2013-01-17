@@ -1,8 +1,8 @@
 // File: intmat.h
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 16 Jan 2013 18:02:48
-#include "../inc/array3d.h"
+// Last-modified: 17 Jan 2013 13:02:42
+#include "../inc/arrays.h"
 #ifndef _INTMAT_H_
 #define _INTMAT_H_
 namespace intmat
@@ -11,5 +11,6 @@ namespace intmat
     extern Array<unsigned int> zpsn;
     void initIntmat(int argc,char *argv[]);
     void fillIntmat();
+    void fftIntmat();
 }
 #endif /*_INTMAT_H_*/

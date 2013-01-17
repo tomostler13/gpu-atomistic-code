@@ -7,16 +7,16 @@ system:
     Ley = [ 0.0 , 1.0 , 0.0 ];
     Lez = [ 0.0 , 0.0 , 1.0 ];
     //number of unit cells
-    dim = [ 2 , 2 , 2 ];
+    dim = [ 16 , 16 , 1 ];
     //Number of atoms in the primitive cell
-    nauc = 4;
+    nauc = 1;
     //The primitive cell
     atom0 = [ 0.0 , 0.0 , 0.0 , 0.0 ];
     atom1 = [ 0.5 , 0.5 , 0.0 , 1.0 ];
     atom2 = [ 0.5 , 0.0 , 0.5 , 2.0 ];
     atom3 = [ 0.0 , 0.5 , 0.5 , 3.0 ];
     //Number of k-points in each direction
-    Nk = [ 2 , 2 , 2 ];
+    Nk = [ 1 , 1 , 1 ];
     //lattice constants
     abc = [ 0.251e-9 , 0.251e-9 , 0.251e-9 ];
 };

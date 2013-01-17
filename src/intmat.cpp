@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 16 Jan 2013 18:13:12
+// Last-modified: 17 Jan 2013 14:48:27
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -56,7 +56,7 @@ namespace intmat
         Nzx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
         Nzy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
         Nzz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        zpsn.resize(geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2]);
+        zpsn.resize(geom::nspins);
         zpsn.IFill(0);
         Nxx.IFill(0.0);
         Nxy.IFill(0.0);
@@ -67,12 +67,14 @@ namespace intmat
         Nzx.IFill(0.0);
         Nzy.IFill(0.0);
         Nzz.IFill(0.0);
+        fillIntmat();
+        fftIntmat();
 
     }
 
     void fillIntmat()
     {
-        FIXOUT(config::Info,"Filling interaction matrix with dipolar terms" << std::flush);
+        FIXOUT(config::Info,"Filling interaction matrix with dipolar terms:" << std::flush);
         //atom counter
         unsigned ac=0;
         //loop over the unit cells
@@ -101,6 +103,13 @@ namespace intmat
 
                             int lc[3]={i*geom::Nk[0]+geom::ucm.GetX(t)*geom::Nk[0],j*geom::Nk[1]+geom::ucm.GetY(t)*geom::Nk[1],k*geom::Nk[2]+geom::ucm.GetZ(t)*geom::Nk[2]};
                             int tc[3]={lc[0],lc[1],lc[2]};
+                            if(lc[0]<geom::dim[0]*geom::Nk[0] && lc[1] < geom::dim[1]*geom::Nk[1] && lc[2] < geom::dim[2]*geom::Nk[2])
+                            {
+                                //Lookup for the zero padded array
+                                zpsn[ac]=Nxx.getarrayelement(lc[0],lc[1],lc[2]);
+                                ac++;
+                            }
+
                             for(unsigned int l = 0 ; l < 3 ; l++)
                             {
                                 if(lc[l]>geom::dim[l]*geom::Nk[l])
@@ -114,8 +123,6 @@ namespace intmat
                             //unit vector from i to j
                             double eij[3]={rij[0]/mrij,rij[1]/mrij,rij[2]/mrij};
                             double lnxx=1e-7*((3.0*eij[0]*eij[0])-1.0)*oomrij3;
-                            //Lookup for the zero padded array
-                            zpsn[ac]=Nxx.getarrayelement(tc[0],tc[1],tc[2]);
                             Nxx(tc[0],tc[1],tc[2])[0]=lnxx*mat::mu*mat::muB;//(i,j,k)
 
                             double lnyy=1e-7*((3.0*eij[1]*eij[1])-1.0)*oomrij3;
@@ -151,5 +158,49 @@ namespace intmat
         }
         config::Info << "Done" << std::endl;
     }
+    void fftIntmat()
+    {
+        FIXOUT(config::Info,"Setting up fftw of interaction matrix:" << std::flush);
+        //plans for the transform. Only done once, so not persistent
+        fftw_plan NxxP,NxyP,NxzP,NyxP,NyyP,NyzP,NzxP,NzyP,NzzP;
+
+        //the demag tensor 3d fftw plans
+        NxxP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nxx.ptr(),Nxx.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+        NxyP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nxy.ptr(),Nxy.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+        NxzP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nxz.ptr(),Nxz.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+        NyxP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nyx.ptr(),Nyx.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+        NyyP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nyy.ptr(),Nyy.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+        NyzP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nyz.ptr(),Nyz.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+        NzxP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nzx.ptr(),Nzx.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+        NzyP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nzy.ptr(),Nzy.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+        NzzP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nzz.ptr(),Nzz.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+
+
+        config::Info << "Done" << std::endl;
+        FIXOUT(config::Info,"Performing forward transform of N:" << std::flush);
+        //execute the demag tensor transforms and destroy the plans
+        fftw_execute(NxxP);
+        fftw_execute(NxyP);
+        fftw_execute(NxzP);
+        fftw_execute(NyxP);
+        fftw_execute(NyyP);
+        fftw_execute(NyzP);
+        fftw_execute(NzxP);
+        fftw_execute(NzyP);
+        fftw_execute(NzzP);
+
+        fftw_destroy_plan(NxxP);
+        fftw_destroy_plan(NxyP);
+        fftw_destroy_plan(NxzP);
+        fftw_destroy_plan(NyxP);
+        fftw_destroy_plan(NyyP);
+        fftw_destroy_plan(NyzP);
+        fftw_destroy_plan(NzxP);
+        fftw_destroy_plan(NzyP);
+        fftw_destroy_plan(NzzP);
+
+        config::Info << "Done" << std::endl;
+    }
+
 
 }
