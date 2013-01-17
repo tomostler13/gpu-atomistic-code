@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 17 Jan 2013 18:38:20
+// Last-modified: 17 Jan 2013 19:40:02
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -39,7 +39,7 @@ namespace geom
     //Coords array. Give coords and returns atom number. This coords array
     //is the size of the zero padded arrays and has places where atoms do
     //not exist
-    Array3D<int> coords;
+    Array4D<int> coords;
     //instance of the unit cell
     unitCellMembers ucm;
     void initGeom(int argc,char *argv[])
@@ -108,9 +108,16 @@ namespace geom
         {
             std::stringstream sstr;
             sstr << "atom" << i;
-            std::string str=sstr.str();
+            std::string str=sstr.str(),str1;
             ucm.SetPosVec(setting[str.c_str()][0],setting[str.c_str()][1],setting[str.c_str()][2],i);
+            sstr.str("");
+            sstr << "Element" << i;
+            str=sstr.str();
+            setting.lookupValue(str.c_str(),str1);
+            FIXOUT(config::Info,"Element string:" << str1 << std::endl);
+            ucm.SetElement(str1,i);
             FIXOUTVEC(config::Info,str,ucm.GetX(i),ucm.GetY(i),ucm.GetZ(i));
+
         }
         maxss=dim[0]*dim[1]*dim[2]*nauc;
         Nk.resize(3);
@@ -134,10 +141,13 @@ namespace geom
         FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
         FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
         outstruc << maxss << std::endl << std::endl;
-        lu.resize(zps,4);
-        lu.IFill(-1);
-        coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2]);
-        coords.IFill(-1);
+        lu.resize(nspins,4);
+        lu.IFill(0);
+        coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2],2);
+        //-2 here corresponds to empty k-mesh point
+        //-1 corresponds to an empty k-mesh point but with an imaginary atom
+        //there for the determination of the interaction matrix
+        coords.IFill(-2);
         std::ofstream sloc("zeropad.dat");
         if(sloc.is_open()!=true)
         {
@@ -163,53 +173,58 @@ namespace geom
                             }
                             ri[a]+=ucm.GetComp(t,a);
                         }
-                        coords(Nk[0]*(i+ucm.GetX(t)),Nk[1]*(j+ucm.GetY(t)),Nk[2]*(k+ucm.GetZ(t)))=atom_counter;
-                        lu(atom_counter,0)=int(Nk[0]*(double(i)+ucm.GetX(t)));
-                        lu(atom_counter,1)=int(Nk[1]*(double(j)+ucm.GetY(t)));
-                        lu(atom_counter,2)=int(Nk[2]*(double(k)+ucm.GetZ(t)));
                         if(i<dim[0] && j<dim[1] && k<dim[2])
                         {
+                            coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
+                            coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+
+                            lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
+                            lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
+                            lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
                             lu(atom_counter,3)=t;
+                            atom_counter++;
+                        }
+                        else
+                        {
+                            coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=-1;
+                            coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
                         }
 
-                        // the *5 is just a scaling factor
-                        outstruc << "Ag\t" << ri[0]*5 << "\t" << ri[1]*5 << "\t" << ri[2]*5 << std::endl;
-                        atom_counter++;
+
                     }
                 }
             }
         }
-        atom_counter=0;
-        unsigned int kcounter=0;
-        //now loop over all of the k-points
-        for(unsigned int i = 0 ; i < zpdim[0]*Nk[0] ; i++)
+        for(unsigned int i = 0 ; i < geom::zpdim[0]*Nk[0] ; i++)
         {
-            for(unsigned int j = 0 ; j < zpdim[1]*Nk[1] ; j++)
+            for(unsigned int j = 0 ; j < geom::zpdim[1]*Nk[1] ; j++)
             {
-                for(unsigned int k = 0 ; k < zpdim[2]*Nk[2] ; k++)
+                for(unsigned int k = 0 ; k < geom::zpdim[2]*Nk[2] ; k++)
                 {
-                    if(coords(i,j,k)>=0)
+                    if(coords(i,j,k,0)>=0)
                     {
-                        sloc << "\"" << lu(i,3) << "\"\t" << i << "\t" << j << "\t" << k << std::endl;
-                        atom_counter++;
+                        sloc << "\"" << ucm.GetElement(coords(i,j,k,1)) << "\"\t" << i << "\t" << j << "\t" << k << std::endl;
+                        // the *5 is just a scaling factor
+                        outstruc << ucm.GetElement(coords(i,j,k,1)) << "\t" << i*2 << "\t" << j*2 << "\t" << k*2 << std::endl;
                     }
                     else
                     {
-                        lu(kcount,0)=kcounter;
-                        lu(i,1)=
+                        sloc << "\".\"\t" << i << "\t" << j << "\t" << k << std::endl;
                     }
                 }
             }
         }
-        for(unsigned int i = 0 ; i < zps ; i++)
+        sloc.close();
+        outstruc.close();
+        if(sloc.is_open() || outstruc.is_open())
         {
-            if(lu(i,3)>=0)
-            {
-            }
-            else
-            {
-                sloc << "\"." << "\"\t" << lu(atom_counter,0) << "\t" << lu(atom_counter,1) << "\t" << lu(atom_counter,2) << std::endl;
-            }
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close structure files.");
+        }
+        if(atom_counter!=nspins)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Number of atoms placed on mesh is more or less than expected.");
         }
 
     }

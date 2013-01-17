@@ -7,7 +7,7 @@ system:
     Ley = [ 0.0 , 1.0 , 0.0 ];
     Lez = [ 0.0 , 0.0 , 1.0 ];
     //number of unit cells
-    dim = [ 4 , 4 , 1 ];
+    dim = [ 8 , 8 , 1 ];
     //Number of atoms in the primitive cell
     nauc = 4;
     //The primitive cell
@@ -15,6 +15,11 @@ system:
     atom1 = [ 0.5 , 0.5 , 0.0 , 1.0 ];
     atom2 = [ 0.5 , 0.0 , 0.5 , 2.0 ];
     atom3 = [ 0.0 , 0.5 , 0.5 , 3.0 ];
+    //Periodic table elements for each atom
+    Element0="N";
+    Element1="O";
+    Element2="O";
+    Element3="O";
     //Number of k-points in each direction
     Nk = [ 2 , 2 , 2 ];
     //lattice constants

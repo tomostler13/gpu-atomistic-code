@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 17 Jan 2013 14:51:07
+// Last-modified: 17 Jan 2013 20:34:30
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -30,7 +30,7 @@ int main(int argc,char *argv[])
     fields::initFields(argc,argv);
     //Initialise the spin arrays
     spins::initSpins(argc,argv);
-    //fields::bfdip();
-    fields::ftdip();
+    fields::bfdip();
+    //fields::ftdip();
     return(0);
 }

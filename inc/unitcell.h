@@ -1,22 +1,30 @@
 // File: array.h
 // Author: Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 16 Jan 2013 17:46:49
+// Last-modified: 17 Jan 2013 19:22:42
 #ifndef __UNITCELL_H__
 #define __UNITCELL_H__
 #include "../inc/arrays.h"
+#include <vector>
 class unitCellMembers
 {
     public:
         //default constructork
-        unitCellMembers(): data(0,0) {}
+        unitCellMembers(): size(0), data(0,0), elements(0){}
         //constructor
-        unitCellMembers(unsigned int nauc): data(nauc,4) {}
+        unitCellMembers(unsigned int nauc): data(nauc,4), elements(nauc), size(nauc) {}
         //destructor
         ~unitCellMembers(){clean();}
         inline void init(unsigned int nauc)
         {
             data.resize(nauc,4);
+            elements.resize(nauc);
+            size=nauc;
+        }
+        inline std::string GetElement(unsigned int t)
+        {
+            assert(t<size);
+            return(elements[t]);
         }
         inline void SetPosVec(double x,double y,double z,unsigned int t)
         {
@@ -24,6 +32,10 @@ class unitCellMembers
             data(t,1)=y;
             data(t,2)=z;
             data(t,3)=t;
+        }
+        inline void SetElement(std::string str,unsigned int t)
+        {
+            elements[t]=str;
         }
         inline void SetX(double x,unsigned int t)
         {
@@ -64,5 +76,6 @@ class unitCellMembers
     private:
         unsigned int size;
         Array2D<double> data;
+        std::vector<std::string> elements;
 };
 #endif /*_UNITCELL_H_*/

@@ -1,6 +1,6 @@
 // File: array3d.h
 // Author:Joe Barker
-// Last-modified: 17 Jan 2013 14:36:25
+// Last-modified: 17 Jan 2013 20:13:43
 
 #ifndef __ARRAY3D_H__
 #define __ARRAY3D_H__
@@ -72,16 +72,6 @@ class Array3D
       return data[(i*dim1+j)*dim2+k];
     }
 
-    inline void DirectAccess(unsigned int i,double val)
-    {
-        assert( i < dim0*dim1*dim2 );
-        data[i]=val;
-    }
-    inline double ReturnDirect(unsigned int i)
-    {
-        assert( i < dim0*dim1*dim2 );
-        return(data[i]);
-    }
     inline const _Tp& operator()(const size_type i, const size_type j,
         const size_type k) const {
       assert( i < dim0 );
@@ -160,22 +150,6 @@ class Array3D<fftw_complex>
     inline int getarrayelement(unsigned int i,unsigned int j,unsigned int k)
     {
         return((i*dim1+j)*dim2+k);
-    }
-    inline void DirectAccess(unsigned int i,double realval,double cplxval)
-    {
-        assert( i < dim0*dim1*dim2 );
-        data[i][0]=realval;
-        data[i][1]=cplxval;
-    }
-    inline double ReturnDirectReal(unsigned int i)
-    {
-        assert( i < dim0*dim1*dim2 );
-        return(data[i][0]);
-    }
-    inline double ReturnDirectComplex(unsigned int i)
-    {
-        assert( i < dim0*dim1*dim2 );
-        return(data[i][1]);
     }
 
     ///IFill means initialize or fill the complex part only
@@ -299,23 +273,6 @@ class Array3D<fftwf_complex>
     {
         return((i*dim1+j)*dim2+k);
     }
-    inline void DirectAccess(unsigned int i,float realval,float cplxval)
-    {
-        assert( i < dim0*dim1*dim2 );
-        data[i][0]=realval;
-        data[i][1]=cplxval;
-    }
-    inline float ReturnDirectReal(unsigned int i)
-    {
-        assert( i < dim0*dim1*dim2 );
-        return(data[i][0]);
-    }
-    inline float ReturnDirectComplex(unsigned int i)
-    {
-        assert( i < dim0*dim1*dim2 );
-        return(data[i][1]);
-    }
-
 
     ///IFill means initialize or fill the complex part only
     inline void IFillComplex(size_type a)

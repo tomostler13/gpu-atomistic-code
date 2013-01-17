@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 17 Jan 2013 14:53:25
+// Last-modified: 17 Jan 2013 20:22:17
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -42,90 +42,54 @@ namespace fields
 
     void bfdip()
     {
-        for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
-            for(unsigned int j = 0 ; j < geom::dim[1] ; j++)
+            double h[3]={0,0,0};
+            //lookup the k-points coords
+            unsigned int lci[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            double ri[3]={0,0,0};
+            //spin components
+            double si[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
+            //determine the real space vector from origin to atom i
+            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
             {
-                for(unsigned int k = 0 ; k < geom::dim[2] ; k++)
+                ri[xyz]=geom::abc[xyz]*double(lci[xyz])/double(geom::Nk[xyz]);
+            }
+            for(unsigned int j = 0 ; j < geom::nspins ; j++)
+            {
+                if(i!=j)
                 {
-                    for(unsigned int t = 0 ; t < geom::nauc ; t++)
+                    //lookup the k-points coords
+                    unsigned int lcj[3]={geom::lu(j,0),geom::lu(j,1),geom::lu(j,2)};
+                    double rj[3]={0,0,0};
+                    double sj[3]={spins::Sx[j],spins::Sy[j],spins::Sz[j]};
+                    double rij[3]={0,0,0};
+                    //determine the real space vector from origin to atom i
+                    for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
                     {
-                        double h[3]={0,0,0};
-                        double ri[3]={0,0,0};
-                        double qi[3]={double(i),double(j),double(k)};
-                        for(unsigned int a = 0 ; a < 3 ; a++)
-                        {
-                            for(unsigned int b = 0 ; b < 3 ; b++)
-                            {
-                                ri[a]+=geom::L(a,b)*qi[b];
-                            }
-                            ri[a]+=geom::ucm.GetComp(t,a);
-                            ri[a]*=geom::abc[a];
-                        }
-                        //lookup the spin number
-                        unsigned int sni=(i*geom::dim[2]*geom::dim[1]+j*geom::dim[2]+k)*geom::nauc+t;
-                        double si[3]={spins::Sx[sni],spins::Sy[sni],spins::Sz[sni]};
+                        rj[xyz]=geom::abc[xyz]*double(lcj[xyz])/double(geom::Nk[xyz]);
+                        rij[xyz]=rj[xyz]-ri[xyz];
+                    }
 
-                        for(unsigned int x = 0 ; x < geom::dim[0] ; x++)
-                        {
-                            for(unsigned int y = 0 ; y < geom::dim[1] ; y++)
-                            {
-                                for(unsigned int z = 0 ; z < geom::dim[2] ; z++)
-                                {
-                                    for(unsigned int t2 = 0 ; t2 < geom::nauc ; t2++)
-                                    {
-                                        if(i==x && j==y && k==z && t==t2)
-                                        {
-                                            h[0]+=0;
-                                            h[1]+=0;
-                                            h[2]+=0;
-                                        }
-                                        else
-                                        {
-                                            double rj[3]={0,0,0};
-                                            double qj[3]={double(x),double(y),double(z)};
-                                            for(unsigned int c = 0 ; c < 3 ; c++)
-                                            {
-                                                for(unsigned int d = 0 ; d < 3 ; d++)
-                                                {
-                                                    rj[c]+=geom::L(c,d)*qj[d];
-                                                }//d
-                                                rj[c]+=geom::ucm.GetComp(t2,c);
-                                                rj[c]*=geom::abc[c];
-                                            }//d
-                                            //lookup the spin number
-                                            unsigned int snj=(x*geom::dim[2]*geom::dim[1]+y*geom::dim[2]+z)*geom::nauc+t2;
-                                            double sj[3]={spins::Sx[snj],spins::Sy[snj],spins::Sz[snj]};
-                                            double rij[3]={0,0,0};
-                                            for(unsigned int comp = 0 ; comp < 3 ; comp++)
-                                            {
-                                                rij[comp]=rj[comp]-ri[comp];
-                                            }//comp
-                                            double mrij=sqrt(rij[0]*rij[0]+rij[1]*rij[1]+rij[2]*rij[2]);
-                                            double oomrij3=1./(mrij*mrij*mrij);
-                                            double eij[3]={rij[0]/mrij,rij[1]/mrij,rij[2]/mrij};
-                                            double sjdote=sj[0]*eij[0]+sj[1]*eij[1]+sj[2]*eij[2];
+                    double mrij=sqrt(rij[0]*rij[0]+rij[1]*rij[1]+rij[2]*rij[2]);
+                    double oomrij3=1./(mrij*mrij*mrij);
+                    double eij[3]={rij[0]/mrij,rij[1]/mrij,rij[2]/mrij};
+                    double sjdote=sj[0]*eij[0]+sj[1]*eij[1]+sj[2]*eij[2];
 
 
-                                            for(unsigned int comp = 0 ; comp < 3 ; comp++)
-                                            {
-                                                h[comp]+=(3.0*sjdote*eij[comp]-sj[comp])*oomrij3;
-                                            }//comp
+                    for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                    {
+                        h[xyz]+=(3.0*sjdote*eij[xyz]-sj[xyz])*oomrij3;
+                    }//xyz
 
-                                        }
-                                    }//t2
-                                }//z
-                            }//y
-                        }//x
-                        fields::Hx[sni]=h[0]*1e-7*mat::mu*mat::muB;
-                        fields::Hy[sni]=h[1]*1e-7*mat::mu*mat::muB;
-                        fields::Hz[sni]=h[2]*1e-7*mat::mu*mat::muB;
-                        std::cout << ri[0]/geom::abc[0] << "\t" << ri[1]/geom::abc[1] << "\t" << ri[2]/geom::abc[2] << "\t" << fields::Hx[sni] << "\t" << fields::Hy[sni] << "\t" << fields::Hz[sni] << std::endl;
+                }
+            }
+            fields::Hx[i]=h[0]*1e-7*mat::mu*mat::muB;
+            fields::Hy[i]=h[1]*1e-7*mat::mu*mat::muB;
+            fields::Hz[i]=h[2]*1e-7*mat::mu*mat::muB;
+            std::cerr << ri[0]/geom::abc[0] << "\t" << ri[1]/geom::abc[1] << "\t" << ri[2]/geom::abc[2] << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
 
-                    }//t
-                }//k
-            }//j
-        }//i
+        }
     }//bfdip function
     //back transform the fields
     void FFTBack()
@@ -135,9 +99,17 @@ namespace fields
         fftw_execute(HzP);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
-            Hx[i]=Hkx.ReturnDirectReal(intmat::zpsn[i])/double(geom::zps);
-            Hy[i]=Hky.ReturnDirectReal(intmat::zpsn[i])/double(geom::zps);
-            Hz[i]=Hkz.ReturnDirectReal(intmat::zpsn[i])/double(geom::zps);
+            unsigned int lc[3]={0,0,0};
+            double ri[3]={0,0,0};
+            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+            {
+                lc[xyz]=geom::lu(i,xyz);
+                ri[xyz]=geom::abc[xyz]*double(lc[xyz])/geom::Nk[xyz];
+                Hx[i]=Hkx(lc[0],lc[1],lc[2])[0]/double(geom::zps);
+                Hy[i]=Hky(lc[0],lc[1],lc[2])[0]/double(geom::zps);
+                Hz[i]=Hkz(lc[0],lc[1],lc[2])[0]/double(geom::zps);
+                std::cerr << ri[0]/geom::abc[0] << "\t" << ri[1]/geom::abc[1] << "\t" << ri[2]/geom::abc[2] << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
+            }
         }
     }
     //fourier transform method for calculating dipolar field
@@ -146,32 +118,6 @@ namespace fields
         spins::FFTForward();
         util::cpuConvFourier();
         fields::FFTBack();
-        unsigned int atom_counter=0;
-        for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
-        {
-            for(unsigned int j = 0 ; j < geom::dim[1] ; j++)
-            {
-                for(unsigned int k = 0 ; k < geom::dim[2] ; k++)
-                {
-                    for(unsigned int t = 0 ; t < geom::nauc ; t++)
-                    {
-                        double ri[3]={0,0,0};
-                        double qi[3]={double(i),double(j),double(k)};
-                        for(unsigned int a = 0 ; a < 3 ; a++)
-                        {
-                            for(unsigned int b = 0 ; b < 3 ; b++)
-                            {
-                                ri[a]+=geom::L(a,b)*qi[b];
-                            }
-                            ri[a]+=geom::ucm.GetComp(t,a);
-                            ri[a]*=geom::abc[a];
-                        }
-                        std::cout << ri[0]/geom::abc[0] << "\t" << ri[1]/geom::abc[1] << "\t" << ri[2]/geom::abc[2] << "\t" << Hx[atom_counter] << "\t" << Hy[atom_counter] << "\t" << Hz[atom_counter] << std::endl;
-                        atom_counter++;
-                    }
-                }
-            }
-        }
 
     }
 }

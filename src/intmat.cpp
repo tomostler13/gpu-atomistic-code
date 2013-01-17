@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 17 Jan 2013 14:48:27
+// Last-modified: 17 Jan 2013 20:32:11
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -78,37 +78,23 @@ namespace intmat
         //atom counter
         unsigned ac=0;
         //loop over the unit cells
-        for(unsigned int i = 0 ; i < geom::zpdim[0] ; i++)
+        double rij[3]={0,0,0};
+        for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
         {
-            for(unsigned int j = 0 ; j < geom::zpdim[1] ; j++)
+//            rij[0]=geom::abc[0]*double(i)/double(geom::Nk[0]);
+            for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
             {
-                for(unsigned int k = 0 ; k < geom::zpdim[2] ; k++)
+//                rij[1]=geom::abc[1]*double(j)/double(geom::Nk[1]);
+                for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
                 {
-                    for(unsigned int t = 0 ; t < geom::nauc ; t++)
+//                    rij[2]=geom::abc[2]*double(k)/double(geom::Nk[2]);
+                    if(!(i==0 && j==0 && k==0))
                     {
-                        if(!(i==0 && j==0 && k==0 && t==0))
+                        //lookup if there is an atom there (or one there by pbc's)
+                        if(geom::coords(i,j,k,0)>-2)
                         {
-                            double rij[3]={0,0,0};
-                            double qi[3]={double(i),double(j),double(k)};
-                            for(unsigned int a = 0 ; a < 3 ; a++)
-                            {
-                                for(unsigned int b = 0 ; b < 3 ; b++)
-                                {
-                                    rij[a]+=geom::L(a,b)*qi[b];
-                                }
-                                rij[a]+=geom::ucm.GetComp(t,a);
-                                //find rij in m
-                                rij[a]*=geom::abc[a];
-                            }
-
-                            int lc[3]={i*geom::Nk[0]+geom::ucm.GetX(t)*geom::Nk[0],j*geom::Nk[1]+geom::ucm.GetY(t)*geom::Nk[1],k*geom::Nk[2]+geom::ucm.GetZ(t)*geom::Nk[2]};
+                            int lc[3]={i,j,k};
                             int tc[3]={lc[0],lc[1],lc[2]};
-                            if(lc[0]<geom::dim[0]*geom::Nk[0] && lc[1] < geom::dim[1]*geom::Nk[1] && lc[2] < geom::dim[2]*geom::Nk[2])
-                            {
-                                //Lookup for the zero padded array
-                                zpsn[ac]=Nxx.getarrayelement(lc[0],lc[1],lc[2]);
-                                ac++;
-                            }
 
                             for(unsigned int l = 0 ; l < 3 ; l++)
                             {
@@ -117,6 +103,7 @@ namespace intmat
                                     lc[l]=geom::dim[l]*geom::Nk[l]-lc[l];
                                     tc[l]=geom::zpdim[l]*geom::Nk[l]+lc[l];
                                 }
+                                rij[l]=lc[l]*geom::abc[l]/double(geom::Nk[l]);
                             }
                             double mrij=sqrt(rij[0]*rij[0]+rij[1]*rij[1]+rij[2]*rij[2]);
                             double oomrij3=1./(mrij*mrij*mrij);
@@ -150,7 +137,6 @@ namespace intmat
 
                             double lnzy=1e-7*3.0*eij[1]*eij[2]*oomrij3;
                             Nzy(tc[0],tc[1],tc[2])[0]=lnzy*mat::mu*mat::muB; //(i,j,k)
-
                         }
                     }
                 }

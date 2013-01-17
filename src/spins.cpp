@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 17 Jan 2013 18:04:05
+// Last-modified: 17 Jan 2013 20:14:29
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -46,26 +46,13 @@ namespace spins
         Skz.IFill(0);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
-        std::cout << intmat::zpsn[i] << std::endl;
-            Skx.DirectAccess(intmat::zpsn[i],Sx[i],0);
-            Sky.DirectAccess(intmat::zpsn[i],Sy[i],0);
-            Skz.DirectAccess(intmat::zpsn[i],Sz[i],0);
+            unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            Skx(lc[0],lc[1],lc[2])[0]=Sx[i];
+            Sky(lc[0],lc[1],lc[2])[0]=Sy[i];
+            Skz(lc[0],lc[1],lc[2])[0]=Sz[i];
         }
-        for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
-        {
-            for(unsigned int j = 0 ; j < geom::dim[1] ; j++)
-            {
-                for(unsigned int k = 0 ; k < geom::dim[2] ; k++)
-                {
-                    for(unsigned int t = 0 ; t < geom::nauc ; t++)
-                    {
-                        std::cerr << i+geom::ucm.GetX(t) << "\t" << j+geom::ucm.GetY(t) << "\t" << k+geom::ucm.GetZ(t) << "\t" << Skx((i+geom::ucm.GetX(t))*geom::Nk[0],(j+geom::ucm.GetY(t))*geom::Nk[1],(k+geom::ucm.GetZ(t))*geom::Nk[2])[0] << "\t" << Sky((i+geom::ucm.GetX(t))*geom::Nk[0],(j+geom::ucm.GetY(t))*geom::Nk[1],(k+geom::ucm.GetZ(t))*geom::Nk[2])[0] << "\t" << Skz((i+geom::ucm.GetX(t))*geom::Nk[0],(j+geom::ucm.GetY(t))*geom::Nk[1],(k+geom::ucm.GetZ(t))*geom::Nk[2])[0] << std::endl;
-                        fftw_execute(SxP);
-                        fftw_execute(SyP);
-                        fftw_execute(SzP);
-                    }
-                }
-            }
-        }
+        fftw_execute(SxP);
+        fftw_execute(SyP);
+        fftw_execute(SzP);
     }
 }
