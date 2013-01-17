@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 17 Jan 2013 16:57:26
+// Last-modified: 17 Jan 2013 18:38:20
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -22,7 +22,7 @@ namespace geom
 
     //the number of unit cells
     unsigned int dim[3]={0,0,0};
-    //zero pad size
+    //zero pad size (in unit cells)
     unsigned int zpdim[3]={0,0,0};
     //the number of atoms in the unit cell
     unsigned int nauc=0;
@@ -35,8 +35,10 @@ namespace geom
     //Number of K points
     Array<unsigned int> Nk;
     //lookup array. Give atom number and return coordinates
-    Array2D<unsigned int> lu;
-    //Coords array. Give coords and returns atom number
+    Array2D<int> lu;
+    //Coords array. Give coords and returns atom number. This coords array
+    //is the size of the zero padded arrays and has places where atoms do
+    //not exist
     Array3D<int> coords;
     //instance of the unit cell
     unitCellMembers ucm;
@@ -122,26 +124,32 @@ namespace geom
         FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
 
         nspins=maxss;
-        zps=0;
+        zps=1;
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
-            zps+=2*dim[i]*Nk[i];
+            zps*=(2*dim[i]*Nk[i]);
         }
 
         FIXOUT(config::Info,"Maximum number of spins:" << maxss << std::endl);
         FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
         FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
         outstruc << maxss << std::endl << std::endl;
-        lu.resize(nspins,4);
-        lu.IFill(0);
+        lu.resize(zps,4);
+        lu.IFill(-1);
         coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2]);
         coords.IFill(-1);
-        unsigned int atom_count=0;
-        for(unsigned int i = 0 ; i < dim[0] ; i++)
+        std::ofstream sloc("zeropad.dat");
+        if(sloc.is_open()!=true)
         {
-            for(unsigned int j = 0 ; j < dim[1] ; j++)
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open file for writing zero pad information");
+        }
+        unsigned int atom_counter=0;
+        for(unsigned int i = 0 ; i < zpdim[0] ; i++)
+        {
+            for(unsigned int j = 0 ; j < zpdim[1] ; j++)
             {
-                for(unsigned int k = 0 ; k < dim[2] ; k++)
+                for(unsigned int k = 0 ; k < zpdim[2] ; k++)
                 {
                     for(unsigned int t = 0 ; t < nauc ; t++)
                     {
@@ -155,18 +163,54 @@ namespace geom
                             }
                             ri[a]+=ucm.GetComp(t,a);
                         }
-                        coords(Nk[0]*(i+ucm.GetX(t)),Nk[1]*(j+ucm.GetY(t)),Nk[2]*(k+ucm.GetZ(t)))=atom_count;
-                        lu(atom_counter,0)=Nk[0]*(i+ucm.GetX(t));
-                        lu(atom_counter,1)=Nk[1]*(j+ucm.GetY(t));
-                        lu(atom_counter,2)=Nk[2]*(k+ucm.GetZ(t));
-                        lu(atom_counter,3)=t;
+                        coords(Nk[0]*(i+ucm.GetX(t)),Nk[1]*(j+ucm.GetY(t)),Nk[2]*(k+ucm.GetZ(t)))=atom_counter;
+                        lu(atom_counter,0)=int(Nk[0]*(double(i)+ucm.GetX(t)));
+                        lu(atom_counter,1)=int(Nk[1]*(double(j)+ucm.GetY(t)));
+                        lu(atom_counter,2)=int(Nk[2]*(double(k)+ucm.GetZ(t)));
+                        if(i<dim[0] && j<dim[1] && k<dim[2])
+                        {
+                            lu(atom_counter,3)=t;
+                        }
+
                         // the *5 is just a scaling factor
                         outstruc << "Ag\t" << ri[0]*5 << "\t" << ri[1]*5 << "\t" << ri[2]*5 << std::endl;
+                        atom_counter++;
                     }
                 }
             }
         }
-
+        atom_counter=0;
+        unsigned int kcounter=0;
+        //now loop over all of the k-points
+        for(unsigned int i = 0 ; i < zpdim[0]*Nk[0] ; i++)
+        {
+            for(unsigned int j = 0 ; j < zpdim[1]*Nk[1] ; j++)
+            {
+                for(unsigned int k = 0 ; k < zpdim[2]*Nk[2] ; k++)
+                {
+                    if(coords(i,j,k)>=0)
+                    {
+                        sloc << "\"" << lu(i,3) << "\"\t" << i << "\t" << j << "\t" << k << std::endl;
+                        atom_counter++;
+                    }
+                    else
+                    {
+                        lu(kcount,0)=kcounter;
+                        lu(i,1)=
+                    }
+                }
+            }
+        }
+        for(unsigned int i = 0 ; i < zps ; i++)
+        {
+            if(lu(i,3)>=0)
+            {
+            }
+            else
+            {
+                sloc << "\"." << "\"\t" << lu(atom_counter,0) << "\t" << lu(atom_counter,1) << "\t" << lu(atom_counter,2) << std::endl;
+            }
+        }
 
     }
 }

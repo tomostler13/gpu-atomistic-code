@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 17 Jan 2013 15:10:14
+// Last-modified: 17 Jan 2013 18:04:05
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -46,7 +46,7 @@ namespace spins
         Skz.IFill(0);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
-        std::cout << zpsn[i] << std::endl;
+        std::cout << intmat::zpsn[i] << std::endl;
             Skx.DirectAccess(intmat::zpsn[i],Sx[i],0);
             Sky.DirectAccess(intmat::zpsn[i],Sy[i],0);
             Skz.DirectAccess(intmat::zpsn[i],Sz[i],0);
