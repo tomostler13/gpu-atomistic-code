@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 17 Jan 2013 19:40:02
+// Last-modified: 18 Jan 2013 17:53:47
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -110,15 +110,19 @@ namespace geom
             sstr << "atom" << i;
             std::string str=sstr.str(),str1;
             ucm.SetPosVec(setting[str.c_str()][0],setting[str.c_str()][1],setting[str.c_str()][2],i);
-            sstr.str("");
-            sstr << "Element" << i;
-            str=sstr.str();
-            setting.lookupValue(str.c_str(),str1);
-            FIXOUT(config::Info,"Element string:" << str1 << std::endl);
-            ucm.SetElement(str1,i);
             FIXOUTVEC(config::Info,str,ucm.GetX(i),ucm.GetY(i),ucm.GetZ(i));
 
         }
+        for(unsigned int i = 0 ; i < nauc ; i++)
+        {
+            std::stringstream sstr;
+            sstr << "Element" << i;
+            std::string str=sstr.str(),str1;
+            setting.lookupValue(str.c_str(),str1);
+            FIXOUT(config::Info,"Element string:" << str1 << std::endl);
+            ucm.SetElement(str1,i);
+        }
+
         maxss=dim[0]*dim[1]*dim[2]*nauc;
         Nk.resize(3);
         abc.resize(3);

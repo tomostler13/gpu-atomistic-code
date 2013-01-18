@@ -7,7 +7,7 @@ system:
     Ley = [ 0.0 , 1.0 , 0.0 ];
     Lez = [ 0.0 , 0.0 , 1.0 ];
     //number of unit cells
-    dim = [ 8 , 8 , 1 ];
+    dim = [ 8 , 8 , 8 ];
     //Number of atoms in the primitive cell
     nauc = 4;
     //The primitive cell
@@ -24,4 +24,12 @@ system:
     Nk = [ 2 , 2 , 2 ];
     //lattice constants
     abc = [ 0.251e-9 , 0.251e-9 , 0.251e-9 ];
+};
+exchange:
+{
+    //How are we to read in the exchange
+    //- thisfile (read from the config file)
+    //- extfile (read from an external file)
+    exchinput="extfile";
+    exchfile="exch.in";
 };

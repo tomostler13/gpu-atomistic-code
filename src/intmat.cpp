@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 17 Jan 2013 20:32:11
+// Last-modified: 18 Jan 2013 17:16:04
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -67,8 +67,6 @@ namespace intmat
         Nzx.IFill(0.0);
         Nzy.IFill(0.0);
         Nzz.IFill(0.0);
-        fillIntmat();
-        fftIntmat();
 
     }
 
