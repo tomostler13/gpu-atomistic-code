@@ -10,7 +10,7 @@ DEFS=-DDEBUG
 CUDEFS=-DCUDA
 LIBS= -lfftw3 -lfftw3f -lm -lconfig++ -lstdc++ -llapack -lblas
 CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft
-OPT_LEVEL=-O0
+OPT_LEVEL=-O3
 GCC_FLAGS= $(OPT_LEVEL)
 NVCC_FLAGS=$(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 
 

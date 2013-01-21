@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 21 Jan 2013 11:10:22
+// Last-modified: 21 Jan 2013 17:18:53
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -24,6 +24,8 @@ namespace geom
     unsigned int dim[3]={0,0,0};
     //zero pad size (in unit cells)
     unsigned int zpdim[3]={0,0,0};
+    //For r2c transform the final dimension must be zpdim[2]/2+1
+    unsigned int cplxdim=0;
     //the number of atoms in the unit cell
     unsigned int nauc=0;
     //maximum system size
@@ -88,8 +90,9 @@ namespace geom
         {
             dim[i]=setting["dim"][i];
             zpdim[i]=2*dim[i];
-
         }
+        cplxdim=dim[2]+1;
+        FIXOUT(config::Info,"Z-dimension for r2c and c2r transforms:" << cplxdim << std::endl);
         FIXOUT(config::Info,"Unit cell matrix (L):" << std::showpos << "[ " << L(0,0) << " , " << L(0,1) << " , " << L(0,2) << " ]" << std::endl);
         FIXOUT(config::Info,"" << "[ " << std::showpos << L(1,0) << " , " << L(1,1) << " , " << L(1,2) << " ]" << std::endl);
         FIXOUT(config::Info,"" << "[ " << std::showpos << L(2,0) << " , " << L(2,1) << " , " << L(2,2) << " ]" << std::endl);

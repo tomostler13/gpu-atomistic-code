@@ -1,7 +1,7 @@
 // File: geom.h
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 17 Jan 2013 19:16:27
+// Last-modified: 21 Jan 2013 16:36:08
 #include "../inc/arrays.h"
 #include "../inc/unitcell.h"
 #include <string>
@@ -9,7 +9,7 @@
 #define _GEOM_H_
 namespace geom
 {
-    extern unsigned int dim[],nauc,zpdim[],nspins,zps;
+    extern unsigned int dim[],nauc,zpdim[],nspins,zps,cplxdim;
     void initGeom(int argc,char *argv[]);
     extern Array2D<double> L,Linv;
     extern Array2D<int> lu,zplu;

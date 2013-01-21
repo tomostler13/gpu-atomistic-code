@@ -1,6 +1,6 @@
 // File: array3d.h
 // Author:Joe Barker
-// Last-modified: 17 Jan 2013 20:13:43
+// Last-modified: 21 Jan 2013 17:02:38
 
 #ifndef __ARRAY3D_H__
 #define __ARRAY3D_H__
@@ -54,7 +54,9 @@ class Array3D
             }
         }
     }
-
+	inline _Tp* RESTRICT ptr() {
+      return &(data[0]);
+	}
     inline int getarrayelement(unsigned int i,unsigned int j,unsigned int k)
     {
         return((i*dim1+j)*dim2+k);

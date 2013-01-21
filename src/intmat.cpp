@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 21 Jan 2013 13:30:38
+// Last-modified: 21 Jan 2013 17:05:50
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -25,6 +25,15 @@ namespace intmat
     Array3D<fftw_complex> Nzx;
     Array3D<fftw_complex> Nzy;
     Array3D<fftw_complex> Nzz;
+    Array3D<double> Nrxx;
+    Array3D<double> Nrxy;
+    Array3D<double> Nrxz;
+    Array3D<double> Nryx;
+    Array3D<double> Nryy;
+    Array3D<double> Nryz;
+    Array3D<double> Nrzx;
+    Array3D<double> Nrzy;
+    Array3D<double> Nrzz;
     Array<unsigned int> zpsn;
 
     void initIntmat(int argc,char *argv[])
@@ -47,17 +56,26 @@ namespace intmat
             exit(EXIT_FAILURE);
         }
 
-        Nxx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Nxy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Nxz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Nyx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Nyy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Nyz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Nzx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Nzy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Nzz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        zpsn.resize(geom::nspins);
-        zpsn.IFill(0);
+        Nxx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Nxy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Nxz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Nyx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Nyy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Nyz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Nzx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Nzy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Nzz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Nrxx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Nrxy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Nrxz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Nryx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Nryy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Nryz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Nrzx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Nrzy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Nrzz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+//        zpsn.resize(geom::nspins);
+//        zpsn.IFill(0);
         Nxx.IFill(0.0);
         Nxy.IFill(0.0);
         Nxz.IFill(0.0);
@@ -67,6 +85,15 @@ namespace intmat
         Nzx.IFill(0.0);
         Nzy.IFill(0.0);
         Nzz.IFill(0.0);
+        Nrxx.IFill(0.0);
+        Nrxy.IFill(0.0);
+        Nrxz.IFill(0.0);
+        Nryx.IFill(0.0);
+        Nryy.IFill(0.0);
+        Nryz.IFill(0.0);
+        Nrzx.IFill(0.0);
+        Nrzy.IFill(0.0);
+        Nrzz.IFill(0.0);
 
     }
 
@@ -108,33 +135,33 @@ namespace intmat
                             //unit vector from i to j
                             double eij[3]={rij[0]/mrij,rij[1]/mrij,rij[2]/mrij};
                             double lnxx=1e-7*((3.0*eij[0]*eij[0])-1.0)*oomrij3;
-                            Nxx(tc[0],tc[1],tc[2])[0]=lnxx*mat::mu*mat::muB;//(i,j,k)
+                            Nrxx(tc[0],tc[1],tc[2])=lnxx*mat::mu*mat::muB;//(i,j,k)
 
                             double lnyy=1e-7*((3.0*eij[1]*eij[1])-1.0)*oomrij3;
-                            Nyy(tc[0],tc[1],tc[2])[0]=lnyy*mat::mu*mat::muB;//(i,j,k)
+                            Nryy(tc[0],tc[1],tc[2])=lnyy*mat::mu*mat::muB;//(i,j,k)
 
                             double lnzz=1e-7*((3.0*eij[2]*eij[2])-1.0)*oomrij3;
-                            Nzz(tc[0],tc[1],tc[2])[0]=lnzz*mat::mu*mat::muB;//(i,j,k)
+                            Nrzz(tc[0],tc[1],tc[2])=lnzz*mat::mu*mat::muB;//(i,j,k)
 
 
                             //Now w_{ij}^{\Gamma \Lambda}=\frac{3e_{ij}^\Gamma e_{ij}^{\Lambda}}{r_{ij}^3}
                             double lnxy=1e-7*3.0*eij[1]*eij[0]*oomrij3;
-                            Nxy(tc[0],tc[1],tc[2])[0]=lnxy*mat::mu*mat::muB; //(i,j,k)
+                            Nrxy(tc[0],tc[1],tc[2])=lnxy*mat::mu*mat::muB; //(i,j,k)
 
                             double lnxz=1e-7*3.0*eij[2]*eij[0]*oomrij3;
-                            Nxz(tc[0],tc[1],tc[2])[0]=lnxz*mat::mu*mat::muB; //(i,j,k)
+                            Nrxz(tc[0],tc[1],tc[2])=lnxz*mat::mu*mat::muB; //(i,j,k)
 
                             double lnyx=1e-7*3.0*eij[0]*eij[1]*oomrij3;
-                            Nyx(tc[0],tc[1],tc[2])[0]=lnyx*mat::mu*mat::muB; //(i,j,k)
+                            Nryx(tc[0],tc[1],tc[2])=lnyx*mat::mu*mat::muB; //(i,j,k)
 
                             double lnyz=1e-7*3.0*eij[2]*eij[1]*oomrij3;
-                            Nyz(tc[0],tc[1],tc[2])[0]=lnyz*mat::mu*mat::muB; //(i,j,k)
+                            Nryz(tc[0],tc[1],tc[2])=lnyz*mat::mu*mat::muB; //(i,j,k)
 
                             double lnzx=1e-7*3.0*eij[0]*eij[2]*oomrij3;
-                            Nzx(tc[0],tc[1],tc[2])[0]=lnzx*mat::mu*mat::muB; //(i,j,k)
+                            Nrzx(tc[0],tc[1],tc[2])=lnzx*mat::mu*mat::muB; //(i,j,k)
 
                             double lnzy=1e-7*3.0*eij[1]*eij[2]*oomrij3;
-                            Nzy(tc[0],tc[1],tc[2])[0]=lnzy*mat::mu*mat::muB; //(i,j,k)
+                            Nrzy(tc[0],tc[1],tc[2])=lnzy*mat::mu*mat::muB; //(i,j,k)
                         }
                     }
                 }
@@ -149,15 +176,16 @@ namespace intmat
         fftw_plan NxxP,NxyP,NxzP,NyxP,NyyP,NyzP,NzxP,NzyP,NzzP;
 
         //the demag tensor 3d fftw plans
-        NxxP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nxx.ptr(),Nxx.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
-        NxyP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nxy.ptr(),Nxy.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
-        NxzP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nxz.ptr(),Nxz.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
-        NyxP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nyx.ptr(),Nyx.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
-        NyyP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nyy.ptr(),Nyy.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
-        NyzP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nyz.ptr(),Nyz.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
-        NzxP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nzx.ptr(),Nzx.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
-        NzyP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nzy.ptr(),Nzy.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
-        NzzP=fftw_plan_dft_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nzz.ptr(),Nzz.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+        NxxP=fftw_plan_dft_r2c_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nrxx.ptr(),Nxx.ptr(),FFTW_ESTIMATE);
+        NxyP=fftw_plan_dft_r2c_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nrxy.ptr(),Nxy.ptr(),FFTW_ESTIMATE);
+        NxzP=fftw_plan_dft_r2c_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nrxz.ptr(),Nxz.ptr(),FFTW_ESTIMATE);
+        NyxP=fftw_plan_dft_r2c_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nryx.ptr(),Nyx.ptr(),FFTW_ESTIMATE);
+        NyyP=fftw_plan_dft_r2c_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nryy.ptr(),Nyy.ptr(),FFTW_ESTIMATE);
+        NyzP=fftw_plan_dft_r2c_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nryz.ptr(),Nyz.ptr(),FFTW_ESTIMATE);
+        NzxP=fftw_plan_dft_r2c_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nrzx.ptr(),Nzx.ptr(),FFTW_ESTIMATE);
+        NzyP=fftw_plan_dft_r2c_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nrzy.ptr(),Nzy.ptr(),FFTW_ESTIMATE);
+        NzzP=fftw_plan_dft_r2c_3d(geom::Nk[0]*geom::zpdim[0],geom::Nk[1]*geom::zpdim[1],geom::Nk[2]*geom::zpdim[2],Nrzz.ptr(),Nzz.ptr(),FFTW_ESTIMATE);
+
 
 
         config::Info << "Done" << std::endl;
@@ -172,7 +200,17 @@ namespace intmat
         fftw_execute(NzxP);
         fftw_execute(NzyP);
         fftw_execute(NzzP);
-
+        //get rid of the real data
+        Nrxx.clear();
+        Nrxy.clear();
+        Nrxz.clear();
+        Nryx.clear();
+        Nryy.clear();
+        Nryz.clear();
+        Nrzx.clear();
+        Nrzy.clear();
+        Nrzz.clear();
+        //destroy the plans
         fftw_destroy_plan(NxxP);
         fftw_destroy_plan(NxyP);
         fftw_destroy_plan(NxzP);

@@ -1,7 +1,7 @@
 // File: spins.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 21 Jan 2013 15:16:27
+// Last-modified: 21 Jan 2013 17:00:33
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -16,6 +16,7 @@
 namespace spins
 {
     extern Array3D<fftw_complex> Skx,Sky,Skz;
+    extern Array3D<double> Srx,Sry,Srz;
     extern Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
     void initSpins(int argc,char *argv[]);
     void FFTForward();

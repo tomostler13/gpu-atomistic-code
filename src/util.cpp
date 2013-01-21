@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 21 Jan 2013 15:31:10
+// Last-modified: 21 Jan 2013 16:58:52
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -42,7 +42,7 @@ namespace util
         {
             for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
             {
-                for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
+                for(unsigned int k = 0 ; k < geom::cplxdim*geom::Nk[2] ; k++)
                 {
 
                     fields::Hkx(i,j,k)[0]=intmat::Nxx(i,j,k)[0]*spins::Skx(i,j,k)[0]-intmat::Nxx(i,j,k)[1]*spins::Skx(i,j,k)[1]

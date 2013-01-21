@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 21 Jan 2013 16:09:29
+// Last-modified: 21 Jan 2013 17:11:30
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -23,21 +23,25 @@
 namespace fields
 {
     Array3D<fftw_complex> Hkx,Hky,Hkz;
+    Array3D<double> Hrx,Hry,Hrz;
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz;
     fftw_plan HxP,HyP,HzP;
     void initFields(int argc,char *argv[])
     {
-        Hkx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Hky.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Hkz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Hkx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Hky.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Hkz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
         Hx.resize(geom::nspins);
         Hy.resize(geom::nspins);
         Hz.resize(geom::nspins);
+        Hrx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Hry.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Hrz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
         //plan the transforms as in-place as we do not need to use the fft arrays
         //as we copy the data back to the normal field arrayl
-        HxP = fftw_plan_dft_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hkx.ptr(),Hkx.ptr(),FFTW_BACKWARD,FFTW_ESTIMATE);
-        HyP = fftw_plan_dft_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hky.ptr(),Hky.ptr(),FFTW_BACKWARD,FFTW_ESTIMATE);
-        HzP = fftw_plan_dft_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hkz.ptr(),Hkz.ptr(),FFTW_BACKWARD,FFTW_ESTIMATE);
+        HxP = fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hkx.ptr(),Hrx.ptr(),FFTW_ESTIMATE);
+        HyP = fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hky.ptr(),Hry.ptr(),FFTW_ESTIMATE);
+        HzP = fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hkz.ptr(),Hrz.ptr(),FFTW_ESTIMATE);
     }
 
     void bfdip()
@@ -100,10 +104,11 @@ namespace fields
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-            Hx[i]=Hkx(lc[0],lc[1],lc[2])[0]/(double(geom::zps));
-            Hy[i]=Hky(lc[0],lc[1],lc[2])[0]/(double(geom::zps));
-            Hz[i]=Hkz(lc[0],lc[1],lc[2])[0]/(double(geom::zps));
-            //std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
+            Hx[i]=Hrx(lc[0],lc[1],lc[2])/(double(geom::zps));
+            Hy[i]=Hry(lc[0],lc[1],lc[2])/(double(geom::zps));
+            Hz[i]=Hrz(lc[0],lc[1],lc[2])/(double(geom::zps));
+            std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
+            std::cin.get();
         }
     }
     //fourier transform method for calculating dipolar field
@@ -112,7 +117,6 @@ namespace fields
         spins::FFTForward();
         util::cpuConvFourier();
         fields::FFTBack();
-
     }
     void eftdip()
     {
