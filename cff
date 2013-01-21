@@ -1,5 +1,11 @@
 OutputFile = "opf.dat";
 seed = 12345;
+mat:
+{
+    mu = 2.0;
+    gamma = 1.76e11;
+    lambda = 0.01;
+};
 system:
 {
     //The unit vector
@@ -39,5 +45,10 @@ anisotropy:
     //The anisotropy tensor
     dxb = [ 0.0 , 0.0 , 0.0 ];
     dyb = [ 0.0 , 0.0 , 0.0 ];
-    dzb = [ 0.0 , 0.0 , 1e-24 ];
+    dzb = [ 0.0 , 0.0 , 1.0e-24 ];
+};
+llg:
+{
+    dt = 1.0e-15;
+    applied = [ 0.0 , 0.0 , 1.0 ];
 };

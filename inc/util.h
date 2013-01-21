@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 17 Jan 2013 14:26:02
+// Last-modified: 21 Jan 2013 15:46:19
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -80,6 +80,29 @@ namespace util
     };
     void inverse(double*, int);
     void cpuConvFourier();
+    ////////////////////////////////////////////////////////////////////////////////
+    //! Compute sum reduction on CPU
+    //! We use Kahan summation for an accurate sum of large arrays.
+    //! http://en.wikipedia.org/wiki/Kahan_summation_algorithm
+    //!
+    //! @param data       pointer to input data
+    //! @param size       number of input data elements
+    ////////////////////////////////////////////////////////////////////////////////
+    template<class T>
+        T reduceCPU(Array<T> data, unsigned int size)
+        {
+            T sum = data[0];
+            T c = (T)0.0;
+            for (int i = 1; i < size; i++)
+            {
+                T y = data[i] - c;
+                T t = sum + y;
+                c = (t - sum) - y;
+                sum = t;
+            }
+            return sum;
+        }
+
 
 }
 #endif /*_UTIL_H_*/

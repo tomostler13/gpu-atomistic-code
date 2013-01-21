@@ -1,7 +1,7 @@
 // File: anis.cpp
 // Author: Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 21 Jan 2013 13:35:09
+// Last-modified: 21 Jan 2013 16:05:39
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -17,9 +17,10 @@
 #include <cmath>
 #include <cstdlib>
 #include <sstream>
-#define FIXOUT(a,b) a.width(75);a << std::left << b;
-#define FIXOUTVEC(a,b,c,d,e) FIXOUT(a,b << "[   ");a.width(5);a << std::left << c << " , ";a.width(5);a << std::left << d << " , ";a.width(5);a << std::left << e << "   ]" << std::endl;
-#define SUCCESS(a) a << "Done" << std::endl;
+//#define FIXOUT(a,b) a.width(75);a << std::left << b;
+//#define FIXOUTVEC(a,b,c,d,e) FIXOUT(a,b << "[   ");a.width(5);a << std::left << c << " , ";a.width(5);a << std::left << d << " , ";a.width(5);a << std::left << e << "   ]" << std::endl;
+//#define SUCCESS(a) a << "Done" << std::endl;
+#include "../inc/defines.h"
 
 namespace anis
 {

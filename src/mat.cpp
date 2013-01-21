@@ -1,7 +1,7 @@
 // File: mat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 16 Jan 2013 17:36:49
+// Last-modified: 21 Jan 2013 14:45:11
 #include "../inc/mat.h"
 #include "../inc/config.h"
 #include "../inc/geom.h"
@@ -21,11 +21,36 @@ namespace mat
     double muB=9.27e-24;
     //magnetic moment (muB)
     double mu=2.0;
+    //thermal term prefactor
+    double sigma = 0.0;
     void initMat(int argc,char *argv[])
     {
-        lambda=0.0;
-        gamma=0.0;
+        config::printline(config::Info);
+        config::Info.width(45);config::Info << std::right << "*" << "**Material details***" << std::endl;
+        try
+        {
+            config::cfg.readFile(argv[1]);
+        }
+        catch(const libconfig::FileIOException &fioex)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("I/O error while reading config file");
+        }
+        catch(const libconfig::ParseException &pex)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        libconfig::Setting &setting = config::cfg.lookup("mat");
+
+        setting.lookupValue("lambda",lambda);
+        FIXOUT(config::Info,"Coupling constant (lambda):" << lambda << std::endl);
+        setting.lookupValue("gamma",gamma);
+        FIXOUT(config::Info,"Gyromagnetic ratio:" << gamma << " T^-1 s^-1\n");
         muB=9.27e-24;
-        mu=2.0;
+        setting.lookupValue("mu",mu);
+        FIXOUT(config::Info,"Magnetic moment:" << mu << " muB" << std::endl);
     }
 }

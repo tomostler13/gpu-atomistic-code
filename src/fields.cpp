@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 21 Jan 2013 11:09:07
+// Last-modified: 21 Jan 2013 16:09:29
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -23,7 +23,7 @@
 namespace fields
 {
     Array3D<fftw_complex> Hkx,Hky,Hkz;
-    Array<double> Hx,Hy,Hz;
+    Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz;
     fftw_plan HxP,HyP,HzP;
     void initFields(int argc,char *argv[])
     {
@@ -103,7 +103,7 @@ namespace fields
             Hx[i]=Hkx(lc[0],lc[1],lc[2])[0]/(double(geom::zps));
             Hy[i]=Hky(lc[0],lc[1],lc[2])[0]/(double(geom::zps));
             Hz[i]=Hkz(lc[0],lc[1],lc[2])[0]/(double(geom::zps));
-            std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
+            //std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
         }
     }
     //fourier transform method for calculating dipolar field
@@ -113,5 +113,11 @@ namespace fields
         util::cpuConvFourier();
         fields::FFTBack();
 
+    }
+    void eftdip()
+    {
+        spins::eFFTForward();
+        util::cpuConvFourier();
+        fields::FFTBack();
     }
 }

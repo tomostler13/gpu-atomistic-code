@@ -27,7 +27,8 @@ obj/intmat.o \
 obj/spins.o \
 obj/fields.o \
 obj/exch.o \
-obj/anis.o
+obj/anis.o \
+obj/llg.o
 
 SWITCHOBJ= \
 obj/main.o
