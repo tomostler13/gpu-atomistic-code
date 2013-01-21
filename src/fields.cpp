@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 17 Jan 2013 20:22:17
+// Last-modified: 21 Jan 2013 11:09:07
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -99,17 +99,11 @@ namespace fields
         fftw_execute(HzP);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
-            unsigned int lc[3]={0,0,0};
-            double ri[3]={0,0,0};
-            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
-            {
-                lc[xyz]=geom::lu(i,xyz);
-                ri[xyz]=geom::abc[xyz]*double(lc[xyz])/geom::Nk[xyz];
-                Hx[i]=Hkx(lc[0],lc[1],lc[2])[0]/double(geom::zps);
-                Hy[i]=Hky(lc[0],lc[1],lc[2])[0]/double(geom::zps);
-                Hz[i]=Hkz(lc[0],lc[1],lc[2])[0]/double(geom::zps);
-                std::cerr << ri[0]/geom::abc[0] << "\t" << ri[1]/geom::abc[1] << "\t" << ri[2]/geom::abc[2] << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
-            }
+            unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            Hx[i]=Hkx(lc[0],lc[1],lc[2])[0]/(double(geom::zps));
+            Hy[i]=Hky(lc[0],lc[1],lc[2])[0]/(double(geom::zps));
+            Hz[i]=Hkz(lc[0],lc[1],lc[2])[0]/(double(geom::zps));
+            std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
         }
     }
     //fourier transform method for calculating dipolar field

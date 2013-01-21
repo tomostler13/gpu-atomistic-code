@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 17 Jan 2013 20:14:29
+// Last-modified: 21 Jan 2013 09:22:27
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -50,6 +50,7 @@ namespace spins
             Skx(lc[0],lc[1],lc[2])[0]=Sx[i];
             Sky(lc[0],lc[1],lc[2])[0]=Sy[i];
             Skz(lc[0],lc[1],lc[2])[0]=Sz[i];
+//            std::cout << "Lookup\t" << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << Skx(lc[0],lc[1],lc[2])[0] << "\t" << Sky(lc[0],lc[1],lc[2])[0] << "\t" << Skz(lc[0],lc[1],lc[2])[0] << std::endl;
         }
         fftw_execute(SxP);
         fftw_execute(SyP);

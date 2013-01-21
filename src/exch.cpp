@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 18 Jan 2013 17:42:55
+// Last-modified: 21 Jan 2013 11:15:39
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -227,14 +227,12 @@ namespace exch
                                     error::errMessage("That interaction does not exist");
                                 }
 
-//                                std::cout << wc[0] << "\t" << wc[1] << "\t" << wc[2] << std::endl;std::cin.get();
                                 counter++;
                             }
                         }
                     }
                 }
             }
-//            std::cout << "Reversing vectors" << std::endl;
             //store the original vector
             lc[0]=kvec(i,2);
             lc[1]=kvec(i,1);
