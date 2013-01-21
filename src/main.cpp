@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 18 Jan 2013 17:26:05
+// Last-modified: 21 Jan 2013 13:34:34
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -18,6 +18,7 @@
 #include "../inc/fields.h"
 #include "../inc/spins.h"
 #include "../inc/exch.h"
+#include "../inc/anis.h"
 int main(int argc,char *argv[])
 {
     config::initConfig(argc,argv);
@@ -29,7 +30,9 @@ int main(int argc,char *argv[])
     intmat::initIntmat(argc,argv);
 
     //Read in the exchange matrix
-    exch::initExch(argc,argv);
+//    exch::initExch(argc,argv);
+    //Read in the anisotropy tensor
+    anis::initAnis(argc,argv);
 
 
 //    intmat::fillIntmat();
