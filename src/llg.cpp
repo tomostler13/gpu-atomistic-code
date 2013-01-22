@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 21 Jan 2013 16:24:57
+// Last-modified: 22 Jan 2013 12:21:17
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <iomanip>
 #include <string>
+#include <omp.h>
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -84,6 +85,7 @@ namespace llg
         //calculate the 2 spin fields (dipolar, exchange, anisotropy)
         fields::ftdip();
         const double sqrtT=sqrt(T);
+        #pragma omp parallel for private (i) shared(fields::Hthx,fields::Hthy,fields::Hthz,sqrtT,mat::sigma)
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
 
@@ -92,7 +94,7 @@ namespace llg
             fields::Hthz[i]=sqrtT*mat::sigma*Random::normal();
 
         }
-
+        #pragma omp parallel for private (i) shared(spins::Sx,spins::Sy,spins::Sz,fields::Hthx,fields::Hthy,fields::Hthz,fields::Hx,fields::Hy,fields::Hz,fnx,fny,fnz,mat::lambda,rdt)
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
 
@@ -110,6 +112,7 @@ namespace llg
         }
         //perform the calculation of the 2 spin fields using the euler spin arrays
         fields::eftdip();
+        #pragma omp parallel for private (i) shared(spins::Sx,spins::Sy,spins::Sz,spins::eSx,spins::eSy,spins::eSz,fields::Hthx,fields::Hthy,fields::Hthz,fields::Hx,fields::Hy,fields::Hz,fnx,fny,fnz,mat::lambda,rdt)
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};

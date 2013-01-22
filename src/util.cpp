@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 12:02:58
+// Last-modified: 22 Jan 2013 12:23:28
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -39,12 +39,13 @@ namespace util
         fields::Hkz.IFill(0);
 
         //perform convolution in fourier space
-        #pragma omp parallel for collapse(3)
-        for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+        unsigned int i = 0,j = 0, k = 0;
+        #pragma omp parallel for private (i,j,k) shared(fields::Hkx,fields::Hky,fields::Hkz,intmat::Nxx,intmat::Nxy,intmat::Nxz,intmat::Nyx,intmat::Nyy,intmat::Nyz,intmat::Nzx,intmat::Nzy,intmat::Nzz,spins::Skx,spins::Sky,spins::Skz,geom::zpdim,geom::Nk,geom::cplxdim)
+        for(i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
         {
-            for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+            for(j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
             {
-                for(unsigned int k = 0 ; k < geom::cplxdim ; k++)
+                for(k = 0 ; k < geom::cplxdim ; k++)
                 {
 
                     fields::Hkx(i,j,k)[0]=intmat::Nxx(i,j,k)[0]*spins::Skx(i,j,k)[0]-intmat::Nxx(i,j,k)[1]*spins::Skx(i,j,k)[1]
