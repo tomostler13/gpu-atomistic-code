@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 21 Jan 2013 17:11:30
+// Last-modified: 22 Jan 2013 10:57:54
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -28,9 +28,9 @@ namespace fields
     fftw_plan HxP,HyP,HzP;
     void initFields(int argc,char *argv[])
     {
-        Hkx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
-        Hky.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
-        Hkz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim*geom::Nk[2]);
+        Hkx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+        Hky.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+        Hkz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
         Hx.resize(geom::nspins);
         Hy.resize(geom::nspins);
         Hz.resize(geom::nspins);
@@ -107,8 +107,8 @@ namespace fields
             Hx[i]=Hrx(lc[0],lc[1],lc[2])/(double(geom::zps));
             Hy[i]=Hry(lc[0],lc[1],lc[2])/(double(geom::zps));
             Hz[i]=Hrz(lc[0],lc[1],lc[2])/(double(geom::zps));
-            std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
-            std::cin.get();
+            //std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
+            //std::cin.get();
         }
     }
     //fourier transform method for calculating dipolar field

@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 21 Jan 2013 16:01:30
+// Last-modified: 22 Jan 2013 11:05:51
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -55,7 +55,7 @@ int main(int argc,char *argv[])
         const double mx = util::reduceCPU(spins::Sx,geom::nspins);
         const double my = util::reduceCPU(spins::Sy,geom::nspins);
         const double mz = util::reduceCPU(spins::Sz,geom::nspins);
-        std::cout << mx/double(geom::nspins) << "\t" << my/double(geom::nspins) << "\t" << mz/double(geom::nspins) << std::endl;
+        std::cout << double(t)*llg::dt << "\t" << mx/double(geom::nspins) << "\t" << my/double(geom::nspins) << "\t" << mz/double(geom::nspins) << std::endl;
     }
     return(0);
 }
