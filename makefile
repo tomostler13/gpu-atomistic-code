@@ -8,7 +8,7 @@ export LC_ALL=C
 # LIBS
 DEFS=-DNDEBUG
 CUDEFS=-DCUDA
-LIBS= -lfftw3 -lfftw3f -lm -lconfig++ -lstdc++ -llapack -lblas -fopenmp
+LIBS= -lfftw3_omp -lfftw3 -lfftw3f -lm -lconfig++ -lstdc++ -llapack -lblas -fopenmp -lpthread
 CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft
 OPT_LEVEL=-O3
 GCC_FLAGS= $(OPT_LEVEL)

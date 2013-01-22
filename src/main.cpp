@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 12:00:17
+// Last-modified: 22 Jan 2013 12:55:52
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <iomanip>
 #include <string>
+#include <fftw3.h>
 #include "../inc/error.h"
 #include "../inc/config.h"
 #include "../inc/geom.h"
@@ -21,8 +22,15 @@
 #include "../inc/anis.h"
 #include "../inc/llg.h"
 #include "../inc/util.h"
+#include <omp.h>
 int main(int argc,char *argv[])
 {
+    if(fftw_init_threads()==0)
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Error initializing fftw multithread");
+    }
+    fftw_plan_with_nthreads(omp_get_max_threads());
     config::initConfig(argc,argv);
     //Initialize the lattice
     geom::initGeom(argc,argv);

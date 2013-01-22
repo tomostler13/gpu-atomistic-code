@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 22 Jan 2013 10:57:54
+// Last-modified: 22 Jan 2013 12:55:28
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>

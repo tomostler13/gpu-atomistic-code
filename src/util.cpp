@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 12:23:28
+// Last-modified: 22 Jan 2013 12:42:57
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -40,11 +40,13 @@ namespace util
 
         //perform convolution in fourier space
         unsigned int i = 0,j = 0, k = 0;
-        #pragma omp parallel for private (i,j,k) shared(fields::Hkx,fields::Hky,fields::Hkz,intmat::Nxx,intmat::Nxy,intmat::Nxz,intmat::Nyx,intmat::Nyy,intmat::Nyz,intmat::Nzx,intmat::Nzy,intmat::Nzz,spins::Skx,spins::Sky,spins::Skz,geom::zpdim,geom::Nk,geom::cplxdim)
+        #pragma omp parallel for private (i)
         for(i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
         {
+            #pragma omp parallel for private (j)
             for(j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
             {
+                #pragma omp parallel for private (k) shared (intmat::Hkx,intmat::Hky,intmat::Hkz)
                 for(k = 0 ; k < geom::cplxdim ; k++)
                 {
 
