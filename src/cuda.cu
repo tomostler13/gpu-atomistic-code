@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 22 Jan 2013 18:39:50
+// Last-modified: 22 Jan 2013 19:14:20
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -77,8 +77,22 @@ namespace cullg
     }
     void llgGPU(unsigned int& t)
     {
+
+		float temp2[geom::zps];
+cudaMemcpy(temp2,CCSrx,geom::zps*sizeof(cufftReal),cudaMemcpyDeviceToHost);
+		for(unsigned int i = 0 ; i < geom:: zps ; i++)
+		{
+			std::cout << "Before\t" << temp2[i] << std::endl;
+		}
+
         //copy the spin data to the zero padded arrays
         cufields::CCopySpin<<<threadsperblock,zpblockspergrid>>>(geom::czps,geom::nspins,Cspin,Czpsn,CCSrx,CCSry,CCSrz);
+		cudaMemcpy(temp2,CCSrx,geom::zps*sizeof(cufftReal),cudaMemcpyDeviceToHost);
+		for(unsigned int i = 0 ; i < geom:: zps ; i++)
+		{
+			std::cout << temp2[i] << std::endl;
+		}
+
         //forward transform
         spins_forward();
         //perform convolution
@@ -379,6 +393,15 @@ namespace cullg
         intmat::Nzx.clear();
         intmat::Nzy.clear();
         intmat::Nzz.clear();
+		tempxx.clear();
+		tempxy.clear();
+		tempxz.clear();
+		tempyx.clear();
+		tempyy.clear();
+		tempyz.clear();
+		tempzx.clear();
+		tempzy.clear();
+		tempzz.clear();
         check_cuda_errors(__FILE__,__LINE__);
     }
 

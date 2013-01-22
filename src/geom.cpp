@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 15:11:34
+// Last-modified: 22 Jan 2013 18:49:58
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -138,6 +138,7 @@ namespace geom
         cplxdim=(dim[2]*Nk[2])+1;
 
 		czps=zpdim[0]*Nk[0]*zpdim[1]*Nk[1]*cplxdim;
+		FIXOUT(config::Info,"czps:" << czps << std::endl);
         FIXOUT(config::Info,"Z-dimension for r2c and c2r transforms:" << cplxdim << std::endl);
 
         nspins=maxss;

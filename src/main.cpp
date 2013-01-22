@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 16:19:39
+// Last-modified: 22 Jan 2013 18:53:49
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -57,6 +57,7 @@ int main(int argc,char *argv[])
     spins::initSpins(argc,argv);
     //fields::bfdip();
     //fields::ftdip();
+	llg::initLLG(argc,argv);
 	#ifdef CUDA
 	cullg::cuinit(argc,argv);
 	#else
