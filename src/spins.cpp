@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 22 Jan 2013 12:52:26
+// Last-modified: 22 Jan 2013 16:36:06
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -17,14 +17,35 @@
 #include "../inc/fields.h"
 #include "../inc/mat.h"
 #include "../inc/intmat.h"
+#include "../inc/defines.h"
+#include "../inc/maths.h"
 namespace spins
 {
     Array3D<fftw_complex> Skx,Sky,Skz;
     Array3D<double> Srx,Sry,Srz;
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
     fftw_plan SxP,SyP,SzP;
+	std::ifstream sfs;
     void initSpins(int argc,char *argv[])
     {
+		config::printline(config::Info);
+		config::Info.width(45);config::Info << std::right << "*" << "**Spin details***" << std::endl;
+		try
+		{
+			config::cfg.readFile(argv[1]);
+		}
+        catch(const libconfig::FileIOException &fioex)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("I/O error while reading config file");
+        }
+        catch(const libconfig::ParseException &pex)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+		FIXOUT(config::Info,"Resizing arrays:" << std::flush);
         Skx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
         Sky.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
         Skz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
@@ -37,16 +58,85 @@ namespace spins
         Sx.resize(geom::nspins);
         Sy.resize(geom::nspins);
         Sz.resize(geom::nspins);
-        for(unsigned int i = 0 ; i < geom:: nspins ; i++)
-        {
-            Sx[i]=0.001;
-            Sy[i]=0.0;
-            Sz[i]=sqrt(1.0-0.001*0.001);
-        }
+		SUCCESS(config::Info);
+		std::string sc;
+		libconfig::Setting &setting = config::cfg.lookup("spins");
+		setting.lookupValue("spinconfig",sc);
+		FIXOUT(config::Info,"Initial spin config specifier method:" << sc << std::endl);
+		if(sc=="file")
+		{
+			std::string spinfile;
+			try
+			{
+				setting.lookupValue("sf",spinfile);
+			}
+			catch(const libconfig::SettingTypeException &stex)
+			{
+				error::errPreamble(__FILE__,__LINE__);
+				error::errMessage("Setting type error");
+			}
+			FIXOUT(config::Info,"Reading spin data from file:" << spinfile << std::flush);
+			sfs.open(spinfile.c_str());
+			if(!sfs.is_open())
+			{
+				error::errPreamble(__FILE__,__LINE__);
+				error::errMessage("Could not open file for reading spin data");
+			}
+			else
+			{
+				for(unsigned int i = 0 ; i < geom::nspins ; i++)
+				{
+                    sfs >> Sx(i);
+                    sfs >> Sy(i);
+                    sfs >> Sz(i);
+				}
+				sfs.close();
+				if(sfs.is_open())
+				{
+					error::errPreamble(__FILE__,__LINE__);
+					error::errWarning("Could not close spin file for reading in spin data");
+				}
+			}
+		}
+		else if(sc=="align")
+		{
+			double sr[3]={0,0,0};
+			try
+			{
+				for(unsigned int l = 0 ; l < 3 ; l++){sr[l]=setting["sc"][l];}
+			}
+			catch(const libconfig::SettingTypeException &stex)
+			{
+				error::errPreamble(__FILE__,__LINE__);
+				error::errMessage("Setting type error");
+			}
+			FIXOUT(config::Info,"Spins aligned to:" << "(" << sr[0] << "," << sr[1] << "," << sr[2] << ")" <<std::endl);
+			for(unsigned int i = 0 ; i < geom::nspins ; i++)
+			{
+                Sx(i)=sr[0];
+                Sy(i)=sr[1];
+                Sz(i)=sr[2];
+			}
+		}
+		else if(sc=="random")
+		{
+			for(unsigned int i = 0 ; i < geom::nspins ; i++)
+			{
+                maths::sphereRandom(Sx(i),Sy(i),Sz(i));
+			}
+		}
+		else
+		{
+			error::errPreamble(__FILE__,__LINE__);
+			error::errMessage("Spin configuration not recognised, check you config file.");
+		}
+
+		FIXOUT(config::Info,"Planning r2c and c2r transforms:" << std::flush);
         //forward transform of spin arrays
         SxP=fftw_plan_dft_r2c_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Srx.ptr(),Skx.ptr(),FFTW_ESTIMATE);
         SyP=fftw_plan_dft_r2c_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Sry.ptr(),Sky.ptr(),FFTW_ESTIMATE);
         SzP=fftw_plan_dft_r2c_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Srz.ptr(),Skz.ptr(),FFTW_ESTIMATE);
+		SUCCESS(config::Info);
 
     }
     void FFTForward()

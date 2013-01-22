@@ -13,8 +13,9 @@
 #define CURAND_CALL(x) (x)
 #endif /*DEBUG*/
 #ifdef DEBUG
-#define CUFFT_CALL(x) do { if((x) != CUFFT_SUCCESS) { \
+#define CUFFT_CALL(x) do { int err=(x); if(err != CUFFT_SUCCESS) { \
     printf("Error at %s:%d\n",__FILE__,__LINE__);\
+	printf("Error code: %d\n",err);\
         exit(EXIT_FAILURE);}} while(0)
 #else
 #define CUFFT_CALL(x) (x)

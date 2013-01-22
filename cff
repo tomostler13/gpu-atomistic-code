@@ -2,57 +2,62 @@ OutputFile = "opf.dat";
 seed = 12345;
 mat:
 {
-    mu = 2.0;
-    gamma = 1.76e11;
-    lambda = 0.01;
+	mu = 2.0;
+	gamma = 1.76e11;
+	lambda = 0.01;
 };
 system:
 {
-    //The unit vector
-    Lex = [ 1.0 , 0.0 , 0.0 ];
-    Ley = [ 0.0 , 1.0 , 0.0 ];
-    Lez = [ 0.0 , 0.0 , 1.0 ];
-    //number of unit cells
-    dim = [ 8 , 8 , 8 ];
-    //Number of atoms in the primitive cell
-    nauc = 4;
-    //The primitive cell
-    atom0 = [ 0.0 , 0.0 , 0.0 , 0.0 ];
-    atom1 = [ 0.5 , 0.5 , 0.0 , 1.0 ];
-    atom2 = [ 0.5 , 0.0 , 0.5 , 2.0 ];
-    atom3 = [ 0.0 , 0.5 , 0.5 , 3.0 ];
-    //Periodic table elements for each atom
-    Element0="N";
-    Element1="O";
-    Element2="O";
-    Element3="O";
-    //Number of k-points in each direction
-    Nk = [ 2 , 2 , 2 ];
-    //lattice constants
-    abc = [ 0.251e-9 , 0.251e-9 , 0.251e-9 ];
+	//The unit vector
+	Lex = [ 1.0 , 0.0 , 0.0 ];
+	Ley = [ 0.0 , 1.0 , 0.0 ];
+	Lez = [ 0.0 , 0.0 , 1.0 ];
+	//number of unit cells
+	dim = [ 2 , 2 , 2 ];
+	//Number of atoms in the primitive cell
+	nauc = 4;
+	//The primitive cell
+	atom0 = [ 0.0 , 0.0 , 0.0 , 0.0 ];
+	atom1 = [ 0.5 , 0.5 , 0.0 , 1.0 ];
+	atom2 = [ 0.5 , 0.0 , 0.5 , 2.0 ];
+	atom3 = [ 0.0 , 0.5 , 0.5 , 3.0 ];
+	//Periodic table elements for each atom
+	Element0="N";
+	Element1="O";
+	Element2="O";
+	Element3="O";
+	//Number of k-points in each direction
+	Nk = [ 2 , 2 , 2 ];
+	//lattice constants
+	abc = [ 0.251e-9 , 0.251e-9 , 0.251e-9 ];
 };
 exchange:
 {
-    //How are we to read in the exchange
-    //- thisfile (read from the config file)
-    //- extfile (read from an external file)
-    exchinput="extfile";
-    exchfile="exch.in";
+	//How are we to read in the exchange
+	//- thisfile (read from the config file)
+	//- extfile (read from an external file)
+	exchinput="extfile";
+	exchfile="exch.in";
 };
 anisotropy:
 {
-    units = "joules";
-    //The anisotropy tensor
-    dxb = [ 0.0 , 0.0 , 0.0 ];
-    dyb = [ 0.0 , 0.0 , 0.0 ];
-    dzb = [ 0.0 , 0.0 , 1.0e-24 ];
+	units = "joules";
+	//The anisotropy tensor
+	dxb = [ 0.0 , 0.0 , 0.0 ];
+	dyb = [ 0.0 , 0.0 , 0.0 ];
+	dzb = [ 0.0 , 0.0 , 1.0e-24 ];
 };
 llg:
 {
-    dt = 1.0e-15;
-    applied = [ 0.0 , 0.0 , 1.0 ];
+	dt = 1.0e-15;
+	applied = [ 0.0 , 0.0 , 1.0 ];
 };
 cuda:
 {
-    threadsperblock=256;
+	threadsperblock=256;
+};
+spins:
+{
+	spinconfig = "align";
+	sc = [ 0.0 , 0.0 , 1.0 ];
 };

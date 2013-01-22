@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 15:29:02
+// Last-modified: 22 Jan 2013 16:19:39
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -20,9 +20,10 @@
 #include "../inc/spins.h"
 #include "../inc/exch.h"
 #include "../inc/anis.h"
-#include "../inc/llg.h"
+#include "../inc/llgCPU.h"
 #include "../inc/util.h"
 #include <omp.h>
+#include "../inc/llg.h"
 #ifdef CUDA
 #include "../inc/cuda.h"
 #endif
@@ -54,17 +55,18 @@ int main(int argc,char *argv[])
     fields::initFields(argc,argv);
     //Initialise the spin arrays
     spins::initSpins(argc,argv);
-    llg::initLLG(argc,argv);
     //fields::bfdip();
     //fields::ftdip();
 	#ifdef CUDA
 	cullg::cuinit(argc,argv);
+	#else
+	llgCPU::initLLG(argc,argv);
 	#endif
 
     llg::T=1.0e-27;
     for(unsigned int t = 0 ; t < 5000 ; t++)
     {
-        llg::llgCPU(t);
+        llg::integrate(t);
         //const double mx = util::reduceCPU(sx,geom::nspins);
         const double mx = util::reduceCPU(spins::Sx,geom::nspins);
         const double my = util::reduceCPU(spins::Sy,geom::nspins);

@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 22 Jan 2013 15:27:49
+// Last-modified: 22 Jan 2013 18:39:50
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -87,16 +87,16 @@ namespace cullg
         fields_back();
         //copy the fields from the zero padded array to the demag field array
         cufields::CCopyFields<<<threadsperblock,blockspergrid>>>(geom::nspins,geom::czps,CH,Czpsn,CCHrx,CCHry,CCHrz);
-        /*//FOR DEBUGGING THE DIPOLAR FIELD/
-          float temp[3*geom::nspins];
-          CUDA_CALL(cudaMemcpy(temp,CHDemag,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
+        //FOR DEBUGGING THE DIPOLAR FIELD/
+          float temp1[3*geom::nspins];
+          CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
           for(unsigned int i = 0 ; i < geom::nspins ; i++)
           {
           int ijk[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-          std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp[3*i] << "\t" << temp[3*i+1] << "\t" << temp[3*i+2] << std::endl;
+          std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp1[3*i] << "\t" << temp1[3*i+1] << "\t" << temp1[3*i+2] << std::endl;
           }
           exit(0);
-         */
+         
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
 //        cuint::CHeun1<<<threadsperblock,blockspergrid>>>(geom::nspins,float(fields::fH[0]),float(fields::fH[1]),float(fields::fH[2]),mat::Tc,CHDemag,Cspin,Cespin,CTemp,Cxadj,Cadjncy,CsurfArea,Csigma,Crand,Cfn);
@@ -137,7 +137,7 @@ namespace cullg
             exit(EXIT_FAILURE);
         }
         libconfig::Setting &setting = config::cfg.lookup("cuda");
-
+		config::Info << std::noshowpos;
         FIXOUT(config::Info,"NVCC Compiler:" << COMP << std::endl);
         int device_count=0;
         int device=0;
@@ -313,12 +313,12 @@ namespace cullg
         //we can reuse the plan and alternate the sign depending on whether
         //we have a forward or a back transform
         /*Create a 3D FFT plan. */
-        if(cufftPlan3d(&C3DPr2c,geom::zpdim[0],geom::zpdim[1],geom::zpdim[2],CUFFT_R2C)!=CUFFT_SUCCESS)
+        if(cufftPlan3d(&C3DPr2c,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],CUFFT_R2C)!=CUFFT_SUCCESS)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
         }
-        if(cufftPlan3d(&C3DPc2r,geom::zpdim[0],geom::zpdim[1],geom::zpdim[2],CUFFT_C2R)!=CUFFT_SUCCESS)
+        if(cufftPlan3d(&C3DPc2r,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],CUFFT_C2R)!=CUFFT_SUCCESS)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
