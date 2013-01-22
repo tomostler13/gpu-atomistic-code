@@ -6,9 +6,9 @@ GITINFO=-DGIT_SHA1='"$(shell git rev-parse HEAD)"' -DGITDIRTY='"$(shell git stat
 export LANG=C
 export LC_ALL=C
 # LIBS
-DEFS=-DDEBUG
+DEFS=-DNDEBUG
 CUDEFS=-DCUDA
-LIBS= -lfftw3 -lfftw3f -lm -lconfig++ -lstdc++ -llapack -lblas
+LIBS= -lfftw3 -lfftw3f -lm -lconfig++ -lstdc++ -llapack -lblas -fopenmp
 CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft
 OPT_LEVEL=-O3
 GCC_FLAGS= $(OPT_LEVEL)

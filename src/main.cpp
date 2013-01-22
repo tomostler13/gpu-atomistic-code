@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 11:05:51
+// Last-modified: 22 Jan 2013 12:00:17
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -48,7 +48,7 @@ int main(int argc,char *argv[])
     //fields::bfdip();
     //fields::ftdip();
     llg::T=1.0e-27;
-    for(unsigned int t = 0 ; t < 50000 ; t++)
+    for(unsigned int t = 0 ; t < 5000 ; t++)
     {
         llg::llgCPU(t);
         //const double mx = util::reduceCPU(sx,geom::nspins);

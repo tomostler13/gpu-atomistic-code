@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 11:53:09
+// Last-modified: 22 Jan 2013 12:02:58
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -39,6 +39,7 @@ namespace util
         fields::Hkz.IFill(0);
 
         //perform convolution in fourier space
+        #pragma omp parallel for collapse(3)
         for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
         {
             for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
