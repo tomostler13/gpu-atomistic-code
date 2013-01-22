@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 10:43:30
+// Last-modified: 22 Jan 2013 15:11:34
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -29,7 +29,7 @@ namespace geom
     //the number of atoms in the unit cell
     unsigned int nauc=0;
     //maximum system size
-    unsigned int maxss=0,nspins=0,zps;
+    unsigned int maxss=0,nspins=0,zps=0,czps=0;
     //The unit vectors describing the lattice unit cell (unit vectors)
     Array2D<double> L,Linv;
     //The a,b and c values (i.e. lattice constants)
@@ -136,6 +136,8 @@ namespace geom
         FIXOUT(config::Info,"Number of K-points:" << "[ " << Nk[0] << " , " << Nk[1] << " , " << Nk[2] << " ]" << std::endl);
         FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
         cplxdim=(dim[2]*Nk[2])+1;
+
+		czps=zpdim[0]*Nk[0]*zpdim[1]*Nk[1]*cplxdim;
         FIXOUT(config::Info,"Z-dimension for r2c and c2r transforms:" << cplxdim << std::endl);
 
         nspins=maxss;

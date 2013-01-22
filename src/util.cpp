@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 12:42:57
+// Last-modified: 22 Jan 2013 15:25:41
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -75,5 +75,54 @@ namespace util
             }
         }
     }
+    void copy3vecto1(int size1,double *ia1,double *ia2,double *ia3,double *oa)
+    {
+        for(int i = 0 ; i < size1 ; i++)
+        {
+            oa[3*i]=ia1[i];
+            oa[3*i+1]=ia2[i];
+            oa[3*i+2]=ia3[i];
+        }
+    }
+    void copy3vecto1(int size1,float *ia1,float *ia2,float *ia3,float *oa)
+    {
+        for(int i = 0 ; i < size1 ; i++)
+        {
+            oa[3*i]=ia1[i];
+            oa[3*i+1]=ia2[i];
+            oa[3*i+2]=ia3[i];
+        }
+    }
+    void copy3vecto1(int size1,Array<double> ia1,Array<double> ia2,Array<double> ia3,double *oa)
+    {
+        for(int i = 0 ; i < size1 ; i++)
+        {
+            oa[3*i]=ia1[i];
+            oa[3*i+1]=ia2[i];
+            oa[3*i+2]=ia3[i];
+        }
+    }
+    void fillfloat(int size,double* da,float* fa)
+    {
+        for(int i = 0 ; i < size ; i++)
+        {
+            fa[i]=float(da[i]);
+        }
+    }
+    void fillfloat(int size0,int size1,int size2,Array3D<fftw_complex> da,Array3D<fftwf_complex> fa)
+    {
+        for(unsigned int i = 0 ; i < size0 ; i++)
+        {
+            for(unsigned int j = 0 ; j < size1 ; j++)
+            {
+                for(unsigned int k = 0 ; k < size2 ; k++)
+                {
+                    fa(i,j,k)[0]=float(da(i,j,k)[0]);
+                    fa(i,j,k)[1]=float(da(i,j,k)[1]);
+                }
+            }
+        }
+    }
+
 }
 

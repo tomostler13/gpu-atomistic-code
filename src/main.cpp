@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 12:55:52
+// Last-modified: 22 Jan 2013 15:29:02
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -23,6 +23,9 @@
 #include "../inc/llg.h"
 #include "../inc/util.h"
 #include <omp.h>
+#ifdef CUDA
+#include "../inc/cuda.h"
+#endif
 int main(int argc,char *argv[])
 {
     if(fftw_init_threads()==0)
@@ -47,7 +50,6 @@ int main(int argc,char *argv[])
 
 //    intmat::fillIntmat();
     intmat::fftIntmat();
-
     //Initialise the field arrays
     fields::initFields(argc,argv);
     //Initialise the spin arrays
@@ -55,6 +57,10 @@ int main(int argc,char *argv[])
     llg::initLLG(argc,argv);
     //fields::bfdip();
     //fields::ftdip();
+	#ifdef CUDA
+	cullg::cuinit(argc,argv);
+	#endif
+
     llg::T=1.0e-27;
     for(unsigned int t = 0 ; t < 5000 ; t++)
     {

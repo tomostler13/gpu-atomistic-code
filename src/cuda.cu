@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 22 Jan 2013 13:49:20
+// Last-modified: 22 Jan 2013 15:27:49
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -15,6 +15,7 @@
 #include "../inc/arrays.h"
 #include "../inc/cudadefs.h"
 #include "../inc/defines.h"
+#include "../inc/cufields.h"
 //Cuda headers
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -50,27 +51,25 @@ namespace cullg
     static  cufftComplex *CCSkx=NULL;
     static  cufftComplex *CCSky=NULL;
     static  cufftComplex *CCSkz=NULL;
-    static  double *CCSrx=NULL;
-    static  double *CCSry=NULL;
-    static  double *CCSrz=NULL;
+    static  cufftReal *CCSrx=NULL;
+    static  cufftReal *CCSry=NULL;
+    static  cufftReal *CCSrz=NULL;
     static  cufftComplex *CCHkx=NULL;
     static  cufftComplex *CCHky=NULL;
     static  cufftComplex *CCHkz=NULL;
-    static  double *CCHrx=NULL;
-    static  double *CCHry=NULL;
-    static  double *CCHrz=NULL;
+    static  cufftReal *CCHrx=NULL;
+    static  cufftReal *CCHry=NULL;
+    static  cufftReal *CCHrz=NULL;
 
     //device pointers
     static  double *Cspin=NULL;
     static  double *Cespin=NULL;
-    static  float *Cfspin=NULL;
     static  float *Crand=NULL;
-    static  float *CHDemag=NULL;
-    static  int *Clu=NULL;
+    static  float *CH=NULL;
     static  int *Czpsn=NULL;//The is the zero pad spin number
     static  double *Cfn=NULL;
     //cufft plans
-    cufftHandle C3DP;
+    cufftHandle C3DPr2c,C3DPc2r;
 
     void initGPU()
     {
@@ -79,19 +78,19 @@ namespace cullg
     void llgGPU(unsigned int& t)
     {
         //copy the spin data to the zero padded arrays
-        cufields::CCopySpin<<<threadsperblock,zpblockspergrid>>>(geom::zps,geom::ss,Cspin,Czpsn,CCSx,CCSy,CCSz);
+        cufields::CCopySpin<<<threadsperblock,zpblockspergrid>>>(geom::czps,geom::nspins,Cspin,Czpsn,CCSrx,CCSry,CCSrz);
         //forward transform
         spins_forward();
         //perform convolution
-        cufields::CFConv<<<threadsperblock,zpblockspergrid>>>(geom::zps,CCNxx,CCNxy,CCNxz,CCNyx,CCNyy,CCNyz,CCNzx,CCNzy,CCNzz,CCHx,CCHy,CCHz,CCSx,CCSy,CCSz);
+        cufields::CFConv<<<threadsperblock,zpblockspergrid>>>(geom::czps,CCNxx,CCNxy,CCNxz,CCNyx,CCNyy,CCNyz,CCNzx,CCNzy,CCNzz,CCHkx,CCHky,CCHkz,CCSkx,CCSky,CCSkz);
         //transform the fields back
         fields_back();
         //copy the fields from the zero padded array to the demag field array
-        cufields::CCopyFields<<<threadsperblock,blockspergrid>>>(geom::ss,geom::zps,CHDemag,Czpsn,CCHx,CCHy,CCHz);
+        cufields::CCopyFields<<<threadsperblock,blockspergrid>>>(geom::nspins,geom::czps,CH,Czpsn,CCHrx,CCHry,CCHrz);
         /*//FOR DEBUGGING THE DIPOLAR FIELD/
-          float temp[3*geom::ss];
-          CUDA_CALL(cudaMemcpy(temp,CHDemag,3*geom::ss*sizeof(float),cudaMemcpyDeviceToHost));
-          for(unsigned int i = 0 ; i < geom::ss ; i++)
+          float temp[3*geom::nspins];
+          CUDA_CALL(cudaMemcpy(temp,CHDemag,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
+          for(unsigned int i = 0 ; i < geom::nspins ; i++)
           {
           int ijk[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
           std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp[3*i] << "\t" << temp[3*i+1] << "\t" << temp[3*i+2] << std::endl;
@@ -99,17 +98,18 @@ namespace cullg
           exit(0);
          */
         //generate the random numbers
-        CURAND_CALL(curandGenerateNormal(gen,Crand,6*geom::ss,0.0,1.0));
-        cuint::CHeun1<<<threadsperblock,blockspergrid>>>(geom::ss,float(fields::fH[0]),float(fields::fH[1]),float(fields::fH[2]),mat::Tc,CHDemag,Cfspin,Cspin,Cespin,CTemp,Cxadj,Cadjncy,CsurfArea,Csigma,Crand,Cfn);
-        cuint::CHeun2<<<threadsperblock,blockspergrid>>>(geom::ss,float(fields::fH[0]),float(fields::fH[1]),float(fields::fH[2]),mat::Tc,Cfspin,Cspin,CHDemag,CTemp,Crand,Cespin,Cfn,Cxadj,Cadjncy,CsurfArea,Csigma);
+        CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
+//        cuint::CHeun1<<<threadsperblock,blockspergrid>>>(geom::nspins,float(fields::fH[0]),float(fields::fH[1]),float(fields::fH[2]),mat::Tc,CHDemag,Cspin,Cespin,CTemp,Cxadj,Cadjncy,CsurfArea,Csigma,Crand,Cfn);
+		cufields::CCopySpin<<<threadsperblock,zpblockspergrid>>>(geom::zps,geom::nspins,Cespin,Czpsn,CCSrx,CCSry,CCSrz);
+//        cuint::CHeun2<<<threadsperblock,blockspergrid>>>(geom::nspins,float(fields::fH[0]),float(fields::fH[1]),float(fields::fH[2]),mat::Tc,Cspin,CHDemag,CTemp,Crand,Cespin,Cfn,Cxadj,Cadjncy,CsurfArea,Csigma);
         double *temp=NULL;
-        temp = new double [3*geom::ss];
-        CUDA_CALL(cudaMemcpy(temp,Cspin,3*geom::ss*sizeof(double),cudaMemcpyDeviceToHost));
-        for(unsigned int i = 0 ; i < geom::ss ; i++)
+        temp = new double [3*geom::nspins];
+        CUDA_CALL(cudaMemcpy(temp,Cspin,3*geom::nspins*sizeof(double),cudaMemcpyDeviceToHost));
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
-            spins::sx[i]=temp[3*i];
-            spins::sy[i]=temp[3*i+1];
-            spins::sz[i]=temp[3*i+2];
+            spins::Sx[i]=temp[3*i];
+            spins::Sy[i]=temp[3*i+1];
+            spins::Sz[i]=temp[3*i+2];
         }
 
     }
@@ -172,8 +172,8 @@ namespace cullg
          */
         setting.lookupValue("threadsperblock",threadsperblock);
         FIXOUT(config::Info,"Number of threads per block:" << threadsperblock << std::endl);
-        blockspergrid=(geom::ss+threadsperblock-1)/threadsperblock;
-        zpblockspergrid=(geom::zps+threadsperblock-1)/threadsperblock;
+        blockspergrid=(geom::nspins+threadsperblock-1)/threadsperblock;
+        zpblockspergrid=(geom::czps+threadsperblock-1)/threadsperblock;
         FIXOUT(config::Info,"Blocks per grid:" << blockspergrid << std::endl);
         FIXOUT(config::Info,"Blocks per grid for zero pad workspace:" << zpblockspergrid << std::endl);
         FIXOUT(config::Info,"Device maximum threads per block:" << deviceProp.maxThreadsPerBlock << std::endl);
@@ -219,99 +219,86 @@ namespace cullg
 
         FIXOUT(config::Info,"Allocating memory on device" << std::flush);
         unsigned int memcount=0;
-        allocate_memory_on_card(memcount);
+        allocate_memory_on_card();
         config::Info << "Done" << std::endl;
         FIXOUT(config::Info,"Approximate amount of global memory allocated:" << memcount << " (bytes)" << std::endl);
-        if(fields::dfc=="fft")
-        {
-            FIXOUT(config::Info,"Setting up Fourier transforms on device:" << std::flush);
-            setup_fourier_transform();
-            config::Info << "Done" << std::endl;
-            FIXOUT(config::Info,"Estimated memory for cufft transform:" << double(geom::zps)*double(sizeof(float))*2.0/1024.0/1024.0 << std::endl);
-        }
+		FIXOUT(config::Info,"Copying fourier transformed interaction matrix to device:" << std::flush);
+		setup_fourier_transform();
+		config::Info << "Done" << std::endl;
     }
 
     void spins_forward()
     {
-        CUFFT_CALL(cufftExecC2C(C3DP,CCSx,CCSx,CUFFT_FORWARD));
-        CUFFT_CALL(cufftExecC2C(C3DP,CCSy,CCSy,CUFFT_FORWARD));
-        CUFFT_CALL(cufftExecC2C(C3DP,CCSz,CCSz,CUFFT_FORWARD));
+        CUFFT_CALL(cufftExecR2C(C3DPr2c,CCSrx,CCSkx));
+        CUFFT_CALL(cufftExecR2C(C3DPr2c,CCSry,CCSky));
+        CUFFT_CALL(cufftExecR2C(C3DPr2c,CCSrz,CCSkz));
     }
 
     void fields_back()
     {
-        CUFFT_CALL(cufftExecC2C(C3DP,CCHx,CCHx,CUFFT_INVERSE));
-        CUFFT_CALL(cufftExecC2C(C3DP,CCHy,CCHy,CUFFT_INVERSE));
-        CUFFT_CALL(cufftExecC2C(C3DP,CCHz,CCHz,CUFFT_INVERSE));
+        CUFFT_CALL(cufftExecC2R(C3DPc2r,CCHkx,CCHrx));
+        CUFFT_CALL(cufftExecC2R(C3DPc2r,CCHky,CCHry));
+        CUFFT_CALL(cufftExecC2R(C3DPc2r,CCHkz,CCHrz));
     }
 
-    void allocate_memory_on_card(unsigned int& memcount)
+    void allocate_memory_on_card()
     {
         //all of the GPU memory allocations should happen here.
         //--------------------------------------------------------------------------------
-        CUDA_CALL(cudaMalloc((void**)&CCNxx,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNxy,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNxz,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNyx,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNyy,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNyz,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNzx,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNzy,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNzz,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::cplxdim*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCNxx,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCNxy,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCNxz,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCNyx,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCNyy,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCNyz,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCNzx,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCNzy,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCNzz,geom::czps*sizeof(cufftComplex)));
 
-        CUDA_CALL(cudaMalloc((void**)&CCSkx,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCSky,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCSkz,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCSrx,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*Nk[2]*sizeof(float)));
-        CUDA_CALL(cudaMalloc((void**)&CCSry,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*Nk[2]*sizeof(float)));
-        CUDA_CALL(cudaMalloc((void**)&CCSrz,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*Nk[2]*sizeof(float)));
-        CUDA_CALL(cudaMalloc((void**)&CCHkx,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCHky,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCHkz,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCHrx,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2]*sizeof(float)));
-        CUDA_CALL(cudaMalloc((void**)&CCHry,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2]*sizeof(float)));
-        CUDA_CALL(cudaMalloc((void**)&CCHrz,geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2]*sizeof(float)));
-        CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::ss*sizeof(double)));
-        CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::ss*sizeof(double)));
-        CUDA_CALL(cudaMalloc((void**)&Cfspin,3*geom::ss*sizeof(float)));
-        CUDA_CALL(cudaMalloc((void**)&Crand,3*geom::ss*sizeof(float)));
-        CUDA_CALL(cudaMalloc((void**)&CH,3*geom::ss*sizeof(float)));
-        CUDA_CALL(cudaMalloc((void**)&Clu,3*geom::ss*sizeof(int)));
-        CUDA_CALL(cudaMalloc((void**)&Czpsn,geom::ss*sizeof(int)));
-        CUDA_CALL(cudaMalloc((void**)&Cfn,3*geom::ss*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&CCSkx,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCSky,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCSkz,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCSrx,geom::zps*sizeof(cufftReal)));
+        CUDA_CALL(cudaMalloc((void**)&CCSry,geom::zps*sizeof(cufftReal)));
+        CUDA_CALL(cudaMalloc((void**)&CCSrz,geom::zps*sizeof(cufftReal)));
+        CUDA_CALL(cudaMalloc((void**)&CCHkx,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCHky,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCHkz,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CCHrx,geom::zps*sizeof(cufftReal)));
+        CUDA_CALL(cudaMalloc((void**)&CCHry,geom::zps*sizeof(cufftReal)));
+        CUDA_CALL(cudaMalloc((void**)&CCHrz,geom::zps*sizeof(cufftReal)));
+        CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&Crand,3*geom::nspins*sizeof(float)));
+        CUDA_CALL(cudaMalloc((void**)&CH,3*geom::nspins*sizeof(float)));
+        CUDA_CALL(cudaMalloc((void**)&Czpsn,geom::nspins*sizeof(int)));
+        CUDA_CALL(cudaMalloc((void**)&Cfn,3*geom::nspins*sizeof(double)));
 
         //--------------------------------------------------------------------------------
         //this section sorts out the copying of the data from the CPU to the card
         //--------------------------------------------------------------------------------
         //declare some arrays for doing copying to card
         //Nspins float array, 3*Nspins float array.
-        float *nsfa=new float[geom::ss];
-        float *tnsfa=new float[3*geom::ss];
+        float *nsfa=new float[geom::nspins];
+        float *tnsfa=new float[3*geom::nspins];
         //Nspins double array, 3*Nspins double array
-        double *nsda=new double[geom::ss];
-        double *tnsda=new double[3*geom::ss];
+        double *nsda=new double[geom::nspins];
+        double *tnsda=new double[3*geom::nspins];
         //Nspins int array, 3*Nspins int array
-        int *nsia=new int[geom::ss];
-        int *tnsia=new int[3*geom::ss];
+        int *nsia=new int[geom::nspins];
+        int *tnsia=new int[3*geom::nspins];
         //copy spin data to single array
-        util::copy3vecto1(geom::ss,spins::sx,spins::sy,spins::sz,tnsda);
-        //copy spin data to a floating point array
-        util::fillfloat(3*geom::ss,tnsda,tnsfa);
+        util::copy3vecto1(geom::nspins,spins::Sx,spins::Sy,spins::Sz,tnsda);
         //copy spin data to card
-        CUDA_CALL(cudaMemcpy(Cspin,tnsda,3*geom::ss*sizeof(double),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(Cfspin,tnsfa,3*geom::ss*sizeof(float),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(Cspin,tnsda,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
 
-        //copy temperature data
-        util::fillfloat(geom::ss,tdp::systemp.ptr(),nsfa);
-        CUDA_CALL(cudaMemcpy(CTemp,nsfa,geom::ss*sizeof(float),cudaMemcpyHostToDevice));
-        for(unsigned int i = 0 ; i < geom::ss ; i++)
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
-            nsia[i]=spins::csx.getarrayelement(geom::lu(i,0),geom::lu(i,1),geom::lu(i,2));
+            nsia[i]=spins::Srx.getarrayelement(geom::lu(i,0),geom::lu(i,1),geom::lu(i,2));
         }
-        CUDA_CALL(cudaMemcpy(Clu,tnsia,3*geom::ss*sizeof(int),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(Czpsn,nsia,geom::ss*sizeof(int),cudaMemcpyHostToDevice));
-        //zero the demag field array
-        for(unsigned int i = 0 ; i < 3*geom::ss ; i++){tnsfa[i]=0.0;}CUDA_CALL(cudaMemcpy(CH,tnsfa,3*geom::ss*sizeof(float),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(Czpsn,nsia,geom::nspins*sizeof(int),cudaMemcpyHostToDevice));
+        //zero the field array
+        for(unsigned int i = 0 ; i < 3*geom::nspins ; i++){tnsfa[i]=0.0;}CUDA_CALL(cudaMemcpy(CH,tnsfa,3*geom::nspins*sizeof(float),cudaMemcpyHostToDevice));
         //--------------------------------------------------------------------------------
 
 
@@ -326,11 +313,17 @@ namespace cullg
         //we can reuse the plan and alternate the sign depending on whether
         //we have a forward or a back transform
         /*Create a 3D FFT plan. */
-        if(cufftPlan3d(&C3DP,geom::zpdim[0],geom::zpdim[1],geom::zpdim[2],CUFFT_C2C)!=CUFFT_SUCCESS)
+        if(cufftPlan3d(&C3DPr2c,geom::zpdim[0],geom::zpdim[1],geom::zpdim[2],CUFFT_R2C)!=CUFFT_SUCCESS)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
         }
+        if(cufftPlan3d(&C3DPc2r,geom::zpdim[0],geom::zpdim[1],geom::zpdim[2],CUFFT_C2R)!=CUFFT_SUCCESS)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("CUFFT 3D plan creation failed");
+        }
+
 
         //At this point we can copy the interaction matrix from the CPU
         //as there is no need to do the determination of the interaction
@@ -368,15 +361,15 @@ namespace cullg
             }
         }
 
-        CUDA_CALL(cudaMemcpy(CCNxx,tempxx.ptr(),geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNxy,tempxy.ptr(),geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNxz,tempxz.ptr(),geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNyx,tempyx.ptr(),geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNyy,tempyy.ptr(),geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNyz,tempyz.ptr(),geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNzx,tempzx.ptr(),geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNzy,tempzy.ptr(),geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNzz,tempzz.ptr(),geom::zpdim[0]*geom::Nk[0]*geom::zpdim[1]*geom::Nk[1]*cplxdim*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CCNxx,tempxx.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CCNxy,tempxy.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CCNxz,tempxz.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CCNyx,tempyx.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CCNyy,tempyy.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CCNyz,tempyz.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CCNzx,tempzx.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CCNzy,tempzy.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CCNzz,tempzz.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
         intmat::Nxx.clear();
         intmat::Nxy.clear();
         intmat::Nxz.clear();
@@ -417,10 +410,8 @@ namespace cullg
         CUDA_CALL(cudaFree(CCHrz));
         CUDA_CALL(cudaFree(Cspin));
         CUDA_CALL(cudaFree(Cespin));
-        CUDA_CALL(cudaFree(Cfspin));
         CUDA_CALL(cudaFree(Crand));
         CUDA_CALL(cudaFree(CH));
-        CUDA_CALL(cudaFree(Clu));
         CUDA_CALL(cudaFree(Czpsn));
         CUDA_CALL(cudaFree(Cfn));
         config::Info << "Done" << std::endl;
