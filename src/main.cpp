@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 23 Jan 2013 09:56:25
+// Last-modified: 23 Jan 2013 11:53:18
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -22,6 +22,7 @@
 #include "../inc/anis.h"
 #include "../inc/llgCPU.h"
 #include "../inc/util.h"
+#include "../inc/sim.h"
 #include <omp.h>
 #include "../inc/llg.h"
 #ifdef CUDA
@@ -56,8 +57,7 @@ int main(int argc,char *argv[])
     fields::initFields(argc,argv);
     //Initialise the spin arrays
     spins::initSpins(argc,argv);
-    //fields::bfdip();
-    //fields::ftdip();
+	sim::initSim(argc,argv);
 	llg::initLLG(argc,argv);
 	#ifdef CUDA
 	cullg::cuinit(argc,argv);
@@ -66,14 +66,16 @@ int main(int argc,char *argv[])
 	#endif
 
     llg::T=1.0e-27;
-    for(unsigned int t = 0 ; t < 5000 ; t++)
+    for(unsigned int t = 0 ; t < 500 ; t++)
     {
         llg::integrate(t);
-        //const double mx = util::reduceCPU(sx,geom::nspins);
-        const double mx = util::reduceCPU(spins::Sx,geom::nspins);
-        const double my = util::reduceCPU(spins::Sy,geom::nspins);
-        const double mz = util::reduceCPU(spins::Sz,geom::nspins);
-        std::cout << double(t)*llg::dt << "\t" << mx/double(geom::nspins) << "\t" << my/double(geom::nspins) << "\t" << mz/double(geom::nspins) << std::endl;
+		if(t%spins::update==0)
+		{
+			const double mx = util::reduceCPU(spins::Sx,geom::nspins);
+			const double my = util::reduceCPU(spins::Sy,geom::nspins);
+			const double mz = util::reduceCPU(spins::Sz,geom::nspins);
+			std::cout << double(t)*llg::dt << "\t" << mx/double(geom::nspins) << "\t" << my/double(geom::nspins) << "\t" << mz/double(geom::nspins) << std::endl;
+		}
     }
     return(0);
 }

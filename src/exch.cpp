@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 22 Jan 2013 10:46:49
+// Last-modified: 23 Jan 2013 11:52:26
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -32,12 +32,12 @@ namespace exch
         std::string readMethod,readFile;
         libconfig::Config exchcfg;
         config::printline(config::Info);
-        std::ofstream intmap("interaction_map.dat");
+/*        std::ofstream intmap("interaction_map.dat");
         if(!(intmap.is_open()))
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Could not open interaction map file");
-        }
+        }*/
         config::Info.width(45);config::Info << std::right << "*" << "**Exchange details***" << std::endl;
         try
         {
@@ -211,15 +211,15 @@ namespace exch
                                     intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mu));
                                     intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mu));
                                     check(wc[0],wc[1],wc[2])=1;
-                                    intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
+                                    //intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
                                     for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
                                     {
                                         for(unsigned int jc2 = 0 ; jc2< 3 ; jc2++)
                                         {
-                                            intmap << "\t" << J(i,jc1,jc2);
+                                            //intmap << "\t" << J(i,jc1,jc2);
                                         }
                                     }
-                                    intmap << std::endl;
+                                    //intmap << std::endl;
                                 }
                                 else
                                 {
@@ -279,15 +279,15 @@ namespace exch
                                     intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mu));
                                     intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mu));
                                     check(wc[0],wc[1],wc[2])=1;
-                                    intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
+                                    //intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
                                     for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
                                     {
                                         for(unsigned int jc2 = 0 ; jc2< 3 ; jc2++)
                                         {
-                                            intmap << "\t" << J(i,jc1,jc2);
+                                            //intmap << "\t" << J(i,jc1,jc2);
                                         }
                                     }
-                                    intmap << std::endl;
+                                    //intmap << std::endl;
                                 }
                                 else
                                 {

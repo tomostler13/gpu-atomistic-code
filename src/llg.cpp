@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 22 Jan 2013 16:22:35
+// Last-modified: 23 Jan 2013 11:02:16
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -47,10 +47,12 @@ namespace llg
         FIXOUTVEC(config::Info,"Applied field:",applied[0],applied[1],applied[2]);
         FIXOUT(config::Info,"Timestep:" << dt << " seconds" << std::endl);
         rdt=dt*mat::gamma;
+		FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
 
         mat::sigma = sqrt(2.0*1.38e-23*mat::lambda/(mat::mu*mat::muB*dt*mat::gamma));
         FIXOUT(config::Info,"Sigma prefactor:" << mat::sigma << std::endl);
         llgpf = -1./(1.0+mat::lambda*mat::lambda);
+		FIXOUT(config::Info,"Prefactor to LLG equation:" << llgpf << std::endl);
 
 	}
     void integrate(unsigned int& t)

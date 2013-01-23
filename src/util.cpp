@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 15:25:41
+// Last-modified: 23 Jan 2013 12:04:06
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -123,6 +123,18 @@ namespace util
             }
         }
     }
+	std::string exec(char* cmd) {
+		FILE* pipe = popen(cmd, "r");
+		if (!pipe) return "ERROR";
+		char buffer[128];
+		std::string result = "";
+		while(!feof(pipe)) {
+			if(fgets(buffer, 128, pipe) != NULL)
+				result += buffer;
+		}
+		pclose(pipe);
+		return result;
+	}
 
 }
 

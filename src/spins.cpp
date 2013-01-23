@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 22 Jan 2013 16:36:06
+// Last-modified: 23 Jan 2013 10:54:19
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -25,6 +25,7 @@ namespace spins
     Array3D<double> Srx,Sry,Srz;
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
     fftw_plan SxP,SyP,SzP;
+	unsigned int update=0;
 	std::ifstream sfs;
     void initSpins(int argc,char *argv[])
     {
@@ -61,6 +62,13 @@ namespace spins
 		SUCCESS(config::Info);
 		std::string sc;
 		libconfig::Setting &setting = config::cfg.lookup("spins");
+		setting.lookupValue("update",update);
+		FIXOUT(config::Info,"Spin update:" << update << " (timesteps)" << std::endl);
+		if(update<1)
+		{
+			error::errPreamble(__FILE__,__LINE__);
+			error::errMessage("Spin data should be updated on cpu, i.e. spins::update>0");
+		}
 		setting.lookupValue("spinconfig",sc);
 		FIXOUT(config::Info,"Initial spin config specifier method:" << sc << std::endl);
 		if(sc=="file")
@@ -115,7 +123,7 @@ namespace spins
 			{
                 Sx(i)=sr[0];
                 Sy(i)=sr[1];
-                Sz(i)=sr[2];
+                Sz(i)=sqrt(1.0-(Sx[i]*Sx[i]+Sy[i]*Sy[i]));//+sr[2];
 			}
 		}
 		else if(sc=="random")
