@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 18:53:49
+// Last-modified: 23 Jan 2013 09:36:35
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -44,7 +44,7 @@ int main(int argc,char *argv[])
     intmat::initIntmat(argc,argv);
 
     //Read in the exchange matrix
-//    exch::initExch(argc,argv);
+    exch::initExch(argc,argv);
     //Read in the anisotropy tensor
     anis::initAnis(argc,argv);
 
