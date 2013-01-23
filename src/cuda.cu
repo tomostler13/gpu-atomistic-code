@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 23 Jan 2013 09:33:07
+// Last-modified: 23 Jan 2013 09:55:26
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -36,6 +36,8 @@ namespace cullg
     int threadsperblock,blockspergrid;
     //same but for the zero padded work spaces
     int zpblockspergrid;
+	//same but for the complex zero padded work space (N_Z/2+1) for r2c and c2r transforms
+	int czpblockspergrid;
     //rank of the FFT
     int nrank=3;
     //device pointers for Fourier space calculations
@@ -79,12 +81,11 @@ namespace cullg
     {
 
         //copy the spin data to the zero padded arrays
-        cufields::CCopySpin<<<threadsperblock,zpblockspergrid>>>(geom::czps,geom::nspins,Cspin,Czpsn,CCSrx,CCSry,CCSrz);
-
+        cufields::CCopySpin<<<threadsperblock,zpblockspergrid>>>(geom::zps,geom::nspins,Cspin,Czpsn,CCSrx,CCSry,CCSrz);
         //forward transform
         spins_forward();
         //perform convolution
-        cufields::CFConv<<<threadsperblock,zpblockspergrid>>>(geom::czps,CCNxx,CCNxy,CCNxz,CCNyx,CCNyy,CCNyz,CCNzx,CCNzy,CCNzz,CCHkx,CCHky,CCHkz,CCSkx,CCSky,CCSkz);
+        cufields::CFConv<<<threadsperblock,czpblockspergrid>>>(geom::czps,CCNxx,CCNxy,CCNxz,CCNyx,CCNyy,CCNyz,CCNzx,CCNzy,CCNzz,CCHkx,CCHky,CCHkz,CCSkx,CCSky,CCSkz);
         //transform the fields back
         fields_back();
         //copy the fields from the zero padded array to the demag field array
@@ -103,8 +104,17 @@ namespace cullg
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
 //        cuint::CHeun1<<<threadsperblock,blockspergrid>>>(geom::nspins,float(fields::fH[0]),float(fields::fH[1]),float(fields::fH[2]),mat::Tc,CHDemag,Cspin,Cespin,CTemp,Cxadj,Cadjncy,CsurfArea,Csigma,Crand,Cfn);
 		cufields::CCopySpin<<<threadsperblock,zpblockspergrid>>>(geom::zps,geom::nspins,Cespin,Czpsn,CCSrx,CCSry,CCSrz);
+		//forward transform
+        spins_forward();
+        //perform convolution
+        cufields::CFConv<<<threadsperblock,czpblockspergrid>>>(geom::czps,CCNxx,CCNxy,CCNxz,CCNyx,CCNyy,CCNyz,CCNzx,CCNzy,CCNzz,CCHkx,CCHky,CCHkz,CCSkx,CCSky,CCSkz);
+        //transform the fields back
+        fields_back();
+        //copy the fields from the zero padded array to the demag field array
+        cufields::CCopyFields<<<threadsperblock,blockspergrid>>>(geom::nspins,geom::zps,CH,Czpsn,CCHrx,CCHry,CCHrz);
+
 //        cuint::CHeun2<<<threadsperblock,blockspergrid>>>(geom::nspins,float(fields::fH[0]),float(fields::fH[1]),float(fields::fH[2]),mat::Tc,Cspin,CHDemag,CTemp,Crand,Cespin,Cfn,Cxadj,Cadjncy,CsurfArea,Csigma);
-        double *temp=NULL;
+/*        double *temp=NULL;
         temp = new double [3*geom::nspins];
         CUDA_CALL(cudaMemcpy(temp,Cspin,3*geom::nspins*sizeof(double),cudaMemcpyDeviceToHost));
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -113,7 +123,7 @@ namespace cullg
             spins::Sy[i]=temp[3*i+1];
             spins::Sz[i]=temp[3*i+2];
         }
-
+*/
     }
 
 
@@ -175,9 +185,11 @@ namespace cullg
         setting.lookupValue("threadsperblock",threadsperblock);
         FIXOUT(config::Info,"Number of threads per block:" << threadsperblock << std::endl);
         blockspergrid=(geom::nspins+threadsperblock-1)/threadsperblock;
-        zpblockspergrid=(geom::czps+threadsperblock-1)/threadsperblock;
+        zpblockspergrid=(geom::zps+threadsperblock-1)/threadsperblock;
+		czpblockspergrid=(geom::czps+threadsperblock-1)/threadsperblock;
         FIXOUT(config::Info,"Blocks per grid:" << blockspergrid << std::endl);
         FIXOUT(config::Info,"Blocks per grid for zero pad workspace:" << zpblockspergrid << std::endl);
+		FIXOUT(config::Info,"Blocks per grid for complex zero pad workspace:" << czpblockspergrid << std::endl);
         FIXOUT(config::Info,"Device maximum threads per block:" << deviceProp.maxThreadsPerBlock << std::endl);
         FIXOUT(config::Info,"Device registers per block:" << deviceProp.regsPerBlock << std::endl);
         FIXOUT(config::Info,"Device total const memory:" << deviceProp.totalConstMem << " (bytes)" << std::endl);

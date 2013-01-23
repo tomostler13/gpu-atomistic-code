@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 23 Jan 2013 09:33:11
+// Last-modified: 23 Jan 2013 09:42:45
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -67,9 +67,9 @@ namespace cufields
                 int lzpsn=Czpsn[i];
                 //copy the spin data to the zero padded spin arrays
                 //for the fourier transform
-                CCSx[lzpsn]=Cspin[3*i];
-                CCSy[lzpsn]=Cspin[3*i+1];
-                CCSz[lzpsn]=Cspin[3*i+2];
+                CCSx[lzpsn]=float(Cspin[3*i]);
+                CCSy[lzpsn]=float(Cspin[3*i+1]);
+                CCSz[lzpsn]=float(Cspin[3*i+2]);
             }
         }
     }
