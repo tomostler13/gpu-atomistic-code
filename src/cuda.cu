@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 22 Jan 2013 19:14:20
+// Last-modified: 23 Jan 2013 09:33:07
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -78,20 +78,8 @@ namespace cullg
     void llgGPU(unsigned int& t)
     {
 
-		float temp2[geom::zps];
-cudaMemcpy(temp2,CCSrx,geom::zps*sizeof(cufftReal),cudaMemcpyDeviceToHost);
-		for(unsigned int i = 0 ; i < geom:: zps ; i++)
-		{
-			std::cout << "Before\t" << temp2[i] << std::endl;
-		}
-
         //copy the spin data to the zero padded arrays
         cufields::CCopySpin<<<threadsperblock,zpblockspergrid>>>(geom::czps,geom::nspins,Cspin,Czpsn,CCSrx,CCSry,CCSrz);
-		cudaMemcpy(temp2,CCSrx,geom::zps*sizeof(cufftReal),cudaMemcpyDeviceToHost);
-		for(unsigned int i = 0 ; i < geom:: zps ; i++)
-		{
-			std::cout << temp2[i] << std::endl;
-		}
 
         //forward transform
         spins_forward();
@@ -100,9 +88,9 @@ cudaMemcpy(temp2,CCSrx,geom::zps*sizeof(cufftReal),cudaMemcpyDeviceToHost);
         //transform the fields back
         fields_back();
         //copy the fields from the zero padded array to the demag field array
-        cufields::CCopyFields<<<threadsperblock,blockspergrid>>>(geom::nspins,geom::czps,CH,Czpsn,CCHrx,CCHry,CCHrz);
+        cufields::CCopyFields<<<threadsperblock,blockspergrid>>>(geom::nspins,geom::zps,CH,Czpsn,CCHrx,CCHry,CCHrz);
         //FOR DEBUGGING THE DIPOLAR FIELD/
-          float temp1[3*geom::nspins];
+          cufftReal temp1[3*geom::nspins];
           CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
           for(unsigned int i = 0 ; i < geom::nspins ; i++)
           {
