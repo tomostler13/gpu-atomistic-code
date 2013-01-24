@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Jan 2013 13:01:53
+// Last-modified: 24 Jan 2013 18:06:08
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -45,7 +45,7 @@ int main(int argc,char *argv[])
 	intmat::initIntmat(argc,argv);
 
 	//Read in the exchange matrix
-	exch::initExch(argc,argv);
+//	exch::initExch(argc,argv);
 	//Read in the anisotropy tensor
 	anis::initAnis(argc,argv);
 	//add the dipolar fields
@@ -72,8 +72,8 @@ int main(int argc,char *argv[])
 	else if(sim::sim_type=="quick")
 	{
 
-		llg::T=1.0;
-		for(unsigned int t = 0 ; t < 5000 ; t++)
+		llg::T=25.0;
+		for(unsigned int t = 0 ; t < 50000 ; t++)
 		{
 			llg::integrate(t);
 			if(t%spins::update==0)

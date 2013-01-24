@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 23 Jan 2013 11:07:09
+// Last-modified: 24 Jan 2013 14:55:28
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -46,7 +46,6 @@ namespace cuint
 			double mods=0.0;
 			for(unsigned int j = 0 ; j < 3 ; j++)
 			{
-				//use lrn[3+j] because we want second half of lrn array for second Weiner process
 				lfn[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
 				Cfn[3*i+j]=lfn[j];
 				es[j]=s[j]+lfn[j]*rdt;
