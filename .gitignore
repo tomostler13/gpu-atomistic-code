@@ -5,3 +5,6 @@ obj/*
 *.xyz
 ASD
 *.gpl
+obj/*.o
+*.eps
+*.pdf
