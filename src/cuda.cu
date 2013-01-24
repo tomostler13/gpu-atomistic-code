@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 24 Jan 2013 19:52:42
+// Last-modified: 24 Jan 2013 19:54:45
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -84,18 +84,6 @@ namespace cullg
 
 		//copy the spin data to the zero padded arrays
 		cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cspin,Czpsn,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
-		Array3D<cufftReal> tSx(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-		Array3D<cufftReal> tSy(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-		Array3D<cufftReal> tSz(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-		CUDA_CALL(cudaMemcpy(tSx.ptr(),CCSrx,geom::zps*sizeof(cufftReal),cudaMemcpyDeviceToHost));
-		CUDA_CALL(cudaMemcpy(tSy.ptr(),CCSry,geom::zps*sizeof(cufftReal),cudaMemcpyDeviceToHost));
-		CUDA_CALL(cudaMemcpy(tSz.ptr(),CCSrz,geom::zps*sizeof(cufftReal),cudaMemcpyDeviceToHost));
-		for(unsigned int i = 0 ; i < geom::nspins ; i++)
-		{
-			int c[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-						std::cout << "Checking:\t"<< tSx(c[0],c[1],c[2]) << "\t" << tSy(c[0],c[1],c[2]) << "\t" << tSz(c[0],c[1],c[2]) << "\t" << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
-		}
-		exit(0);
 		//forward transform
 		spins_forward();
 		//perform convolution
