@@ -32,7 +32,8 @@ obj/exch.o \
 obj/anis.o \
 obj/llgCPU.o \
 obj/maths.o \
-obj/sim.o
+obj/sim.o \
+obj/mvt.o
 
 SWITCHOBJ= \
 obj/main.o \

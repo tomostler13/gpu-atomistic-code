@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 23 Jan 2013 11:53:18
+// Last-modified: 23 Jan 2013 22:30:41
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -30,52 +30,59 @@
 #endif
 int main(int argc,char *argv[])
 {
-    if(fftw_init_threads()==0)
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Error initializing fftw multithread");
-    }
-    fftw_plan_with_nthreads(omp_get_max_threads());
-    config::initConfig(argc,argv);
-    //Initialize the lattice
-    geom::initGeom(argc,argv);
-    //Read the material properties
-    mat::initMat(argc,argv);
-    //initialize the interaction matrices
-    intmat::initIntmat(argc,argv);
+	if(fftw_init_threads()==0)
+	{
+		error::errPreamble(__FILE__,__LINE__);
+		error::errMessage("Error initializing fftw multithread");
+	}
+	fftw_plan_with_nthreads(omp_get_max_threads());
+	config::initConfig(argc,argv);
+	//Initialize the lattice
+	geom::initGeom(argc,argv);
+	//Read the material properties
+	mat::initMat(argc,argv);
+	//initialize the interaction matrices
+	intmat::initIntmat(argc,argv);
 
-    //Read in the exchange matrix
-    exch::initExch(argc,argv);
-    //Read in the anisotropy tensor
-    anis::initAnis(argc,argv);
+	//Read in the exchange matrix
+	exch::initExch(argc,argv);
+	//Read in the anisotropy tensor
+	anis::initAnis(argc,argv);
 	//add the dipolar fields
-    intmat::fillIntmat();
+	intmat::fillIntmat();
 
 	//Now we have all of the terms in our interaction matrix, fourier transform the result
-    intmat::fftIntmat();
-    //Initialise the field arrays
-    fields::initFields(argc,argv);
-    //Initialise the spin arrays
-    spins::initSpins(argc,argv);
+	intmat::fftIntmat();
+	//Initialise the field arrays
+	fields::initFields(argc,argv);
+	//Initialise the spin arrays
+	spins::initSpins(argc,argv);
 	sim::initSim(argc,argv);
 	llg::initLLG(argc,argv);
-	#ifdef CUDA
+#ifdef CUDA
 	cullg::cuinit(argc,argv);
-	#else
+#else
 	llgCPU::initLLG(argc,argv);
-	#endif
+#endif
 
-    llg::T=1.0e-27;
-    for(unsigned int t = 0 ; t < 500 ; t++)
-    {
-        llg::integrate(t);
-		if(t%spins::update==0)
+	llg::T=1.0e-27;
+	if(sim::sim_type=="MvT")
+	{
+		sim::MvT(argc,argv);
+	}
+	else if(sim::sim_type=="quick")
+	{
+		for(unsigned int t = 0 ; t < 500 ; t++)
 		{
-			const double mx = util::reduceCPU(spins::Sx,geom::nspins);
-			const double my = util::reduceCPU(spins::Sy,geom::nspins);
-			const double mz = util::reduceCPU(spins::Sz,geom::nspins);
-			std::cout << double(t)*llg::dt << "\t" << mx/double(geom::nspins) << "\t" << my/double(geom::nspins) << "\t" << mz/double(geom::nspins) << std::endl;
+			llg::integrate(t);
+			if(t%spins::update==0)
+			{
+				const double mx = util::reduceCPU(spins::Sx,geom::nspins);
+				const double my = util::reduceCPU(spins::Sy,geom::nspins);
+				const double mz = util::reduceCPU(spins::Sz,geom::nspins);
+				std::cout << double(t)*llg::dt << "\t" << mx/double(geom::nspins) << "\t" << my/double(geom::nspins) << "\t" << mz/double(geom::nspins) << std::endl;
+			}
 		}
-    }
+	}
     return(0);
 }

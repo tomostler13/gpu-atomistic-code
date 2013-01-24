@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 23 Jan 2013 12:06:50
+// Last-modified: 23 Jan 2013 22:12:37
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -238,10 +238,8 @@ namespace cullg
 		config::Info << "Done" << std::endl;
 
 		FIXOUT(config::Info,"Allocating memory on device" << std::flush);
-		unsigned int memcount=0;
 		allocate_memory_on_card();
 		config::Info << "Done" << std::endl;
-		FIXOUT(config::Info,"Approximate amount of global memory allocated:" << memcount << " (bytes)" << std::endl);
 		FIXOUT(config::Info,"Copying fourier transformed interaction matrix to device:" << std::flush);
 		setup_fourier_transform();
 		config::Info << "Done" << std::endl;

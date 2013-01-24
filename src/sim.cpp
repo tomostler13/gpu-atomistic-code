@@ -1,7 +1,7 @@
 // File: sim.cpp
 // Author:Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 23 Jan 2013 11:52:48
+// Last-modified: 23 Jan 2013 22:14:21
 #include "../inc/config.h"
 #include "../inc/sim.h"
 #include "../inc/mat.h"
@@ -51,9 +51,5 @@ namespace sim
         }
         FIXOUT(config::Info,"Simulation selected:" << sim_type << std::endl);
     }
-	void MvT()
-	{
-
-	}
 
 }
