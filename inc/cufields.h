@@ -5,10 +5,10 @@
 namespace cufields
 {
     extern __global__ void CFConv(int,
-                                  cufftDoubleComplex*,cufftDoubleComplex*,cufftDoubleComplex*,cufftDoubleComplex*,cufftDoubleComplex*,cufftDoubleComplex*,
-                                  cufftDoubleComplex*,cufftDoubleComplex*,cufftDoubleComplex*,cufftDoubleComplex*,cufftDoubleComplex*,cufftDoubleComplex*,
-                                  cufftDoubleComplex*,cufftDoubleComplex*,cufftDoubleComplex*);
-    extern __global__ void CCopySpin(int,unsigned int,double*,int*,cufftDoubleReal*,cufftDoubleReal*,cufftDoubleReal*);
-    extern __global__ void CCopyFields(int,int,float*,int*,cufftDoubleReal*,cufftDoubleReal*,cufftDoubleReal*);
+                                  cufftComplex*,cufftComplex*,cufftComplex*,cufftComplex*,cufftComplex*,cufftComplex*,
+                                  cufftComplex*,cufftComplex*,cufftComplex*,cufftComplex*,cufftComplex*,cufftComplex*,
+                                  cufftComplex*,cufftComplex*,cufftComplex*);
+    extern __global__ void CCopySpin(int,unsigned int,double*,int*,cufftReal*,cufftReal*,cufftReal*);
+    extern __global__ void CCopyFields(int,int,float*,int*,cufftReal*,cufftReal*,cufftReal*);
 }
 #endif /*_CUFIELDS_H_*/

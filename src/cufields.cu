@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 24 Jan 2013 12:08:30
+// Last-modified: 24 Jan 2013 12:30:20
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -19,21 +19,21 @@ namespace cufields
 {
     //perform the convolution in Fourier space
     __global__ void CFConv(int N,
-                           cufftDoubleComplex *CCNxx,
-                           cufftDoubleComplex *CCNxy,
-                           cufftDoubleComplex *CCNxz,
-                           cufftDoubleComplex *CCNyx,
-                           cufftDoubleComplex *CCNyy,
-                           cufftDoubleComplex *CCNyz,
-                           cufftDoubleComplex *CCNzx,
-                           cufftDoubleComplex *CCNzy,
-                           cufftDoubleComplex *CCNzz,
-                           cufftDoubleComplex *CCHx,
-                           cufftDoubleComplex *CCHy,
-                           cufftDoubleComplex *CCHz,
-                           cufftDoubleComplex *CCSx,
-                           cufftDoubleComplex *CCSy,
-                           cufftDoubleComplex *CCSz
+                           cufftComplex *CCNxx,
+                           cufftComplex *CCNxy,
+                           cufftComplex *CCNxz,
+                           cufftComplex *CCNyx,
+                           cufftComplex *CCNyy,
+                           cufftComplex *CCNyz,
+                           cufftComplex *CCNzx,
+                           cufftComplex *CCNzy,
+                           cufftComplex *CCNzz,
+                           cufftComplex *CCHx,
+                           cufftComplex *CCHy,
+                           cufftComplex *CCHz,
+                           cufftComplex *CCSx,
+                           cufftComplex *CCSy,
+                           cufftComplex *CCSz
                            )
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
@@ -53,7 +53,7 @@ namespace cufields
 
     //This needs to be done with a seperate kernel because the size (N)
     //of the zero padded spin arrays is bigger than the number of spins
-    __global__ void CCopySpin(int zpN,unsigned int N,double *Cspin,int *Czpsn,cufftDoubleReal *CCSx,cufftDoubleReal *CCSy,cufftDoubleReal *CCSz)
+    __global__ void CCopySpin(int zpN,unsigned int N,double *Cspin,int *Czpsn,cufftReal *CCSx,cufftReal *CCSy,cufftReal *CCSz)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<zpN)
@@ -74,7 +74,7 @@ namespace cufields
         }
     }
 
-    __global__ void CCopyFields(int N,int zpN,float *CH,int *Czpsn,cufftDoubleReal *CCHx,cufftDoubleReal *CCHy,cufftDoubleReal *CCHz)
+    __global__ void CCopyFields(int N,int zpN,float *CH,int *Czpsn,cufftReal *CCHx,cufftReal *CCHy,cufftReal *CCHz)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
