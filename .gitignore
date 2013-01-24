@@ -6,3 +6,5 @@ obj/*
 ASD
 *.gpl
 obj/*.o
+*.eps
+*.pdf

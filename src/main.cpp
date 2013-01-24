@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Jan 2013 12:13:23
+// Last-modified: 24 Jan 2013 13:01:53
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -49,7 +49,7 @@ int main(int argc,char *argv[])
 	//Read in the anisotropy tensor
 	anis::initAnis(argc,argv);
 	//add the dipolar fields
-	intmat::fillIntmat();
+//	intmat::fillIntmat();
 
 	//Now we have all of the terms in our interaction matrix, fourier transform the result
 	intmat::fftIntmat();
@@ -72,7 +72,7 @@ int main(int argc,char *argv[])
 	else if(sim::sim_type=="quick")
 	{
 
-		llg::T=1.0e-27;
+		llg::T=1.0;
 		for(unsigned int t = 0 ; t < 5000 ; t++)
 		{
 			llg::integrate(t);
