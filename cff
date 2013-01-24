@@ -13,7 +13,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 32 , 32 , 32 ];
+	dim = [ 8 , 8 , 8 ];
 	//Number of atoms in the primitive cell
 	nauc = 4;
 	//The primitive cell
@@ -61,11 +61,12 @@ spins:
 	spinconfig = "align";
 	sc = [ 0.001 , 0.0 , 0.9999995 ];
 	//sc = [ 0.0 , 0.0 , 1.0 ];
-	update=100;
+	update=10;
 };
 sim:
 {
-	sim_type = "MvT";
+	//sim_type = "MvT";
+	sim_type = "quick";
 };
 mvt:
 {

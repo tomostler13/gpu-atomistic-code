@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 23 Jan 2013 22:30:41
+// Last-modified: 24 Jan 2013 12:13:23
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -65,14 +65,15 @@ int main(int argc,char *argv[])
 	llgCPU::initLLG(argc,argv);
 #endif
 
-	llg::T=1.0e-27;
 	if(sim::sim_type=="MvT")
 	{
 		sim::MvT(argc,argv);
 	}
 	else if(sim::sim_type=="quick")
 	{
-		for(unsigned int t = 0 ; t < 500 ; t++)
+
+		llg::T=1.0e-27;
+		for(unsigned int t = 0 ; t < 5000 ; t++)
 		{
 			llg::integrate(t);
 			if(t%spins::update==0)
