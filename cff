@@ -13,7 +13,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 32 , 32 , 32 ];
+	dim = [ 16 , 16 , 16 ];
 	//Number of atoms in the primitive cell
 	nauc = 4;
 	//The primitive cell
@@ -65,16 +65,16 @@ spins:
 };
 sim:
 {
-	//sim_type = "MvT";
-	sim_type = "quick";
+	sim_type = "MvT";
+	//sim_type = "quick";
 };
 mvt:
 {
 	lower_temp = 1.0e-27;
-	upper_temp = 600.1;
+	upper_temp = 700.1;
 	temp_step = 25.0;
 	mean_tolerance = 0.0001;
-	variance_tolerance = 0.01;
+	variance_tolerance = 0.0001;
 	MaxRunTime = 1.0e-10;
 	MvTFile = "MvT.dat";
 };

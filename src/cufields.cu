@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 24 Jan 2013 19:43:33
+// Last-modified: 24 Jan 2013 20:08:42
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -57,27 +57,24 @@ namespace cufields
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<zpN)
-        {
-            CCSx[i]=0.0;
-            CCSy[i]=0.0;
-            CCSz[i]=0.0;
+		{
+			CCSx[i]=0.0;
+			CCSy[i]=0.0;
+			CCSz[i]=0.0;
 			CHrx[i]=0.0;
 			CHry[i]=0.0;
 			CHrz[i]=0.0;
-            if(i<N)
-            {
-                //lookup the array value for spin i in the zero pad array
-                int lzpsn=Czpsn[i];
-                //copy the spin data to the zero padded spin arrays
-                //for the fourier transform
-				if(lzpsn>=0)
-				{
-					CCSx[i]=float(Cspin[3*lzpsn]);
-					CCSy[i]=float(Cspin[3*lzpsn+1]);
-					CCSz[i]=float(Cspin[3*lzpsn+2]);
-				}
-            }
-        }
+			//lookup the array value for spin i in the zero pad array
+			int lzpsn=Czpsn[i];
+			//copy the spin data to the zero padded spin arrays
+			//for the fourier transform
+			if(lzpsn>=0)
+			{
+				CCSx[i]=float(Cspin[3*lzpsn]);
+				CCSy[i]=float(Cspin[3*lzpsn+1]);
+				CCSz[i]=float(Cspin[3*lzpsn+2]);
+			}
+		}
     }
 
     __global__ void CCopyFields(int N,int zpN,float *CH,int *Czpsn,cufftReal *CCHx,cufftReal *CCHy,cufftReal *CCHz)

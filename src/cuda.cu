@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 24 Jan 2013 19:54:45
+// Last-modified: 24 Jan 2013 20:11:19
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -71,6 +71,7 @@ namespace cullg
 	static  float *Crand=NULL;
 	static  float *CH=NULL;
 	static  int *Czpsn=NULL;//The is the zero pad spin number
+	static  int *Clu=NULL;
 	static  double *Cfn=NULL;
 	//cufft plans
 	cufftHandle C3DPr2c,C3DPc2r;
@@ -83,7 +84,7 @@ namespace cullg
 	{
 
 		//copy the spin data to the zero padded arrays
-		cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cspin,Czpsn,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
+		cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cspin,Clu,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
 		//forward transform
 		spins_forward();
 		//perform convolution
@@ -93,19 +94,19 @@ namespace cullg
 		//copy the fields from the zero padded array to the demag field array
 		cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,Czpsn,CCHrx,CCHry,CCHrz);
 		//FOR DEBUGGING THE DIPOLAR FIELD/
-		float temp1[3*geom::nspins];
+/*		float temp1[3*geom::nspins];
 		CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
 		for(unsigned int i = 0 ; i < geom::nspins ; i++)
 		{
 			int ijk[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
 			std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp1[3*i] << "\t" << temp1[3*i+1] << "\t" << temp1[3*i+2] << std::endl;
 		}
-		exit(0);
+		exit(0);*/
 
 		//generate the random numbers
 		CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
 		cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,mat::sigma,llg::llgpf,mat::lambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn);
-		cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cespin,Czpsn,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
+		cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cespin,Clu,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
 		//forward transform
 		spins_forward();
 		//perform convolution
@@ -292,7 +293,9 @@ namespace cullg
 		CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
 		CUDA_CALL(cudaMalloc((void**)&Crand,3*geom::nspins*sizeof(float)));
 		CUDA_CALL(cudaMalloc((void**)&CH,3*geom::nspins*sizeof(float)));
-		CUDA_CALL(cudaMalloc((void**)&Czpsn,geom::zps*sizeof(int)));
+		CUDA_CALL(cudaMalloc((void**)&Clu,geom::zps*sizeof(int)));
+		CUDA_CALL(cudaMalloc((void**)&Czpsn,geom::nspins*sizeof(int)));
+
 		CUDA_CALL(cudaMalloc((void**)&Cfn,3*geom::nspins*sizeof(double)));
 
 		//--------------------------------------------------------------------------------
@@ -333,7 +336,12 @@ namespace cullg
 				}
 			}
 		}
-		CUDA_CALL(cudaMemcpy(Czpsn,sn,geom::zps*sizeof(int),cudaMemcpyHostToDevice));
+		for(unsigned int i = 0 ; i < geom::nspins ; i++)
+		{
+			nsia[i]=spins::Srx.getarrayelement(geom::lu(i,0),geom::lu(i,1),geom::lu(i,2));
+		}
+		CUDA_CALL(cudaMemcpy(Czpsn,nsia,geom::nspins*sizeof(int),cudaMemcpyHostToDevice));
+		CUDA_CALL(cudaMemcpy(Clu,sn,geom::zps*sizeof(int),cudaMemcpyHostToDevice));
 		//zero the field array
 		for(unsigned int i = 0 ; i < 3*geom::nspins ; i++){tnsfa[i]=0.0;}CUDA_CALL(cudaMemcpy(CH,tnsfa,3*geom::nspins*sizeof(float),cudaMemcpyHostToDevice));
 //		cufftReal
