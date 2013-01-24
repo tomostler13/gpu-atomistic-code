@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 23 Jan 2013 10:54:19
+// Last-modified: 24 Jan 2013 13:08:32
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -123,7 +123,7 @@ namespace spins
 			{
                 Sx(i)=sr[0];
                 Sy(i)=sr[1];
-                Sz(i)=sqrt(1.0-(Sx[i]*Sx[i]+Sy[i]*Sy[i]));//+sr[2];
+                Sz(i)=sr[2];//sqrt(1.0-(Sx[i]*Sx[i]+Sy[i]*Sy[i]));//+sr[2];
 			}
 		}
 		else if(sc=="random")

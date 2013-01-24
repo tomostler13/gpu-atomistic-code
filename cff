@@ -4,7 +4,7 @@ mat:
 {
 	mu = 2.0;
 	gamma = 1.76e11;
-	lambda = 0.01;
+	lambda = 1.0;
 };
 system:
 {
@@ -13,7 +13,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 8 , 8 , 8 ];
+	dim = [ 32 , 32 , 32 ];
 	//Number of atoms in the primitive cell
 	nauc = 4;
 	//The primitive cell
@@ -50,7 +50,7 @@ anisotropy:
 llg:
 {
 	dt = 1.0e-15;
-	applied = [ 0.0 , 0.0 , 1.0 ];
+	applied = [ 0.0 , 0.0 , 0.0 ];
 };
 cuda:
 {
@@ -59,20 +59,22 @@ cuda:
 spins:
 {
 	spinconfig = "align";
-	sc = [ 0.001 , 0.0 , 0.9999995 ];
-	//sc = [ 0.0 , 0.0 , 1.0 ];
-	update=10;
+	//sc = [ 0.001 , 0.0 , 0.9999995 ];
+	sc = [ 0.0 , 0.0 , 1.0 ];
+	update=100;
 };
 sim:
 {
-	//sim_type = "MvT";
-	sim_type = "quick";
+	sim_type = "MvT";
+	//sim_type = "quick";
 };
 mvt:
 {
 	lower_temp = 1.0e-27;
-	upper_temp = 1500.0;
+	upper_temp = 600.1;
 	temp_step = 25.0;
 	mean_tolerance = 0.0001;
-	variance_tolerance = 0.000001;
+	variance_tolerance = 0.01;
+	MaxRunTime = 1.0e-10;
+	MvTFile = "MvT.dat";
 };

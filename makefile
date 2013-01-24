@@ -6,12 +6,12 @@ GITINFO=-DGIT_SHA1='"$(shell git rev-parse HEAD)"' -DGITDIRTY='"$(shell git stat
 export LANG=C
 export LC_ALL=C
 # LIBS
-DEFS=-DNDEBUG
+DEFS=-DDEBUG
 CUDEFS=-DCUDA
 LIBS= -lfftw3_omp -lfftw3 -lfftw3f -lm -lconfig++ -lstdc++ -llapack -lblas
 CPULIBS= -fopenmp -lpthread
 CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft
-OPT_LEVEL=-O3
+OPT_LEVEL=-O0
 GCC_FLAGS= $(OPT_LEVEL)
 #NVCC_FLAGS= -g $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 
 NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_13,code=sm_13 -gencode=arch=compute_13,code=compute_13 
