@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 25 Jan 2013 10:54:46
+// Last-modified: 25 Jan 2013 17:14:13
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -234,11 +234,6 @@ namespace cullg
 		{
 			error::errPreamble(__FILE__,__LINE__);
 			error::errMessage("CURAND failed to set random number seed");
-		}
-		if((curandGenerateSeeds(gen))!=CURAND_STATUS_SUCCESS)
-		{
-			error::errPreamble(__FILE__,__LINE__);
-			error::errMessage("CURAND failed to generate random number generator seeds");
 		}
 		config::Info << "Done" << std::endl;
 		FIXOUT(config::Info,"Checking for any cuda errors:" << std::flush);
