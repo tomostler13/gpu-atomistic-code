@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Jan 2013 21:02:02
+// Last-modified: 25 Jan 2013 10:54:07
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -45,6 +45,7 @@ int main(int argc,char *argv[])
 	//add the dipolar fields
 	intmat::fillIntmat();
 
+
 	//Now we have all of the terms in our interaction matrix, fourier transform the result
 	intmat::fftIntmat();
 	//Initialise the field arrays
@@ -63,6 +64,10 @@ int main(int argc,char *argv[])
 	{
 		sim::MvT(argc,argv);
 	}
+    else if(sim::sim_type=="suscep")
+    {
+//        sim::suscep(argc,argv);
+    }
 	else if(sim::sim_type=="quick")
 	{
 

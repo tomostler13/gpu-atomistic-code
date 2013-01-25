@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 22 Jan 2013 10:39:01
+// Last-modified: 25 Jan 2013 10:53:51
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -135,33 +135,33 @@ namespace intmat
                             //unit vector from i to j
                             double eij[3]={rij[0]/mrij,rij[1]/mrij,rij[2]/mrij};
                             double lnxx=1e-7*((3.0*eij[0]*eij[0])-1.0)*oomrij3;
-                            Nrxx(tc[0],tc[1],tc[2])=lnxx*mat::mu*mat::muB;//(i,j,k)
+                            Nrxx(tc[0],tc[1],tc[2])+=lnxx*mat::mu*mat::muB;//(i,j,k)
 
                             double lnyy=1e-7*((3.0*eij[1]*eij[1])-1.0)*oomrij3;
-                            Nryy(tc[0],tc[1],tc[2])=lnyy*mat::mu*mat::muB;//(i,j,k)
+                            Nryy(tc[0],tc[1],tc[2])+=lnyy*mat::mu*mat::muB;//(i,j,k)
 
                             double lnzz=1e-7*((3.0*eij[2]*eij[2])-1.0)*oomrij3;
-                            Nrzz(tc[0],tc[1],tc[2])=lnzz*mat::mu*mat::muB;//(i,j,k)
+                            Nrzz(tc[0],tc[1],tc[2])+=lnzz*mat::mu*mat::muB;//(i,j,k)
 
 
                             //Now w_{ij}^{\Gamma \Lambda}=\frac{3e_{ij}^\Gamma e_{ij}^{\Lambda}}{r_{ij}^3}
                             double lnxy=1e-7*3.0*eij[1]*eij[0]*oomrij3;
-                            Nrxy(tc[0],tc[1],tc[2])=lnxy*mat::mu*mat::muB; //(i,j,k)
+                            Nrxy(tc[0],tc[1],tc[2])+=lnxy*mat::mu*mat::muB; //(i,j,k)
 
                             double lnxz=1e-7*3.0*eij[2]*eij[0]*oomrij3;
-                            Nrxz(tc[0],tc[1],tc[2])=lnxz*mat::mu*mat::muB; //(i,j,k)
+                            Nrxz(tc[0],tc[1],tc[2])+=lnxz*mat::mu*mat::muB; //(i,j,k)
 
                             double lnyx=1e-7*3.0*eij[0]*eij[1]*oomrij3;
-                            Nryx(tc[0],tc[1],tc[2])=lnyx*mat::mu*mat::muB; //(i,j,k)
+                            Nryx(tc[0],tc[1],tc[2])+=lnyx*mat::mu*mat::muB; //(i,j,k)
 
                             double lnyz=1e-7*3.0*eij[2]*eij[1]*oomrij3;
-                            Nryz(tc[0],tc[1],tc[2])=lnyz*mat::mu*mat::muB; //(i,j,k)
+                            Nryz(tc[0],tc[1],tc[2])+=lnyz*mat::mu*mat::muB; //(i,j,k)
 
                             double lnzx=1e-7*3.0*eij[0]*eij[2]*oomrij3;
-                            Nrzx(tc[0],tc[1],tc[2])=lnzx*mat::mu*mat::muB; //(i,j,k)
+                            Nrzx(tc[0],tc[1],tc[2])+=lnzx*mat::mu*mat::muB; //(i,j,k)
 
                             double lnzy=1e-7*3.0*eij[1]*eij[2]*oomrij3;
-                            Nrzy(tc[0],tc[1],tc[2])=lnzy*mat::mu*mat::muB; //(i,j,k)
+                            Nrzy(tc[0],tc[1],tc[2])+=lnzy*mat::mu*mat::muB; //(i,j,k)
                         }
                     }
                 }

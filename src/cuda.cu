@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 24 Jan 2013 20:11:19
+// Last-modified: 25 Jan 2013 10:54:46
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -137,8 +137,12 @@ namespace cullg
 
 	void cuinit(int argc,char *argv[])
 	{
+
 		config::printline(config::Info);
 		config::Info.width(45);config::Info << std::right << "*" << "**CUDA details***" << std::endl;
+        FIXOUT(config::Info,"Resetting device:" << std::flush);
+		CUDA_CALL(cudaDeviceReset());
+        SUCCESS(config::Info);
 
 		nrank=3;
 		try
@@ -216,9 +220,11 @@ namespace cullg
 				error::errMessage("Could not get device on double check");
 			}
 		}
+
+		unsigned long long int curandseed=config::seed;
+        FIXOUT(config::Info,"Curand seed:" << curandseed << std::endl);
 		//initialize the random number generator
 		FIXOUT(config::Info,"Initializing curand random number generator" << std::flush);
-		unsigned long long int curandseed=config::seed;
 		if((curandCreateGenerator(&gen,CURAND_RNG_PSEUDO_DEFAULT))!=CURAND_STATUS_SUCCESS)
 		{
 			error::errPreamble(__FILE__,__LINE__);
