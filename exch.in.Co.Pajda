@@ -1,6 +1,6 @@
 exchange:
 {
-    Num_Shells = 1;
+    Num_Shells = 10;
     //Units of energy
     units = "mRy";
     Shell1Vec = [ 0.5 , 0.5 , 0.0 ];

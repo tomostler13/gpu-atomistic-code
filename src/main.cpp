@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Jan 2013 20:12:19
+// Last-modified: 25 Jan 2013 10:54:07
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -30,12 +30,6 @@
 #endif
 int main(int argc,char *argv[])
 {
-	if(fftw_init_threads()==0)
-	{
-		error::errPreamble(__FILE__,__LINE__);
-		error::errMessage("Error initializing fftw multithread");
-	}
-	fftw_plan_with_nthreads(omp_get_max_threads());
 	config::initConfig(argc,argv);
 	//Initialize the lattice
 	geom::initGeom(argc,argv);
@@ -49,7 +43,8 @@ int main(int argc,char *argv[])
 	//Read in the anisotropy tensor
 	anis::initAnis(argc,argv);
 	//add the dipolar fields
-//	intmat::fillIntmat();
+	intmat::fillIntmat();
+
 
 	//Now we have all of the terms in our interaction matrix, fourier transform the result
 	intmat::fftIntmat();
@@ -69,6 +64,10 @@ int main(int argc,char *argv[])
 	{
 		sim::MvT(argc,argv);
 	}
+    else if(sim::sim_type=="suscep")
+    {
+//        sim::suscep(argc,argv);
+    }
 	else if(sim::sim_type=="quick")
 	{
 

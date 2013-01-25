@@ -8,3 +8,5 @@ ASD
 obj/*.o
 *.eps
 *.pdf
+array.job
+*.in
