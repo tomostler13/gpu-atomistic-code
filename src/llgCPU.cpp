@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 24 Jan 2013 18:09:16
+// Last-modified: 25 Jan 2013 11:16:02
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -55,11 +55,11 @@ namespace llgCPU
         //calculate the 2 spin fields (dipolar, exchange, anisotropy)
         fields::ftdip();
         //FOR DEBUGGING THE FIELD
-        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+/*        for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx(i) << "\t" << fields::Hy(i) << "\t" << fields::Hz(i) << std::endl;
         }
-        exit(0);
+        exit(0);*/
 
         const double sqrtT=sqrt(llg::T);
         #pragma omp parallel for private (i) shared(fields::Hthx,fields::Hthy,fields::Hthz,sqrtT,mat::sigma)
