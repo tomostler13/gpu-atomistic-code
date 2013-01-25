@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 24 Jan 2013 12:30:20
+// Last-modified: 24 Jan 2013 20:08:42
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -53,25 +53,28 @@ namespace cufields
 
     //This needs to be done with a seperate kernel because the size (N)
     //of the zero padded spin arrays is bigger than the number of spins
-    __global__ void CCopySpin(int zpN,unsigned int N,double *Cspin,int *Czpsn,cufftReal *CCSx,cufftReal *CCSy,cufftReal *CCSz)
+    __global__ void CCopySpin(int zpN,unsigned int N,double *Cspin,int *Czpsn,cufftReal *CCSx,cufftReal *CCSy,cufftReal *CCSz,cufftReal *CHrx,cufftReal *CHry,cufftReal *CHrz)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<zpN)
-        {
-            CCSx[i]=0;
-            CCSy[i]=0;
-            CCSz[i]=0;
-            if(i<N)
-            {
-                //lookup the array value for spin i in the zero pad array
-                int lzpsn=Czpsn[i];
-                //copy the spin data to the zero padded spin arrays
-                //for the fourier transform
-                CCSx[lzpsn]=float(Cspin[3*i]);
-                CCSy[lzpsn]=float(Cspin[3*i+1]);
-                CCSz[lzpsn]=float(Cspin[3*i+2]);
-            }
-        }
+		{
+			CCSx[i]=0.0;
+			CCSy[i]=0.0;
+			CCSz[i]=0.0;
+			CHrx[i]=0.0;
+			CHry[i]=0.0;
+			CHrz[i]=0.0;
+			//lookup the array value for spin i in the zero pad array
+			int lzpsn=Czpsn[i];
+			//copy the spin data to the zero padded spin arrays
+			//for the fourier transform
+			if(lzpsn>=0)
+			{
+				CCSx[i]=float(Cspin[3*lzpsn]);
+				CCSy[i]=float(Cspin[3*lzpsn+1]);
+				CCSz[i]=float(Cspin[3*lzpsn+2]);
+			}
+		}
     }
 
     __global__ void CCopyFields(int N,int zpN,float *CH,int *Czpsn,cufftReal *CCHx,cufftReal *CCHy,cufftReal *CCHz)

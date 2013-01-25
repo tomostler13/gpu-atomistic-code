@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 24 Jan 2013 13:26:28
+// Last-modified: 24 Jan 2013 20:41:00
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -86,15 +86,18 @@ void sim::MvT(int argc,char *argv[])
 				const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
 				const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
 				const double modm=sqrt(mx*mx+my*my+mz*mz);
-				MS.Push(modm);
-				config::Info.width(15);config::Info << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS.Mean()-oldmean) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Variance() << " [ " << convvar << " ] " << std::endl;
-				if(((fabs(MS.Mean()-oldmean)) < convmean) && (MS.Variance()<convvar) && t > int(2e-12/llg::dt))
+				if(t>int(25e-12/llg::dt))
 				{
-					ofs << T << "\t" << modm << std::endl;
-					convTF=true;
-					break;
+					MS.Push(modm);
+					config::Info.width(15);config::Info << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS.Mean()-oldmean) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Variance() << " [ " << convvar << " ]|" << std::endl;
+					if(((fabs(MS.Mean()-oldmean)) < convmean) && (MS.Variance()<convvar) && t > int(75e-12/llg::dt))
+					{
+						ofs << T << "\t" << modm << std::endl;
+						convTF=true;
+						break;
+					}
+					oldmean=MS.Mean();
 				}
-				oldmean=MS.Mean();
 
 			}
 		}
