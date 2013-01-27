@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 25 Jan 2013 17:14:13
+// Last-modified: 27 Jan 2013 17:35:42
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -78,7 +78,7 @@ namespace cullg
 
 	void initGPU()
 	{
-		CUDA_CALL(cudaDeviceReset());
+//		CUDA_CALL(cudaDeviceReset());
 	}
 	void llgGPU(unsigned int& t)
 	{
@@ -141,7 +141,7 @@ namespace cullg
 		config::printline(config::Info);
 		config::Info.width(45);config::Info << std::right << "*" << "**CUDA details***" << std::endl;
         FIXOUT(config::Info,"Resetting device:" << std::flush);
-		CUDA_CALL(cudaDeviceReset());
+//		CUDA_CALL(cudaDeviceReset());
         SUCCESS(config::Info);
 
 		nrank=3;
@@ -206,7 +206,7 @@ namespace cullg
 		FIXOUT(config::Info,"Device registers per block:" << deviceProp.regsPerBlock << std::endl);
 		FIXOUT(config::Info,"Device total const memory:" << deviceProp.totalConstMem << " (bytes)" << std::endl);
 		FIXOUT(config::Info,"Device total global memory:" << deviceProp.totalGlobalMem << " (bytes)" << std::endl);
-		if((cudaSetDevice(device))!=cudaSuccess)
+/*		if((cudaSetDevice(device))!=cudaSuccess)
 		{
 			error::errPreamble(__FILE__,__LINE__);
 			error::errMessage("cudaSetDevice returned cudaErrorInvalidDevice");
@@ -219,7 +219,7 @@ namespace cullg
 				error::errPreamble(__FILE__,__LINE__);
 				error::errMessage("Could not get device on double check");
 			}
-		}
+		}*/
 
 		unsigned long long int curandseed=config::seed;
         FIXOUT(config::Info,"Curand seed:" << curandseed << std::endl);
@@ -230,11 +230,21 @@ namespace cullg
 			error::errPreamble(__FILE__,__LINE__);
 			error::errMessage("CURAND failed to create random number generator");
 		}
+        check_cuda_errors(__FILE__,__LINE__);
 		if((curandSetPseudoRandomGeneratorSeed(gen,curandseed))!=CURAND_STATUS_SUCCESS)
 		{
 			error::errPreamble(__FILE__,__LINE__);
 			error::errMessage("CURAND failed to set random number seed");
-		}
+        }
+        check_cuda_errors(__FILE__,__LINE__);
+
+        if((curandGenerateSeeds(gen))!=CURAND_STATUS_SUCCESS)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("CURAND failed to generate random number generator seeds");
+        }
+        check_cuda_errors(__FILE__,__LINE__);
+
 		config::Info << "Done" << std::endl;
 		FIXOUT(config::Info,"Checking for any cuda errors:" << std::flush);
 		check_cuda_errors(__FILE__,__LINE__);

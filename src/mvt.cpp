@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 24 Jan 2013 20:41:00
+// Last-modified: 27 Jan 2013 18:30:06
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -71,6 +71,7 @@ void sim::MvT(int argc,char *argv[])
 	//temperature loop
 	for(double T = lT ; T < uT ; T+=dT)
 	{
+        double modm=0.0;
 		config::printline(config::Info);
 		FIXOUT(config::Info,"Converging temperature:" << T << std::endl);
 		llg::T=T;
@@ -85,14 +86,13 @@ void sim::MvT(int argc,char *argv[])
 				const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
 				const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
 				const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
-				const double modm=sqrt(mx*mx+my*my+mz*mz);
+				modm=sqrt(mx*mx+my*my+mz*mz);
 				if(t>int(25e-12/llg::dt))
 				{
 					MS.Push(modm);
 					config::Info.width(15);config::Info << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS.Mean()-oldmean) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Variance() << " [ " << convvar << " ]|" << std::endl;
 					if(((fabs(MS.Mean()-oldmean)) < convmean) && (MS.Variance()<convvar) && t > int(75e-12/llg::dt))
 					{
-						ofs << T << "\t" << modm << std::endl;
 						convTF=true;
 						break;
 					}
@@ -101,6 +101,8 @@ void sim::MvT(int argc,char *argv[])
 
 			}
 		}
+        ofs << T << "\t" << modm << std::endl;
+
 
 		FIXOUT(config::Info,"Converged?" << config::isTF(convTF) << std::endl);
 	}

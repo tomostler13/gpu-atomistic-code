@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 25 Jan 2013 16:10:47
+// Last-modified: 25 Jan 2013 19:24:03
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -76,7 +76,7 @@ namespace config
 		FIXOUT(Info,"Compile Data/Time:" << __DATE__ << ", " << __TIME__ << std::endl);
 		FIXOUT(Info,"Compiler:" << COMP << std::endl);
 		FIXOUT(Info,"Compiled on machine:" << HOSTNAME << std::endl);
-        FIXOUT(Info,"Localhost:" << util::exec("localhost") << std::endl);
+        FIXOUT(Info,"Localhost:" << util::exec("hostname") << std::endl);
         FIXOUT(Info,"Seed:" << seed << std::endl);
 
         assert(seed>0);
