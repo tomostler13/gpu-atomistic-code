@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 27 Jan 2013 18:30:06
+// Last-modified: 28 Jan 2013 10:42:59
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -87,7 +87,7 @@ void sim::MvT(int argc,char *argv[])
 				const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
 				const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
 				modm=sqrt(mx*mx+my*my+mz*mz);
-				if(t>int(25e-12/llg::dt))
+				if(t>int(50e-12/llg::dt))
 				{
 					MS.Push(modm);
 					config::Info.width(15);config::Info << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS.Mean()-oldmean) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Variance() << " [ " << convvar << " ]|" << std::endl;

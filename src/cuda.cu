@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 27 Jan 2013 17:35:42
+// Last-modified: 27 Jan 2013 22:23:40
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -130,6 +130,8 @@ namespace cullg
 				spins::Sz[i]=temp[3*i+2];
 //				std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << "\t" << sqrt(spins::Sx[i]*spins::Sx[i] + spins::Sy[i]*spins::Sy[i] + spins::Sz[i]*spins::Sz[i])<< std::endl;
 			}
+            delete [] temp;
+            temp=NULL;
 		}
 
 	}
