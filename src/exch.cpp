@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 30 Jan 2013 18:06:39
+// Last-modified: 30 Jan 2013 19:36:14
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -325,20 +325,27 @@ namespace exch
                 error::errPreamble(__FILE__,__LINE__);
                 error::errMessage("Could not open exchange file for reading");
             }
-            unsigned int numint = 0;
-            ifs >> numint;
-            FIXOUT(config::Info,"Number of interactions to be read in:" << numint << std::endl);
+            unsigned int noint = 0;
+            ifs >> noint;
+            FIXOUT(config::Info,"Number of interactions to be read in:" << noint << std::endl);
             Array3D<unsigned int> check(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);//This array is used to check if we already have the Jij for this interaction
             check.IFill(0);
             unsigned int counter=0;
-            for(unsigned int i = 0 ; i < numint ; i++)
+
+            int dump;
+            ifs>>dump;
+            for(unsigned int i = 0 ; i < noint ; i++)
             {
                 int c[3]={0,0,0};
                 double J[3][3];
+                ifs>>dump;
+                ifs>>dump;
+                ifs>>dump;
                 for(unsigned int rc = 0 ; rc < 3 ; rc++)
                 {
                     ifs >> c[rc];
                 }
+//                std::cout << "Interaction: " << c[0] << "\t" << c[1] << "\t" << c[2] << std::endl;
                 //check the boundaries for each component
                 for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
                 {
@@ -348,7 +355,7 @@ namespace exch
 
                     }
                 }
-
+                //std::cout << c[0] << "\t" << c[1] << "\t" << c[2] << "\t" << 1 << std::endl;
                 for(unsigned int j1 = 0 ; j1 < 3 ; j1++)
                 {
                     for(unsigned int j2 = 0 ; j2 < 3 ; j2++)
@@ -356,6 +363,10 @@ namespace exch
                         ifs >> J[j1][j2];
                     }
                 }
+                //std::cout << "Jij:\n" << J[0][0] << "\t" << J[0][1] << "\t" << J[0][2] << std::endl;
+                //std::cout << J[1][0] << "\t" << J[1][1] << "\t" << J[1][2] << std::endl;
+                //std::cout << J[2][0] << "\t" << J[2][1] << "\t" << J[2][2] << std::endl;
+                //std::cin.get();
                 if(check(c[0],c[1],c[2])==0)//then we do not already have an interaction there
                 {
                     counter++;
@@ -372,13 +383,23 @@ namespace exch
                         intmat::Nrzz(c[0],c[1],c[2])+=(J[2][2]/(mat::muB*mat::mu));
                     }
                 }
+                else
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("That interaction has already been read");
+                }
 
             }
-            if(counter!=numint)
+            if(counter!=noint)
             {
                 error::errPreamble(__FILE__,__LINE__);
                 error::errMessage("Incorrect number of interactions found");
             }
+            else
+            {
+                FIXOUT(config::Info,"Read in exchange data for:" << counter << " interactions" << std::endl);
+            }
+            check.clear();
         }
         else
         {
