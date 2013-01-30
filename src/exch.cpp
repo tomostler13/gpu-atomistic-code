@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 23 Jan 2013 11:52:26
+// Last-modified: 30 Jan 2013 18:06:39
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -29,7 +29,7 @@ namespace exch
     std::string enerType;
     void initExch(int argc,char *argv[])
     {
-        std::string readMethod,readFile;
+        std::string readMethod,readFile,method;
         libconfig::Config exchcfg;
         config::printline(config::Info);
 /*        std::ofstream intmap("interaction_map.dat");
@@ -55,6 +55,8 @@ namespace exch
             exit(EXIT_FAILURE);
         }
         libconfig::Setting &setting = config::cfg.lookup("exchange");
+        setting.lookupValue("exchmethod",method);
+        FIXOUT(config::Info,"Exchange read in:" << method << std::endl);
         setting.lookupValue("exchinput",readMethod);
         if(readMethod=="thisfile")
         {
@@ -65,20 +67,23 @@ namespace exch
             FIXOUT(config::Info,"Reading exchange interactions from:" << "external file" << std::endl);
             setting.lookupValue("exchfile",readFile);
             FIXOUT(config::Info,"File:" << readFile << std::endl);
-            try
+            if(method=="permute")
             {
-                exchcfg.readFile(readFile.c_str());
-            }
-            catch(const libconfig::FileIOException &fioex)
-            {
-                error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("I/O error while reading exchange config file");
-            }
-            catch(const libconfig::ParseException &pex)
-            {
-                error::errPreamble(__FILE__,__LINE__);
-                std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-                exit(EXIT_FAILURE);
+                try
+                {
+                    exchcfg.readFile(readFile.c_str());
+                }
+                catch(const libconfig::FileIOException &fioex)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("I/O error while reading exchange config file");
+                }
+                catch(const libconfig::ParseException &pex)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
+                    exit(EXIT_FAILURE);
+                }
             }
 
         }
@@ -87,226 +92,299 @@ namespace exch
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Method of reading exchange file not recognised.");
         }
-        libconfig::Setting &exchset = exchcfg.lookup("exchange");
-        exchset.lookupValue("Num_Shells",num_shells);
-        assert(num_shells>0);
-        FIXOUT(config::Info,"Reading exchange information for:" << num_shells << " shells" << std::endl);
-        numint.resize(num_shells);
-        exchvec.resize(num_shells,3);
-        kvec.resize(num_shells,3);
-        J.resize(num_shells,3,3);
-        //Read the units of the exchange energy and scale appropriately to Joules
-        exchset.lookupValue("units",enerType);
-        FIXOUT(config::Info,"Units of exchange:" << enerType << std::endl);
-
-        for(unsigned int i = 0 ; i < num_shells ; i++)
+        if(method=="permute")
         {
-            std::stringstream nisstr,evsstr;
-            std::string nistr,evstr;
-            nisstr << "NumInt" << i+1;
-            nistr=nisstr.str();
-            evsstr << "Shell" << i+1 << "Vec";
-            evstr=evsstr.str();
-            exchset.lookupValue(nistr.c_str(),numint[i]);
-            config::printline(config::Info);
-            config::Info << "Shell " << i+1;
-            FIXOUT(config::Info," number of interactions:" << numint[i] << std::endl);
-            for(unsigned int j = 0 ; j < 3 ; j++)
-            {
-                exchvec(i,j)=exchset[evstr.c_str()][j];
-                kvec(i,j)=int(exchvec(i,j)*geom::Nk[j]);
-            }
-            FIXOUTVEC(config::Info,"Vectors:",exchvec(i,0),exchvec(i,1),exchvec(i,2));
-            FIXOUTVEC(config::Info,"On K-mesh:",kvec(i,0),kvec(i,1),kvec(i,2));
-            FIXOUT(config::Info,"Distance in k-points:" << sqrt(double(kvec(i,0)*kvec(i,0)+kvec(i,1)*kvec(i,1)+kvec(i,2)*kvec(i,2))));
-            config::Info << std::endl;
-            for(unsigned int j = 0 ; j < 3 ; j++)
-            {
+            libconfig::Setting &exchset = exchcfg.lookup("exchange");
+            exchset.lookupValue("Num_Shells",num_shells);
+            assert(num_shells>0);
+            FIXOUT(config::Info,"Reading exchange information for:" << num_shells << " shells" << std::endl);
+            numint.resize(num_shells);
+            exchvec.resize(num_shells,3);
+            kvec.resize(num_shells,3);
+            J.resize(num_shells,3,3);
+            //Read the units of the exchange energy and scale appropriately to Joules
+            exchset.lookupValue("units",enerType);
+            FIXOUT(config::Info,"Units of exchange:" << enerType << std::endl);
 
-                std::stringstream Jsstr;
-                Jsstr << "J" << i+1 << "_" << j+1;
-                std::string Jstr;
-                Jstr=Jsstr.str();
-                for(unsigned int k = 0 ; k < 3 ; k++)
+            for(unsigned int i = 0 ; i < num_shells ; i++)
+            {
+                std::stringstream nisstr,evsstr;
+                std::string nistr,evstr;
+                nisstr << "NumInt" << i+1;
+                nistr=nisstr.str();
+                evsstr << "Shell" << i+1 << "Vec";
+                evstr=evsstr.str();
+                exchset.lookupValue(nistr.c_str(),numint[i]);
+                config::printline(config::Info);
+                config::Info << "Shell " << i+1;
+                FIXOUT(config::Info," number of interactions:" << numint[i] << std::endl);
+                for(unsigned int j = 0 ; j < 3 ; j++)
                 {
-                    J(i,j,k) = exchset[Jstr.c_str()][k];
-                    if(enerType=="mRy")
-                    {
-                        J(i,j,k)*=2.179872172e-18;
-                        //now to milli
-                        J(i,j,k)*=1.0e-3;
-                    }
-                    else if(enerType=="eV")
-                    {
-                        J(i,j,k)*=1.602176565e-19;
-                    }
-                    else if(enerType=="J" || enerType=="Joules" || enerType=="joules")
-                    {
-                        //do nothing
-                    }
-                    else
-                    {
-                        error::errPreamble(__FILE__,__LINE__);
-                        error::errMessage("Units of exchange energy not recognised");
-                    }
-
+                    exchvec(i,j)=exchset[evstr.c_str()][j];
+                    kvec(i,j)=int(exchvec(i,j)*geom::Nk[j]);
                 }
-                FIXOUTVEC(config::Info,Jstr,J(i,j,0),J(i,j,1),J(i,j,2));
+                FIXOUTVEC(config::Info,"Vectors:",exchvec(i,0),exchvec(i,1),exchvec(i,2));
+                FIXOUTVEC(config::Info,"On K-mesh:",kvec(i,0),kvec(i,1),kvec(i,2));
+                FIXOUT(config::Info,"Distance in k-points:" << sqrt(double(kvec(i,0)*kvec(i,0)+kvec(i,1)*kvec(i,1)+kvec(i,2)*kvec(i,2))));
+                config::Info << std::endl;
+                for(unsigned int j = 0 ; j < 3 ; j++)
+                {
+
+                    std::stringstream Jsstr;
+                    Jsstr << "J" << i+1 << "_" << j+1;
+                    std::string Jstr;
+                    Jstr=Jsstr.str();
+                    for(unsigned int k = 0 ; k < 3 ; k++)
+                    {
+                        J(i,j,k) = exchset[Jstr.c_str()][k];
+                        if(enerType=="mRy")
+                        {
+                            J(i,j,k)*=2.179872172e-18;
+                            //now to milli
+                            J(i,j,k)*=1.0e-3;
+                        }
+                        else if(enerType=="eV")
+                        {
+                            J(i,j,k)*=1.602176565e-19;
+                        }
+                        else if(enerType=="J" || enerType=="Joules" || enerType=="joules")
+                        {
+                            //do nothing
+                        }
+                        else
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            error::errMessage("Units of exchange energy not recognised");
+                        }
+
+                    }
+                    FIXOUTVEC(config::Info,Jstr,J(i,j,0),J(i,j,1),J(i,j,2));
+                }
+
+                config::Info << std::endl;
+
             }
 
-            config::Info << std::endl;
+            //This section of code takes the kvec interactions and
+            //adds the appropriate Jij to the appropriate interaction matrix
 
+            Array3D<unsigned int> check(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);//This array is used to check if we already have the Jij for this interaction
+            check.IFill(0);
+            for(unsigned int i = 0 ; i < num_shells ; i++)
+            {
+                unsigned int counter=0;
+                //store the original vector
+                unsigned int lc[3]={kvec(i,0),kvec(i,1),kvec(i,2)};
+                for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
+                {
+                    //reference array
+                    int rc[3]={lc[wrap%3],lc[(1+wrap)%3],lc[(2+wrap)%3]};
+                    //work array
+                    int wc[3]={rc[0],rc[1],rc[2]};
+                    //change the signs of each element
+                    for(unsigned int a = 0 ; a < 2 ; a++)
+                    {
+                        for(unsigned int b = 0 ; b < 2 ; b++)
+                        {
+                            for(unsigned int c = 0 ; c < 2 ; c++)
+                            {
+                                wc[0]=rc[0]*pow(-1,a+1);
+                                wc[1]=rc[1]*pow(-1,b+1);
+                                wc[2]=rc[2]*pow(-1,c+1);
+                                int wc_orig[3]={wc[0],wc[1],wc[2]};
+                                //check the boundaries for each component
+                                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                                {
+
+                                    if(wc[xyz]<0)
+                                    {
+                                        wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
+
+                                    }
+
+                                }
+
+                                if(check(wc[0],wc[1],wc[2])==0)
+                                {
+                                    if(geom::coords(wc[0],wc[1],wc[2],0)>-2)
+                                    {
+                                        intmat::Nrxx(wc[0],wc[1],wc[2])+=(J(i,0,0)/(mat::muB*mat::mu));
+                                        intmat::Nrxy(wc[0],wc[1],wc[2])+=(J(i,0,1)/(mat::muB*mat::mu));
+                                        intmat::Nrxz(wc[0],wc[1],wc[2])+=(J(i,0,2)/(mat::muB*mat::mu));
+                                        intmat::Nryx(wc[0],wc[1],wc[2])+=(J(i,1,0)/(mat::muB*mat::mu));
+                                        intmat::Nryy(wc[0],wc[1],wc[2])+=(J(i,1,1)/(mat::muB*mat::mu));
+                                        intmat::Nryz(wc[0],wc[1],wc[2])+=(J(i,1,2)/(mat::muB*mat::mu));
+                                        intmat::Nrzx(wc[0],wc[1],wc[2])+=(J(i,2,0)/(mat::muB*mat::mu));
+                                        intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mu));
+                                        intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mu));
+                                        check(wc[0],wc[1],wc[2])=1;
+                                        //intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
+                                        for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
+                                        {
+                                            for(unsigned int jc2 = 0 ; jc2< 3 ; jc2++)
+                                            {
+                                                //intmap << "\t" << J(i,jc1,jc2);
+                                            }
+                                        }
+                                        //intmap << std::endl;
+                                    }
+                                    else
+                                    {
+                                        error::errPreamble(__FILE__,__LINE__);
+                                        error::errMessage("That interaction does not exist");
+                                    }
+
+                                    counter++;
+                                }
+                            }
+                        }
+                    }
+                }
+                //store the original vector
+                lc[0]=kvec(i,2);
+                lc[1]=kvec(i,1);
+                lc[2]=kvec(i,0);
+                for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
+                {
+                    //reference array
+                    int rc[3]={lc[wrap%3],lc[(1+wrap)%3],lc[(2+wrap)%3]};
+                    //work array
+                    int wc[3]={rc[0],rc[1],rc[2]};
+                    //change the signs of each element
+                    for(unsigned int a = 0 ; a < 2 ; a++)
+                    {
+                        for(unsigned int b = 0 ; b < 2 ; b++)
+                        {
+                            for(unsigned int c = 0 ; c < 2 ; c++)
+                            {
+                                wc[0]=rc[0]*pow(-1,a+1);
+                                wc[1]=rc[1]*pow(-1,b+1);
+                                wc[2]=rc[2]*pow(-1,c+1);
+                                int wc_orig[3]={wc[0],wc[1],wc[2]};
+                                //check the boundaries for each component
+                                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                                {
+                                    if(wc[xyz]<0)
+                                    {
+                                        wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
+
+                                    }
+
+                                }
+
+                                if(check(wc[0],wc[1],wc[2])==0)
+                                {
+                                    if(geom::coords(wc[0],wc[1],wc[2],0)>-2)
+                                    {
+                                        intmat::Nrxx(wc[0],wc[1],wc[2])+=(J(i,0,0)/(mat::muB*mat::mu));
+                                        intmat::Nrxy(wc[0],wc[1],wc[2])+=(J(i,0,1)/(mat::muB*mat::mu));
+                                        intmat::Nrxz(wc[0],wc[1],wc[2])+=(J(i,0,2)/(mat::muB*mat::mu));
+                                        intmat::Nryx(wc[0],wc[1],wc[2])+=(J(i,1,0)/(mat::muB*mat::mu));
+                                        intmat::Nryy(wc[0],wc[1],wc[2])+=(J(i,1,1)/(mat::muB*mat::mu));
+                                        intmat::Nryz(wc[0],wc[1],wc[2])+=(J(i,1,2)/(mat::muB*mat::mu));
+                                        intmat::Nrzx(wc[0],wc[1],wc[2])+=(J(i,2,0)/(mat::muB*mat::mu));
+                                        intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mu));
+                                        intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mu));
+                                        check(wc[0],wc[1],wc[2])=1;
+                                        //intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
+                                        for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
+                                        {
+                                            for(unsigned int jc2 = 0 ; jc2< 3 ; jc2++)
+                                            {
+                                                //intmap << "\t" << J(i,jc1,jc2);
+                                            }
+                                        }
+                                        //intmap << std::endl;
+                                    }
+                                    else
+                                    {
+                                        error::errPreamble(__FILE__,__LINE__);
+                                        error::errMessage("That interaction does not exist");
+                                    }
+
+                                    counter++;
+                                }
+                            }
+                        }
+                    }
+                }
+                if(counter!=numint(i))
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Number of interactions is not correct");
+                }
+            }
+            check.clear();
         }
-
-        //This section of code takes the kvec interactions and
-        //adds the appropriate Jij to the appropriate interaction matrix
-
-        Array3D<unsigned int> check(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);//This array is used to check if we already have the Jij for this interaction
-        check.IFill(0);
-        for(unsigned int i = 0 ; i < num_shells ; i++)
+        else if(method=="direct")
         {
-            unsigned int counter=0;
-            //store the original vector
-            unsigned int lc[3]={kvec(i,0),kvec(i,1),kvec(i,2)};
-            for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
-            {
-                //reference array
-                int rc[3]={lc[wrap%3],lc[(1+wrap)%3],lc[(2+wrap)%3]};
-                //work array
-                int wc[3]={rc[0],rc[1],rc[2]};
-                //change the signs of each element
-                for(unsigned int a = 0 ; a < 2 ; a++)
-                {
-                    for(unsigned int b = 0 ; b < 2 ; b++)
-                    {
-                        for(unsigned int c = 0 ; c < 2 ; c++)
-                        {
-                            wc[0]=rc[0]*pow(-1,a+1);
-                            wc[1]=rc[1]*pow(-1,b+1);
-                            wc[2]=rc[2]*pow(-1,c+1);
-                            int wc_orig[3]={wc[0],wc[1],wc[2]};
-                            //check the boundaries for each component
-                            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
-                            {
-
-                                if(wc[xyz]<0)
-                                {
-                                    wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
-
-                                }
-
-                            }
-
-                            if(check(wc[0],wc[1],wc[2])==0)
-                            {
-                                if(geom::coords(wc[0],wc[1],wc[2],0)>-2)
-                                {
-                                    intmat::Nrxx(wc[0],wc[1],wc[2])+=(J(i,0,0)/(mat::muB*mat::mu));
-                                    intmat::Nrxy(wc[0],wc[1],wc[2])+=(J(i,0,1)/(mat::muB*mat::mu));
-                                    intmat::Nrxz(wc[0],wc[1],wc[2])+=(J(i,0,2)/(mat::muB*mat::mu));
-                                    intmat::Nryx(wc[0],wc[1],wc[2])+=(J(i,1,0)/(mat::muB*mat::mu));
-                                    intmat::Nryy(wc[0],wc[1],wc[2])+=(J(i,1,1)/(mat::muB*mat::mu));
-                                    intmat::Nryz(wc[0],wc[1],wc[2])+=(J(i,1,2)/(mat::muB*mat::mu));
-                                    intmat::Nrzx(wc[0],wc[1],wc[2])+=(J(i,2,0)/(mat::muB*mat::mu));
-                                    intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mu));
-                                    intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mu));
-                                    check(wc[0],wc[1],wc[2])=1;
-                                    //intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
-                                    for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
-                                    {
-                                        for(unsigned int jc2 = 0 ; jc2< 3 ; jc2++)
-                                        {
-                                            //intmap << "\t" << J(i,jc1,jc2);
-                                        }
-                                    }
-                                    //intmap << std::endl;
-                                }
-                                else
-                                {
-                                    error::errPreamble(__FILE__,__LINE__);
-                                    error::errMessage("That interaction does not exist");
-                                }
-
-                                counter++;
-                            }
-                        }
-                    }
-                }
-            }
-            //store the original vector
-            lc[0]=kvec(i,2);
-            lc[1]=kvec(i,1);
-            lc[2]=kvec(i,0);
-            for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
-            {
-                //reference array
-                int rc[3]={lc[wrap%3],lc[(1+wrap)%3],lc[(2+wrap)%3]};
-                //work array
-                int wc[3]={rc[0],rc[1],rc[2]};
-                //change the signs of each element
-                for(unsigned int a = 0 ; a < 2 ; a++)
-                {
-                    for(unsigned int b = 0 ; b < 2 ; b++)
-                    {
-                        for(unsigned int c = 0 ; c < 2 ; c++)
-                        {
-                            wc[0]=rc[0]*pow(-1,a+1);
-                            wc[1]=rc[1]*pow(-1,b+1);
-                            wc[2]=rc[2]*pow(-1,c+1);
-                            int wc_orig[3]={wc[0],wc[1],wc[2]};
-                            //check the boundaries for each component
-                            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
-                            {
-                                if(wc[xyz]<0)
-                                {
-                                    wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
-
-                                }
-
-                            }
-
-                            if(check(wc[0],wc[1],wc[2])==0)
-                            {
-                                if(geom::coords(wc[0],wc[1],wc[2],0)>-2)
-                                {
-                                    intmat::Nrxx(wc[0],wc[1],wc[2])+=(J(i,0,0)/(mat::muB*mat::mu));
-                                    intmat::Nrxy(wc[0],wc[1],wc[2])+=(J(i,0,1)/(mat::muB*mat::mu));
-                                    intmat::Nrxz(wc[0],wc[1],wc[2])+=(J(i,0,2)/(mat::muB*mat::mu));
-                                    intmat::Nryx(wc[0],wc[1],wc[2])+=(J(i,1,0)/(mat::muB*mat::mu));
-                                    intmat::Nryy(wc[0],wc[1],wc[2])+=(J(i,1,1)/(mat::muB*mat::mu));
-                                    intmat::Nryz(wc[0],wc[1],wc[2])+=(J(i,1,2)/(mat::muB*mat::mu));
-                                    intmat::Nrzx(wc[0],wc[1],wc[2])+=(J(i,2,0)/(mat::muB*mat::mu));
-                                    intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mu));
-                                    intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mu));
-                                    check(wc[0],wc[1],wc[2])=1;
-                                    //intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
-                                    for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
-                                    {
-                                        for(unsigned int jc2 = 0 ; jc2< 3 ; jc2++)
-                                        {
-                                            //intmap << "\t" << J(i,jc1,jc2);
-                                        }
-                                    }
-                                    //intmap << std::endl;
-                                }
-                                else
-                                {
-                                    error::errPreamble(__FILE__,__LINE__);
-                                    error::errMessage("That interaction does not exist");
-                                }
-
-                                counter++;
-                            }
-                        }
-                    }
-                }
-            }
-            if(counter!=numint(i))
+            std::ifstream ifs;
+            ifs.open(readFile.c_str());
+            if(!ifs.is_open())
             {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("Number of interactions is not correct");
+                error::errMessage("Could not open exchange file for reading");
+            }
+            unsigned int numint = 0;
+            ifs >> numint;
+            FIXOUT(config::Info,"Number of interactions to be read in:" << numint << std::endl);
+            Array3D<unsigned int> check(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);//This array is used to check if we already have the Jij for this interaction
+            check.IFill(0);
+            unsigned int counter=0;
+            for(unsigned int i = 0 ; i < numint ; i++)
+            {
+                int c[3]={0,0,0};
+                double J[3][3];
+                for(unsigned int rc = 0 ; rc < 3 ; rc++)
+                {
+                    ifs >> c[rc];
+                }
+                //check the boundaries for each component
+                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                {
+                    if(c[xyz]<0)
+                    {
+                        c[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+c[xyz];
+
+                    }
+                }
+
+                for(unsigned int j1 = 0 ; j1 < 3 ; j1++)
+                {
+                    for(unsigned int j2 = 0 ; j2 < 3 ; j2++)
+                    {
+                        ifs >> J[j1][j2];
+                    }
+                }
+                if(check(c[0],c[1],c[2])==0)//then we do not already have an interaction there
+                {
+                    counter++;
+                    if(geom::coords(c[0],c[1],c[2],0)>-2)
+                    {
+                        intmat::Nrxx(c[0],c[1],c[2])+=(J[0][0]/(mat::muB*mat::mu));
+                        intmat::Nrxy(c[0],c[1],c[2])+=(J[0][1]/(mat::muB*mat::mu));
+                        intmat::Nrxz(c[0],c[1],c[2])+=(J[0][2]/(mat::muB*mat::mu));
+                        intmat::Nryx(c[0],c[1],c[2])+=(J[1][0]/(mat::muB*mat::mu));
+                        intmat::Nryy(c[0],c[1],c[2])+=(J[1][1]/(mat::muB*mat::mu));
+                        intmat::Nryz(c[0],c[1],c[2])+=(J[1][2]/(mat::muB*mat::mu));
+                        intmat::Nrzx(c[0],c[1],c[2])+=(J[2][0]/(mat::muB*mat::mu));
+                        intmat::Nrzy(c[0],c[1],c[2])+=(J[2][1]/(mat::muB*mat::mu));
+                        intmat::Nrzz(c[0],c[1],c[2])+=(J[2][2]/(mat::muB*mat::mu));
+                    }
+                }
+
+            }
+            if(counter!=numint)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Incorrect number of interactions found");
             }
         }
-        check.clear();
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Exchange method not recognized");
+        }
+
     }
 }
