@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 24 Jan 2013 20:41:00
+// Last-modified: 28 Jan 2013 19:37:32
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -39,7 +39,7 @@ void sim::MvT(int argc,char *argv[])
 	}
 
 	libconfig::Setting &setting = config::cfg.lookup("mvt");
-	double lT=0.0,uT=0.0,dT=0.0,convmean=0.0,convvar=0.0,met=0.0;
+	double lT=0.0,uT=0.0,dT=0.0,convmean=0.0,convvar=0.0,met=0.0,minrt=0.0;
 	setting.lookupValue("lower_temp",lT);
 	FIXOUT(config::Info,"Lower temperature:" << lT << std::endl);
 	setting.lookupValue("upper_temp",uT);
@@ -52,8 +52,11 @@ void sim::MvT(int argc,char *argv[])
 	FIXOUT(config::Info,"Converging variance to:" << convvar << std::endl);
 	setting.lookupValue("MaxRunTime",met);
 	FIXOUT(config::Info,"Maximum run time per temperature:" << met << " seconds" << std::endl);
-	unsigned int mrts=int(met/llg::dt);
+    setting.lookupValue("MinRunTime",minrt);
+    FIXOUT(config::Info,"Minimum runtime per temp step:" << minrt << std::endl);
+	unsigned int mrts=int(met/llg::dt),eminrts=int(minrt/llg::dt);
 	FIXOUT(config::Info,"Maximum run timesteps:" << mrts << std::endl);
+    FIXOUT(config::Info,"Min rum timesteps:" << eminrts << std::endl);
 	std::string opf;
 	setting.lookupValue("MvTFile",opf);
 	FIXOUT(config::Info,"Outputting magnetization data to:" << opf << std::endl);
@@ -71,12 +74,17 @@ void sim::MvT(int argc,char *argv[])
 	//temperature loop
 	for(double T = lT ; T < uT ; T+=dT)
 	{
+        double modm=0.0;
 		config::printline(config::Info);
 		FIXOUT(config::Info,"Converging temperature:" << T << std::endl);
 		llg::T=T;
 		MS.Clear();
 		double oldmean=0.0;
 		bool convTF=false;
+		for(unsigned int t = 0 ; t < eminrts ; t++)
+		{
+			llg::integrate(t);
+		}
 		for(unsigned int t = 0 ; t < mrts ; t++)
 		{
 			llg::integrate(t);
@@ -85,14 +93,13 @@ void sim::MvT(int argc,char *argv[])
 				const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
 				const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
 				const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
-				const double modm=sqrt(mx*mx+my*my+mz*mz);
-				if(t>int(25e-12/llg::dt))
+				modm=sqrt(mx*mx+my*my+mz*mz);
+				if(t>int(10e-12/llg::dt))
 				{
 					MS.Push(modm);
 					config::Info.width(15);config::Info << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS.Mean()-oldmean) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Variance() << " [ " << convvar << " ]|" << std::endl;
 					if(((fabs(MS.Mean()-oldmean)) < convmean) && (MS.Variance()<convvar) && t > int(75e-12/llg::dt))
 					{
-						ofs << T << "\t" << modm << std::endl;
 						convTF=true;
 						break;
 					}
@@ -101,6 +108,8 @@ void sim::MvT(int argc,char *argv[])
 
 			}
 		}
+        ofs << T << "\t" << modm << std::endl;
+
 
 		FIXOUT(config::Info,"Converged?" << config::isTF(convTF) << std::endl);
 	}

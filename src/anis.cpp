@@ -1,7 +1,7 @@
 // File: anis.cpp
 // Author: Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 22 Jan 2013 10:46:59
+// Last-modified: 30 Jan 2013 19:37:20
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -82,6 +82,11 @@ namespace anis
                 else if(units=="eV")
                 {
                     dT[i][j]*=1.602176565e-19;
+                }
+                else if(units=="meV")
+                {
+                    dT[i][j]*=1.602176565e-19;
+                    dT[i][j]*=1e-3;
                 }
                 else
                 {

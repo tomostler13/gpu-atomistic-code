@@ -36,8 +36,9 @@ exchange:
 	//How are we to read in the exchange
 	//- thisfile (read from the config file)
 	//- extfile (read from an external file)
+    exchmethod="direct";
 	exchinput="extfile";
-	exchfile="exch.in";
+	exchfile="exch.test";
 };
 anisotropy:
 {
@@ -65,8 +66,8 @@ spins:
 };
 sim:
 {
-	sim_type = "MvT";
-	//sim_type = "quick";
+	//sim_type = "MvT";
+	sim_type = "quick";
 };
 mvt:
 {
