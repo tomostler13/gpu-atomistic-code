@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 27 Jan 2013 22:23:40
+// Last-modified: 31 Jan 2013 19:19:29
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -94,14 +94,14 @@ namespace cullg
 		//copy the fields from the zero padded array to the demag field array
 		cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,Czpsn,CCHrx,CCHry,CCHrz);
 		//FOR DEBUGGING THE DIPOLAR FIELD/
-/*		float temp1[3*geom::nspins];
+		float temp1[3*geom::nspins];
 		CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
 		for(unsigned int i = 0 ; i < geom::nspins ; i++)
 		{
 			int ijk[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
 			std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp1[3*i] << "\t" << temp1[3*i+1] << "\t" << temp1[3*i+2] << std::endl;
 		}
-		exit(0);*/
+		exit(0);
 
 		//generate the random numbers
 		CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));

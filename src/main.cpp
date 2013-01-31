@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 31 Jan 2013 18:09:34
+// Last-modified: 31 Jan 2013 19:23:29
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -39,9 +39,9 @@ int main(int argc,char *argv[])
 	intmat::initIntmat(argc,argv);
 
 	//Read in the exchange matrix
-	exch::initExch(argc,argv);
+//	exch::initExch(argc,argv);
 	//Read in the anisotropy tensor
-	anis::initAnis(argc,argv);
+//	anis::initAnis(argc,argv);
 	//add the dipolar fields
 	intmat::fillIntmat();
 
