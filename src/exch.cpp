@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 31 Jan 2013 16:54:25
+// Last-modified: 31 Jan 2013 19:33:05
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -344,6 +344,7 @@ namespace exch
                 for(unsigned int rc = 0 ; rc < 3 ; rc++)
                 {
                     ifs >> c[rc];
+					c[rc]*=geom::Nk[rc];
                     //check boundaries
                     if(c[rc]<0)
                     {

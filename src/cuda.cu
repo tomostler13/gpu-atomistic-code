@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 31 Jan 2013 19:19:29
+// Last-modified: 31 Jan 2013 21:43:19
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -93,15 +93,24 @@ namespace cullg
 		fields_back();
 		//copy the fields from the zero padded array to the demag field array
 		cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,Czpsn,CCHrx,CCHry,CCHrz);
+/*		Array3D<float> temp2x(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+		Array3D<float> temp2y(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+		Array3D<float> temp2z(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);;
+		cudaMemcpy(temp2x.ptr(),CCHrx,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
+		cudaMemcpy(temp2y.ptr(),CCHry,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
+		cudaMemcpy(temp2z.ptr(),CCHrz,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);*/
 		//FOR DEBUGGING THE DIPOLAR FIELD/
-		float temp1[3*geom::nspins];
+/*		float temp1[3*geom::nspins];
 		CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
 		for(unsigned int i = 0 ; i < geom::nspins ; i++)
 		{
 			int ijk[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
 			std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp1[3*i] << "\t" << temp1[3*i+1] << "\t" << temp1[3*i+2] << std::endl;
+			std::cerr << temp2x.getarrayelement(ijk[0],ijk[1],ijk[2]) << std::endl;
+			std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp2x(ijk[0],ijk[1],ijk[2])/double(geom::zps) << "\t" << temp2y(ijk[0],ijk[1],ijk[2])/double(geom::zps) << "\t" << temp2z(ijk[0],ijk[1],ijk[2])/double(geom::zps) << std::endl;
+
 		}
-		exit(0);
+		exit(0);*/
 
 		//generate the random numbers
 		CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
@@ -143,7 +152,7 @@ namespace cullg
 		config::printline(config::Info);
 		config::Info.width(45);config::Info << std::right << "*" << "**CUDA details***" << std::endl;
         FIXOUT(config::Info,"Resetting device:" << std::flush);
-//		CUDA_CALL(cudaDeviceReset());
+		CUDA_CALL(cudaDeviceReset());
         SUCCESS(config::Info);
 
 		nrank=3;
@@ -349,9 +358,15 @@ namespace cullg
 				}
 			}
 		}
+		if(count!=geom::zps)
+		{
+			error::errPreamble(__FILE__,__LINE__);
+			error::errWarning("Error in counting zero pad size for GPU lookup");
+		}
 		for(unsigned int i = 0 ; i < geom::nspins ; i++)
 		{
 			nsia[i]=spins::Srx.getarrayelement(geom::lu(i,0),geom::lu(i,1),geom::lu(i,2));
+//			std::cerr << nsia[i] << std::endl;
 		}
 		CUDA_CALL(cudaMemcpy(Czpsn,nsia,geom::nspins*sizeof(int),cudaMemcpyHostToDevice));
 		CUDA_CALL(cudaMemcpy(Clu,sn,geom::zps*sizeof(int),cudaMemcpyHostToDevice));

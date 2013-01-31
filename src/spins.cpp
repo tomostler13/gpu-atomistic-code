@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 24 Jan 2013 13:08:32
+// Last-modified: 31 Jan 2013 21:40:33
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -50,8 +50,8 @@ namespace spins
         Skx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
         Sky.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
         Skz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        Srx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[0]*geom::Nk[2]);
-        Sry.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[1]*geom::Nk[2]);
+        Srx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Sry.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
         Srz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
         Srx.IFill(0);
         Sry.IFill(0);

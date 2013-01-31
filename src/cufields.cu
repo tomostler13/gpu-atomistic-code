@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 24 Jan 2013 20:08:42
+// Last-modified: 31 Jan 2013 21:31:49
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -79,13 +79,13 @@ namespace cufields
 
     __global__ void CCopyFields(int N,int zpN,float *CH,int *Czpsn,cufftReal *CCHx,cufftReal *CCHy,cufftReal *CCHz)
     {
-        register const int i = blockDim.x*blockIdx.x + threadIdx.x;
+        const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
             int lzpsn=Czpsn[i];
-            CH[3*i]=float(CCHx[lzpsn])/float(zpN);
-            CH[3*i+1]=float(CCHy[lzpsn])/float(zpN);
-            CH[3*i+2]=float(CCHz[lzpsn])/float(zpN);
+            CH[3*i]=(CCHx[lzpsn])/float(zpN);
+            CH[3*i+1]=(CCHy[lzpsn])/float(zpN);
+            CH[3*i+2]=(CCHz[lzpsn])/float(zpN);
         }
     }
 }
