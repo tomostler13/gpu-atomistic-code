@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 30 Jan 2013 19:36:14
+// Last-modified: 31 Jan 2013 16:54:25
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -344,15 +344,10 @@ namespace exch
                 for(unsigned int rc = 0 ; rc < 3 ; rc++)
                 {
                     ifs >> c[rc];
-                }
-//                std::cout << "Interaction: " << c[0] << "\t" << c[1] << "\t" << c[2] << std::endl;
-                //check the boundaries for each component
-                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
-                {
-                    if(c[xyz]<0)
+                    //check boundaries
+                    if(c[rc]<0)
                     {
-                        c[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+c[xyz];
-
+                        c[rc]=geom::zpdim[rc]*geom::Nk[rc]+c[rc];
                     }
                 }
                 //std::cout << c[0] << "\t" << c[1] << "\t" << c[2] << "\t" << 1 << std::endl;
@@ -369,18 +364,34 @@ namespace exch
                 //std::cin.get();
                 if(check(c[0],c[1],c[2])==0)//then we do not already have an interaction there
                 {
+                    check(c[0],c[1],c[2])=1;
                     counter++;
                     if(geom::coords(c[0],c[1],c[2],0)>-2)
                     {
-                        intmat::Nrxx(c[0],c[1],c[2])+=(J[0][0]/(mat::muB*mat::mu));
+                        double av=(J[0][0]+J[1][1]+J[2][2])/3.0;
+//                        intmat::Nrxx(c[0],c[1],c[2])+=av/(mat::muB*mat::mu);//((J[0][0])/(mat::muB*mat::mu));
+//                        intmat::Nrxy(c[0],c[1],c[2])+=(J[0][1]/(mat::muB*mat::mu));
+//                        intmat::Nrxz(c[0],c[1],c[2])+=(J[0][2]/(mat::muB*mat::mu));
+//                        intmat::Nryx(c[0],c[1],c[2])+=(J[1][0]/(mat::muB*mat::mu));
+//                        intmat::Nryy(c[0],c[1],c[2])+=av/(mat::muB*mat::mu);//((J[1][1])/(mat::muB*mat::mu));
+//                        intmat::Nryz(c[0],c[1],c[2])+=(J[1][2]/(mat::muB*mat::mu));
+//                        intmat::Nrzx(c[0],c[1],c[2])+=(J[2][0]/(mat::muB*mat::mu));
+//                        intmat::Nrzy(c[0],c[1],c[2])+=(J[2][1]/(mat::muB*mat::mu));
+//                        intmat::Nrzz(c[0],c[1],c[2])+=av/(mat::muB*mat::mu);//((J[2][2])/(mat::muB*mat::mu));
+                        intmat::Nrxx(c[0],c[1],c[2])+=((J[0][0])/(mat::muB*mat::mu));
                         intmat::Nrxy(c[0],c[1],c[2])+=(J[0][1]/(mat::muB*mat::mu));
                         intmat::Nrxz(c[0],c[1],c[2])+=(J[0][2]/(mat::muB*mat::mu));
                         intmat::Nryx(c[0],c[1],c[2])+=(J[1][0]/(mat::muB*mat::mu));
-                        intmat::Nryy(c[0],c[1],c[2])+=(J[1][1]/(mat::muB*mat::mu));
+                        intmat::Nryy(c[0],c[1],c[2])+=((J[1][1])/(mat::muB*mat::mu));
                         intmat::Nryz(c[0],c[1],c[2])+=(J[1][2]/(mat::muB*mat::mu));
                         intmat::Nrzx(c[0],c[1],c[2])+=(J[2][0]/(mat::muB*mat::mu));
                         intmat::Nrzy(c[0],c[1],c[2])+=(J[2][1]/(mat::muB*mat::mu));
-                        intmat::Nrzz(c[0],c[1],c[2])+=(J[2][2]/(mat::muB*mat::mu));
+                        intmat::Nrzz(c[0],c[1],c[2])+=((J[2][2])/(mat::muB*mat::mu));
+
+/*                std::cout << "Interaction: " << i << "\nJij:\n" << intmat::Nrxx(c[0],c[1],c[2]) << "\t" << intmat::Nrxy(c[0],c[1],c[2]) << "\t" << intmat::Nrxz(c[0],c[1],c[2]) << std::endl;
+                std::cout <<  intmat::Nryx(c[0],c[1],c[2]) << "\t" << intmat::Nryy(c[0],c[1],c[2]) << "\t" << intmat::Nryz(c[0],c[1],c[2]) << std::endl;
+                std::cout <<  intmat::Nrzx(c[0],c[1],c[2]) << "\t" << intmat::Nrzy(c[0],c[1],c[2]) << "\t" << intmat::Nrzz(c[0],c[1],c[2]) << std::endl;
+                std::cin.get();*/
                     }
                 }
                 else

@@ -13,7 +13,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 8 , 8 , 8 ];
+	dim = [ 64 , 64 , 64 ];
 	//Number of atoms in the primitive cell
 	nauc = 4;
 	//The primitive cell
@@ -42,11 +42,11 @@ exchange:
 };
 anisotropy:
 {
-	units = "joules";
+	units = "meV";
 	//The anisotropy tensor
 	dxb = [ 0.0 , 0.0 , 0.0 ];
 	dyb = [ 0.0 , 0.0 , 0.0 ];
-	dzb = [ 0.0 , 0.0 , 1.0e-24 ];
+	dzb = [ 0.0 , 0.0 , 2.0 ];
 };
 llg:
 {
@@ -62,7 +62,7 @@ spins:
 	spinconfig = "align";
 	//sc = [ 0.001 , 0.0 , 0.9999995 ];
 	sc = [ 0.0 , 0.0 , 1.0 ];
-	update=100;
+	update=10;
 };
 sim:
 {
