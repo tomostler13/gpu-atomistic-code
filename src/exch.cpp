@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 01 Feb 2013 08:36:26
+// Last-modified: 03 Feb 2013 19:41:38
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -334,9 +334,15 @@ namespace exch
 
             int dump;
             ifs>>dump;
+            std::ofstream map("map.dat");
+            if(!map.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open file for outputting exchange map");
+            }
             for(unsigned int i = 0 ; i < noint ; i++)
             {
-                int c[3]={0,0,0};
+                int oc[3]={0,0,0},c[3]={0,0,0};
                 double J[3][3];
                 ifs>>dump;
                 ifs>>dump;
@@ -345,9 +351,10 @@ namespace exch
                 for(unsigned int rc = 0 ; rc < 3 ; rc++)
                 {
                     ifs >> c[rc];
+                    oc[rc]=c[rc];
 
                     dist+=(double(c[rc])*double(c[rc]));
-					c[rc]*=geom::Nk[rc];
+					//c[rc]*=geom::Nk[rc];
                     //check boundaries
                     if(c[rc]<0)
                     {
@@ -364,47 +371,56 @@ namespace exch
                         ifs >> J[j1][j2];
                     }
                 }
+                if(c[2]==0)
+                {
+                    map << oc[0] << "\t" << oc[1];
+                    for(unsigned int j1 = 0 ; j1 < 3 ; j1++)
+                    {
+                        for(unsigned int j2 = 0 ; j2 < 3 ; j2++)
+                        {
+                            map << "\t" << J[j1][j2];
+                        }
+                    }
+                    map << std::endl;
+                }
+               /*if(dist<2.0)
+                {
+                std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << "\t" << J[0][0] << "\t" << J[0][1] << "\t" << J[0][2] << "\t";
+                std::cout << J[1][0] << "\t" << J[1][1] << "\t" << J[1][2] << "\t";
+                std::cout << J[2][0] << "\t" << J[2][1] << "\t" << J[2][2] << std::endl;
+                }
+
                 //std::cout << "Jij:\n" << J[0][0] << "\t" << J[0][1] << "\t" << J[0][2] << std::endl;
                 //std::cout << J[1][0] << "\t" << J[1][1] << "\t" << J[1][2] << std::endl;
                 //std::cout << J[2][0] << "\t" << J[2][1] << "\t" << J[2][2] << std::endl;
-                //std::cin.get();
+                //std::cin.get();*/
+
                 if(check(c[0],c[1],c[2])==0)//then we do not already have an interaction there
                 {
                     check(c[0],c[1],c[2])=1;
                     counter++;
                     if(geom::coords(c[0],c[1],c[2],0)>-2)
                     {
-                        double av=(J[0][0]+J[1][1]+J[2][2])/3.0;
-//                        intmat::Nrxx(c[0],c[1],c[2])+=av/(mat::muB*mat::mu);//((J[0][0])/(mat::muB*mat::mu));
-//                        intmat::Nrxy(c[0],c[1],c[2])+=(J[0][1]/(mat::muB*mat::mu));
-//                        intmat::Nrxz(c[0],c[1],c[2])+=(J[0][2]/(mat::muB*mat::mu));
-//                        intmat::Nryx(c[0],c[1],c[2])+=(J[1][0]/(mat::muB*mat::mu));
-//                        intmat::Nryy(c[0],c[1],c[2])+=av/(mat::muB*mat::mu);//((J[1][1])/(mat::muB*mat::mu));
-//                        intmat::Nryz(c[0],c[1],c[2])+=(J[1][2]/(mat::muB*mat::mu));
-//                        intmat::Nrzx(c[0],c[1],c[2])+=(J[2][0]/(mat::muB*mat::mu));
-//                        intmat::Nrzy(c[0],c[1],c[2])+=(J[2][1]/(mat::muB*mat::mu));
-//                        intmat::Nrzz(c[0],c[1],c[2])+=av/(mat::muB*mat::mu);//((J[2][2])/(mat::muB*mat::mu));
-if(dist<2)
-                {
-                        intmat::Nrxx(c[0],c[1],c[2])+=fabs((J[0][0])/(mat::muB*mat::mu));
+                        intmat::Nrxx(c[0],c[1],c[2])+=(J[0][0]/(mat::muB*mat::mu));
                         intmat::Nrxy(c[0],c[1],c[2])+=(J[0][1]/(mat::muB*mat::mu));
                         intmat::Nrxz(c[0],c[1],c[2])+=(J[0][2]/(mat::muB*mat::mu));
                         intmat::Nryx(c[0],c[1],c[2])+=(J[1][0]/(mat::muB*mat::mu));
-                        intmat::Nryy(c[0],c[1],c[2])+=fabs((J[1][1])/(mat::muB*mat::mu));
+                        intmat::Nryy(c[0],c[1],c[2])+=(J[1][1]/(mat::muB*mat::mu));
                         intmat::Nryz(c[0],c[1],c[2])+=(J[1][2]/(mat::muB*mat::mu));
                         intmat::Nrzx(c[0],c[1],c[2])+=(J[2][0]/(mat::muB*mat::mu));
                         intmat::Nrzy(c[0],c[1],c[2])+=(J[2][1]/(mat::muB*mat::mu));
-                        intmat::Nrzz(c[0],c[1],c[2])+=fabs((J[2][2])/(mat::muB*mat::mu));
-                std::cout << "Jij:\n" << J[0][0] << "\t" << J[0][1] << "\t" << J[0][2] << std::endl;
-                std::cout << J[1][0] << "\t" << J[1][1] << "\t" << J[1][2] << std::endl;
-                std::cout << J[2][0] << "\t" << J[2][1] << "\t" << J[2][2] << std::endl;
-
-                        }
-
+                        intmat::Nrzz(c[0],c[1],c[2])+=(J[2][2]/(mat::muB*mat::mu));
+                        //intmat::Nrzz(c[0],c[1],c[2])+=((J[2][2]+2.0*2.0*1.6e-19*1e-3)/(mat::muB*mat::mu));
 /*                std::cout << "Interaction: " << i << "\nJij:\n" << intmat::Nrxx(c[0],c[1],c[2]) << "\t" << intmat::Nrxy(c[0],c[1],c[2]) << "\t" << intmat::Nrxz(c[0],c[1],c[2]) << std::endl;
                 std::cout <<  intmat::Nryx(c[0],c[1],c[2]) << "\t" << intmat::Nryy(c[0],c[1],c[2]) << "\t" << intmat::Nryz(c[0],c[1],c[2]) << std::endl;
                 std::cout <<  intmat::Nrzx(c[0],c[1],c[2]) << "\t" << intmat::Nrzy(c[0],c[1],c[2]) << "\t" << intmat::Nrzz(c[0],c[1],c[2]) << std::endl;
                 std::cin.get();*/
+                    }
+                    else
+                    {
+                        std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << "\t" <<  c[0] << "\t" << c[1] << "\t" << c[2] << std::endl;
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("You are trying to add an interaction to an empty mesh point.");
                     }
                 }
                 else
@@ -424,6 +440,12 @@ if(dist<2)
                 FIXOUT(config::Info,"Read in exchange data for:" << counter << " interactions" << std::endl);
             }
             check.clear();
+            map.close();
+            if(map.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not close interaction map file.");
+            }
         }
         else
         {

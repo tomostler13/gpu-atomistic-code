@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 23 Jan 2013 12:04:06
+// Last-modified: 01 Feb 2013 11:12:37
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -9,6 +9,9 @@
 #include "../inc/spins.h"
 #include "../inc/intmat.h"
 #include "../inc/geom.h"
+#include "../inc/error.h"
+#include <string>
+#include <sstream>
 #include <omp.h>
 extern "C" {
     // LU decomoposition of a general matrix
@@ -135,6 +138,59 @@ namespace util
 		pclose(pipe);
 		return result;
 	}
+    void outputSpinsVTU(unsigned int t)
+    {
+        std::stringstream pvss;
+        std::string pv="spinmap";
+        pvss << pv << "_" << t << ".vtu";
+        std::string pvs = pvss.str();
+        std::ofstream pvf(pvs.c_str());
+        if(!pvf.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open file for writing paraview files");
+        }
+
+        pvf << "<?xml version=\"1.0\"?>" << "\n";
+        pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
+        pvf << "<UnstructuredGrid>" << "\n";
+        pvf << "<Piece NumberOfPoints=\""<<geom::nspins<<"\"  NumberOfCells=\"1\">" << "\n";
+        pvf << "<PointData Scalar=\"Spin\">" << "\n";
+        pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+                    pvf << spins::Sx(i) << "\t" << spins::Sy(i) << "\t" << spins::Sz(i) << "\n";
+        }
+        pvf << "</DataArray>" << "\n";
+        pvf << "</PointData>" << "\n";
+        pvf << "<CellData>" << "\n";
+        pvf << "</CellData>" << "\n";
+        pvf << "<Points>" << "\n";
+        pvf << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            pvf << double(geom::lu(i,0))*geom::abc[0] << "\t" << double(geom::lu(i,1))*geom::abc[1] << "\t" << double(geom::lu(i,2))*geom::abc[2] << "\n";
+        }
+
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Points>" << "\n";
+        pvf << "<Cells>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Cells>" << "\n";
+        pvf << "</Piece>" << "\n";
+        pvf << "</UnstructuredGrid>" << "\n";
+        pvf << "</VTKFile>" << "\n";
+        pvf.close();
+    }
+
 
 }
 

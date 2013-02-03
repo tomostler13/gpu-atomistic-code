@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 01 Feb 2013 08:27:59
+// Last-modified: 02 Feb 2013 11:45:55
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -43,7 +43,7 @@ int main(int argc,char *argv[])
 	//Read in the anisotropy tensor
 	anis::initAnis(argc,argv);
 	//add the dipolar fields
-//	intmat::fillIntmat();
+	intmat::fillIntmat();
 
 
 	//Now we have all of the terms in our interaction matrix, fourier transform the result
@@ -72,7 +72,7 @@ int main(int argc,char *argv[])
 	{
 
 		llg::T=1.0e-27;
-		for(unsigned int t = 0 ; t < 50000 ; t++)
+		for(unsigned int t = 0 ; t < 5000 ; t++)
 		{
 			llg::integrate(t);
 			if(t%spins::update==0)
@@ -83,6 +83,7 @@ int main(int argc,char *argv[])
 				std::cout << double(t)*llg::dt << "\t" << mx/double(geom::nspins) << "\t" << my/double(geom::nspins) << "\t" << mz/double(geom::nspins) << std::endl;
 			}
 		}
+        util::outputSpinsVTU(-1);
 	}
     return(0);
 }
