@@ -1,5 +1,5 @@
 OutputFile = "opf.dat";
-seed = 1359107107;
+seed = 1359;
 mat:
 {
 	mu = 3.23;
@@ -30,16 +30,14 @@ system:
 exchange:
 {
     //Exchange reading method 
-    //direct (by reading in all interactions directly)
+    //direct (by reading in all interactions directly. The interactions should already take into account the number of "k-points")
     //permute (take a neighbour and calculate permutations)
     exchmethod="direct";
 	//How are we to read in the exchange
 	//- thisfile (read from the config file)
 	//- extfile (read from an external file)
 	exchinput="extfile";
-	exchfile="FePtOlegTrunk.dat";
-    //exchfile="FePtBulk.in";
-    //exchfile="exch.sc";
+	exchfile="FePtOlegTrunk.in";
 };
 anisotropy:
 {
@@ -63,12 +61,12 @@ spins:
 	spinconfig = "align";
 	sc = [ 0.001 , 0.0 , 0.9999995 ];
 	//sc = [ 0.0 , 0.0 , 1.0 ];
-	update=10;
+	update=50;
 };
 sim:
 {
-	//sim_type = "MvT";
-	sim_type = "quick";
+	sim_type = "MvT";
+	//sim_type = "quick";
 };
 mvt:
 {
@@ -77,7 +75,7 @@ mvt:
 	temp_step = 25.0;
 	mean_tolerance = 0.0001;
 	variance_tolerance = 0.00025;
-	MaxRunTime = 0.5e-10;
-    MinRunTime = 1e-15;
+	MaxRunTime = 500e-12;
+    MinRunTime = 50e-12;
 	MvTFile = "MvT.dat";
 };
