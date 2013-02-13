@@ -13,7 +13,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 32 , 32 , 32 ];
+	dim = [ 16 , 16 , 16 ];
 	//Number of atoms in the primitive cell
 	nauc = 2;
 	//The primitive cell
@@ -37,7 +37,7 @@ exchange:
 	//- thisfile (read from the config file)
 	//- extfile (read from an external file)
 	exchinput="extfile";
-	exchfile="FePtOlegTrunk.dat";
+	exchfile="FePtOlegTrunk.in";
     //exchfile="FePtBulk.in";
     //exchfile="exch.sc";
 };
