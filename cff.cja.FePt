@@ -13,7 +13,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 8 , 8 , 8 ];
+	dim = [ 32 , 32 , 32 ];
 	//Number of atoms in the primitive cell
 	nauc = 1;
 	//The primitive cell
@@ -45,7 +45,7 @@ anisotropy:
 	//The anisotropy tensor
 	dxb = [ 0.0 , 0.0 , 0.0 ];
 	dyb = [ 0.0 , 0.0 , 0.0 ];
-	dzb = [ 0.0 , 0.0 , 0.0 ];
+	dzb = [ 0.0 , 0.0 , 2.0 ];
 };
 llg:
 {
@@ -71,13 +71,14 @@ sim:
 mvt:
 {
 	lower_temp = 1.0e-27;
-	upper_temp = 700.0;
+	upper_temp = 850.0;
 	temp_step = 25.0;
 	mean_tolerance = 0.0001;
 	variance_tolerance = 0.00025;
-	MaxRunTime = 0.5e-10;
-    MinRunTime = 1e-15;
+	MaxRunTime = 1000e-12;
+    MinRunTime = 100e-12;
 	MvTFile = "MvT.dat";
     order_param = "staggered";
     Number_sublattices = 2;
+	AFM_type = "layered";
 };

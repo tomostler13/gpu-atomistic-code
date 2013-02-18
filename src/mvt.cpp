@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 18 Feb 2013 12:10:45
+// Last-modified: 18 Feb 2013 12:38:16
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -126,6 +126,7 @@ void sim::MvT(int argc,char *argv[])
 		ofs << "#Temperature\tMean" << std::endl;
 	}
 	util::RunningStat MS[nslat];
+	util::RunningStat MSx[nslat],MSy[nslat],MSz[nslat];
     bool conv[nslat];
 	//temperature loop
 	for(double T = lT ; T < uT ; T+=dT)
@@ -139,6 +140,9 @@ void sim::MvT(int argc,char *argv[])
             oldmean[nl]=0.0;
             conv[nl]=false;
             MS[nl].Clear();
+			MSx[nl].Clear();
+			MSy[nl].Clear();
+			MSz[nl].Clear();
         }
 		bool convTF=false;
 		for(unsigned int t = 0 ; t < eminrts ; t++)
@@ -193,6 +197,9 @@ void sim::MvT(int argc,char *argv[])
                     for(unsigned int i = 0 ; i < nslat ; i++)
                     {
                         MS[i].Push(modm[i]);
+						MSx[i].Push(mx[i]);
+						MSy[i].Push(my[i]);
+						MSz[i].Push(mz[i]);
                         config::Info.width(15);config::Info << "Sublattice " << i << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS[i].Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS[i].Mean()-oldmean[i]) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS[i].Variance() << " [ " << convvar << " ]|" << std::endl;
                         if(((fabs(MS[i].Mean()-oldmean[i])) < convmean) && (MS[i].Variance()<convvar) && t > int(75e-12/llg::dt))
                         {
@@ -216,12 +223,19 @@ void sim::MvT(int argc,char *argv[])
 				}
 
 			}
+/*			std::cout << t;
+			for(unsigned int i = 0 ; i < nslat ; i++)
+			{
+				std::cout << "\t" << mx[i] << "\t" << my[i] << "\t" << mz[i] << "\t" << modm[i];
+			}
+			std::cout << std::endl;*/
 		}
         ofs << T;
         for(unsigned int i = 0 ; i < nslat ; i++)
         {
-            ofs << "\t" << modm[i] << std::endl;
+            ofs << "\t" << MSx[i].Mean() << "\t" << MSy[i].Mean() << "\t" << MSz[i].Mean() << "\t" << MS[i].Mean();
         }
+		ofs << std::endl;
 
 
 		FIXOUT(config::Info,"Converged?" << config::isTF(convTF) << std::endl);
@@ -233,7 +247,13 @@ void sim::MvT(int argc,char *argv[])
 		error::errWarning("Could not close file for outputting magnetization data.");
 	}
 
-
+	delete [] mx;
+	delete [] my;
+	delete [] mz;
+	delete [] modm;
+	delete [] ncount;
+	delete [] latlookup;
+	mx=NULL;my=NULL;mz=NULL;modm=NULL;ncount=NULL;latlookup=NULL;
 
 
 }
