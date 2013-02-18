@@ -65,8 +65,8 @@ spins:
 };
 sim:
 {
-	//sim_type = "MvT";
-	sim_type = "quick";
+	sim_type = "MvT";
+	//sim_type = "quick";
 };
 mvt:
 {
@@ -78,4 +78,6 @@ mvt:
 	MaxRunTime = 0.5e-10;
     MinRunTime = 1e-15;
 	MvTFile = "MvT.dat";
+    order_param = "staggered";
+    Number_sublattices = 2;
 };

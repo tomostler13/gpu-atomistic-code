@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 28 Jan 2013 19:37:32
+// Last-modified: 18 Feb 2013 12:10:45
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -39,6 +39,7 @@ void sim::MvT(int argc,char *argv[])
 	}
 
 	libconfig::Setting &setting = config::cfg.lookup("mvt");
+    std::string order_param;
 	double lT=0.0,uT=0.0,dT=0.0,convmean=0.0,convvar=0.0,met=0.0,minrt=0.0;
 	setting.lookupValue("lower_temp",lT);
 	FIXOUT(config::Info,"Lower temperature:" << lT << std::endl);
@@ -60,6 +61,60 @@ void sim::MvT(int argc,char *argv[])
 	std::string opf;
 	setting.lookupValue("MvTFile",opf);
 	FIXOUT(config::Info,"Outputting magnetization data to:" << opf << std::endl);
+    setting.lookupValue("order_param",order_param);
+    FIXOUT(config::Info,"Outputting order parameter:" << order_param << std::endl);
+    unsigned int nslat=1;
+    std::string afmtype;
+    double *mx=NULL,*my=NULL,*mz=NULL,*modm=NULL,*ncount=NULL;;
+    unsigned int *latlookup=NULL;
+    setting.lookupValue("Number_sublattices",nslat);
+    FIXOUT(config::Info,"Number of sublattices in order parameter calculation:" << nslat << std::endl);
+    try
+    {
+        mx = new double[nslat];
+        my = new double[nslat];
+        mz = new double[nslat];
+        modm = new double[nslat];
+        ncount = new double[nslat];
+        latlookup = new unsigned int[geom::nspins];
+        for(unsigned int i = 0 ; i < nslat ; i++)
+        {
+            mx[i]=0;
+            my[i]=0;
+            mz[i]=0;
+            modm[i]=0;
+            ncount[i]=0;
+        }
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            unsigned int zc=geom::lu(i,2);
+            latlookup[i]=zc%nslat;
+            ncount[zc%nslat]++;
+        }
+        unsigned int tc=0;
+        for(unsigned int i = 0 ; i < nslat ; i++)
+        {
+            tc+=ncount[i];
+        }
+        if(tc!=geom::nspins)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Mismatch in counting sublattices spins");
+        }
+    }
+    catch(...)
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not allocate staggered magnetization memory");
+    }
+    setting.lookupValue("AFM_type",afmtype);
+    FIXOUT(config::Info,"Type of AFM expected:" << afmtype << std::endl);
+    if(afmtype!="layered")
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Type of AFM not currently coded");
+    }
+
 	std::ofstream ofs(opf.c_str());
 	if(!ofs.is_open())
 	{
@@ -70,16 +125,21 @@ void sim::MvT(int argc,char *argv[])
 	{
 		ofs << "#Temperature\tMean" << std::endl;
 	}
-	util::RunningStat MS;
+	util::RunningStat MS[nslat];
+    bool conv[nslat];
 	//temperature loop
 	for(double T = lT ; T < uT ; T+=dT)
 	{
-        double modm=0.0;
 		config::printline(config::Info);
 		FIXOUT(config::Info,"Converging temperature:" << T << std::endl);
 		llg::T=T;
-		MS.Clear();
-		double oldmean=0.0;
+		double oldmean[nslat];
+        for(unsigned int nl = 0 ; nl < nslat ; nl++)
+        {
+            oldmean[nl]=0.0;
+            conv[nl]=false;
+            MS[nl].Clear();
+        }
 		bool convTF=false;
 		for(unsigned int t = 0 ; t < eminrts ; t++)
 		{
@@ -90,25 +150,78 @@ void sim::MvT(int argc,char *argv[])
 			llg::integrate(t);
 			if(t%spins::update==0)
 			{
-				const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
-				const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
-				const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
-				modm=sqrt(mx*mx+my*my+mz*mz);
+                for(unsigned int i = 0 ; i < nslat ; i++)
+                {
+                    mx[i]=0.0;
+                    my[i]=0.0;
+                    mz[i]=0.0;
+                    modm[i]=0.0;
+                }
+
+                if(nslat==1)
+                {
+                    mx[0] = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
+                    my[0] = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
+                    mz[0] = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
+                    modm[0]=sqrt(mx[0]*mx[0]+my[0]*my[0]+mz[0]*mz[0]);
+                }
+                else
+                {
+                    for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                    {
+                        //sublattice owner
+                        unsigned int slowner=latlookup[i];
+                        mx[slowner]+=spins::Sx[i];
+                        my[slowner]+=spins::Sy[i];
+                        mz[slowner]+=spins::Sz[i];
+                    }
+                    for(unsigned int i = 0 ; i < nslat ; i++)
+                    {
+                        mx[i]/=ncount[i];
+                        my[i]/=ncount[i];
+                        mz[i]/=ncount[i];
+                        modm[i]=sqrt(mx[i]*mx[i]+my[i]*my[i]+mz[i]*mz[i]);
+                    }
+                }
+
+
+
+
+
 				if(t>int(10e-12/llg::dt))
 				{
-					MS.Push(modm);
-					config::Info.width(15);config::Info << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS.Mean()-oldmean) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Variance() << " [ " << convvar << " ]|" << std::endl;
-					if(((fabs(MS.Mean()-oldmean)) < convmean) && (MS.Variance()<convvar) && t > int(75e-12/llg::dt))
-					{
-						convTF=true;
-						break;
-					}
-					oldmean=MS.Mean();
+                    for(unsigned int i = 0 ; i < nslat ; i++)
+                    {
+                        MS[i].Push(modm[i]);
+                        config::Info.width(15);config::Info << "Sublattice " << i << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS[i].Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS[i].Mean()-oldmean[i]) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS[i].Variance() << " [ " << convvar << " ]|" << std::endl;
+                        if(((fabs(MS[i].Mean()-oldmean[i])) < convmean) && (MS[i].Variance()<convvar) && t > int(75e-12/llg::dt))
+                        {
+                            conv[i]=true;
+                        }
+                        oldmean[i]=MS[i].Mean();
+                    }
+                    convTF=true;
+                    for(unsigned int i = 0 ; i < nslat ; i++)
+                    {
+                        if(conv[i]==false)
+                        {
+                            convTF=false;
+                        }
+                    }
+                    if(convTF==true)
+                    {
+                        break;
+                    }
+
 				}
 
 			}
 		}
-        ofs << T << "\t" << modm << std::endl;
+        ofs << T;
+        for(unsigned int i = 0 ; i < nslat ; i++)
+        {
+            ofs << "\t" << modm[i] << std::endl;
+        }
 
 
 		FIXOUT(config::Info,"Converged?" << config::isTF(convTF) << std::endl);
