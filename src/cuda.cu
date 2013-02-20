@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 31 Jan 2013 21:43:19
+// Last-modified: 20 Feb 2013 13:33:58
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -99,15 +99,15 @@ namespace cullg
 		cudaMemcpy(temp2x.ptr(),CCHrx,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
 		cudaMemcpy(temp2y.ptr(),CCHry,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
 		cudaMemcpy(temp2z.ptr(),CCHrz,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);*/
-		//FOR DEBUGGING THE DIPOLAR FIELD/
-/*		float temp1[3*geom::nspins];
+/*		//FOR DEBUGGING THE DIPOLAR FIELD/
+		float temp1[3*geom::nspins];
 		CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
 		for(unsigned int i = 0 ; i < geom::nspins ; i++)
 		{
 			int ijk[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
 			std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp1[3*i] << "\t" << temp1[3*i+1] << "\t" << temp1[3*i+2] << std::endl;
-			std::cerr << temp2x.getarrayelement(ijk[0],ijk[1],ijk[2]) << std::endl;
-			std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp2x(ijk[0],ijk[1],ijk[2])/double(geom::zps) << "\t" << temp2y(ijk[0],ijk[1],ijk[2])/double(geom::zps) << "\t" << temp2z(ijk[0],ijk[1],ijk[2])/double(geom::zps) << std::endl;
+			//std::cerr << temp2x.getarrayelement(ijk[0],ijk[1],ijk[2]) << std::endl;
+			//std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp2x(ijk[0],ijk[1],ijk[2])/double(geom::zps) << "\t" << temp2y(ijk[0],ijk[1],ijk[2])/double(geom::zps) << "\t" << temp2z(ijk[0],ijk[1],ijk[2])/double(geom::zps) << std::endl;
 
 		}
 		exit(0);*/

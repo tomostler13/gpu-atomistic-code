@@ -1,5 +1,6 @@
 OutputFile = "opf.dat";
 seed = 1359;
+include_dipolar=false;
 mat:
 {
 	mu = 3.23;
@@ -25,7 +26,8 @@ system:
 	//Number of k-points in each direction
 	Nk = [ 2 , 2 , 2 ];
 	//lattice constants
-	abc = [ 0.369792e-9 , 0.369792e-9 , 0.369792e-9 ];
+	abc = [ 0.386e-9 , 0.386e-9 , 0.374e-9 ];
+    zpcheck=false;
 };
 exchange:
 {
@@ -61,8 +63,8 @@ cuda:
 spins:
 {
 	spinconfig = "align";
-	sc = [ 0.001 , 0.0 , 0.9999995 ];
-	//sc = [ 0.0 , 0.0 , 1.0 ];
+	//sc = [ 0.001 , 0.0 , 0.9999995 ];
+	sc = [ 0.0 , 0.0 , 1.0 ];
 	update=50;
 };
 sim:
