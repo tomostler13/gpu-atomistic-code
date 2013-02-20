@@ -8,9 +8,10 @@ export LC_ALL=C
 # LIBS
 DEFS=-DNDEBUG
 CUDEFS=-DCUDA
-LIBS= -lfftw3 -lfftw3f -lm -lconfig++ -lstdc++ -llapack -lblas
+LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ -llapack -lblas
 CPULIBS= -fopenmp -lpthread
 CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft
+STATIC_LINK=/usr/local/lib/libconfig++.a
 OPT_LEVEL=-O3
 GCC_FLAGS= $(OPT_LEVEL)
 #NVCC_FLAGS= -g $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 
@@ -54,7 +55,7 @@ all: $(OBJECTS) gcc
 
 # Serial Targets
 gcc: $(OBJECTS) $(SWITCHOBJ)
-	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTS) $(SWITCHOBJ) -o $(EXECUTABLE) $(LIBS) $(CPULIBS)
+	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTS) $(SWITCHOBJ) $(STATIC_LINK) -o $(EXECUTABLE) $(LIBS) $(CPULIBS)
 
 $(OBJECTS): obj/%.o: src/%.cpp
 	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
@@ -64,7 +65,7 @@ $(SWITCHOBJ): obj/%.o: src/%.cpp
 
 # cuda targets
 gcc-cuda: $(SWITCH_OBJECTS) $(NVCC_OBJECTS) $(CUDA_OBJECTS)
-	$(NVCC) $(CUDA_OBJECTS) $(SWITCH_OBJECTS) $(NVCC_OBJECTS) $(CUDALIBS) $(LIBS) -o $(EXECUTABLE) $(GITINFO) $(DEFS)
+	$(NVCC) $(CUDA_OBJECTS) $(SWITCH_OBJECTS) $(NVCC_OBJECTS) $(STATIC_LINK) $(CUDALIBS) $(LIBS) -o $(EXECUTABLE) $(GITINFO) $(DEFS)
 
 $(CUDA_OBJECTS): obj/%_cuda.o: src/%.cpp
 	$(GCC) -c -o $@ $(GCC_FLAGS) $(DEFS) $(GITINFO) $<
