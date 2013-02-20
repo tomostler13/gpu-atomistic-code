@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 18 Feb 2013 12:38:16
+// Last-modified: 20 Feb 2013 13:01:27
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -107,12 +107,15 @@ void sim::MvT(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("Could not allocate staggered magnetization memory");
     }
-    setting.lookupValue("AFM_type",afmtype);
-    FIXOUT(config::Info,"Type of AFM expected:" << afmtype << std::endl);
-    if(afmtype!="layered")
+    if(nslat>1)
     {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Type of AFM not currently coded");
+        setting.lookupValue("AFM_type",afmtype);
+        FIXOUT(config::Info,"Type of AFM expected:" << afmtype << std::endl);
+        if(afmtype!="layered")
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Type of AFM not currently coded");
+        }
     }
 
 	std::ofstream ofs(opf.c_str());
