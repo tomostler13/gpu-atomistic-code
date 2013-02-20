@@ -1,6 +1,6 @@
 // File: config.h
 // Author:Tom Ostler
-// Last-modified: 05 Dec 2012 16:04:42
+// Last-modified: 20 Feb 2013 12:28:25
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -17,6 +17,7 @@ namespace config
     extern libconfig::Config cfg;
     extern unsigned int seed;
     extern bool lcf;
+    extern bool incdip;
     extern std::ofstream Info;
     void initConfig(int argc,char *argv[]);
     void printline(std::ofstream&);

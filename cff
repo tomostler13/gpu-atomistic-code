@@ -1,5 +1,6 @@
 OutputFile = "opf.dat";
 seed = 1359107107;
+include_dipolar=false;
 mat:
 {
 	mu = 1.6;
@@ -30,6 +31,7 @@ system:
 	Nk = [ 2 , 2 , 2 ];
 	//lattice constants
 	abc = [ 0.251e-9 , 0.251e-9 , 0.251e-9 ];
+    zpcheck=true;
 };
 exchange:
 {

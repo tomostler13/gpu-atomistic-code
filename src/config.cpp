@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 25 Jan 2013 19:24:03
+// Last-modified: 20 Feb 2013 12:47:27
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -14,11 +14,13 @@
 #include "../inc/random.h"
 #include "../inc/util.h"
 #include <cassert>
+#include "../inc/config.h"
 #define FIXOUT(a,b) a.width(75);a << std::left << b;
 namespace config
 {
     libconfig::Config cfg;
     bool lcf=false;
+    bool incdip=true;
     unsigned int seed=0;
     std::ofstream Info;
     void initConfig(int argc,char *argv[])
@@ -49,6 +51,8 @@ namespace config
         char *dtime=ctime(&now);
         std::string iffstr=cfg.lookup("OutputFile");
         seed = cfg.lookup("seed");
+        incdip=cfg.lookup("include_dipolar");
+        FIXOUT(config::Info,"Including dipolar terms:" << isTF(incdip) << std::endl);
         Random::seed(seed,seed+100);
         Info.open(iffstr.c_str());
         //open the output info file

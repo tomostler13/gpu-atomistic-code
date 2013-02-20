@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 31 Jan 2013 18:07:39
+// Last-modified: 20 Feb 2013 12:44:34
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -44,6 +44,8 @@ namespace geom
     Array4D<int> coords;
     //instance of the unit cell
     unitCellMembers ucm;
+    //check if we are zeropadding the fourier transform
+    bool zpcheck=true;
     void initGeom(int argc,char *argv[])
     {
         assert(config::lcf);
@@ -73,6 +75,13 @@ namespace geom
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Could not open file for writing structure");
         }
+        setting.lookupValue("zpcheck",zpcheck);
+        if(zpcheck==false && config::incdip==true)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("You must zero pad the fourier transform if you want to include the dipolar field terms.");
+        }
+        FIXOUT(config::Info,"Zero pad the fourier transform:" << config::isTF(zpcheck) << std::endl);
         L.resize(3,3);
         L.IFill(0);
         Linv.resize(3,3);
@@ -89,7 +98,14 @@ namespace geom
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
             dim[i]=setting["dim"][i];
-            zpdim[i]=2*dim[i];
+            if(zpcheck==true)
+            {
+                zpdim[i]=2*dim[i];
+            }
+            else
+            {
+                zpdim[i]=dim[i];
+            }
         }
         FIXOUT(config::Info,"Unit cell matrix (L):" << std::showpos << "[ " << L(0,0) << " , " << L(0,1) << " , " << L(0,2) << " ]" << std::endl);
         FIXOUT(config::Info,"" << "[ " << std::showpos << L(1,0) << " , " << L(1,1) << " , " << L(1,2) << " ]" << std::endl);
@@ -135,7 +151,7 @@ namespace geom
         }
         FIXOUT(config::Info,"Number of K-points:" << "[ " << Nk[0] << " , " << Nk[1] << " , " << Nk[2] << " ]" << std::endl);
         FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
-        cplxdim=(dim[2]*Nk[2])+1;
+        cplxdim=(zpdim[2]*Nk[2]/2)+1;
 
 		czps=zpdim[0]*Nk[0]*zpdim[1]*Nk[1]*cplxdim;
 		FIXOUT(config::Info,"czps:" << czps << std::endl);
@@ -145,7 +161,7 @@ namespace geom
         zps=1;
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
-            zps*=(2*dim[i]*Nk[i]);
+            zps*=(zpdim[i]*Nk[i]);
         }
 
         FIXOUT(config::Info,"Maximum number of spins:" << maxss << std::endl);
