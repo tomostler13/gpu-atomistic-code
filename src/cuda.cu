@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 20 Feb 2013 19:13:56
+// Last-modified: 20 Feb 2013 20:18:50
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -99,7 +99,7 @@ namespace cullg
 		cudaMemcpy(temp2x.ptr(),CCHrx,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
 		cudaMemcpy(temp2y.ptr(),CCHry,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
 		cudaMemcpy(temp2z.ptr(),CCHrz,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);*/
-		//FOR DEBUGGING THE DIPOLAR FIELD/
+/*		//FOR DEBUGGING THE DIPOLAR FIELD/
 		float temp1[3*geom::nspins];
 		CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
 		for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -110,7 +110,7 @@ namespace cullg
 			//std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp2x(ijk[0],ijk[1],ijk[2])/double(geom::zps) << "\t" << temp2y(ijk[0],ijk[1],ijk[2])/double(geom::zps) << "\t" << temp2z(ijk[0],ijk[1],ijk[2])/double(geom::zps) << std::endl;
 
 		}
-		exit(0);
+		exit(0);*/
 
 		//generate the random numbers
 		CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
