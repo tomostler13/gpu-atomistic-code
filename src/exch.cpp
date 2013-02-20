@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 03 Feb 2013 19:41:38
+// Last-modified: 20 Feb 2013 19:37:20
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -175,10 +175,20 @@ namespace exch
                 unsigned int counter=0;
                 //store the original vector
                 unsigned int lc[3]={kvec(i,0),kvec(i,1),kvec(i,2)};
+                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                {
+
+                    if(geom::zpcheck==false && abs(lc[xyz])>geom::dim[xyz]*geom::Nk[xyz]/2)
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("Interactions are out of range");
+                    }
+                }
                 for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
                 {
                     //reference array
                     int rc[3]={lc[wrap%3],lc[(1+wrap)%3],lc[(2+wrap)%3]};
+
                     //work array
                     int wc[3]={rc[0],rc[1],rc[2]};
                     //change the signs of each element
@@ -201,6 +211,7 @@ namespace exch
                                         wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
 
                                     }
+
 
                                 }
 
@@ -241,9 +252,18 @@ namespace exch
                     }
                 }
                 //store the original vector
-                lc[0]=kvec(i,2);
+                lc[0]=kvec(i,0);
                 lc[1]=kvec(i,1);
-                lc[2]=kvec(i,0);
+                lc[2]=kvec(i,2);
+                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                {
+                    if(geom::zpcheck==false && abs(lc[xyz])>geom::dim[xyz]*geom::Nk[xyz]/2)
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("Interactions are out of range");
+                    }
+                }
+
                 for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
                 {
                     //reference array
@@ -267,8 +287,8 @@ namespace exch
                                     if(wc[xyz]<0)
                                     {
                                         wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
-
                                     }
+
 
                                 }
 
@@ -352,6 +372,13 @@ namespace exch
                 {
                     ifs >> c[rc];
                     oc[rc]=c[rc];
+                    if(geom::zpcheck==false && abs(oc[rc])>geom::dim[rc]*geom::Nk[rc]/2)
+                    {
+                        std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << std::endl;
+                        std::cout << geom::dim[0]*geom::Nk[0]/2 << "\t" << geom::dim[1]*geom::Nk[1]/2 << "\t" << geom::dim[2]*geom::Nk[2]/2 << std::endl;
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("Interactions are out of range");
+                    }
 
                     dist+=(double(c[rc])*double(c[rc]));
 					//c[rc]*=geom::Nk[rc];
@@ -397,6 +424,7 @@ namespace exch
 
                 if(check(c[0],c[1],c[2])==0)//then we do not already have an interaction there
                 {
+
                     check(c[0],c[1],c[2])=1;
                     counter++;
                     if(geom::coords(c[0],c[1],c[2],0)>-2)
@@ -425,6 +453,7 @@ namespace exch
                 }
                 else
                 {
+                    std::cerr << c[0] << "\t" << c[1] << "\t" << c[2] << std::endl;
                     error::errPreamble(__FILE__,__LINE__);
                     error::errMessage("That interaction has already been read");
                 }

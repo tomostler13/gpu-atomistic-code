@@ -1,7 +1,7 @@
 // File: geom.h
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Jan 2013 15:08:44
+// Last-modified: 20 Feb 2013 19:14:39
 #include "../inc/arrays.h"
 #include "../inc/unitcell.h"
 #include <string>
@@ -16,6 +16,7 @@ namespace geom
     extern Array4D<int> coords;
     extern Array<double> abc;
     extern Array<unsigned int> Nk;
+    extern bool zpcheck;
 
     extern unitCellMembers ucm;
 }

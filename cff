@@ -14,7 +14,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 8 , 8 , 8 ];
+	dim = [ 4 , 4 , 4 ];
 	//Number of atoms in the primitive cell
 	nauc = 4;
 	//The primitive cell
