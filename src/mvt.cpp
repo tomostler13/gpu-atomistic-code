@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 20 Feb 2013 13:01:27
+// Last-modified: 22 Feb 2013 19:58:56
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -41,6 +41,16 @@ void sim::MvT(int argc,char *argv[])
 	libconfig::Setting &setting = config::cfg.lookup("mvt");
     std::string order_param;
 	double lT=0.0,uT=0.0,dT=0.0,convmean=0.0,convvar=0.0,met=0.0,minrt=0.0;
+    bool outmag=false;
+    std::ofstream magout;
+    std::string MagFilestr;
+    setting.lookupValue("outmag",outmag);
+    FIXOUT(config::Info,"Output magnetization data for each temperature:" << config::isTF(outmag) << std::endl);
+    if(outmag==true)
+    {
+        setting.lookupValue("MagFileName",MagFilestr);
+        FIXOUT(config::Info,"Magnetization files output to:" << MagFilestr << std::endl);
+    }
 	setting.lookupValue("lower_temp",lT);
 	FIXOUT(config::Info,"Lower temperature:" << lT << std::endl);
 	setting.lookupValue("upper_temp",uT);
@@ -137,6 +147,19 @@ void sim::MvT(int argc,char *argv[])
 		config::printline(config::Info);
 		FIXOUT(config::Info,"Converging temperature:" << T << std::endl);
 		llg::T=T;
+        if(outmag)
+        {
+            std::stringstream MagFilesstr;
+            MagFilesstr << MagFilestr << "_" << T << ".dat";
+            std::string mopf=MagFilesstr.str();
+            magout.open(mopf.c_str());
+            if(!magout.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open file for outputting magnetization data");
+            }
+        }
+
 		double oldmean[nslat];
         for(unsigned int nl = 0 ; nl < nslat ; nl++)
         {
@@ -199,6 +222,10 @@ void sim::MvT(int argc,char *argv[])
 				{
                     for(unsigned int i = 0 ; i < nslat ; i++)
                     {
+                        if(outmag)
+                        {
+                            magout << "\t" << mx[i] << "\t" << my[i] << "\t" << mz[i] << "\t" << modm[i];
+                        }
                         MS[i].Push(modm[i]);
 						MSx[i].Push(mx[i]);
 						MSy[i].Push(my[i]);
@@ -209,6 +236,10 @@ void sim::MvT(int argc,char *argv[])
                             conv[i]=true;
                         }
                         oldmean[i]=MS[i].Mean();
+                    }
+                    if(outmag)
+                    {
+                        magout << std::endl;
                     }
                     convTF=true;
                     for(unsigned int i = 0 ; i < nslat ; i++)
@@ -239,7 +270,16 @@ void sim::MvT(int argc,char *argv[])
             ofs << "\t" << MSx[i].Mean() << "\t" << MSy[i].Mean() << "\t" << MSz[i].Mean() << "\t" << MS[i].Mean();
         }
 		ofs << std::endl;
-
+        if(outmag)
+        {
+            magout << std::flush;
+            magout.close();
+            if(magout.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not close magnetization file");
+            }
+        }
 
 		FIXOUT(config::Info,"Converged?" << config::isTF(convTF) << std::endl);
 	}

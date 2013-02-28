@@ -69,8 +69,8 @@ spins:
 };
 sim:
 {
-	//sim_type = "MvT";
-	sim_type = "quick";
+	sim_type = "MvT";
+	//sim_type = "quick";
 };
 mvt:
 {

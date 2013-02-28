@@ -1,9 +1,9 @@
 OutputFile = "opf.dat";
-seed = 1359107107;
+seed = 1361549461;
 include_dipolar=false;
 mat:
 {
-	mu = 1.6;
+	mu = 3.23;
 	gamma = 1.76e11;
 	lambda = 1.0;
 };
@@ -14,31 +14,30 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 4 , 4 , 4 ];
+	dim = [ 16 , 16 , 24 ];
 	//Number of atoms in the primitive cell
-	nauc = 4;
+	nauc = 2;
 	//The primitive cell
 	atom0 = [ 0.0 , 0.0 , 0.0 , 0.0 ];
-	atom1 = [ 0.5 , 0.5 , 0.0 , 1.0 ];
-	atom2 = [ 0.5 , 0.0 , 0.5 , 2.0 ];
-	atom3 = [ 0.0 , 0.5 , 0.5 , 3.0 ];
+    atom1 = [ 0.5 , 0.5 , 0.0 , 1.0 ];
 	//Periodic table elements for each atom
 	Element0="N";
-	Element1="O";
-	Element2="O";
-	Element3="O";
+    Element1="O";
 	//Number of k-points in each direction
 	Nk = [ 2 , 2 , 2 ];
 	//lattice constants
-	abc = [ 0.251e-9 , 0.251e-9 , 0.251e-9 ];
-    zpcheck=false;
+	abc = [ 0.386e-9 , 0.386e-9 , 0.374e-9 ];
+    zpcheck=true;
 };
 exchange:
 {
+    //Exchange reading method 
+    //direct (by reading in all interactions directly. The interactions should already take into account the number of "k-points")
+    //permute (take a neighbour and calculate permutations)
+    exchmethod="direct";
 	//How are we to read in the exchange
 	//- thisfile (read from the config file)
 	//- extfile (read from an external file)
-    exchmethod="permute";
 	exchinput="extfile";
 	exchfile="FePtOlegTrunk.in";
 };
@@ -48,11 +47,11 @@ anisotropy:
 	//The anisotropy tensor
 	dxb = [ 0.0 , 0.0 , 0.0 ];
 	dyb = [ 0.0 , 0.0 , 0.0 ];
-	dzb = [ 0.0 , 0.0 , 0.0 ];
+	dzb = [ 0.0 , 0.0 , 2.5038e-23 ];
 };
 llg:
 {
-	dt = 1.0e-15;
+	dt = 0.25e-15;
 	applied = [ 0.0 , 0.0 , 0.0 ];
 };
 cuda:
@@ -62,22 +61,27 @@ cuda:
 spins:
 {
 	spinconfig = "align";
-	//sc = [ 0.001 , 0.0 , 0.9999995 ];
-	sc = [ 0.0 , 0.0 , 1.0 ];
-	update=10;
+	sc = [ 0.001 , 0.0 , 0.9999995 ];
+	//sc = [ 0.0 , 0.0 , 1.0 ];
+	update=50;
 };
 sim:
 {
-	//sim_type = "MvT";
-	sim_type = "quick";
+	sim_type = "MvT";
+	//sim_type = "quick";
 };
 mvt:
 {
-	lower_temp = 1.0e-27;
-	upper_temp = 1500.0;
-	temp_step = 25.0;
+	lower_temp = 30.0001;
+	upper_temp = 300.0001;
+	temp_step = 50.0;
 	mean_tolerance = 0.0001;
 	variance_tolerance = 0.00025;
-	MaxRunTime = 1.0e-10;
+	MaxRunTime = 500e-12;
+    MinRunTime = 200e-12;
 	MvTFile = "MvT.dat";
+    order_param="staggered";
+    Number_sublattices=1;
+    outmag=true;
+    MagFileName="magt";
 };
