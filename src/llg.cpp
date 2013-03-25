@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 23 Jan 2013 11:02:16
+// Last-modified: 25 Mar 2013 17:31:15
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -15,7 +15,10 @@
 namespace llg
 {
     double applied[3]={0,0,0},T,dt,rdt,llgpf;
-
+    //real space correlation function
+    bool rscf=false;
+    std::string rscfstr;
+    std::ofstream rscfs;
 	void initLLG(int argc,char *argv[])
 	{
         config::printline(config::Info);
@@ -40,6 +43,12 @@ namespace llg
 
         libconfig::Setting &setting = config::cfg.lookup("llg");
         setting.lookupValue("dt",dt);
+        setting.lookupValue("RealSpaceCorrelations",rscf);
+
+        setting.lookupValue("RSCFile",rscfstr);
+
+        FIXOUT(config::Info,"Outputting correlation functions to file:" << rscfstr << std::endl);
+        FIXOUT(config::Info,"Calculating real space correlation functions:" << config::isTF(rscf) << std::endl);
         for(unsigned int i = 0 ; i < 3 ;i++)
         {
             applied[i]=setting["applied"][i];

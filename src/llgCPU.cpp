@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 15 Mar 2013 08:17:00
+// Last-modified: 25 Mar 2013 13:43:15
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -54,6 +54,10 @@ namespace llgCPU
     {
         //calculate the 2 spin fields (dipolar, exchange, anisotropy)
         fields::ftdip();
+        if(llg::rscf==true)
+        {
+            //spins::calcRealSpaceCorrelationFunction();
+        }
         //FOR DEBUGGING THE FIELD
 /*        for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {

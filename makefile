@@ -9,9 +9,9 @@ export LC_ALL=C
 DEFS=-DNDEBUG
 CUDEFS=-DCUDA
 LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ -llapack -lblas
-CPULIBS= -fopenmp -lpthread
+CPULIBS= -fopenmp -lpthread -lconfig++
 CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft
-STATIC_LINK=/usr/local/lib/libconfig++.a
+STATIC_LINK=#/usr/local/lib/libconfig++.a
 OPT_LEVEL=-O3
 GCC_FLAGS= $(OPT_LEVEL)
 #NVCC_FLAGS= -g $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 

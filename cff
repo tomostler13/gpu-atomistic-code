@@ -14,7 +14,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 16 , 16 , 24 ];
+	dim = [ 16 , 16 , 16 ];
 	//Number of atoms in the primitive cell
 	nauc = 2;
 	//The primitive cell
@@ -53,6 +53,9 @@ llg:
 {
 	dt = 0.25e-15;
 	applied = [ 0.0 , 0.0 , 0.0 ];
+    RealSpaceCorrelations = TRUE;
+    //Real space correlations file (the time is added to the end)
+    RSCFile = "RSCF_zz_";
 };
 cuda:
 {
@@ -67,8 +70,8 @@ spins:
 };
 sim:
 {
-	sim_type = "MvT";
-	//sim_type = "quick";
+	//sim_type = "MvT";
+	sim_type = "quick";
 };
 mvt:
 {

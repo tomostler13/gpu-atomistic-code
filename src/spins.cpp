@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 31 Jan 2013 21:40:33
+// Last-modified: 25 Mar 2013 17:50:57
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -10,6 +10,8 @@
 #include <iomanip>
 #include <cmath>
 #include <fstream>
+#include <sstream>
+#include <string>
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -19,12 +21,18 @@
 #include "../inc/intmat.h"
 #include "../inc/defines.h"
 #include "../inc/maths.h"
+#include "../inc/llg.h"
 namespace spins
 {
     Array3D<fftw_complex> Skx,Sky,Skz;
     Array3D<double> Srx,Sry,Srz;
+    Array3D<double> Sznzp;
+    Array3D<fftw_complex> Sqznzp;
+    unsigned int nzpcplxdim=0;
+    double normsize=0;
+
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
-    fftw_plan SxP,SyP,SzP;
+    fftw_plan SxP,SyP,SzP,SzcfPF,SzcfPB;
 	unsigned int update=0;
 	std::ifstream sfs;
     void initSpins(int argc,char *argv[])
@@ -56,12 +64,27 @@ namespace spins
         Srx.IFill(0);
         Sry.IFill(0);
         Srz.IFill(0);
+
         Sx.resize(geom::nspins);
         Sy.resize(geom::nspins);
         Sz.resize(geom::nspins);
 		SUCCESS(config::Info);
 		std::string sc;
 		libconfig::Setting &setting = config::cfg.lookup("spins");
+        if(llg::rscf)
+        {
+            Sznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+
+            nzpcplxdim=(geom::dim[2]*geom::Nk[2]/2)+1;
+            Sqznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
+            SzcfPF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sznzp.ptr(),Sqznzp.ptr(),FFTW_ESTIMATE);
+            SzcfPB = fftw_plan_dft_c2r_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sqznzp.ptr(),Sznzp.ptr(),FFTW_ESTIMATE);
+            normsize=geom::dim[0]*geom::Nk[0]*geom::dim[0]*geom::Nk[0];
+            normsize*=geom::dim[1]*geom::Nk[1]*geom::dim[1]*geom::Nk[1];
+            normsize*=geom::dim[2]*geom::Nk[2]*geom::dim[2]*geom::Nk[2];
+        }
+
+
 		setting.lookupValue("update",update);
 		FIXOUT(config::Info,"Spin update:" << update << " (timesteps)" << std::endl);
 		if(update<1)
@@ -181,4 +204,64 @@ namespace spins
         fftw_execute(SyP);
         fftw_execute(SzP);
     }
+    void calcRealSpaceCorrelationFunction(unsigned int t)
+    {
+        Sqznzp.IFill(0);
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            Sznzp(lc[0],lc[1],lc[2])=Sz[i];
+        }
+        fftw_execute(SzcfPF);
+        for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+        {
+            for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+            {
+                for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                {
+                    double Sq[2]={Sqznzp(i,j,k)[0],Sqznzp(i,j,k)[1]};
+                    double CCSq[2]={Sqznzp(i,j,k)[0],-Sqznzp(i,j,k)[1]};
+                    Sqznzp(i,j,k)[0]=Sq[0]*CCSq[0]-Sq[1]*CCSq[1];//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[0]-Sqznzp(i,j,k)[1]*Sqznzp(i,j,k)[1];
+                    Sqznzp(i,j,k)[1]=Sq[0]*CCSq[1]+Sq[1]*CCSq[0];//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[1]+Sqznzp(i,j,k)[1]*Sqznzp
+                }
+            }
+        }
+        fftw_execute(SzcfPB);
+        std::stringstream sstr;
+        sstr << llg::rscfstr << t;
+        std::string tempstr=sstr.str();
+        llg::rscfs.open(tempstr.c_str());
+        if(!llg::rscfs.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open file for writing correlation function");
+        }
+        for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i+=geom::Nk[0])
+        {
+            for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j+=geom::Nk[1])
+            {
+                //for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2] ; k+=geom::Nk[2])
+                //{
+                    int ijk[3]={i,j,0};
+                    for(unsigned int c = 0 ; c < 3 ; c++)
+                    {
+                        if(ijk[c]>geom::dim[c]*geom::Nk[c]/2)
+                        {
+                            ijk[c]=ijk[c]-geom::dim[c]*geom::Nk[c];
+                        }
+                    }
+                    llg::rscfs << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << Sznzp(i,j,0)/normsize << std::endl;
+                //}
+            }
+            llg::rscfs << std::endl;
+        }
+        llg::rscfs.close();
+        if(llg::rscfs.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close file for writing correlation function");
+        }
+
+    }
+
 }
