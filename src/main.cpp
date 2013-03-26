@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 25 Mar 2013 17:25:33
+// Last-modified: 26 Mar 2013 13:21:55
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -76,7 +76,18 @@ int main(int argc,char *argv[])
 	{
 
 		llg::T=800.0;
-		for(unsigned int t = 0 ; t < 10000 ; t++)
+        std::stringstream sstr;
+        sstr << llg::rscfstr << "all.dat";
+        std::string tempstr=sstr.str();
+        llg::rscfs.open(tempstr.c_str());
+        if(!llg::rscfs.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open file for writing correlation function");
+        }
+        unsigned int ets=10000;
+        unsigned int rts=10000;
+		for(unsigned int t = 0 ; t < ets ; t++)
 		{
 			llg::integrate(t);
 			if(t%spins::update==0)
@@ -85,10 +96,11 @@ int main(int argc,char *argv[])
 				const double my = util::reduceCPU(spins::Sy,geom::nspins);
 				const double mz = util::reduceCPU(spins::Sz,geom::nspins);
 				std::cout << double(t)*llg::dt << "\t" << mx/double(geom::nspins) << "\t" << my/double(geom::nspins) << "\t" << mz/double(geom::nspins) << std::endl;
+                spins::calcRealSpaceCorrelationFunction(t);
 			}
 		}
         llg::T=1e-27;
-		for(unsigned int t = 0 ; t < 1000 ; t++)
+		for(unsigned int t = ets ; t < rts+ets ; t++)
 		{
 			llg::integrate(t);
 			if(t%spins::update==0)
@@ -101,6 +113,12 @@ int main(int argc,char *argv[])
                 spins::calcRealSpaceCorrelationFunction(t);
 			}
 		}
+        llg::rscfs.close();
+        if(llg::rscfs.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close file for writing correlation function");
+        }
 
         util::outputSpinsVTU(-1);
 	}

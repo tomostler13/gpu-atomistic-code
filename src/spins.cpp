@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 25 Mar 2013 17:50:57
+// Last-modified: 26 Mar 2013 13:20:13
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -22,6 +22,13 @@
 #include "../inc/defines.h"
 #include "../inc/maths.h"
 #include "../inc/llg.h"
+#include <levmar.h>
+
+#ifndef LM_DBL_PREC
+#error Example program assumes that levmar has been compiled with double precision, see LM_DBL_PREC!
+#endif
+
+
 namespace spins
 {
     Array3D<fftw_complex> Skx,Sky,Skz;
@@ -30,6 +37,7 @@ namespace spins
     Array3D<fftw_complex> Sqznzp;
     unsigned int nzpcplxdim=0;
     double normsize=0;
+    double knorm=0;
 
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
     fftw_plan SxP,SyP,SzP,SzcfPF,SzcfPB;
@@ -82,6 +90,7 @@ namespace spins
             normsize=geom::dim[0]*geom::Nk[0]*geom::dim[0]*geom::Nk[0];
             normsize*=geom::dim[1]*geom::Nk[1]*geom::dim[1]*geom::Nk[1];
             normsize*=geom::dim[2]*geom::Nk[2]*geom::dim[2]*geom::Nk[2];
+            knorm=double(geom::nauc)/(double(geom::Nk[0]*geom::Nk[1]*geom::Nk[2]));
         }
 
 
@@ -207,6 +216,7 @@ namespace spins
     void calcRealSpaceCorrelationFunction(unsigned int t)
     {
         Sqznzp.IFill(0);
+        Sznzp.IFill(0);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
@@ -227,16 +237,16 @@ namespace spins
             }
         }
         fftw_execute(SzcfPB);
-        std::stringstream sstr;
-        sstr << llg::rscfstr << t;
-        std::string tempstr=sstr.str();
-        llg::rscfs.open(tempstr.c_str());
-        if(!llg::rscfs.is_open())
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not open file for writing correlation function");
-        }
-        for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i+=geom::Nk[0])
+        //std::stringstream sstr;
+        //sstr << llg::rscfstr << t;
+        //std::string tempstr=sstr.str();
+        //llg::rscfs.open(tempstr.c_str());
+        //if(!llg::rscfs.is_open())
+        //{
+        //    error::errPreamble(__FILE__,__LINE__);
+        //    error::errMessage("Could not open file for writing correlation function");
+        //}
+        /*for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i+=geom::Nk[0])
         {
             for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j+=geom::Nk[1])
             {
@@ -250,18 +260,63 @@ namespace spins
                             ijk[c]=ijk[c]-geom::dim[c]*geom::Nk[c];
                         }
                     }
-                    llg::rscfs << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << Sznzp(i,j,0)/normsize << std::endl;
+//                    llg::rscfs << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << Sznzp(i,j,0)/normsize << std::endl;
                 //}
             }
             llg::rscfs << std::endl;
-        }
-        llg::rscfs.close();
-        if(llg::rscfs.is_open())
+        }*/
+        for(int k = -(geom::dim[2]*geom::Nk[2]/2)+geom::Nk[2] ; k < 0 ; k+=2)
         {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errWarning("Could not close file for writing correlation function");
+            int arluv=geom::dim[2]*geom::Nk[2]+k;
+            llg::rscfs << t << "\t"<< k << "\t" << Sznzp(0,0,arluv)/(normsize*knorm) << std::endl;
         }
+        for(int k = geom::Nk[2] ; k < (geom::dim[2]*geom::Nk[2]/2) ; k+=2)
+        {
+            llg::rscfs << t << "\t" << k << "\t" << Sznzp(0,0,k)/(normsize*knorm) << std::endl;
+        }
+        llg::rscfs << std::endl;// << std::endl;
+        fitcorr();
+        //llg::rscfs.close();
+        //if(llg::rscfs.is_open())
+        //{
+        //    error::errPreamble(__FILE__,__LINE__);
+        //    error::errWarning("Could not close file for writing correlation function");
+        //}
 
     }
+    void corrfunc(double *p,double *x,int m,int n,void *data)
+    {
+        register int i;
+        for(int i = geom::Nk[2] ; i < (geom::dim[2]*geom::Nk[2]/2) ; i+=2)
+        {
+            x[i]=p[0]*cos(p[1]*double(i))*exp(-double(i)/p[2])+p[3];
+        }
+    }
+
+    struct xtradata{
+        char msg[128];
+        };
+
+    void fitcorr()
+    {
+        const int n=(geom::dim[2]*geom::Nk[2]/2)-1,m=4;
+        double p[m],x[n],opts[LM_OPTS_SZ],info[LM_INFO_SZ];
+        int ret;
+        struct xtradata data;
+        //initial guess for parameters
+        p[0]=Sznzp(0,0,1);
+        p[1]=2.0*M_PI/(4.0*geom::dim[2]*geom::Nk[2]);
+        p[2]=geom::dim[2]*geom::Nk[2]/4.0;
+        p[3]=0.01;
+        /* optimization control parameters; passing to levmar NULL instead of opts reverts to defaults */
+        opts[0]=LM_INIT_MU; opts[1]=1E-15; opts[2]=1E-15; opts[3]=1E-20;
+        opts[4]=LM_DIFF_DELTA; // relevant only if the finite difference Jacobian version is used
+        ret=dlevmar_dif(corrfunc,p,x,m,n,1000,opts,info,NULL,NULL,(void *)&data);
+        std::cerr << p[0] << "\t" << p[1] << "\t" << p[2] << "\t" << p[3] << std::endl;
+        //printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
+        //printf("Best fit parameters: %.7g %.7g %.7g %.7g\n", p[0], p[1], p[2], p[3]);
+
+    }
+
 
 }

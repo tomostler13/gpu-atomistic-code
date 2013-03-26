@@ -1,7 +1,7 @@
 // File: spins.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 25 Mar 2013 17:25:14
+// Last-modified: 26 Mar 2013 13:12:08
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -28,6 +28,8 @@ namespace spins
     void FFTForward();
     void eFFTForward();
     void calcRealSpaceCorrelationFunction(unsigned int);
+    //void corrfunc(double *,double *,int,int,void);
+    void fitcorr();
     extern std::string rscfstr;
     extern std::ofstream rscfs;
 }
