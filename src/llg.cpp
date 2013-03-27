@@ -1,12 +1,14 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 25 Mar 2013 17:31:15
+// Last-modified: 27 Mar 2013 16:49:14
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
 #include "../inc/defines.h"
 #include "../inc/mat.h"
+#include "../inc/spins.h"
+#include "../inc/llg.h"
 #include <cmath>
 #ifdef CUDA
 #include <cuda.h>
@@ -68,8 +70,16 @@ namespace llg
     {
         #ifdef CUDA
         cullg::llgGPU(t);
+		if(t%spins::update==0 && rscf)
+		{
+			spins::calcRealSpaceCorrelationFunction(t);
+		}
         #else
         llgCPU::llgCPU(t);
+		if(t%spins::update==0 && rscf)
+		{
+			spins::calcRealSpaceCorrelationFunction(t);
+		}
         #endif
     }
 }

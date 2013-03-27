@@ -1,11 +1,11 @@
 OutputFile = "opf.dat";
 seed = 1361549461;
-include_dipolar=false;
+include_dipolar=true;
 mat:
 {
 	mu = 3.23;
 	gamma = 1.76e11;
-	lambda = 1.0;
+	lambda = 0.01;
 };
 system:
 {
@@ -14,7 +14,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 16 , 16 , 16 ];
+	dim = [ 32 , 32 , 32 ];
 	//Number of atoms in the primitive cell
 	nauc = 2;
 	//The primitive cell
@@ -30,8 +30,7 @@ system:
     zpcheck=true;
 };
 exchange:
-{
-    //Exchange reading method 
+{ //Exchange reading method 
     //direct (by reading in all interactions directly. The interactions should already take into account the number of "k-points")
     //permute (take a neighbour and calculate permutations)
     exchmethod="direct";
@@ -63,7 +62,7 @@ cuda:
 };
 spins:
 {
-	spinconfig = "align";
+	spinconfig = "random";
 	sc = [ 0.001 , 0.0 , 0.9999995 ];
 	//sc = [ 0.0 , 0.0 , 1.0 ];
 	update=50;
@@ -71,7 +70,8 @@ spins:
 sim:
 {
 	//sim_type = "MvT";
-	sim_type = "quick";
+	//sim_type = "quick";
+	sim_type="suscep";
 };
 mvt:
 {
@@ -88,3 +88,16 @@ mvt:
     outmag=true;
     MagFileName="magt";
 };
+suscep:
+{
+	lower_temp = 300.0;
+	upper_temp = 300.0001;
+	temp_step = 50.0;
+	mean_tolerance = 0.0001;
+	variance_tolerance = 0.00025;
+	MaxRunTime = 60.0e-12;
+	EquilTime = 25.0e-12;
+	SuscepFile = "suscep.dat";
+	outmag = TRUE;
+	MagFileName = "mag";
+}
