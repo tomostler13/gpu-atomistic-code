@@ -101,3 +101,12 @@ suscep:
 	outmag = TRUE;
 	MagFileName = "mag";
 }
+stepchange:
+{
+    T_start = 1500.0;
+    T_final = 300.0;
+    RunTime = 25.0e-12;
+    EquilTime = 250.0e-12;
+    outmag = TRUE;
+    MagFileName = "mag";
+};

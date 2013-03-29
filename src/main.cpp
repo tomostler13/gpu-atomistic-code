@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 27 Mar 2013 16:18:34
+// Last-modified: 29 Mar 2013 20:04:35
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -71,6 +71,10 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="suscep")
     {
         sim::suscep(argc,argv);
+    }
+    else if(sim::sim_type=="stepchange")
+    {
+        sim::stepchange(argc,argv);
     }
 	else if(sim::sim_type=="quick")
 	{

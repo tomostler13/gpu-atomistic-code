@@ -1,7 +1,7 @@
 // File: stepchange.h
 // Author: Tom Ostler
 // Created: 29 Mar 2013
-// Last-modified: 29 Mar 2013 19:56:41
+// Last-modified: 29 Mar 2013 20:05:25
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -18,7 +18,7 @@
 #include "../inc/fields.h"
 #include "../inc/llg.h"
 #include "../inc/sim.h"
-void sim::suscep(int argc,char *argv[])
+void sim::stepchange(int argc,char *argv[])
 {
     config::printline(config::Info);
     config::Info.width(45);config::Info << std::right << "*" << "**Step Change details***" << std::endl;
@@ -44,7 +44,7 @@ void sim::suscep(int argc,char *argv[])
     FIXOUT(config::Info,"Initial temperature:" << Tstart << std::endl);
     setting.lookupValue("T_final",Tfinal);
     FIXOUT(config::Info,"Final temperature:" << Tfinal << std::endl);
-    setting.lookupValue("MaxRunTime",met);
+    setting.lookupValue("RunTime",met);
     setting.lookupValue("EquilTime",et);
     FIXOUT(config::Info,"Equilibration time:" << et << " seconds" << std::endl);
     FIXOUT(config::Info,"Run time:" << et << " seconds" << std::endl);
@@ -62,57 +62,56 @@ void sim::suscep(int argc,char *argv[])
         FIXOUT(config::Info,"Magnetization files output to:" << MagFilestr << std::endl);
     }
 
-        config::printline(config::Info);
-        llg::T=Tstart;
-        if(outmag)
+    config::printline(config::Info);
+    llg::T=Tstart;
+    if(outmag)
+    {
+        std::stringstream MagFilesstr,eqsstr;
+        MagFilesstr << MagFilestr << "_" << Tstart << "_" << Tfinal << ".dat";
+        std::string mopf=MagFilesstr.str();
+        magout.open(mopf.c_str());
+        if(!magout.is_open())
         {
-            std::stringstream MagFilesstr,eqsstr;
-            MagFilesstr << MagFilestr << "_" << Tstart << "_" << Tfinal << ".dat";
-            std::string mopf=MagFilesstr.str();
-            magout.open(mopf.c_str());
-            if(!magout.is_open())
-            {
-                error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("Could not open file for outputting magnetization data");
-            }
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open file for outputting magnetization data");
         }
-
-        for(unsigned int t = 0 ; t < ets ; t++)
-        {
-            llg::integrate(t);
-            if(t%spins::update==0)
-            {
-                const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
-                const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
-                const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
-                const double modm=sqrt(mx*mx+my*my+mz*mz);
-                magout << Tstart << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
-                if(t%(spins::update*10)==0)
-                {
-                    util::outputSpinsVTU(t);
-                }
-            }
-        }
-        llg::T=Tfinal;
-        for(unsigned int t = ets ; t < mrts+ets ; t++)
-        {
-            llg::integrate(t);
-            if(t%spins::update==0)
-            {
-                const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
-                const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
-                const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
-                const double modm=sqrt(mx*mx+my*my+mz*mz);
-
-                magout << Tfinal << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
-                if(t%(spins::update*10)==0)
-                {
-                    util::outputSpinsVTU(t);
-                }
-            }
-        }
-
     }
+
+    for(unsigned int t = 0 ; t < ets ; t++)
+    {
+        llg::integrate(t);
+        if(t%spins::update==0)
+        {
+            const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
+            const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
+            const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
+            const double modm=sqrt(mx*mx+my*my+mz*mz);
+            magout << Tstart << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
+            if(t%(spins::update*10)==0)
+            {
+                util::outputSpinsVTU(t);
+            }
+        }
+    }
+    llg::T=Tfinal;
+    for(unsigned int t = ets ; t < mrts+ets ; t++)
+    {
+        llg::integrate(t);
+        if(t%spins::update==0)
+        {
+            const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
+            const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
+            const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
+            const double modm=sqrt(mx*mx+my*my+mz*mz);
+
+            magout << Tfinal << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
+            if(t%(spins::update*10)==0)
+            {
+                util::outputSpinsVTU(t);
+            }
+        }
+    }
+
     magout.close();
     if(magout.is_open())
     {
@@ -120,4 +119,3 @@ void sim::suscep(int argc,char *argv[])
         error::errWarning("Could not close file for outputting magnetization data.");
     }
 }
-
