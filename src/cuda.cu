@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 20 Feb 2013 20:18:50
+// Last-modified: 28 Mar 2013 13:49:14
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -99,7 +99,7 @@ namespace cullg
 		cudaMemcpy(temp2x.ptr(),CCHrx,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
 		cudaMemcpy(temp2y.ptr(),CCHry,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
 		cudaMemcpy(temp2z.ptr(),CCHrz,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);*/
-/*		//FOR DEBUGGING THE DIPOLAR FIELD/
+		/*//FOR DEBUGGING THE DIPOLAR FIELD/
 		float temp1[3*geom::nspins];
 		CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
 		for(unsigned int i = 0 ; i < geom::nspins ; i++)
