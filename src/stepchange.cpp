@@ -1,7 +1,7 @@
 // File: stepchange.h
 // Author: Tom Ostler
 // Created: 29 Mar 2013
-// Last-modified: 29 Mar 2013 20:05:25
+// Last-modified: 29 Mar 2013 20:14:38
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -87,7 +87,7 @@ void sim::stepchange(int argc,char *argv[])
             const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
             const double modm=sqrt(mx*mx+my*my+mz*mz);
             magout << Tstart << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
-            if(t%(spins::update*10)==0)
+            if(t%(spins::update*100)==0)
             {
                 util::outputSpinsVTU(t);
             }
@@ -105,7 +105,7 @@ void sim::stepchange(int argc,char *argv[])
             const double modm=sqrt(mx*mx+my*my+mz*mz);
 
             magout << Tfinal << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
-            if(t%(spins::update*10)==0)
+            if(t%(spins::update*100)==0)
             {
                 util::outputSpinsVTU(t);
             }
