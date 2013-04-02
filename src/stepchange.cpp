@@ -1,7 +1,7 @@
 // File: stepchange.h
 // Author: Tom Ostler
 // Created: 29 Mar 2013
-// Last-modified: 29 Mar 2013 20:14:38
+// Last-modified: 02 Apr 2013 13:56:25
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -89,7 +89,7 @@ void sim::stepchange(int argc,char *argv[])
             magout << Tstart << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
             if(t%(spins::update*100)==0)
             {
-                util::outputSpinsVTU(t);
+//                util::outputSpinsVTU(t);
             }
         }
     }
@@ -107,7 +107,7 @@ void sim::stepchange(int argc,char *argv[])
             magout << Tfinal << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
             if(t%(spins::update*100)==0)
             {
-                util::outputSpinsVTU(t);
+//                util::outputSpinsVTU(t);
             }
         }
     }
