@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 28 Mar 2013 13:48:47
+// Last-modified: 02 Apr 2013 13:34:21
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -291,7 +291,7 @@ namespace spins
 			}
 		}
 		llg::rscfs << std::endl;// << std::endl;
-		fitcorr(t);
+		//fitcorr(t);
 		//llg::rscfs.close();
 		//if(llg::rscfs.is_open())
 		//{
