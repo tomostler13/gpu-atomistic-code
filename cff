@@ -1,6 +1,7 @@
 OutputFile = "opf.dat";
 seed = 1361549461;
 include_dipolar=false;
+use_interaction_matrix=false;
 mat:
 {
 	mu = 2.1;

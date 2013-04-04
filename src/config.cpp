@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 20 Feb 2013 12:47:27
+// Last-modified: 04 Apr 2013 13:51:48
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -20,6 +20,7 @@ namespace config
 {
     libconfig::Config cfg;
     bool lcf=false;
+    bool useintmat=true;
     bool incdip=true;
     unsigned int seed=0;
     std::ofstream Info;
@@ -52,7 +53,9 @@ namespace config
         std::string iffstr=cfg.lookup("OutputFile");
         seed = cfg.lookup("seed");
         incdip=cfg.lookup("include_dipolar");
+        useintmat=cfg.lookup("use_interaction_matrix");
         FIXOUT(config::Info,"Including dipolar terms:" << isTF(incdip) << std::endl);
+        FIXOUT(config::Info,"Using interaction matrix for field calculation?:" << isTF(useintmat) << std::endl);
         Random::seed(seed,seed+100);
         Info.open(iffstr.c_str());
         //open the output info file
