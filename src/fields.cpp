@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 25 Mar 2013 12:18:26
+// Last-modified: 04 Apr 2013 20:10:48
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -25,6 +25,7 @@ namespace fields
     Array3D<fftw_complex> Hkx,Hky,Hkz;
     Array3D<double> Hrx,Hry,Hrz;
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz;
+    Array<float> HAppx,HAppy,HAppz;
     fftw_plan HxP,HyP,HzP;
     void initFields(int argc,char *argv[])
     {
@@ -43,6 +44,7 @@ namespace fields
         HyP = fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hky.ptr(),Hry.ptr(),FFTW_ESTIMATE);
         HzP = fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hkz.ptr(),Hrz.ptr(),FFTW_ESTIMATE);
     }
+
 
     void bfdip()
     {

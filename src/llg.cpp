@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 27 Mar 2013 16:49:14
+// Last-modified: 04 Apr 2013 20:12:16
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -9,6 +9,8 @@
 #include "../inc/mat.h"
 #include "../inc/spins.h"
 #include "../inc/llg.h"
+#include "../inc/geom.h"
+#include "../inc/fields.h"
 #include <cmath>
 #ifdef CUDA
 #include <cuda.h>
@@ -19,6 +21,11 @@ namespace llg
     double applied[3]={0,0,0},T,dt,rdt,llgpf;
     //real space correlation function
     bool rscf=false;
+    //on site applied field?
+    bool osHapp=false;
+    //type of on site applied field
+    std::string osk;
+
     std::string rscfstr;
     std::ofstream rscfs;
 	void initLLG(int argc,char *argv[])
@@ -48,7 +55,18 @@ namespace llg
         setting.lookupValue("RealSpaceCorrelations",rscf);
 
         setting.lookupValue("RSCFile",rscfstr);
-
+        setting.lookupValue("Onsite_Applied",osHapp);
+        FIXOUT(config::Info,"Onsite applied field?:" << config::isTF(osHapp) << std::endl);
+        FIXOUT(config::Info,"Resizing applied field arrays:" << std::flush);
+        if(osHapp)
+        {
+            fields::HAppx.resize(geom::nspins);
+            fields::HAppy.resize(geom::nspins);
+            fields::HAppz.resize(geom::nspins);
+        }
+        SUCCESS(config::Info);
+        setting.lookupValue("Onsite_Kind",osk);
+        FIXOUT(config::Info,"Kind of onsite applied field:" << osk);
         FIXOUT(config::Info,"Outputting correlation functions to file:" << rscfstr << std::endl);
         FIXOUT(config::Info,"Calculating real space correlation functions:" << config::isTF(rscf) << std::endl);
         for(unsigned int i = 0 ; i < 3 ;i++)

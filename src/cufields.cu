@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 31 Jan 2013 21:31:49
+// Last-modified: 04 Apr 2013 19:53:29
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
