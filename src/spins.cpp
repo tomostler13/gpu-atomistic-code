@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 02 Apr 2013 13:34:21
+// Last-modified: 04 Apr 2013 15:26:48
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -191,6 +191,7 @@ namespace spins
 		SzP=fftw_plan_dft_r2c_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Srz.ptr(),Skz.ptr(),FFTW_ESTIMATE);
 		SUCCESS(config::Info);
 
+<<<<<<< HEAD
 	}
 	void FFTForward()
 	{
@@ -276,6 +277,123 @@ namespace spins
 		std::cin.get();*/
 		for(int k = -(geom::dim[2]*geom::Nk[2]/2)+1 ; k < 0 ; k++)
 		{
+=======
+    }
+    void FFTForward()
+    {
+        Skx.IFill(0);
+        Sky.IFill(0);
+        Skz.IFill(0);
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            Srx(lc[0],lc[1],lc[2])=Sx[i];
+            Sry(lc[0],lc[1],lc[2])=Sy[i];
+            Srz(lc[0],lc[1],lc[2])=Sz[i];
+//            std::cout << "Lookup\t" << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << Skx(lc[0],lc[1],lc[2])[0] << "\t" << Sky(lc[0],lc[1],lc[2])[0] << "\t" << Skz(lc[0],lc[1],lc[2])[0] << std::endl;
+        }
+        fftw_execute(SxP);
+        fftw_execute(SyP);
+        fftw_execute(SzP);
+        for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+        {
+            for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+            {
+                for(unsigned int k = 0 ; k < geom::cplxdim ; k++)
+                {
+                    std::cout << i << "\t" << j << "\t" << k << "\t" << Skz(i,j,k);
+                }
+            }
+        }
+        exit(0);
+    }
+    void eFFTForward()
+    {
+        Skx.IFill(0);
+        Sky.IFill(0);
+        Skz.IFill(0);
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            Srx(lc[0],lc[1],lc[2])=eSx[i];
+            Sry(lc[0],lc[1],lc[2])=eSy[i];
+            Srz(lc[0],lc[1],lc[2])=eSz[i];
+//            std::cout << "Lookup\t" << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << Skx(lc[0],lc[1],lc[2])[0] << "\t" << Sky(lc[0],lc[1],lc[2])[0] << "\t" << Skz(lc[0],lc[1],lc[2])[0] << std::endl;
+        }
+        fftw_execute(SxP);
+        fftw_execute(SyP);
+        fftw_execute(SzP);
+    }
+    void calcRealSpaceCorrelationFunction(unsigned int t)
+    {
+        Sqznzp.IFill(0);
+        Sznzp.IFill(0);
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            Sznzp(lc[0],lc[1],lc[2])=Sz[i];
+        }
+        fftw_execute(SzcfPF);
+        for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+        {
+            for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+            {
+                for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                {
+                    double Sq[2]={Sqznzp(i,j,k)[0],Sqznzp(i,j,k)[1]};
+                    double CCSq[2]={Sqznzp(i,j,k)[0],-Sqznzp(i,j,k)[1]};
+                    Sqznzp(i,j,k)[0]=Sq[0]*CCSq[0]-Sq[1]*CCSq[1];//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[0]-Sqznzp(i,j,k)[1]*Sqznzp(i,j,k)[1];
+                    Sqznzp(i,j,k)[1]=Sq[0]*CCSq[1]+Sq[1]*CCSq[0];//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[1]+Sqznzp(i,j,k)[1]*Sqznzp
+                }
+            }
+        }
+        fftw_execute(SzcfPB);
+        //std::stringstream sstr;
+        //sstr << llg::rscfstr << t;
+        //std::string tempstr=sstr.str();
+        //llg::rscfs.open(tempstr.c_str());
+        //if(!llg::rscfs.is_open())
+        //{
+        //    error::errPreamble(__FILE__,__LINE__);
+        //    error::errMessage("Could not open file for writing correlation function");
+        //}
+        /*for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i+=geom::Nk[0])
+        {
+            for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j+=geom::Nk[1])
+            {
+                //for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2] ; k+=geom::Nk[2])
+                //{
+                    int ijk[3]={i,j,0};
+                    for(unsigned int c = 0 ; c < 3 ; c++)
+                    {
+                        if(ijk[c]>geom::dim[c]*geom::Nk[c]/2)
+                        {
+                            ijk[c]=ijk[c]-geom::dim[c]*geom::Nk[c];
+                        }
+                    }
+//                    llg::rscfs << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << Sznzp(i,j,0)/normsize << std::endl;
+                //}
+            }
+            llg::rscfs << std::endl;
+        }*/
+        for(int k = -(geom::dim[2]*geom::Nk[2]/2)+geom::Nk[2] ; k < 0 ; k+=2)
+        {
+            int arluv=geom::dim[2]*geom::Nk[2]+k;
+            llg::rscfs << t << "\t"<< k << "\t" << Sznzp(0,0,arluv)/(normsize*knorm) << std::endl;
+        }
+        for(int k = geom::Nk[2] ; k < (geom::dim[2]*geom::Nk[2]/2) ; k+=2)
+        {
+            llg::rscfs << t << "\t" << k << "\t" << Sznzp(0,0,k)/(normsize*knorm) << std::endl;
+        }
+        llg::rscfs << std::endl;// << std::endl;
+        //fitcorr();
+        //llg::rscfs.close();
+        //if(llg::rscfs.is_open())
+        //{
+        //    error::errPreamble(__FILE__,__LINE__);
+        //    error::errWarning("Could not close file for writing correlation function");
+        //}
+>>>>>>> old-state
 
 			int arluv=geom::dim[2]*geom::Nk[2]+k;
 			if(geom::coords(0,0,arluv,0)>-1)

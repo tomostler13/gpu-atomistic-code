@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 03 Apr 2013 12:58:17
+// Last-modified: 04 Apr 2013 15:26:54
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -30,6 +30,7 @@
 #include <iomanip>
 #include <cstdlib>
 #include <iostream>
+//floating point version
 namespace cullg
 {
 	cudaDeviceProp deviceProp;

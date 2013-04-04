@@ -63,7 +63,11 @@ cuda:
 };
 spins:
 {
+<<<<<<< HEAD
 	spinconfig = "random";
+=======
+	spinconfig = "align";
+>>>>>>> old-state
 	sc = [ 0.0 , 0.0 , 1.0 ];
 	//sc = [ 0.0 , 0.0 , 1.0 ];
 	update=50;
