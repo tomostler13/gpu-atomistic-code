@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 03 Apr 2013 12:54:10
+// Last-modified: 24 Jan 2013 14:55:28
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -28,7 +28,7 @@
 namespace cuint
 {
 
-    __global__ void CHeun1(int N,double T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,double *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
+    __global__ void CHeun1(int N,double T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -61,7 +61,7 @@ namespace cuint
         }
     }
 
-    __global__ void CHeun2(int N,double T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,double *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
+    __global__ void CHeun2(int N,double T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
