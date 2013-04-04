@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 26 Mar 2013 13:20:13
+// Last-modified: 03 Apr 2013 15:30:45
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -195,6 +195,17 @@ namespace spins
         fftw_execute(SxP);
         fftw_execute(SyP);
         fftw_execute(SzP);
+        for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+        {
+            for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+            {
+                for(unsigned int k = 0 ; k < geom::cplxdim ; k++)
+                {
+                    std::cout << i << "\t" << j << "\t" << k << "\t" << Skz(i,j,k);
+                }
+            }
+        }
+        exit(0);
     }
     void eFFTForward()
     {
@@ -275,7 +286,7 @@ namespace spins
             llg::rscfs << t << "\t" << k << "\t" << Sznzp(0,0,k)/(normsize*knorm) << std::endl;
         }
         llg::rscfs << std::endl;// << std::endl;
-        fitcorr();
+        //fitcorr();
         //llg::rscfs.close();
         //if(llg::rscfs.is_open())
         //{
