@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 04 Apr 2013 13:51:48
+// Last-modified: 09 Apr 2013 20:39:46
 #include <iostream>
 #include <cstdlib>
 #include <fstream>

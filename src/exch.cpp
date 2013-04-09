@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 09 Apr 2013 19:09:23
+// Last-modified: 09 Apr 2013 21:15:50
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -495,7 +495,7 @@ namespace exch
             if(geom::zpcheck==true)
             {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("You are using a neighbourlist with zero padding....");
+                error::errMessage("You are using a neighbourlist with zero padding. Unless you have coded up multiple species then you don't need to....");
             }
             for(unsigned int pb = 0 ; pb < 3 ; pb++)
             {
@@ -677,9 +677,15 @@ namespace exch
 
                 xadj[geom::nspins]=adjncycount;
                 adjncy.resize(adjncycount);
+                Jxx.resize(adjncycount);
+                Jyy.resize(adjncycount);
+                Jzz.resize(adjncycount);
                 for(unsigned int i = 0 ; i < adjncycount ; i++)
                 {
                     adjncy[i]=tadjncy[i];
+                    Jxx[i]=tJxx[i];
+                    Jyy[i]=tJyy[i];
+                    Jzz[i]=tJzz[i];
                 }
                 for(unsigned int i = 0 ; i < geom::nspins; i++)
                 {
