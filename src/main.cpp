@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 04 Apr 2013 13:58:09
+// Last-modified: 05 Apr 2013 12:40:16
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -75,6 +75,10 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="stepchange")
     {
         sim::stepchange(argc,argv);
+    }
+    else if(sim::sim_type=="timeseries")
+    {
+        sim::timeseries(argc,argv);
     }
 	else if(sim::sim_type=="quick")
 	{

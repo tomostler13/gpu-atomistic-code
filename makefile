@@ -37,7 +37,8 @@ obj/maths.o \
 obj/sim.o \
 obj/mvt.o \
 obj/suscep.o \
-obj/stepchange.o
+obj/stepchange.o \
+obj/timeseries.o
 
 SWITCHOBJ= \
 obj/main.o \

@@ -1,12 +1,12 @@
 OutputFile = "opf.dat";
 seed = 1361549461;
 include_dipolar=false;
-use_interaction_matrix=false;
+use_interaction_matrix=true;
 mat:
 {
 	mu = 2.1;
 	gamma = 1.76e11;
-	lambda = 0.1;
+	lambda = 0.02;
 };
 system:
 {
@@ -15,7 +15,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 128 , 128 , 128 ];
+	dim = [ 16 , 16 , 16 ];
 	//Number of atoms in the primitive cell
 	nauc = 1;
 	//The primitive cell
@@ -47,14 +47,14 @@ anisotropy:
 	//The anisotropy tensor
 	dxb = [ 0.0 , 0.0 , 0.0 ];
 	dyb = [ 0.0 , 0.0 , 0.0 ];
-	dzb = [ 0.0 , 0.0 , 1.0e-25 ];
+	dzb = [ 0.0 , 0.0 , 0.0 ];
 };
 llg:
 {
-	dt = 0.25e-15;
-    Onsite_Applied = TRUE;
+	dt = 0.1e-15;
+    Onsite_Applied = FALSE;
     Onsite_Kind = "special1";
-	applied = [ 0.0 , 0.0 , 0.0 ];
+	applied = [ 0.0 , 0.0 , 1.0 ];
     RealSpaceCorrelations = TRUE;
     //Real space correlations file (the time is added to the end)
     RSCFile = "RSCF_zz_";
@@ -65,20 +65,17 @@ cuda:
 };
 spins:
 {
-<<<<<<< HEAD
-	spinconfig = "random";
-=======
 	spinconfig = "align";
->>>>>>> old-state
-	sc = [ 0.0 , 0.0 , 1.0 ];
-	//sc = [ 0.0 , 0.0 , 1.0 ];
-	update=50;
+//	sc = [ 0.01414178206592082934 , 0.0 , 0.9999 ];
+    sc = [ 0.0 , 0.0 , 1.0 ];
+	update=100;
 };
 sim:
 {
 	//sim_type = "MvT";
 	//sim_type = "quick";
-	sim_type="suscep";
+	//sim_type="suscep";
+    sim_type="timeseries";
 };
 mvt:
 {
@@ -116,4 +113,12 @@ stepchange:
     EquilTime = 250.0e-12;
     outmag = TRUE;
     MagFileName = "mag";
+};
+timeseries:
+{
+    EquilTime = 10.0e-12;
+    RunTime = 250.0e-12;
+    outmag = TRUE;
+    MagFileName = "mag";
+    Temperature = 1.0;
 };
