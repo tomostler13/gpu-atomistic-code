@@ -1,7 +1,7 @@
 OutputFile = "opf.dat";
 seed = 1361549461;
 include_dipolar=false;
-use_interaction_matrix=true;
+use_interaction_matrix=false;
 mat:
 {
 	mu = 2.1;
@@ -15,7 +15,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 16 , 16 , 16 ];
+	dim = [ 3 , 3 , 3 ];
 	//Number of atoms in the primitive cell
 	nauc = 1;
 	//The primitive cell
@@ -40,6 +40,8 @@ exchange:
 	//- extfile (read from an external file)
 	exchinput="extfile";
 	exchfile="exch.sc";
+    //periodic boundary conditions (only if we are using a neighbour list)
+    pbc = [ FALSE , FALSE , FALSE ];
 };
 anisotropy:
 {
