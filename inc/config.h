@@ -1,6 +1,6 @@
 // File: config.h
 // Author:Tom Ostler
-// Last-modified: 20 Feb 2013 12:28:25
+// Last-modified: 09 Apr 2013 15:43:45
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -22,5 +22,6 @@ namespace config
     void initConfig(int argc,char *argv[]);
     void printline(std::ofstream&);
     std::string isTF(bool);
+    extern bool useintmat;
 }
 #endif /*_CONFIG_H_*/

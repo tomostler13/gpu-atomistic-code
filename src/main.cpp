@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 05 Apr 2013 12:40:16
+// Last-modified: 09 Apr 2013 14:39:36
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -35,22 +35,30 @@ int main(int argc,char *argv[])
 	geom::initGeom(argc,argv);
 	//Read the material properties
 	mat::initMat(argc,argv);
-	//initialize the interaction matrices
-	intmat::initIntmat(argc,argv);
-
+    if(config::useintmat)
+    {
+        //initialize the interaction matrices
+        intmat::initIntmat(argc,argv);
+    }
 	//Read in the exchange matrix
 	exch::initExch(argc,argv);
 	//Read in the anisotropy tensor
 	anis::initAnis(argc,argv);
     if(config::incdip==true)
     {
-        //add the dipolar fields
-        intmat::fillIntmat();
+        if(config::useintmat)
+        {
+            //add the dipolar fields
+            intmat::fillIntmat();
+        }
     }
 
 
-	//Now we have all of the terms in our interaction matrix, fourier transform the result
-	intmat::fftIntmat();
+    if(config::useintmat)
+    {
+        //Now we have all of the terms in our interaction matrix, fourier transform the result
+        intmat::fftIntmat();
+    }
 	//Initialise the field arrays
 	fields::initFields(argc,argv);
 
