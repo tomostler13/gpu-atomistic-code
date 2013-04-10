@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 10 Apr 2013 10:21:32
+// Last-modified: 10 Apr 2013 14:29:58
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -379,8 +379,8 @@ namespace exch
                         oc[rc]=c[rc];
                         if(geom::zpcheck==false && abs(oc[rc])>geom::dim[rc]*geom::Nk[rc]/2)
                         {
-                            std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << std::endl;
-                            std::cout << geom::dim[0]*geom::Nk[0]/2 << "\t" << geom::dim[1]*geom::Nk[1]/2 << "\t" << geom::dim[2]*geom::Nk[2]/2 << std::endl;
+                            //std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << std::endl;
+                            //std::cout << geom::dim[0]*geom::Nk[0]/2 << "\t" << geom::dim[1]*geom::Nk[1]/2 << "\t" << geom::dim[2]*geom::Nk[2]/2 << std::endl;
                             error::errPreamble(__FILE__,__LINE__);
                             error::errMessage("Interactions are out of range");
                         }
@@ -451,7 +451,7 @@ namespace exch
                         }
                         else
                         {
-                            std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << "\t" <<  c[0] << "\t" << c[1] << "\t" << c[2] << std::endl;
+                            //std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << "\t" <<  c[0] << "\t" << c[1] << "\t" << c[2] << std::endl;
                             error::errPreamble(__FILE__,__LINE__);
                             error::errMessage("You are trying to add an interaction to an empty mesh point.");
                         }
@@ -644,7 +644,7 @@ namespace exch
                                         //if we have found a neighbour add one to the list
                                         if(luc[0] < geom::dim[0] && luc[1] < geom::dim[1] && luc[2] < geom::dim[2] && geom::coords(luc[0],luc[1],luc[2],0)>-1 && check(luc[0],luc[1],luc[2])==0)
                                         {
-                                            std::cout << luc[0] << "\t" << luc[1] << "\t" << luc[2] << std::endl;
+                        //                    std::cout << luc[0] << "\t" << luc[1] << "\t" << luc[2] << std::endl;
                                             tadjncy.push_back(1);
                                             tadjncy[adjncycount]=geom::coords(luc[0],luc[1],luc[2],0);
                                             tJxx.push_back(1);
@@ -660,7 +660,7 @@ namespace exch
                                     }
                                 }
                             }
-                    std::cout << __FILE__ << "\t" << __LINE__ << std::endl;
+                    //std::cout << __FILE__ << "\t" << __LINE__ << std::endl;
                         }
                         if(neighcount!=numint(j) && pbc[0] && pbc[1] && pbc[2])
                         {

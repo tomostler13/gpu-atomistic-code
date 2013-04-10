@@ -1,7 +1,7 @@
 // File: anis.cpp
 // Author: Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 10 Apr 2013 13:46:54
+// Last-modified: 10 Apr 2013 20:54:47
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -110,9 +110,19 @@ namespace anis
         }
         //for the use of the CSR neighbourlist we are onl considering uniaxial anisotropy (just diagonals)
         const double moddT=sqrt(dT(0,0)*dT(0,0)+dT(1,1)*dT(1,1)+dT(2,2)*dT(2,2));
-        uniaxial_unit[0]=dT(0,0)/moddT;
-        uniaxial_unit[1]=dT(1,1)/moddT;
-        uniaxial_unit[2]=dT(2,2)/moddT;
+        if(moddT>1e-32)
+        {
+            uniaxial_unit[0]=dT(0,0)/moddT;
+            uniaxial_unit[1]=dT(1,1)/moddT;
+            uniaxial_unit[2]=dT(2,2)/moddT;
+        }
+        else
+        {
+            uniaxial_unit[0]=0.0;
+            uniaxial_unit[1]=0.0;
+            uniaxial_unit[2]=0.0;
+        }
+
         if(config::useintmat)
         {
 

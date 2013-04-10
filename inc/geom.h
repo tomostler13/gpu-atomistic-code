@@ -1,7 +1,7 @@
 // File: geom.h
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Apr 2013 09:54:48
+// Last-modified: 10 Apr 2013 14:24:57
 #include "../inc/arrays.h"
 #include "../inc/unitcell.h"
 #include <string>
@@ -19,5 +19,6 @@ namespace geom
     extern bool zpcheck;
     extern std::string systype;
     extern unitCellMembers ucm;
+    extern unsigned int cut0,cut1,width;
 }
 #endif /*_GEOM_H_*/
