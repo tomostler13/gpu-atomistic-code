@@ -15,7 +15,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 3 , 3 , 3 ];
+	dim = [ 20 , 20 , 20 ];
 	//Number of atoms in the primitive cell
 	nauc = 1;
 	//The primitive cell
@@ -29,6 +29,10 @@ system:
 	//lattice constants
 	abc = [ 0.386e-9 , 0.386e-9 , 0.374e-9 ];
     zpcheck=false;
+    System_Type="nanowire";
+    cut0=4;
+    cut1=16;
+    width=5;
 };
 exchange:
 { //Exchange reading method 

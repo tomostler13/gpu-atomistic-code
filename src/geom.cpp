@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 20 Feb 2013 12:44:34
+// Last-modified: 10 Apr 2013 10:13:33
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -46,6 +46,10 @@ namespace geom
     unitCellMembers ucm;
     //check if we are zeropadding the fourier transform
     bool zpcheck=true;
+    //type of system (bulk/nanowire)
+    std::string systype;
+    //where to cut the system (in unit cells) and width of the wire
+    unsigned int cut0,cut1,width;
     void initGeom(int argc,char *argv[])
     {
         assert(config::lcf);
@@ -165,10 +169,9 @@ namespace geom
         }
 
         FIXOUT(config::Info,"Maximum number of spins:" << maxss << std::endl);
-        FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
+        //FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
         FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
-        outstruc << maxss << std::endl << std::endl;
-        lu.resize(nspins,4);
+        lu.resize(maxss,4);
         lu.IFill(0);
         coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2],2);
         //-2 here corresponds to empty k-mesh point
@@ -180,6 +183,43 @@ namespace geom
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Could not open file for writing zero pad information");
+        }
+        setting.lookupValue("System_Type",systype);
+        FIXOUT(config::Info,"System type:" << systype << std::endl);
+        if(systype=="nanowire")
+        {
+            //need to read in the dimensions (we do the wire along z)
+            setting.lookupValue("cut0",cut0);
+            setting.lookupValue("cut1",cut1);
+            setting.lookupValue("width",width);
+            FIXOUT(config::Info,"Bottom cut:" << cut0 << std::endl);
+            FIXOUT(config::Info,"Top cut:" << cut0 << std::endl);
+            FIXOUT(config::Info,"Wire width:" << cut0 << std::endl);
+            //---------                   -----------
+            //        |                   |
+            //        |                   |        y
+            //        |__________________ | _      |
+            //        |__________________ | |width |
+            //        |                   | -      |------->z
+            //        |                   |
+            //        |                   |
+            //---------                   ----------
+            //      cut0                cut1
+            if(cut0>cut1)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Cut 1 cannot be smaller than cut 0");
+            }
+            if(cut1>geom::dim[2])
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Cannot have a cut greater than the second cut");
+            }
+            if(geom::dim[2]<5)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Really the system is too small");
+            }
         }
         unsigned int atom_counter=0;
         for(unsigned int i = 0 ; i < zpdim[0] ; i++)
@@ -202,14 +242,53 @@ namespace geom
                         }
                         if(i<dim[0] && j<dim[1] && k<dim[2])
                         {
-                            coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
-                            coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+                            if(systype=="nanowire")
+                            {
+                                if(k < cut0)
+                                {
+                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
+                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
 
-                            lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
-                            lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
-                            lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
-                            lu(atom_counter,3)=t;
-                            atom_counter++;
+                                    lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
+                                    lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
+                                    lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
+                                    lu(atom_counter,3)=t;
+                                    atom_counter++;
+                                }
+                                else if(k < cut1 && i > (geom::dim[0]-width)/2 && i < (geom::dim[0]+width)/2 && j > (geom::dim[1]-width)/2 && j < (geom::dim[1]+width)/2)
+                                {
+                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
+                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+
+                                    lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
+                                    lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
+                                    lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
+                                    lu(atom_counter,3)=t;
+                                    atom_counter++;
+                                }
+                                else if(k>=cut1-1)
+                                {
+                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
+                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+
+                                    lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
+                                    lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
+                                    lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
+                                    lu(atom_counter,3)=t;
+                                    atom_counter++;
+                                }
+                            }
+                            else if(systype=="bulk")
+                            {
+                                coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
+                                coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+
+                                lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
+                                lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
+                                lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
+                                lu(atom_counter,3)=t;
+                                atom_counter++;
+                            }
                         }
                         else
                         {
@@ -222,6 +301,11 @@ namespace geom
                 }
             }
         }
+        nspins=atom_counter;
+        FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
+
+        outstruc << nspins << std::endl << std::endl;
+
         for(unsigned int i = 0 ; i < geom::zpdim[0]*Nk[0] ; i++)
         {
             for(unsigned int j = 0 ; j < geom::zpdim[1]*Nk[1] ; j++)

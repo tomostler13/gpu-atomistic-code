@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 09 Apr 2013 21:15:50
+// Last-modified: 10 Apr 2013 10:21:32
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -642,9 +642,9 @@ namespace exch
                                         }
 //std::cout << "After\t" << luc[0] << "\t" << luc[1] << "\t" << luc[2] << std::endl;
                                         //if we have found a neighbour add one to the list
-                                        if(luc[0] < geom::dim[0] && luc[1] < geom::dim[1] && luc[2] < geom::dim[2] && geom::coords(luc[0],luc[1],luc[2],0)>-2 && check(luc[0],luc[1],luc[2])==0)
+                                        if(luc[0] < geom::dim[0] && luc[1] < geom::dim[1] && luc[2] < geom::dim[2] && geom::coords(luc[0],luc[1],luc[2],0)>-1 && check(luc[0],luc[1],luc[2])==0)
                                         {
-                                        //    std::cout << luc[0] << "\t" << luc[1] << "\t" << luc[2] << std::endl;
+                                            std::cout << luc[0] << "\t" << luc[1] << "\t" << luc[2] << std::endl;
                                             tadjncy.push_back(1);
                                             tadjncy[adjncycount]=geom::coords(luc[0],luc[1],luc[2],0);
                                             tJxx.push_back(1);
@@ -660,7 +660,7 @@ namespace exch
                                     }
                                 }
                             }
-//                    std::cout << __FILE__ << "\t" << __LINE__ << std::endl;
+                    std::cout << __FILE__ << "\t" << __LINE__ << std::endl;
                         }
                         if(neighcount!=numint(j) && pbc[0] && pbc[1] && pbc[2])
                         {

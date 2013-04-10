@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 09 Apr 2013 21:28:45
+// Last-modified: 10 Apr 2013 13:48:55
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -23,6 +23,7 @@
 #include "../inc/random.h"
 #include "../inc/mat.h"
 #include "../inc/exch.h"
+#include "../inc/anis.h"
 namespace llgCPU
 {
     Array<double> fnx;
@@ -50,7 +51,7 @@ namespace llgCPU
         fields::Hthz.resize(geom::nspins);
         SUCCESS(config::Info);
     }
-
+    //for uniform temperature with interaction matrix for field calculation
     void llgCPU(unsigned int t)
     {
         //calculate the 2 spin fields (dipolar, exchange, anisotropy)
@@ -117,6 +118,7 @@ namespace llgCPU
 			spins::Sz[i]/=mods;
         }
     }
+    //for on-site temperature and using interaction matrix for field calculation
     void llgCPU(unsigned int t,Array<double>& T)
     {
         //calculate the 2 spin fields (dipolar, exchange, anisotropy)
@@ -183,19 +185,13 @@ namespace llgCPU
 			spins::Sz[i]/=mods;
         }
     }
+    //Exchange field calculated using a CSR neighbbour list with on-site temperature
     void llgCPU(unsigned int t,Array<double>& T,Array<unsigned int>& xadj,Array<unsigned int>& adjncy)
     {
         //calculate the 2 spin fields (dipolar, exchange, anisotropy)
         if(config::incdip)
         {
-            if(config::useintmat)
-            {
-                fields::ftdip();
-            }
-            else
-            {
-                fields::bfdip();
-            }
+            fields::bfdip();
         }
         if(llg::rscf==true)
         {
@@ -229,6 +225,10 @@ namespace llgCPU
                 h[1]+=exch::Jyy[n]*spins::Sy[n];
                 h[2]+=exch::Jzz[n]*spins::Sz[n];
             }
+            const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
+            h[0]+=anis::dT(0,0)*sdotn;
+            h[1]+=anis::dT(1,1)*sdotn;
+            h[2]+=anis::dT(2,2)*sdotn;
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -256,6 +256,10 @@ namespace llgCPU
                 h[1]+=exch::Jyy[n]*spins::eSy[n];
                 h[2]+=exch::Jzz[n]*spins::eSz[n];
             }
+            const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
+            h[0]+=anis::dT(0,0)*sdotn;
+            h[1]+=anis::dT(1,1)*sdotn;
+            h[2]+=anis::dT(2,2)*sdotn;
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -270,19 +274,13 @@ namespace llgCPU
 			spins::Sz[i]/=mods;
         }
     }
+    //Exchange field calculated using a CSR neighbbour list with uniform temperature
     void llgCPU(unsigned int t,Array<unsigned int>& xadj,Array<unsigned int>& adjncy)
     {
         //calculate the 2 spin fields (dipolar, exchange, anisotropy)
         if(config::incdip)
         {
-            if(config::useintmat)
-            {
-                fields::ftdip();
-            }
-            else
-            {
-                fields::bfdip();
-            }
+            fields::ftdip();
         }
         if(llg::rscf==true)
         {
@@ -316,6 +314,10 @@ namespace llgCPU
                 h[1]+=exch::Jyy[n]*spins::Sy[n];
                 h[2]+=exch::Jzz[n]*spins::Sz[n];
             }
+            const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
+            h[0]+=anis::dT(0,0)*sdotn;
+            h[1]+=anis::dT(1,1)*sdotn;
+            h[2]+=anis::dT(2,2)*sdotn;
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -343,6 +345,10 @@ namespace llgCPU
                 h[1]+=exch::Jyy[n]*spins::eSy[n];
                 h[2]+=exch::Jzz[n]*spins::eSz[n];
             }
+            const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
+            h[0]+=anis::dT(0,0)*sdotn;
+            h[1]+=anis::dT(1,1)*sdotn;
+            h[2]+=anis::dT(2,2)*sdotn;
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 

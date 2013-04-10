@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Apr 2013 14:39:36
+// Last-modified: 10 Apr 2013 10:18:17
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -42,6 +42,7 @@ int main(int argc,char *argv[])
     }
 	//Read in the exchange matrix
 	exch::initExch(argc,argv);
+    std::cout << "DONE" << std::endl;
 	//Read in the anisotropy tensor
 	anis::initAnis(argc,argv);
     if(config::incdip==true)
