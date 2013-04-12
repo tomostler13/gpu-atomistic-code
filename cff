@@ -15,7 +15,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 3 , 3 , 3 ];
+	dim = [ 30 , 30 , 60 ];
 	//Number of atoms in the primitive cell
 	nauc = 1;
 	//The primitive cell
@@ -29,6 +29,10 @@ system:
 	//lattice constants
 	abc = [ 0.386e-9 , 0.386e-9 , 0.374e-9 ];
     zpcheck=false;
+    System_Type="nanowire";
+    cut0=10;
+    cut1=50;
+    width=5;
 };
 exchange:
 { //Exchange reading method 
@@ -41,7 +45,7 @@ exchange:
 	exchinput="extfile";
 	exchfile="exch.sc";
     //periodic boundary conditions (only if we are using a neighbour list)
-    pbc = [ FALSE , FALSE , FALSE ];
+    pbc = [ TRUE , TRUE , FALSE ];
 };
 anisotropy:
 {
@@ -49,14 +53,15 @@ anisotropy:
 	//The anisotropy tensor
 	dxb = [ 0.0 , 0.0 , 0.0 ];
 	dyb = [ 0.0 , 0.0 , 0.0 ];
-	dzb = [ 0.0 , 0.0 , 0.0 ];
+	dzb = [ 0.0 , 0.0 , 0.807243e-23 ];
 };
 llg:
 {
 	dt = 0.1e-15;
     Onsite_Applied = FALSE;
     Onsite_Kind = "special1";
-	applied = [ 0.0 , 0.0 , 1.0 ];
+    Onsite_Temp=TRUE;
+	applied = [ 0.0 , 0.0 , 0.0 ];
     RealSpaceCorrelations = TRUE;
     //Real space correlations file (the time is added to the end)
     RSCFile = "RSCF_zz_";
@@ -77,7 +82,8 @@ sim:
 	//sim_type = "MvT";
 	//sim_type = "quick";
 	//sim_type="suscep";
-    sim_type="timeseries";
+    //sim_type="timeseries";
+    sim_type="test_nanowire";
 };
 mvt:
 {
@@ -123,4 +129,14 @@ timeseries:
     outmag = TRUE;
     MagFileName = "mag";
     Temperature = 1.0;
+};
+test_nanowire:
+{
+    EquilTime=10e-12;
+    RunTime=10e-12;
+    outmag=TRUE;
+    MagFileName="mag";
+    Wire_Temperature=0.000001;
+    High_Temperature=500.0;
+    Low_Temperature=0.000001;
 };

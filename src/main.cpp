@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Apr 2013 14:39:36
+// Last-modified: 12 Apr 2013 13:56:40
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -87,6 +87,10 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="timeseries")
     {
         sim::timeseries(argc,argv);
+    }
+    else if(sim::sim_type=="test_nanowire")
+    {
+        sim::test_nanowire(argc,argv);
     }
 	else if(sim::sim_type=="quick")
 	{

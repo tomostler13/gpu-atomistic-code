@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 04 Apr 2013 20:12:16
+// Last-modified: 09 Apr 2013 21:25:22
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -19,10 +19,13 @@
 namespace llg
 {
     double applied[3]={0,0,0},T,dt,rdt,llgpf;
+    Array<double> osT;
     //real space correlation function
     bool rscf=false;
     //on site applied field?
     bool osHapp=false;
+    //on site temperature?
+    bool osTemp=false;
     //type of on site applied field
     std::string osk;
 
@@ -58,6 +61,13 @@ namespace llg
         setting.lookupValue("Onsite_Applied",osHapp);
         FIXOUT(config::Info,"Onsite applied field?:" << config::isTF(osHapp) << std::endl);
         FIXOUT(config::Info,"Resizing applied field arrays:" << std::flush);
+        setting.lookupValue("Onsite_Temp",osTemp);
+        if(osTemp)
+        {
+            osT.resize(geom::nspins);
+            osT.IFill(0);
+        }
+        FIXOUT(config::Info,"Onsite temperature?:" << config::isTF(osTemp) << std::endl);
         if(osHapp)
         {
             fields::HAppx.resize(geom::nspins);
@@ -100,4 +110,53 @@ namespace llg
 		}
         #endif
     }
+    void integrate(unsigned int& t,Array<double>& T)
+    {
+        #ifdef CUDA
+        cullg::llgGPU(t,T);
+		if(t%spins::update==0 && rscf)
+		{
+			spins::calcRealSpaceCorrelationFunction(t);
+		}
+        #else
+        llgCPU::llgCPU(t,T);
+		if(t%spins::update==0 && rscf)
+		{
+			spins::calcRealSpaceCorrelationFunction(t);
+		}
+        #endif
+    }
+    void integrate(unsigned int& t,Array<unsigned int>& xadj,Array<unsigned int>& adjncy)
+    {
+        #ifdef CUDA
+        cullg::llgGPU(t,xadj,adjncy);
+		if(t%spins::update==0 && rscf)
+		{
+			spins::calcRealSpaceCorrelationFunction(t);
+		}
+        #else
+        llgCPU::llgCPU(t,xadj,adjncy);
+		if(t%spins::update==0 && rscf)
+		{
+			spins::calcRealSpaceCorrelationFunction(t);
+		}
+        #endif
+    }
+    void integrate(unsigned int& t,Array<double>& T,Array<unsigned int>& xadj,Array<unsigned int>& adjncy)
+    {
+        #ifdef CUDA
+        cullg::llgGPU(t,T,xadj,adjncy);
+		if(t%spins::update==0 && rscf)
+		{
+			spins::calcRealSpaceCorrelationFunction(t);
+		}
+        #else
+        llgCPU::llgCPU(t,T,xadj,adjncy);
+		if(t%spins::update==0 && rscf)
+		{
+			spins::calcRealSpaceCorrelationFunction(t);
+		}
+        #endif
+    }
+
 }

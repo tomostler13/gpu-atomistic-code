@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 09 Apr 2013 19:09:23
+// Last-modified: 12 Apr 2013 13:59:11
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -379,8 +379,8 @@ namespace exch
                         oc[rc]=c[rc];
                         if(geom::zpcheck==false && abs(oc[rc])>geom::dim[rc]*geom::Nk[rc]/2)
                         {
-                            std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << std::endl;
-                            std::cout << geom::dim[0]*geom::Nk[0]/2 << "\t" << geom::dim[1]*geom::Nk[1]/2 << "\t" << geom::dim[2]*geom::Nk[2]/2 << std::endl;
+                            //std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << std::endl;
+                            //std::cout << geom::dim[0]*geom::Nk[0]/2 << "\t" << geom::dim[1]*geom::Nk[1]/2 << "\t" << geom::dim[2]*geom::Nk[2]/2 << std::endl;
                             error::errPreamble(__FILE__,__LINE__);
                             error::errMessage("Interactions are out of range");
                         }
@@ -451,7 +451,7 @@ namespace exch
                         }
                         else
                         {
-                            std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << "\t" <<  c[0] << "\t" << c[1] << "\t" << c[2] << std::endl;
+                            //std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << "\t" <<  c[0] << "\t" << c[1] << "\t" << c[2] << std::endl;
                             error::errPreamble(__FILE__,__LINE__);
                             error::errMessage("You are trying to add an interaction to an empty mesh point.");
                         }
@@ -495,7 +495,7 @@ namespace exch
             if(geom::zpcheck==true)
             {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("You are using a neighbourlist with zero padding....");
+                error::errMessage("You are using a neighbourlist with zero padding. Unless you have coded up multiple species then you don't need to....");
             }
             for(unsigned int pb = 0 ; pb < 3 ; pb++)
             {
@@ -642,17 +642,22 @@ namespace exch
                                         }
 //std::cout << "After\t" << luc[0] << "\t" << luc[1] << "\t" << luc[2] << std::endl;
                                         //if we have found a neighbour add one to the list
-                                        if(luc[0] < geom::dim[0] && luc[1] < geom::dim[1] && luc[2] < geom::dim[2] && geom::coords(luc[0],luc[1],luc[2],0)>-2 && check(luc[0],luc[1],luc[2])==0)
+                                        if(luc[0] < geom::dim[0] && luc[1] < geom::dim[1] && luc[2] < geom::dim[2] && geom::coords(luc[0],luc[1],luc[2],0)>-1 && check(luc[0],luc[1],luc[2])==0)
                                         {
-                                        //    std::cout << luc[0] << "\t" << luc[1] << "\t" << luc[2] << std::endl;
+                        //                    std::cout << luc[0] << "\t" << luc[1] << "\t" << luc[2] << std::endl;
                                             tadjncy.push_back(1);
                                             tadjncy[adjncycount]=geom::coords(luc[0],luc[1],luc[2],0);
+                                            if(geom::coords(luc[0],luc[1],luc[2],0)>geom::nspins)
+                                            {
+                                                error::errPreamble(__FILE__,__LINE__);
+                                                error::errMessage("Neighbour larger than nspins");
+                                            }
                                             tJxx.push_back(1);
                                             tJyy.push_back(1);
                                             tJzz.push_back(1);
-                                            tJxx[adjncycount]=J(j,0,0);
-                                            tJyy[adjncycount]=J(j,1,1);
-                                            tJzz[adjncycount]=J(j,2,2);
+                                            tJxx[adjncycount]=J(j,0,0)/(mat::muB*mat::mu);
+                                            tJyy[adjncycount]=J(j,1,1)/(mat::muB*mat::mu);
+                                            tJzz[adjncycount]=J(j,2,2)/(mat::muB*mat::mu);
                                             adjncycount++;
                                             neighcount++;
                                             check(luc[0],luc[1],luc[2])=1;
@@ -660,7 +665,7 @@ namespace exch
                                     }
                                 }
                             }
-//                    std::cout << __FILE__ << "\t" << __LINE__ << std::endl;
+                    //std::cout << __FILE__ << "\t" << __LINE__ << std::endl;
                         }
                         if(neighcount!=numint(j) && pbc[0] && pbc[1] && pbc[2])
                         {
@@ -677,9 +682,15 @@ namespace exch
 
                 xadj[geom::nspins]=adjncycount;
                 adjncy.resize(adjncycount);
+                Jxx.resize(adjncycount);
+                Jyy.resize(adjncycount);
+                Jzz.resize(adjncycount);
                 for(unsigned int i = 0 ; i < adjncycount ; i++)
                 {
                     adjncy[i]=tadjncy[i];
+                    Jxx[i]=tJxx[i];
+                    Jyy[i]=tJyy[i];
+                    Jzz[i]=tJzz[i];
                 }
                 for(unsigned int i = 0 ; i < geom::nspins; i++)
                 {
