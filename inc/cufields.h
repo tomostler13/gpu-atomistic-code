@@ -10,5 +10,7 @@ namespace cufields
                                   cufftComplex*,cufftComplex*,cufftComplex*);
     extern __global__ void CCopySpin(int,unsigned int,double*,int*,cufftReal*,cufftReal*,cufftReal*,cufftReal*,cufftReal*,cufftReal*);
     extern __global__ void CCopyFields(int,int,float*,int*,cufftReal*,cufftReal*,cufftReal*);
+    extern __global__ void CBFDip(int,float*,double*,double*);
+    extern __global__ void CZeroField(int,float*);
 }
 #endif /*_CUFIELDS_H_*/

@@ -1,7 +1,7 @@
 // File: test_nanowire.cpp
 // Author: Tom Ostler
 // Created: 10 April 2013
-// Last-modified: 11 Apr 2013 12:41:53
+// Last-modified: 12 Apr 2013 18:52:40
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -95,19 +95,17 @@ void sim::test_nanowire(int argc,char *argv[])
         if(coords[2]<geom::cut0)
         {
             llg::osT[i]=LTR;
+            std::cout << "BALSDJKLASDFJKLSADF" << std::endl;
         }
-        else if(coords[2] < geom::cut1 && coords[0] > (geom::dim[0]-geom::width)/2 && coords[0] < (geom::dim[0]+geom::width)/2 && coords[1] > (geom::dim[1]-geom::width)/2 && coords[1] < (geom::dim[1]+geom::width)/2)
+        else if(coords[2]>=geom::cut0 && coords[2]<geom::cut1)// < geom::cut1 && coords[0] > (geom::dim[0]-geom::width)/2 && coords[0] < (geom::dim[0]+geom::width)/2 && coords[1] > (geom::dim[1]-geom::width)/2 && coords[1] < (geom::dim[1]+geom::width)/2)
         {
             llg::osT[i]=TOW;
+            std::cout << "________________________________" << std::endl;
         }
-        else if(coords[2]>=geom::cut1-1)
+        else if(coords[2]>=geom::cut1)
         {
             llg::osT[i]=HTR;
-        }
-        else
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("This should be a magnetic atom");
+            std::cout << "Setting" << std::endl;
         }
     }
     SUCCESS(config::Info);

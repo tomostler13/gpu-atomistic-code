@@ -6,7 +6,7 @@ mat:
 {
 	mu = 2.1;
 	gamma = 1.76e11;
-	lambda = 0.02;
+	lambda = 0.1;
 };
 system:
 {
@@ -15,7 +15,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 30 , 30 , 60 ];
+	dim = [ 1 , 1 , 200 ];
 	//Number of atoms in the primitive cell
 	nauc = 1;
 	//The primitive cell
@@ -29,10 +29,10 @@ system:
 	//lattice constants
 	abc = [ 0.386e-9 , 0.386e-9 , 0.374e-9 ];
     zpcheck=false;
-    System_Type="nanowire";
-    cut0=10;
-    cut1=50;
-    width=5;
+    System_Type="bulk";
+    cut0=75;
+    cut1=125;
+    width=1;
 };
 exchange:
 { //Exchange reading method 
@@ -53,7 +53,7 @@ anisotropy:
 	//The anisotropy tensor
 	dxb = [ 0.0 , 0.0 , 0.0 ];
 	dyb = [ 0.0 , 0.0 , 0.0 ];
-	dzb = [ 0.0 , 0.0 , 0.807243e-23 ];
+	dzb = [ 0.0 , 0.0 , 0.0 ];
 };
 llg:
 {
@@ -61,7 +61,7 @@ llg:
     Onsite_Applied = FALSE;
     Onsite_Kind = "special1";
     Onsite_Temp=TRUE;
-	applied = [ 0.0 , 0.0 , 0.0 ];
+	applied = [ 1.0 , 0.0 , 0.0 ];
     RealSpaceCorrelations = TRUE;
     //Real space correlations file (the time is added to the end)
     RSCFile = "RSCF_zz_";
@@ -74,8 +74,8 @@ spins:
 {
 	spinconfig = "align";
 //	sc = [ 0.01414178206592082934 , 0.0 , 0.9999 ];
-    sc = [ 0.0 , 0.0 , 1.0 ];
-	update=100;
+    sc = [ 1.0 , 0.0 , 0.0 ];
+	update=1;
 };
 sim:
 {
@@ -132,11 +132,11 @@ timeseries:
 };
 test_nanowire:
 {
-    EquilTime=10e-12;
-    RunTime=10e-12;
+    EquilTime=1e-12;
+    RunTime=0e-12;
     outmag=TRUE;
     MagFileName="mag";
     Wire_Temperature=0.000001;
-    High_Temperature=500.0;
+    High_Temperature=50.0;
     Low_Temperature=0.000001;
 };

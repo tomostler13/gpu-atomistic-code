@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Apr 2013 10:13:33
+// Last-modified: 12 Apr 2013 18:25:14
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -208,17 +208,17 @@ namespace geom
             if(cut0>cut1)
             {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("Cut 1 cannot be smaller than cut 0");
+                error::errWarning("Cut 1 cannot be smaller than cut 0");
             }
             if(cut1>geom::dim[2])
             {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("Cannot have a cut greater than the second cut");
+                error::errWarning("Cannot have a cut greater than the second cut");
             }
             if(geom::dim[2]<5)
             {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("Really the system is too small");
+                error::errWarning("Really the system is too small");
             }
         }
         unsigned int atom_counter=0;
