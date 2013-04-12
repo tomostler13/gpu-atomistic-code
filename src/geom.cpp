@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 12 Apr 2013 18:25:14
+// Last-modified: 12 Apr 2013 19:04:35
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -244,38 +244,78 @@ namespace geom
                         {
                             if(systype=="nanowire")
                             {
-                                if(k < cut0)
+                                if(width>1)
                                 {
-                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
-                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+                                    if(k < cut0)
+                                    {
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
 
-                                    lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
-                                    lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
-                                    lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
-                                    lu(atom_counter,3)=t;
-                                    atom_counter++;
+                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
+                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
+                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
+                                        lu(atom_counter,3)=t;
+                                        atom_counter++;
+                                    }
+                                    else if(k < cut1 && i > (geom::dim[0]-width)/2 && i < (geom::dim[0]+width)/2 && j > (geom::dim[1]-width)/2 && j < (geom::dim[1]+width)/2)
+                                    {
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+
+                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
+                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
+                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
+                                        lu(atom_counter,3)=t;
+                                        atom_counter++;
+                                    }
+                                    else if(k>=cut1-1)
+                                    {
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+
+                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
+                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
+                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
+                                        lu(atom_counter,3)=t;
+                                        atom_counter++;
+                                    }
+
                                 }
-                                else if(k < cut1 && i > (geom::dim[0]-width)/2 && i < (geom::dim[0]+width)/2 && j > (geom::dim[1]-width)/2 && j < (geom::dim[1]+width)/2)
+                                else
                                 {
-                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
-                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+                                    if(k<cut0)
+                                    {
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
 
-                                    lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
-                                    lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
-                                    lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
-                                    lu(atom_counter,3)=t;
-                                    atom_counter++;
-                                }
-                                else if(k>=cut1-1)
-                                {
-                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
-                                    coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
+                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
+                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
+                                        lu(atom_counter,3)=t;
+                                        atom_counter++;
+                                    }
+                                    else if(k >= cut0 && k < cut1)
+                                    {
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
 
-                                    lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
-                                    lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
-                                    lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
-                                    lu(atom_counter,3)=t;
-                                    atom_counter++;
+                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
+                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
+                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
+                                        lu(atom_counter,3)=t;
+                                        atom_counter++;
+                                    }
+                                    else if(k>=cut1)
+                                    {
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
+                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+
+                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
+                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
+                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
+                                        lu(atom_counter,3)=t;
+                                        atom_counter++;
+                                    }
                                 }
                             }
                             else if(systype=="bulk")

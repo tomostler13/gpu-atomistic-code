@@ -1,7 +1,7 @@
 // File: test_nanowire.cpp
 // Author: Tom Ostler
 // Created: 10 April 2013
-// Last-modified: 12 Apr 2013 18:52:40
+// Last-modified: 12 Apr 2013 18:58:30
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -92,6 +92,7 @@ void sim::test_nanowire(int argc,char *argv[])
     for(unsigned int i = 0 ; i < geom::nspins ; i++)
     {
         int coords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+        std::cout << coords[2] << std::endl;
         if(coords[2]<geom::cut0)
         {
             llg::osT[i]=LTR;
@@ -108,6 +109,7 @@ void sim::test_nanowire(int argc,char *argv[])
             std::cout << "Setting" << std::endl;
         }
     }
+    std::cin.get();
     SUCCESS(config::Info);
     if(llg::rscf)
     {
