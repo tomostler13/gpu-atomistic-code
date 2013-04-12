@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 10 Apr 2013 21:16:56
+// Last-modified: 11 Apr 2013 12:31:13
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -221,22 +221,19 @@ namespace llgCPU
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
 
-//std::cout << i << "\t" << __FILE__ << "\t" << __LINE__ << std::endl;
             for(unsigned int n=xadj[i] ; n < xadj[i+1] ; n++)
             {
-                h[0]+=exch::Jxx[n]*spins::Sx[n];
-                h[1]+=exch::Jyy[n]*spins::Sy[n];
-                h[2]+=exch::Jzz[n]*spins::Sz[n];
+                unsigned int neigh=adjncy[n];
+                h[0]+=exch::Jxx[neigh]*spins::Sx[neigh];
+                h[1]+=exch::Jyy[neigh]*spins::Sy[neigh];
+                h[2]+=exch::Jzz[neigh]*spins::Sz[neigh];
             }
-
-//std::cout << i << "\t" << __FILE__ << "\t" << __LINE__ << std::endl;
             const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
             h[0]+=anis::dT(0,0)*sdotn;
             h[1]+=anis::dT(1,1)*sdotn;
             h[2]+=anis::dT(2,2)*sdotn;
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
-//std::cout << i << "\t" << __FILE__ << "\t" << __LINE__ << std::endl;
 
             fnx[i]=llg::llgpf*(sxh[0]+mat::lambda*sxsxh[0]);
             fny[i]=llg::llgpf*(sxh[1]+mat::lambda*sxsxh[1]);
@@ -244,36 +241,30 @@ namespace llgCPU
             spins::eSx[i] = s[0] + fnx[i]*llg::rdt;
             spins::eSy[i] = s[1] + fny[i]*llg::rdt;
             spins::eSz[i] = s[2] + fnz[i]*llg::rdt;
-//std::cout << i << "\t" << __FILE__ << "\t" << __LINE__ << std::endl;
+
 
 			const double mods = sqrt(spins::eSx[i]*spins::eSx[i]+spins::eSy[i]*spins::eSy[i]+spins::eSz[i]*spins::eSz[i]);
 			spins::eSx[i]/=mods;
 			spins::eSy[i]/=mods;
 			spins::eSz[i]/=mods;
-
-//std::cout << i << "\t" << __FILE__ << "\t" << __LINE__ << std::endl;
         }
         #pragma omp parallel for private (i) shared(spins::Sx,spins::Sy,spins::Sz)
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
-//std::cout << h[0] << "\t" << h[1] << "\t" << h[2] << std::endl;
-
             for(unsigned int n=xadj[i] ; n < xadj[i+1] ; n++)
             {
-                h[0]+=exch::Jxx[n]*spins::eSx[n];
-                h[1]+=exch::Jyy[n]*spins::eSy[n];
-                h[2]+=exch::Jzz[n]*spins::eSz[n];
+                unsigned int neigh=adjncy[n];
+                h[0]+=exch::Jxx[neigh]*spins::eSx[neigh];
+                h[1]+=exch::Jyy[neigh]*spins::eSy[neigh];
+                h[2]+=exch::Jzz[neigh]*spins::eSz[neigh];
             }
-//std::cout << h[0] << "\t" << h[1] << "\t" << h[2] << std::endl;
 
             const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
             h[0]+=anis::dT(0,0)*sdotn;
             h[1]+=anis::dT(1,1)*sdotn;
             h[2]+=anis::dT(2,2)*sdotn;
-//std::cout << "Anis check\t" << anis::dT(0,0) << "\t" << anis::dT(1,1) << "\t" << anis::dT(2,2) << "\t" << sdotn << std::endl;
-//std::cout << h[0] << "\t" << h[1] << "\t" << h[2] << std::endl;
 
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
@@ -287,7 +278,6 @@ namespace llgCPU
 			spins::Sx[i]/=mods;
 			spins::Sy[i]/=mods;
 			spins::Sz[i]/=mods;
-            std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
         }
     }
     //Exchange field calculated using a CSR neighbbour list with uniform temperature
@@ -326,9 +316,10 @@ namespace llgCPU
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
             for(unsigned int n=xadj[i] ; n < xadj[i+1] ; n++)
             {
-                h[0]+=exch::Jxx[n]*spins::Sx[n];
-                h[1]+=exch::Jyy[n]*spins::Sy[n];
-                h[2]+=exch::Jzz[n]*spins::Sz[n];
+                unsigned int neigh=adjncy[n];
+                h[0]+=exch::Jxx[neigh]*spins::Sx[neigh];
+                h[1]+=exch::Jyy[neigh]*spins::Sy[neigh];
+                h[2]+=exch::Jzz[neigh]*spins::Sz[neigh];
             }
             const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
             h[0]+=anis::dT(0,0)*sdotn;
@@ -355,9 +346,10 @@ namespace llgCPU
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
             for(unsigned int n=xadj[i] ; n < xadj[i+1] ; n++)
             {
-                h[0]+=exch::Jxx[n]*spins::eSx[n];
-                h[1]+=exch::Jyy[n]*spins::eSy[n];
-                h[2]+=exch::Jzz[n]*spins::eSz[n];
+                unsigned int neigh=adjncy[n];
+                h[0]+=exch::Jxx[neigh]*spins::eSx[neigh];
+                h[1]+=exch::Jyy[neigh]*spins::eSy[neigh];
+                h[2]+=exch::Jzz[neigh]*spins::eSz[neigh];
             }
             const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
             h[0]+=anis::dT(0,0)*sdotn;

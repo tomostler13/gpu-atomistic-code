@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 10 Apr 2013 14:29:58
+// Last-modified: 11 Apr 2013 12:35:55
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -647,12 +647,17 @@ namespace exch
                         //                    std::cout << luc[0] << "\t" << luc[1] << "\t" << luc[2] << std::endl;
                                             tadjncy.push_back(1);
                                             tadjncy[adjncycount]=geom::coords(luc[0],luc[1],luc[2],0);
+                                            if(geom::coords(luc[0],luc[1],luc[2],0)>geom::nspins)
+                                            {
+                                                error::errPreamble(__FILE__,__LINE__);
+                                                error::errMessage("Neighbour larger than nspins");
+                                            }
                                             tJxx.push_back(1);
                                             tJyy.push_back(1);
                                             tJzz.push_back(1);
-                                            tJxx[adjncycount]=J(j,0,0);
-                                            tJyy[adjncycount]=J(j,1,1);
-                                            tJzz[adjncycount]=J(j,2,2);
+                                            tJxx[adjncycount]=J(j,0,0)/(mat::muB*mat::mu);
+                                            tJyy[adjncycount]=J(j,1,1)/(mat::muB*mat::mu);
+                                            tJzz[adjncycount]=J(j,2,2)/(mat::muB*mat::mu);
                                             adjncycount++;
                                             neighcount++;
                                             check(luc[0],luc[1],luc[2])=1;
