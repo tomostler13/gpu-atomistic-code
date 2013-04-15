@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 12 Apr 2013 14:45:27
+// Last-modified: 15 Apr 2013 12:25:24
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -130,7 +130,7 @@ namespace llg
     void integrate(unsigned int& t,Array<unsigned int>& xadj,Array<unsigned int>& adjncy)
     {
         #ifdef CUDA
-        //cullg::llgGPU(t,xadj,adjncy);
+        cullg::llgGPU(t,xadj,adjncy);
 		if(t%spins::update==0 && rscf)
 		{
 			spins::calcRealSpaceCorrelationFunction(t);
@@ -146,7 +146,7 @@ namespace llg
     void integrate(unsigned int& t,Array<double>& T,Array<unsigned int>& xadj,Array<unsigned int>& adjncy)
     {
         #ifdef CUDA
-        //cullg::llgGPU(t,T,xadj,adjncy);
+        cullg::llgGPU(t,T,xadj,adjncy);
 		if(t%spins::update==0 && rscf)
 		{
 			spins::calcRealSpaceCorrelationFunction(t);

@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 12 Apr 2013 18:14:36
+// Last-modified: 15 Apr 2013 12:34:39
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -226,11 +226,11 @@ namespace cullg
     //uniform temperature with CSR neighbour list
 	void llgGPU(unsigned int& t,Array<unsigned int>& xadj,Array<unsigned int>& adjncy)
 	{
-        if(config::incdip)
+        if(config::incdip && t%spins::update==0)
         {
             cufields::CBFDip<<<blockspergrid,threadsperblock>>>(geom::nspins,CH,Cr,Cspin);
         }
-        else
+        else if(t%spins::update==0)
         {
             cufields::CZeroField<<<blockspergrid,threadsperblock>>>(geom::nspins,CH);
         }
@@ -257,6 +257,58 @@ namespace cullg
 
 
 		cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,mat::sigma,llg::llgpf,mat::lambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Cxadj,Cadjncy,CJDiag);
+		if(t%spins::update==0)
+		{
+			//copy spin arrays back to CPU
+			double *temp=NULL;
+			temp = new double [3*geom::nspins];
+			CUDA_CALL(cudaMemcpy(temp,Cspin,3*geom::nspins*sizeof(double),cudaMemcpyDeviceToHost));
+			for(unsigned int i = 0 ; i < geom::nspins ; i++)
+			{
+				spins::Sx[i]=temp[3*i];
+				spins::Sy[i]=temp[3*i+1];
+				spins::Sz[i]=temp[3*i+2];
+//				std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << "\t" << sqrt(spins::Sx[i]*spins::Sx[i] + spins::Sy[i]*spins::Sy[i] + spins::Sz[i]*spins::Sz[i])<< std::endl;
+			}
+            delete [] temp;
+            temp=NULL;
+		}
+
+	}
+    //on-site temperature with CSR neighbour list
+	void llgGPU(unsigned int& t,Array<double>& osT,Array<unsigned int>& xadj,Array<unsigned int>& adjncy)
+	{
+        if(config::incdip && t%spins::update==0)
+        {
+            cufields::CBFDip<<<blockspergrid,threadsperblock>>>(geom::nspins,CH,Cr,Cspin);
+        }
+        else if(t%spins::update==0)
+        {
+            cufields::CZeroField<<<blockspergrid,threadsperblock>>>(geom::nspins,CH);
+        }
+		CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
+        cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,CTemp,mat::sigma,llg::llgpf,mat::lambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Cxadj,Cadjncy,CJDiag);
+/*		Array3D<float> temp2x(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+		Array3D<float> temp2y(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+		Array3D<float> temp2z(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);;
+		cudaMemcpy(temp2x.ptr(),CCHrx,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
+		cudaMemcpy(temp2y.ptr(),CCHry,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
+		cudaMemcpy(temp2z.ptr(),CCHrz,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);*/
+/*		//FOR DEBUGGING THE DIPOLAR FIELD/
+		float temp1[3*geom::nspins];
+		CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
+		for(unsigned int i = 0 ; i < geom::nspins ; i++)
+		{
+			int ijk[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+			std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp1[3*i] << "\t" << temp1[3*i+1] << "\t" << temp1[3*i+2] << std::endl;
+			//std::cerr << temp2x.getarrayelement(ijk[0],ijk[1],ijk[2]) << std::endl;
+			//std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp2x(ijk[0],ijk[1],ijk[2])/double(geom::zps) << "\t" << temp2y(ijk[0],ijk[1],ijk[2])/double(geom::zps) << "\t" << temp2z(ijk[0],ijk[1],ijk[2])/double(geom::zps) << std::endl;
+
+		}
+		exit(0);*/
+
+
+		cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,CTemp,mat::sigma,llg::llgpf,mat::lambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Cxadj,Cadjncy,CJDiag);
 		if(t%spins::update==0)
 		{
 			//copy spin arrays back to CPU
