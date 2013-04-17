@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 17 Apr 2013 11:02:38
+// Last-modified: 17 Apr 2013 11:38:49
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -83,54 +83,55 @@ namespace spins
 		Sz.resize(geom::nspins);
 		SUCCESS(config::Info);
 		std::string sc;
-		libconfig::Setting &setting = config::cfg.lookup("spins");
-		if(llg::rscf)
-		{
-			Sznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+        libconfig::Setting &setting = config::cfg.lookup("spins");
+        if(llg::ssf)
+        {
+            FIXOUT(config::Info,"Setting up static structure factor data structures:" <<std::flush);
             SpSm.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
             SpSm.IFill(0);
-			nzpcplxdim=(geom::dim[2]*geom::Nk[2]/2)+1;
-			Sqznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
-			SzcfPF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sznzp.ptr(),Sqznzp.ptr(),FFTW_ESTIMATE);
-			SzcfPB = fftw_plan_dft_c2r_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sqznzp.ptr(),Sznzp.ptr(),FFTW_ESTIMATE);
+
             SpSmF = fftw_plan_dft_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],SpSm.ptr(),SpSm.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
-			normsize=geom::dim[0]*geom::Nk[0]*geom::dim[0]*geom::Nk[0];
-			normsize*=geom::dim[1]*geom::Nk[1]*geom::dim[1]*geom::Nk[1];
-			normsize*=geom::dim[2]*geom::Nk[2]*geom::dim[2]*geom::Nk[2];
-			knorm=double(geom::nauc)/(double(geom::Nk[0]*geom::Nk[1]*geom::Nk[2]));
-			std::stringstream sstr;
-			sstr << llg::rscfstr << "all.dat";
-			std::string tempstr=sstr.str();
-            if(llg::rscf)
+            std::stringstream sstr2;
+            sstr2 << llg::ssffs << ".dat";
+            std::string tempstr2=sstr2.str();
+            llg::ssffstr.open(tempstr2.c_str());
+            if(llg::ssffstr.is_open()!=true)
             {
-                llg::rscfs.open(tempstr.c_str());
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open file for outputting static structure factor");
             }
-            if(llg::ssf)
+            SUCCESS(config::Info);
+        }
+
+        if(llg::rscf)
+        {
+            Sznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+            nzpcplxdim=(geom::dim[2]*geom::Nk[2]/2)+1;
+            Sqznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
+            SzcfPF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sznzp.ptr(),Sqznzp.ptr(),FFTW_ESTIMATE);
+            SzcfPB = fftw_plan_dft_c2r_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sqznzp.ptr(),Sznzp.ptr(),FFTW_ESTIMATE);
+            normsize=geom::dim[0]*geom::Nk[0]*geom::dim[0]*geom::Nk[0];
+            normsize*=geom::dim[1]*geom::Nk[1]*geom::dim[1]*geom::Nk[1];
+            normsize*=geom::dim[2]*geom::Nk[2]*geom::dim[2]*geom::Nk[2];
+            knorm=double(geom::nauc)/(double(geom::Nk[0]*geom::Nk[1]*geom::Nk[2]));
+            std::stringstream sstr;
+            sstr << llg::rscfstr << "all.dat";
+            std::string tempstr=sstr.str();
+            llg::rscfs.open(tempstr.c_str());
+            if(!llg::rscfs.is_open())
             {
-                std::stringstream sstr2;
-                sstr2 << llg::ssffs << ".dat";
-                std::string tempstr2=sstr2.str();
-                llg::ssffstr.open(tempstr2.c_str());
-                if(llg::ssffstr.is_open()!=true)
-                {
-                    error::errPreamble(__FILE__,__LINE__);
-                    error::errMessage("Could not open file for outputting static structure factor");
-                }
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open file for writing correlation function");
             }
-			if(!llg::rscfs.is_open())
-			{
-				error::errPreamble(__FILE__,__LINE__);
-				error::errMessage("Could not open file for writing correlation function");
-			}
-			atexit(sexit);
-		}
+            atexit(sexit);
+        }
 
 
-		setting.lookupValue("update",update);
-		FIXOUT(config::Info,"Spin update:" << update << " (timesteps)" << std::endl);
-		if(update<1)
-		{
-			error::errPreamble(__FILE__,__LINE__);
+        setting.lookupValue("update",update);
+        FIXOUT(config::Info,"Spin update:" << update << " (timesteps)" << std::endl);
+        if(update<1)
+        {
+            error::errPreamble(__FILE__,__LINE__);
 			error::errMessage("Spin data should be updated on cpu, i.e. spins::update>0");
 		}
 		setting.lookupValue("spinconfig",sc);
@@ -331,7 +332,7 @@ namespace spins
         //positive k-vectors
         for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2]/2 ; k++)
         {
-            llg::ssffstr << t << "\t" << sqrt(SpSm(0,0,k)[0]*SpSm(0,0,k)[0]+SpSm(0,0,k)[1]*SpSm(0,0,k)[1]) << std::endl;
+            llg::ssffstr << t << "\t" << k << "\t" << SpSm(0,0,k)[0] << "\t" << SpSm(0,0,k)[1] << std::endl;
         }
         llg::ssffstr << std::endl;
     }

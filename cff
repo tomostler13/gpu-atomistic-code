@@ -15,7 +15,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 64 , 64 , 64 ];
+	dim = [ 32 , 32 , 64 ];
 	//Number of atoms in the primitive cell
 	nauc = 1;
 	//The primitive cell
@@ -60,7 +60,7 @@ llg:
 	dt = 0.1e-15;
     Onsite_Applied = FALSE;
     Onsite_Kind = "special1";
-    Onsite_Temp=TRUE;
+    Onsite_Temp=FALSE;
 	applied = [ 0.0 , 0.0 , 1.0 ];
     RealSpaceCorrelations = TRUE;
     //Real space correlations file (the time is added to the end)
@@ -118,7 +118,7 @@ suscep:
 }
 stepchange:
 {
-    T_start = 1.0;
+    T_start = 15.0;
     T_final = 300.0;
     RunTime = 25.0e-12;
     EquilTime = 25.0e-12;

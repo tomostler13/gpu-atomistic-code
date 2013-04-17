@@ -1,6 +1,6 @@
 // File: stepchange.cpp
 // Author: Tom Ostler // Created: 29 Mar 2013
-// Last-modified: 10 Apr 2013 14:18:07
+// Last-modified: 17 Apr 2013 11:44:52
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -17,6 +17,7 @@
 #include "../inc/fields.h"
 #include "../inc/llg.h"
 #include "../inc/sim.h"
+#include "../inc/exch.h"
 void sim::stepchange(int argc,char *argv[])
 {
     config::printline(config::Info);

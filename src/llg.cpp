@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 17 Apr 2013 11:02:21
+// Last-modified: 17 Apr 2013 11:55:30
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -11,6 +11,7 @@
 #include "../inc/llg.h"
 #include "../inc/geom.h"
 #include "../inc/fields.h"
+#include "../inc/exch.h"
 #include <cmath>
 #ifdef CUDA
 #include <cuda.h>
@@ -105,41 +106,55 @@ namespace llg
 		FIXOUT(config::Info,"Prefactor to LLG equation:" << llgpf << std::endl);
 
 	}
-    //interaction matrix with uniform temperature
     void integrate(unsigned int& t)
     {
         #ifdef CUDA
-        cullg::llgGPU(t);
-		if(t%spins::update==0)
-		{
-            if(rscf)
+        if(config::useintmat)
+        {
+            if(osTemp)
             {
-                spins::calcRealSpaceCorrelationFunction(t);
+                cullg::llgGPU(t,osT);
             }
-            if(ssf)
+            else
             {
-                spins::calcStaticStructureFactor(t);
+                cullg::llgGPU(t);
             }
-		}
+        }
+        else
+        {
+            if(osTemp)
+            {
+                cullg::llgGPU(t,osT,exch::xadj,exch::adjncy);
+            }
+            else
+            {
+                cullg::llgGPU(t,exch::xadj,exch::adjncy);
+            }
+        }
         #else
-        llgCPU::llgCPU(t);
-		if(t%spins::update==0)
-		{
-            if(rscf)
+        if(config::useintmat)
+        {
+            if(osTemp)
             {
-                spins::calcRealSpaceCorrelationFunction(t);
+                llgCPU::llgCPU(t,osT);
             }
-            if(ssf)
+            else
             {
-                spins::calcStaticStructureFactor(t);
+                llgCPU::llgCPU(t);
             }
-		}
+        }
+        else
+        {
+            if(osTemp)
+            {
+                llgCPU::llgCPU(t,osT,exch::xadj,exch::adjncy);
+            }
+            else
+            {
+                llgCPU::llgCPU(t,exch::xadj,exch::adjncy);
+            }
+        }
         #endif
-    }
-    void integrate(unsigned int& t,Array<double>& T)
-    {
-        #ifdef CUDA
-        cullg::llgGPU(t,T);
 		if(t%spins::update==0)
 		{
             if(rscf)
@@ -151,80 +166,7 @@ namespace llg
                 spins::calcStaticStructureFactor(t);
             }
 		}
-        #else
-        llgCPU::llgCPU(t,T);
-		if(t%spins::update==0)
-		{
-            if(rscf)
-            {
-                spins::calcRealSpaceCorrelationFunction(t);
-            }
-            if(ssf)
-            {
-                spins::calcStaticStructureFactor(t);
-            }
-		}
-        #endif
-    }
-    void integrate(unsigned int& t,Array<unsigned int>& xadj,Array<unsigned int>& adjncy)
-    {
-        #ifdef CUDA
-        cullg::llgGPU(t,xadj,adjncy);
-		if(t%spins::update==0)
-		{
-            if(rscf)
-            {
-                spins::calcRealSpaceCorrelationFunction(t);
-            }
-            if(ssf)
-            {
-                spins::calcStaticStructureFactor(t);
-            }
-		}
-        #else
-        llgCPU::llgCPU(t,xadj,adjncy);
-		if(t%spins::update==0)
-		{
-            if(rscf)
-            {
-                spins::calcRealSpaceCorrelationFunction(t);
-            }
-            if(ssf)
-            {
-                spins::calcStaticStructureFactor(t);
-            }
-		}
-        #endif
-    }
-    void integrate(unsigned int& t,Array<double>& T,Array<unsigned int>& xadj,Array<unsigned int>& adjncy)
-    {
-        #ifdef CUDA
-        cullg::llgGPU(t,T,xadj,adjncy);
-		if(t%spins::update==0)
-		{
-            if(rscf)
-            {
-                spins::calcRealSpaceCorrelationFunction(t);
-            }
-            if(ssf)
-            {
-                spins::calcStaticStructureFactor(t);
-            }
-		}
-        #else
-        llgCPU::llgCPU(t,T,xadj,adjncy);
-		if(t%spins::update==0)
-		{
-            if(rscf)
-            {
-                spins::calcRealSpaceCorrelationFunction(t);
-            }
-            if(ssf)
-            {
-                spins::calcStaticStructureFactor(t);
-            }
-		}
-        #endif
+
     }
 
 }

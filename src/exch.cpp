@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 12 Apr 2013 13:59:11
+// Last-modified: 17 Apr 2013 11:26:56
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -9,6 +9,7 @@
 #include "../inc/exch.h"
 #include "../inc/intmat.h"
 #include "../inc/mat.h"
+#include "../inc/defines.h"
 #include <iostream>
 #include <fstream>
 #include <libconfig.h++>
@@ -16,8 +17,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <sstream>
-#define FIXOUT(a,b) a.width(75);a << std::left << b;
-#define FIXOUTVEC(a,b,c,d,e) FIXOUT(a,b << "[   ");a.width(5);a << std::left << c << " , ";a.width(5);a << std::left << d << " , ";a.width(5);a << std::left << e << "   ]" << std::endl;
 
 namespace exch
 {
@@ -586,6 +585,7 @@ namespace exch
                 }
                 //counter to keep track of adjncy size
                 unsigned int adjncycount=0;
+                FIXOUT(config::Info,"Finding neighbours...." << std::flush);
                 //now we have read in the exchange matrix we need to loop over the atoms and determine the neighbours
                 for(unsigned int i = 0 ; i < geom::nspins ; i++)
                 {
@@ -679,6 +679,7 @@ namespace exch
                     }
 //                    std::cout << "\tDone" << std::endl;
                 }
+                SUCCESS(config::Info);
 
                 xadj[geom::nspins]=adjncycount;
                 adjncy.resize(adjncycount);

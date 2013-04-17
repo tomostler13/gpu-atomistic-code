@@ -1,7 +1,7 @@
 // File: test_nanowire.cpp
 // Author: Tom Ostler
 // Created: 10 April 2013
-// Last-modified: 15 Apr 2013 13:27:50
+// Last-modified: 17 Apr 2013 11:45:07
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -125,7 +125,7 @@ void sim::test_nanowire(int argc,char *argv[])
     }
     for(unsigned int t = 0 ; t < ets ; t++)
     {
-        llg::integrate(t,llg::osT,exch::xadj,exch::adjncy);
+        llg::integrate(t);
         if(t%spins::update==0)
         {
             const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
@@ -160,7 +160,7 @@ void sim::test_nanowire(int argc,char *argv[])
     }
     for(unsigned int t = ets ; t < rts+ets ; t++)
     {
-        llg::integrate(t,llg::osT,exch::xadj,exch::adjncy);
+        llg::integrate(t);
         if(t%spins::update==0)
         {
             const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
