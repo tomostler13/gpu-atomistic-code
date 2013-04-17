@@ -1,7 +1,7 @@
 // File: llg.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 09 Apr 2013 21:23:01
+// Last-modified: 17 Apr 2013 10:27:54
 #ifndef _LLG_H_
 #define _LLG_H_
 #include "../inc/array.h"
@@ -12,13 +12,13 @@ namespace llg
 {
 	extern double applied[],T,dt,rdt,llgpf;
     extern Array<double> osT;
-    extern bool rscf;
+    extern bool rscf,ssf;
     extern std::string osk;
     extern bool osHapp;
     extern bool osTemp;
 
-    extern std::string rscfstr;
-    extern std::ofstream rscfs;
+    extern std::string rscfstr,ssffs;
+    extern std::ofstream rscfs,ssffstr;
 	void initLLG(int argc,char *argv[]);
     void integrate(unsigned int&,Array<double>&);
     void integrate(unsigned int&);

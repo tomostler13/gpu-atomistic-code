@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 02 Apr 2013 13:34:21
+// Last-modified: 17 Apr 2013 11:02:38
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -37,6 +37,7 @@ namespace spins
 	Array3D<double> Srx,Sry,Srz;
 	Array3D<double> Sznzp;
 	Array3D<fftw_complex> Sqznzp;
+    Array3D<fftw_complex> SpSm;
 	unsigned int nzpcplxdim=0;
 	double normsize=0;
 	double knorm=0;
@@ -44,6 +45,7 @@ namespace spins
 	util::RunningStat corrLength;
 	Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
 	fftw_plan SxP,SyP,SzP,SzcfPF,SzcfPB;
+    fftw_plan SpSmF;
 	unsigned int update=0;
 	std::ifstream sfs;
 	void initSpins(int argc,char *argv[])
@@ -85,11 +87,13 @@ namespace spins
 		if(llg::rscf)
 		{
 			Sznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
-
+            SpSm.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+            SpSm.IFill(0);
 			nzpcplxdim=(geom::dim[2]*geom::Nk[2]/2)+1;
 			Sqznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
 			SzcfPF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sznzp.ptr(),Sqznzp.ptr(),FFTW_ESTIMATE);
 			SzcfPB = fftw_plan_dft_c2r_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sqznzp.ptr(),Sznzp.ptr(),FFTW_ESTIMATE);
+            SpSmF = fftw_plan_dft_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],SpSm.ptr(),SpSm.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
 			normsize=geom::dim[0]*geom::Nk[0]*geom::dim[0]*geom::Nk[0];
 			normsize*=geom::dim[1]*geom::Nk[1]*geom::dim[1]*geom::Nk[1];
 			normsize*=geom::dim[2]*geom::Nk[2]*geom::dim[2]*geom::Nk[2];
@@ -97,7 +101,22 @@ namespace spins
 			std::stringstream sstr;
 			sstr << llg::rscfstr << "all.dat";
 			std::string tempstr=sstr.str();
-			llg::rscfs.open(tempstr.c_str());
+            if(llg::rscf)
+            {
+                llg::rscfs.open(tempstr.c_str());
+            }
+            if(llg::ssf)
+            {
+                std::stringstream sstr2;
+                sstr2 << llg::ssffs << ".dat";
+                std::string tempstr2=sstr2.str();
+                llg::ssffstr.open(tempstr2.c_str());
+                if(llg::ssffstr.is_open()!=true)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Could not open file for outputting static structure factor");
+                }
+            }
 			if(!llg::rscfs.is_open())
 			{
 				error::errPreamble(__FILE__,__LINE__);
@@ -299,6 +318,23 @@ namespace spins
 		//    error::errWarning("Could not close file for writing correlation function");
 		//}
 	}
+    void calcStaticStructureFactor(unsigned int t)
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            SpSm(lc[0],lc[1],lc[2])[0]=Sx[i];
+            SpSm(lc[0],lc[1],lc[2])[1]=Sy[i];
+        }
+        fftw_execute(SpSmF);
+        //For now just output Gamma -> X within the brillouin zone. Also we are only currently interested in
+        //positive k-vectors
+        for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2]/2 ; k++)
+        {
+            llg::ssffstr << t << "\t" << sqrt(SpSm(0,0,k)[0]*SpSm(0,0,k)[0]+SpSm(0,0,k)[1]*SpSm(0,0,k)[1]) << std::endl;
+        }
+        llg::ssffstr << std::endl;
+    }
 	void corrfunc(double *p,double *ydat,int m,int n,void *data)
 	{
 		register int i;

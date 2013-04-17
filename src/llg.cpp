@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 15 Apr 2013 12:25:24
+// Last-modified: 17 Apr 2013 11:02:21
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -22,6 +22,8 @@ namespace llg
     Array<double> osT;
     //real space correlation function
     bool rscf=false;
+    //static structure factor
+    bool ssf=false;
     //on site applied field?
     bool osHapp=false;
     //on site temperature?
@@ -31,6 +33,8 @@ namespace llg
 
     std::string rscfstr;
     std::ofstream rscfs;
+    std::string ssffs;
+    std::ofstream ssffstr;
 	void initLLG(int argc,char *argv[])
 	{
         config::printline(config::Info);
@@ -56,8 +60,10 @@ namespace llg
         libconfig::Setting &setting = config::cfg.lookup("llg");
         setting.lookupValue("dt",dt);
         setting.lookupValue("RealSpaceCorrelations",rscf);
+        setting.lookupValue("StaticStructureFactor",ssf);
 
         setting.lookupValue("RSCFile",rscfstr);
+        setting.lookupValue("SSFile",ssffs);
         setting.lookupValue("Onsite_Applied",osHapp);
         FIXOUT(config::Info,"Onsite applied field?:" << config::isTF(osHapp) << std::endl);
         FIXOUT(config::Info,"Resizing applied field arrays:" << std::flush);
@@ -79,6 +85,11 @@ namespace llg
         FIXOUT(config::Info,"Kind of onsite applied field:" << osk);
         FIXOUT(config::Info,"Outputting correlation functions to file:" << rscfstr << std::endl);
         FIXOUT(config::Info,"Calculating real space correlation functions:" << config::isTF(rscf) << std::endl);
+        if(ssf)
+        {
+            FIXOUT(config::Info,"Calculating static structure factor:" << config::isTF(ssf) << std::endl);
+            FIXOUT(config::Info,"Outputting to file:" << ssffs << std::endl);
+        }
         for(unsigned int i = 0 ; i < 3 ;i++)
         {
             applied[i]=setting["applied"][i];
@@ -99,15 +110,29 @@ namespace llg
     {
         #ifdef CUDA
         cullg::llgGPU(t);
-		if(t%spins::update==0 && rscf)
+		if(t%spins::update==0)
 		{
-			spins::calcRealSpaceCorrelationFunction(t);
+            if(rscf)
+            {
+                spins::calcRealSpaceCorrelationFunction(t);
+            }
+            if(ssf)
+            {
+                spins::calcStaticStructureFactor(t);
+            }
 		}
         #else
         llgCPU::llgCPU(t);
-		if(t%spins::update==0 && rscf)
+		if(t%spins::update==0)
 		{
-			spins::calcRealSpaceCorrelationFunction(t);
+            if(rscf)
+            {
+                spins::calcRealSpaceCorrelationFunction(t);
+            }
+            if(ssf)
+            {
+                spins::calcStaticStructureFactor(t);
+            }
 		}
         #endif
     }
@@ -115,15 +140,29 @@ namespace llg
     {
         #ifdef CUDA
         cullg::llgGPU(t,T);
-		if(t%spins::update==0 && rscf)
+		if(t%spins::update==0)
 		{
-			spins::calcRealSpaceCorrelationFunction(t);
+            if(rscf)
+            {
+                spins::calcRealSpaceCorrelationFunction(t);
+            }
+            if(ssf)
+            {
+                spins::calcStaticStructureFactor(t);
+            }
 		}
         #else
         llgCPU::llgCPU(t,T);
-		if(t%spins::update==0 && rscf)
+		if(t%spins::update==0)
 		{
-			spins::calcRealSpaceCorrelationFunction(t);
+            if(rscf)
+            {
+                spins::calcRealSpaceCorrelationFunction(t);
+            }
+            if(ssf)
+            {
+                spins::calcStaticStructureFactor(t);
+            }
 		}
         #endif
     }
@@ -131,15 +170,29 @@ namespace llg
     {
         #ifdef CUDA
         cullg::llgGPU(t,xadj,adjncy);
-		if(t%spins::update==0 && rscf)
+		if(t%spins::update==0)
 		{
-			spins::calcRealSpaceCorrelationFunction(t);
+            if(rscf)
+            {
+                spins::calcRealSpaceCorrelationFunction(t);
+            }
+            if(ssf)
+            {
+                spins::calcStaticStructureFactor(t);
+            }
 		}
         #else
         llgCPU::llgCPU(t,xadj,adjncy);
-		if(t%spins::update==0 && rscf)
+		if(t%spins::update==0)
 		{
-			spins::calcRealSpaceCorrelationFunction(t);
+            if(rscf)
+            {
+                spins::calcRealSpaceCorrelationFunction(t);
+            }
+            if(ssf)
+            {
+                spins::calcStaticStructureFactor(t);
+            }
 		}
         #endif
     }
@@ -147,15 +200,29 @@ namespace llg
     {
         #ifdef CUDA
         cullg::llgGPU(t,T,xadj,adjncy);
-		if(t%spins::update==0 && rscf)
+		if(t%spins::update==0)
 		{
-			spins::calcRealSpaceCorrelationFunction(t);
+            if(rscf)
+            {
+                spins::calcRealSpaceCorrelationFunction(t);
+            }
+            if(ssf)
+            {
+                spins::calcStaticStructureFactor(t);
+            }
 		}
         #else
         llgCPU::llgCPU(t,T,xadj,adjncy);
-		if(t%spins::update==0 && rscf)
+		if(t%spins::update==0)
 		{
-			spins::calcRealSpaceCorrelationFunction(t);
+            if(rscf)
+            {
+                spins::calcRealSpaceCorrelationFunction(t);
+            }
+            if(ssf)
+            {
+                spins::calcStaticStructureFactor(t);
+            }
 		}
         #endif
     }

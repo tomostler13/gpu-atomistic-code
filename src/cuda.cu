@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 15 Apr 2013 12:34:39
+// Last-modified: 15 Apr 2013 14:13:50
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -159,7 +159,7 @@ namespace cullg
 	{
         if(!initosT)
         {
-            CUDA_CALL(cudaMemcpy(CTemp,osT.ptr(),geom::nspins*sizeof(float),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(CTemp,osT.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
             initosT=true;
         }
 		//copy the spin data to the zero padded arrays
@@ -278,11 +278,16 @@ namespace cullg
     //on-site temperature with CSR neighbour list
 	void llgGPU(unsigned int& t,Array<double>& osT,Array<unsigned int>& xadj,Array<unsigned int>& adjncy)
 	{
+        if(!initosT)
+        {
+            CUDA_CALL(cudaMemcpy(CTemp,osT.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+            initosT=true;
+        }
         if(config::incdip && t%spins::update==0)
         {
             cufields::CBFDip<<<blockspergrid,threadsperblock>>>(geom::nspins,CH,Cr,Cspin);
         }
-        else if(t%spins::update==0)
+        else if(t%spins::update==0 || t==0)
         {
             cufields::CZeroField<<<blockspergrid,threadsperblock>>>(geom::nspins,CH);
         }
@@ -294,8 +299,8 @@ namespace cullg
 		cudaMemcpy(temp2x.ptr(),CCHrx,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
 		cudaMemcpy(temp2y.ptr(),CCHry,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);
 		cudaMemcpy(temp2z.ptr(),CCHrz,geom::zps*sizeof(float),cudaMemcpyDeviceToHost);*/
-/*		//FOR DEBUGGING THE DIPOLAR FIELD/
-		float temp1[3*geom::nspins];
+		//FOR DEBUGGING THE DIPOLAR FIELD/
+/*		float temp1[3*geom::nspins];
 		CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
 		for(unsigned int i = 0 ; i < geom::nspins ; i++)
 		{
@@ -532,13 +537,16 @@ namespace cullg
         }
         if(!config::useintmat)
         {
+            float *temp=new float[3*exch::Jxx.size()];
             for(unsigned int i = 0 ; i < exch::Jxx.size() ; i++)
             {
-                tnsfa[3*i]=exch::Jxx[i];
-                tnsfa[3*i+1]=exch::Jyy[i];
-                tnsfa[3*i+2]=exch::Jzz[i];
+                temp[3*i]=exch::Jxx[i];
+                temp[3*i+1]=exch::Jyy[i];
+                temp[3*i+2]=exch::Jzz[i];
             }
-            CUDA_CALL(cudaMemcpy(CJDiag,tnsfa,3*exch::Jxx.size()*sizeof(float),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(CJDiag,temp,3*exch::Jxx.size()*sizeof(float),cudaMemcpyHostToDevice));
+            delete [] temp;
+            temp=NULL;
         }
 		//copy spin data to single array
 		util::copy3vecto1(geom::nspins,spins::Sx,spins::Sy,spins::Sz,tnsda);

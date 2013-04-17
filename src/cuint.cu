@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 15 Apr 2013 12:43:40
+// Last-modified: 15 Apr 2013 14:12:14
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -170,6 +170,7 @@ namespace cuint
 			{
 				//set the euler spin value and normalize
 				Cespin[3*i+j]=es[j]*nf;
+            //    CH[3*i+j]=h[j];
 			}
         }
     }
