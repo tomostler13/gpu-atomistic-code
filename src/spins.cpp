@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 17 Apr 2013 11:38:49
+// Last-modified: 19 Apr 2013 13:00:25
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -328,11 +328,22 @@ namespace spins
             SpSm(lc[0],lc[1],lc[2])[1]=Sy[i];
         }
         fftw_execute(SpSmF);
-        //For now just output Gamma -> X within the brillouin zone. Also we are only currently interested in
-        //positive k-vectors
-        for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2]/2 ; k++)
+        if(geom::dim[2]>1)
         {
-            llg::ssffstr << t << "\t" << k << "\t" << SpSm(0,0,k)[0] << "\t" << SpSm(0,0,k)[1] << std::endl;
+            //X -> Gamma within the brillouin zone. We are only currently interested in
+            //positive k-vectors
+            for(int k = (geom::dim[2]*geom::Nk[2]/2)-1 ; k > 0 ; k--)
+            {
+                llg::ssffstr << t << "\t" << -k << "\t" << SpSm(0,0,k)[0] << "\t" << SpSm(0,0,k)[1] << std::endl;
+            }
+        }
+        if(geom::dim[0] == geom::dim[2] && geom::dim[1]==geom::dim[2])
+        {
+            //Gamma -> M
+            for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2]/2 ; k++)
+            {
+                llg::ssffstr << t << "\t" << k << "\t" << SpSm(0,k,k)[0] << "\t" << SpSm(0,k,k)[1] << std::endl;
+            }
         }
         llg::ssffstr << std::endl;
     }

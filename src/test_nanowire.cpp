@@ -1,7 +1,7 @@
 // File: test_nanowire.cpp
 // Author: Tom Ostler
 // Created: 10 April 2013
-// Last-modified: 17 Apr 2013 11:45:07
+// Last-modified: 19 Apr 2013 13:00:48
 #include <iostream>
 #include <cstdlib>
 #include <cmath>

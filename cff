@@ -15,7 +15,7 @@ system:
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
 	//number of unit cells
-	dim = [ 32 , 32 , 64 ];
+	dim = [ 1 , 1 , 2100 ];
 	//Number of atoms in the primitive cell
 	nauc = 1;
 	//The primitive cell
@@ -29,7 +29,7 @@ system:
 	//lattice constants
 	abc = [ 0.386e-9 , 0.386e-9 , 0.374e-9 ];
     zpcheck=false;
-    System_Type="bulk";
+    System_Type="nanowire";
     cut0=1000;
     cut1=1100;
     width=1;
@@ -45,7 +45,7 @@ exchange:
 	exchinput="extfile";
 	exchfile="exch.sc";
     //periodic boundary conditions (only if we are using a neighbour list)
-    pbc = [ TRUE , TRUE , TRUE ];
+    pbc = [ FALSE , FALSE , FALSE ];
 };
 anisotropy:
 {
@@ -60,8 +60,8 @@ llg:
 	dt = 0.1e-15;
     Onsite_Applied = FALSE;
     Onsite_Kind = "special1";
-    Onsite_Temp=FALSE;
-	applied = [ 0.0 , 0.0 , 1.0 ];
+    Onsite_Temp=TRUE;
+	applied = [ 1.0 , 0.0 , 0.0 ];
     RealSpaceCorrelations = TRUE;
     //Real space correlations file (the time is added to the end)
     RSCFile = "RSCF_zz_";
@@ -76,7 +76,7 @@ spins:
 {
 	spinconfig = "align";
 //	sc = [ 0.01414178206592082934 , 0.0 , 0.9999 ];
-    sc = [ 0.0 , 0.0 , 1.0 ];
+    sc = [ 1.0 , 0.0 , 0.0 ];
 	update=10;
 };
 sim:
@@ -85,8 +85,8 @@ sim:
 	//sim_type = "quick";
 	//sim_type="suscep";
     //sim_type="timeseries";
-    //sim_type="test_nanowire";
-    sim_type="stepchange";
+    sim_type="test_nanowire";
+    //sim_type="stepchange";
 };
 mvt:
 {
@@ -139,7 +139,7 @@ test_nanowire:
     RunTime=100e-12;
     outmag=TRUE;
     MagFileName="mag";
-    Wire_Temperature=0.00000001;
-    High_Temperature=50.0;
-    Low_Temperature=30.0;
+    Wire_Temperature=0.01;
+    High_Temperature=0.01;
+    Low_Temperature=0.01;
 };
