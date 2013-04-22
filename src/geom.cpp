@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 12 Apr 2013 19:04:35
+// Last-modified: 22 Apr 2013 13:37:34
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -173,7 +173,7 @@ namespace geom
         FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
         lu.resize(maxss,4);
         lu.IFill(0);
-        coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2],2);
+        coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2],3);
         //-2 here corresponds to empty k-mesh point
         //-1 corresponds to an empty k-mesh point but with an imaginary atom
         //there for the determination of the interaction matrix
@@ -343,7 +343,6 @@ namespace geom
         }
         nspins=atom_counter;
         FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
-
         outstruc << nspins << std::endl << std::endl;
 
         for(unsigned int i = 0 ; i < geom::zpdim[0]*Nk[0] ; i++)
@@ -377,6 +376,5 @@ namespace geom
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Number of atoms placed on mesh is more or less than expected.");
         }
-
     }
 }

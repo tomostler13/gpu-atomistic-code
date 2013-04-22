@@ -1,6 +1,6 @@
 // File: mat.h
 // Author:Tom Ostler
-// Last-modified: 23 Jan 2013 10:39:46
+// Last-modified: 22 Apr 2013 14:39:19
 #include <string>
 #include "../inc/array.h"
 #include "../inc/array2d.h"
@@ -8,7 +8,11 @@
 #define _MAT_H_
 namespace mat
 {
-    extern double lambda,gamma,muB,mu,sigma;
+    extern unsigned int nspec;
+    extern double gamma,muB;
+    extern Array<double> sigma,mu,mustore,lambda;
+    extern std::string place;
+    extern Array<unsigned int> speclist;
     void initMat(int argc,char *argv[]);
 }
 #endif /*_MAT_H_*/

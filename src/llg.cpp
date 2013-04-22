@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 17 Apr 2013 11:55:30
+// Last-modified: 22 Apr 2013 14:40:14
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -19,8 +19,8 @@
 #endif /*CUDA*/
 namespace llg
 {
-    double applied[3]={0,0,0},T,dt,rdt,llgpf;
-    Array<double> osT;
+    double applied[3]={0,0,0},T,dt,rdt;
+    Array<double> osT,llgpf;
     //real space correlation function
     bool rscf=false;
     //static structure factor
@@ -57,7 +57,7 @@ namespace llg
             std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
             exit(EXIT_FAILURE);
         }
-
+        llgpf.resize(geom::nspins);
         libconfig::Setting &setting = config::cfg.lookup("llg");
         setting.lookupValue("dt",dt);
         setting.lookupValue("RealSpaceCorrelations",rscf);
@@ -99,11 +99,15 @@ namespace llg
         FIXOUT(config::Info,"Timestep:" << dt << " seconds" << std::endl);
         rdt=dt*mat::gamma;
 		FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
-
-        mat::sigma = sqrt(2.0*1.38e-23*mat::lambda/(mat::mu*mat::muB*dt*mat::gamma));
-        FIXOUT(config::Info,"Sigma prefactor:" << mat::sigma << std::endl);
-        llgpf = -1./(1.0+mat::lambda*mat::lambda);
-		FIXOUT(config::Info,"Prefactor to LLG equation:" << llgpf << std::endl);
+        FIXOUT(config::Info,"Setting initial sigma" << std::flush);
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            mat::sigma[i] = sqrt(2.0*1.38e-23*mat::lambda[i]/(mat::mu[i]*mat::muB*dt*mat::gamma));
+            llgpf[i] = -1./(1.0+mat::lambda[i]*mat::lambda[i]);
+        }
+        SUCCESS(config::Info);
+//        FIXOUT(config::Info,"Sigma prefactor:" << mat::sigma << std::endl);
+//		FIXOUT(config::Info,"Prefactor to LLG equation:" << llgpf << std::endl);
 
 	}
     void integrate(unsigned int& t)

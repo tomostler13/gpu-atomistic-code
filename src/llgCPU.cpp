@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 17 Apr 2013 11:35:49
+// Last-modified: 22 Apr 2013 14:37:02
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -72,9 +72,9 @@ namespace llgCPU
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
 
-            fields::Hthx[i]=sqrtT*mat::sigma*Random::normal();
-            fields::Hthy[i]=sqrtT*mat::sigma*Random::normal();
-            fields::Hthz[i]=sqrtT*mat::sigma*Random::normal();
+            fields::Hthx[i]=sqrtT*mat::sigma[i]*Random::normal();
+            fields::Hthy[i]=sqrtT*mat::sigma[i]*Random::normal();
+            fields::Hthz[i]=sqrtT*mat::sigma[i]*Random::normal();
 
         }
         #pragma omp parallel for private (i) shared(spins::eSx,spins::eSy,spins::eSz,fnx,fny,fnz)
@@ -139,9 +139,9 @@ namespace llgCPU
         {
 
             const double sqrtT=sqrt(T[i]);
-            fields::Hthx[i]=sqrtT*mat::sigma*Random::normal();
-            fields::Hthy[i]=sqrtT*mat::sigma*Random::normal();
-            fields::Hthz[i]=sqrtT*mat::sigma*Random::normal();
+            fields::Hthx[i]=sqrtT*mat::sigma[i]*Random::normal();
+            fields::Hthy[i]=sqrtT*mat::sigma[i]*Random::normal();
+            fields::Hthz[i]=sqrtT*mat::sigma[i]*Random::normal();
 
         }
         #pragma omp parallel for private (i) shared(spins::eSx,spins::eSy,spins::eSz,fnx,fny,fnz)
@@ -209,15 +209,16 @@ namespace llgCPU
         {
 
             const double sqrtT=sqrt(T[i]);
-            fields::Hthx[i]=sqrtT*mat::sigma*Random::normal();
-            fields::Hthy[i]=sqrtT*mat::sigma*Random::normal();
-            fields::Hthz[i]=sqrtT*mat::sigma*Random::normal();
+            fields::Hthx[i]=sqrtT*mat::sigma[i]*Random::normal();
+            fields::Hthy[i]=sqrtT*mat::sigma[i]*Random::normal();
+            fields::Hthz[i]=sqrtT*mat::sigma[i]*Random::normal();
             //std::cout << fields::Hthx[i] << "\t" << fields::Hthy[i] << "\t" << fields::Hthz[i] << std::endl;
         }
         //std::cout << __FILE__ << "\t" << __LINE__ << std::endl;
         #pragma omp parallel for private (i) shared(spins::eSx,spins::eSy,spins::eSz,fnx,fny,fnz)
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
+            unsigned int spec=mat::speclist[i];
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
 
@@ -228,10 +229,10 @@ namespace llgCPU
                 h[1]+=exch::Jyy[neigh]*spins::Sy[neigh];
                 h[2]+=exch::Jzz[neigh]*spins::Sz[neigh];
             }
-            const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
-            h[0]+=anis::dT(0,0)*sdotn;
-            h[1]+=anis::dT(1,1)*sdotn;
-            h[2]+=anis::dT(2,2)*sdotn;
+            const double sdotn=s[0]*anis::uniaxial_unit(spec,0)+s[1]*anis::uniaxial_unit(spec,1)+s[2]*anis::uniaxial_unit(spec,2);
+            h[0]+=anis::dT(spec,0,0)*sdotn;
+            h[1]+=anis::dT(spec,1,1)*sdotn;
+            h[2]+=anis::dT(spec,2,2)*sdotn;
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -251,6 +252,7 @@ namespace llgCPU
         #pragma omp parallel for private (i) shared(spins::Sx,spins::Sy,spins::Sz)
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
+            unsigned int spec=mat::speclist[i];
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
             for(unsigned int n=xadj[i] ; n < xadj[i+1] ; n++)
@@ -261,10 +263,10 @@ namespace llgCPU
                 h[2]+=exch::Jzz[neigh]*spins::eSz[neigh];
             }
 
-            const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
-            h[0]+=anis::dT(0,0)*sdotn;
-            h[1]+=anis::dT(1,1)*sdotn;
-            h[2]+=anis::dT(2,2)*sdotn;
+            const double sdotn=s[0]*anis::uniaxial_unit(spec,0)+s[1]*anis::uniaxial_unit(spec,1)+s[2]*anis::uniaxial_unit(spec,2);
+            h[0]+=anis::dT(spec,0,0)*sdotn;
+            h[1]+=anis::dT(spec,1,1)*sdotn;
+            h[2]+=anis::dT(spec,2,2)*sdotn;
 
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
@@ -304,14 +306,15 @@ namespace llgCPU
         {
 
             const double sqrtT=llg::T;
-            fields::Hthx[i]=sqrtT*mat::sigma*Random::normal();
-            fields::Hthy[i]=sqrtT*mat::sigma*Random::normal();
-            fields::Hthz[i]=sqrtT*mat::sigma*Random::normal();
+            fields::Hthx[i]=sqrtT*mat::sigma[i]*Random::normal();
+            fields::Hthy[i]=sqrtT*mat::sigma[i]*Random::normal();
+            fields::Hthz[i]=sqrtT*mat::sigma[i]*Random::normal();
 
         }
         #pragma omp parallel for private (i) shared(spins::eSx,spins::eSy,spins::eSz,fnx,fny,fnz)
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
+            const unsigned int spec=mat::speclist[i];
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
             for(unsigned int n=xadj[i] ; n < xadj[i+1] ; n++)
@@ -321,10 +324,10 @@ namespace llgCPU
                 h[1]+=exch::Jyy[neigh]*spins::Sy[neigh];
                 h[2]+=exch::Jzz[neigh]*spins::Sz[neigh];
             }
-            const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
-            h[0]+=anis::dT(0,0)*sdotn;
-            h[1]+=anis::dT(1,1)*sdotn;
-            h[2]+=anis::dT(2,2)*sdotn;
+            const double sdotn=s[0]*anis::uniaxial_unit(spec,0)+s[1]*anis::uniaxial_unit(spec,1)+s[2]*anis::uniaxial_unit(spec,2);
+            h[0]+=anis::dT(spec,0,0)*sdotn;
+            h[1]+=anis::dT(spec,1,1)*sdotn;
+            h[2]+=anis::dT(spec,2,2)*sdotn;
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -342,6 +345,7 @@ namespace llgCPU
         #pragma omp parallel for private (i) shared(spins::Sx,spins::Sy,spins::Sz)
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
+            const unsigned int spec=mat::speclist[i];
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
             for(unsigned int n=xadj[i] ; n < xadj[i+1] ; n++)
@@ -351,10 +355,10 @@ namespace llgCPU
                 h[1]+=exch::Jyy[neigh]*spins::eSy[neigh];
                 h[2]+=exch::Jzz[neigh]*spins::eSz[neigh];
             }
-            const double sdotn=s[0]*anis::uniaxial_unit[0]+s[1]*anis::uniaxial_unit[1]+s[2]*anis::uniaxial_unit[2];
-            h[0]+=anis::dT(0,0)*sdotn;
-            h[1]+=anis::dT(1,1)*sdotn;
-            h[2]+=anis::dT(2,2)*sdotn;
+            const double sdotn=s[0]*anis::uniaxial_unit(spec,0)+s[1]*anis::uniaxial_unit(spec,1)+s[2]*anis::uniaxial_unit(spec,2);
+            h[0]+=anis::dT(spec,0,0)*sdotn;
+            h[1]+=anis::dT(spec,1,1)*sdotn;
+            h[2]+=anis::dT(spec,2,2)*sdotn;
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 

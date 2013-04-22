@@ -4,9 +4,12 @@ include_dipolar=false;
 use_interaction_matrix=false;
 mat:
 {
-	mu = 2.1;
+	mu = [ 2.1 ];
+    conc= [ 1.0 ];
 	gamma = 1.76e11;
 	lambda = 0.01;
+    NumSpec=1;
+    Place="random";
 };
 system:
 {
@@ -51,9 +54,9 @@ anisotropy:
 {
 	units = "joules";
 	//The anisotropy tensor
-	dxb = [ 0.0 , 0.0 , 0.0 ];
-	dyb = [ 0.0 , 0.0 , 0.0 ];
-	dzb = [ 0.0 , 0.0 , 0.0 ];
+	d0xb = [ 0.0 , 0.0 , 0.0 ];
+	d0yb = [ 0.0 , 0.0 , 0.0 ];
+	d0zb = [ 0.0 , 0.0 , 0.0 ];
 };
 llg:
 {
