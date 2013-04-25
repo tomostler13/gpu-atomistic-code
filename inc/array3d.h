@@ -1,6 +1,6 @@
 // File: array3d.h
 // Author:Joe Barker
-// Last-modified: 21 Jan 2013 17:02:38
+// Last-modified: 24 Apr 2013 21:28:16
 
 #ifndef __ARRAY3D_H__
 #define __ARRAY3D_H__
@@ -152,6 +152,10 @@ class Array3D<fftw_complex>
     inline int getarrayelement(unsigned int i,unsigned int j,unsigned int k)
     {
         return((i*dim1+j)*dim2+k);
+    }
+    inline int size()
+    {
+        return(dim0*dim1*dim2);
     }
 
     ///IFill means initialize or fill the complex part only

@@ -1,8 +1,9 @@
 // File: intmat.h
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 22 Jan 2013 10:47:16
+// Last-modified: 24 Apr 2013 22:10:34
 #include "../inc/arrays.h"
+#include <fftw3.h>
 #ifndef _INTMAT_H_
 #define _INTMAT_H_
 namespace intmat

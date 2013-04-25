@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 15 Apr 2013 14:12:14
+// Last-modified: 22 Apr 2013 14:55:23
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -28,13 +28,13 @@
 namespace cuint
 {
     //uniform temperature with interaction matrix
-    __global__ void CHeun1(int N,double T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
+    __global__ void CHeun1(int N,double T,double *sigma,double *llgpf,double *lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
 			//The prefactor for the thermal term
-			const double TP=sqrt(T)*sigma;
+			const double TP=sqrt(T)*sigma[i];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 			const double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
 			const double s[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
@@ -44,9 +44,11 @@ namespace cuint
 			double lfn[3]={0,0,0};
 			double es[3]={0,0,0};
 			double mods=0.0;
+            double llgpfi=llgpf[i];
+            double lambdai=lambda[i];
 			for(unsigned int j = 0 ; j < 3 ; j++)
 			{
-				lfn[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
+				lfn[j] = llgpfi*(sxh[j]+lambdai*sxsxh[j]);
 				Cfn[3*i+j]=lfn[j];
 				es[j]=s[j]+lfn[j]*rdt;
 				mods+=s[j]*s[j];
@@ -61,13 +63,13 @@ namespace cuint
         }
     }
     //on-site temperature with interaction matrix
-    __global__ void CHeun1(int N,double *T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
+    __global__ void CHeun1(int N,double *T,double *sigma,double *llgpf,double *lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
 			//The prefactor for the thermal term
-			const double TP=sqrt(T[i])*sigma;
+			const double TP=sqrt(T[i])*sigma[i];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 			const double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
 			const double s[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
@@ -77,9 +79,11 @@ namespace cuint
 			double lfn[3]={0,0,0};
 			double es[3]={0,0,0};
 			double mods=0.0;
+            double llgpfi=llgpf[i];
+            double lambdai=lambda[i];
 			for(unsigned int j = 0 ; j < 3 ; j++)
 			{
-				lfn[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
+				lfn[j] = llgpfi*(sxh[j]+lambdai*sxsxh[j]);
 				Cfn[3*i+j]=lfn[j];
 				es[j]=s[j]+lfn[j]*rdt;
 				mods+=s[j]*s[j];
@@ -94,13 +98,13 @@ namespace cuint
         }
     }
     //using neighbour list to calculate exchange field, uniform temperature
-    __global__ void CHeun1(int N,double T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,int *Cxadj,int *Cadjncy,float *CJDiag)
+    __global__ void CHeun1(int N,double T,double *sigma,double *llgpf,double *lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,int *Cxadj,int *Cadjncy,float *CJDiag)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
 			//The prefactor for the thermal term
-			const double TP=sqrt(T)*sigma;
+			const double TP=sqrt(T)*sigma[i];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 			double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
 			const double s[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
@@ -117,9 +121,11 @@ namespace cuint
 			double lfn[3]={0,0,0};
 			double es[3]={0,0,0};
 			double mods=0.0;
+            double llgpfi=llgpf[i];
+            double lambdai=lambda[i];
 			for(unsigned int j = 0 ; j < 3 ; j++)
 			{
-				lfn[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
+				lfn[j] = llgpfi*(sxh[j]+lambdai*sxsxh[j]);
 				Cfn[3*i+j]=lfn[j];
 				es[j]=s[j]+lfn[j]*rdt;
 				mods+=s[j]*s[j];
@@ -134,13 +140,13 @@ namespace cuint
         }
     }
     //using neighbour list to calculate exchange field, on-site temperature
-    __global__ void CHeun1(int N,double *T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,int *Cxadj,int *Cadjncy,float *CJDiag)
+    __global__ void CHeun1(int N,double *T,double *sigma,double *llgpf,double *lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,int *Cxadj,int *Cadjncy,float *CJDiag)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
 			//The prefactor for the thermal term
-			const double TP=sqrt(T[i])*sigma;
+			const double TP=sqrt(T[i])*sigma[i];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 			double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
 			const double s[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
@@ -157,9 +163,11 @@ namespace cuint
 			double lfn[3]={0,0,0};
 			double es[3]={0,0,0};
 			double mods=0.0;
+            double llgpfi=llgpf[i];
+            double lambdai=lambda[i];
 			for(unsigned int j = 0 ; j < 3 ; j++)
 			{
-				lfn[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
+				lfn[j] = llgpfi*(sxh[j]+lambdai*sxsxh[j]);
 				Cfn[3*i+j]=lfn[j];
 				es[j]=s[j]+lfn[j]*rdt;
 				mods+=s[j]*s[j];
@@ -175,13 +183,13 @@ namespace cuint
         }
     }
     //uniform temperature with interaction matrix
-    __global__ void CHeun2(int N,double T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
+    __global__ void CHeun2(int N,double T,double *sigma,double *llgpf,double *lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
 			//The prefactor for the thermal term
-			const double TP=sqrt(T)*sigma;
+			const double TP=sqrt(T)*sigma[i];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 			const double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
 			const double s[3]={Cespin[3*i],Cespin[3*i+1],Cespin[3*i+2]};
@@ -191,9 +199,11 @@ namespace cuint
 			const double fn[3]={Cfn[3*i],Cfn[3*i+1],Cfn[3*i+2]};
             double fnp1[3]={0,0,0};
 			double mods=0.0;
+            double llgpfi=llgpf[i];
+            double lambdai=lambda[i];
 			for(unsigned int j = 0 ; j < 3 ; j++)
 			{
-				fnp1[j]=llgpf*(sxh[j]+lambda*sxsxh[j]);
+				fnp1[j]=llgpfi*(sxh[j]+lambdai*sxsxh[j]);
 				ps[j]+=(0.5*(fn[j]+fnp1[j])*rdt);
 				mods+=ps[j]*ps[j];
 			}
@@ -206,13 +216,13 @@ namespace cuint
         }
     }
     //on-site temperature with interaction matrix
-    __global__ void CHeun2(int N,double *T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
+    __global__ void CHeun2(int N,double *T,double *sigma,double *llgpf,double *lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
 			//The prefactor for the thermal term
-			const double TP=sqrt(T[i])*sigma;
+			const double TP=sqrt(T[i])*sigma[i];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 			const double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
 			const double s[3]={Cespin[3*i],Cespin[3*i+1],Cespin[3*i+2]};
@@ -222,9 +232,11 @@ namespace cuint
 			const double fn[3]={Cfn[3*i],Cfn[3*i+1],Cfn[3*i+2]};
             double fnp1[3]={0,0,0};
 			double mods=0.0;
+            double llgpfi=llgpf[i];
+            double lambdai=lambda[i];
 			for(unsigned int j = 0 ; j < 3 ; j++)
 			{
-				fnp1[j]=llgpf*(sxh[j]+lambda*sxsxh[j]);
+				fnp1[j]=llgpfi*(sxh[j]+lambdai*sxsxh[j]);
 				ps[j]+=(0.5*(fn[j]+fnp1[j])*rdt);
 				mods+=ps[j]*ps[j];
 			}
@@ -237,13 +249,13 @@ namespace cuint
         }
     }
     //uniform temp & CSR neighbourlist
-    __global__ void CHeun2(int N,double T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,int *Cxadj,int *Cadjncy,float *CJDiag)
+    __global__ void CHeun2(int N,double T,double *sigma,double *llgpf,double *lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,int *Cxadj,int *Cadjncy,float *CJDiag)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
 			//The prefactor for the thermal term
-			const double TP=sqrt(T)*sigma;
+			const double TP=sqrt(T)*sigma[i];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 			double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
             for(unsigned int n = Cxadj[i] ; n < Cxadj[i+1] ; n++)
@@ -260,9 +272,11 @@ namespace cuint
 			const double fn[3]={Cfn[3*i],Cfn[3*i+1],Cfn[3*i+2]};
             double fnp1[3]={0,0,0};
 			double mods=0.0;
+            double llgpfi=llgpf[i];
+            double lambdai=lambda[i];
 			for(unsigned int j = 0 ; j < 3 ; j++)
 			{
-				fnp1[j]=llgpf*(sxh[j]+lambda*sxsxh[j]);
+				fnp1[j]=llgpfi*(sxh[j]+lambdai*sxsxh[j]);
 				ps[j]+=(0.5*(fn[j]+fnp1[j])*rdt);
 				mods+=ps[j]*ps[j];
 			}
@@ -275,13 +289,13 @@ namespace cuint
         }
     }
     //on-site temp & CSR neighbourlist
-    __global__ void CHeun2(int N,double *T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,int *Cxadj,int *Cadjncy,float *CJDiag)
+    __global__ void CHeun2(int N,double *T,double *sigma,double *llgpf,double *lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,int *Cxadj,int *Cadjncy,float *CJDiag)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
 			//The prefactor for the thermal term
-			const double TP=sqrt(T[i])*sigma;
+			const double TP=sqrt(T[i])*sigma[i];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 			double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
             for(unsigned int n = Cxadj[i] ; n < Cxadj[i+1] ; n++)
@@ -298,9 +312,11 @@ namespace cuint
 			const double fn[3]={Cfn[3*i],Cfn[3*i+1],Cfn[3*i+2]};
             double fnp1[3]={0,0,0};
 			double mods=0.0;
+            double llgpfi=llgpf[i];
+            double lambdai=lambda[i];
 			for(unsigned int j = 0 ; j < 3 ; j++)
 			{
-				fnp1[j]=llgpf*(sxh[j]+lambda*sxsxh[j]);
+				fnp1[j]=llgpfi*(sxh[j]+lambdai*sxsxh[j]);
 				ps[j]+=(0.5*(fn[j]+fnp1[j])*rdt);
 				mods+=ps[j]*ps[j];
 			}

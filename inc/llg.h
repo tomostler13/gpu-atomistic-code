@@ -1,7 +1,7 @@
 // File: llg.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 17 Apr 2013 11:44:29
+// Last-modified: 22 Apr 2013 14:42:14
 #ifndef _LLG_H_
 #define _LLG_H_
 #include "../inc/array.h"
@@ -10,8 +10,8 @@
 #include <fstream>
 namespace llg
 {
-	extern double applied[],T,dt,rdt,llgpf;
-    extern Array<double> osT;
+	extern double applied[],T,dt,rdt;
+    extern Array<double> osT,llgpf;
     extern bool rscf,ssf;
     extern std::string osk;
     extern bool osHapp;

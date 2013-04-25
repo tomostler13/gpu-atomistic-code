@@ -1,10 +1,11 @@
 // File: test_nanowire.cpp
 // Author: Tom Ostler
 // Created: 10 April 2013
-// Last-modified: 19 Apr 2013 13:00:48
+// Last-modified: 22 Apr 2013 17:33:57
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <fftw3.h>
 #include "../inc/arrays.h"
 #include "../inc/defines.h"
 #include "../inc/util.h"
@@ -89,31 +90,55 @@ void sim::test_nanowire(int argc,char *argv[])
     FIXOUT(config::Info,"Number of runtime steps:" << rts << std::endl);
     FIXOUT(config::Info,"Setting temperature:" << std::flush);
     //counters for number of hot, cold and wire spins
-    unsigned int cc=0,wc=0,hc=0;
+    int cc=0,wc=0,hc=0,maxz;
     for(unsigned int i = 0 ; i < geom::nspins ; i++)
     {
         int coords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+        if(coords[2]>maxz)
+        {
+            maxz=coords[2];
+        }
         if(coords[2]<geom::cut0)
         {
             llg::osT[i]=LTR;
             cc++;
-//            std::cout << "BALSDJKLASDFJKLSADF" << std::endl;
         }
         else if(coords[2]>=geom::cut0 && coords[2]<geom::cut1)// < geom::cut1 && coords[0] > (geom::dim[0]-geom::width)/2 && coords[0] < (geom::dim[0]+geom::width)/2 && coords[1] > (geom::dim[1]-geom::width)/2 && coords[1] < (geom::dim[1]+geom::width)/2)
         {
             llg::osT[i]=TOW;
             wc++;
-//            std::cout << "________________________________" << std::endl;
         }
         else if(coords[2]>=geom::cut1)
         {
             hc++;
             llg::osT[i]=HTR;
-//            std::cout << "Setting" << std::endl;
         }
     }
+    //at either end of the wire we want to set the damping to critical to try to dampen
+    //spinwaves so they are not reflected
+    unsigned int la=geom::coords(0,0,0,0),ra=geom::coords(0,0,maxz,0);
 
+    mat::lambda[la]=1.0;
+    mat::lambda[ra]=1.0;
+    mat::sigma[la]=sqrt(2.0*1.38e-23*mat::lambda[la]/(mat::mu[la]*mat::muB*llg::dt*mat::gamma));
+    mat::sigma[ra]=sqrt(2.0*1.38e-23*mat::lambda[ra]/(mat::mu[ra]*mat::muB*llg::dt*mat::gamma));
+    llg::llgpf[la] = -1./(1.0+mat::lambda[la]*mat::lambda[la]);
+    llg::llgpf[ra] = -1./(1.0+mat::lambda[ra]*mat::lambda[ra]);
+    std::ofstream ws,cs,hs;
+    cs.open("coldSSF.dat");
+    ws.open("wireSSF.dat");
+    hs.open("hotSSF.dat");
+    if(!cs.is_open() || !ws.is_open() || ! hs.is_open())
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not open file for outputting structure factors");
+    }
     SUCCESS(config::Info);
+    Array<fftw_complex> SpmCold(cc),SpmHot(hc),SpmWire(wc);
+    fftw_plan cp,hp,wp;
+    cp=fftw_plan_dft_1d(cc,SpmCold.ptr(),SpmCold.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+    hp=fftw_plan_dft_1d(hc,SpmHot.ptr(),SpmHot.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+    wp=fftw_plan_dft_1d(wc,SpmWire.ptr(),SpmWire.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
     FIXOUT(config::Info,"Number of atoms in cold part:" << cc << std::endl);
     FIXOUT(config::Info,"Number of atoms in wire:" << wc << std::endl);
     FIXOUT(config::Info,"Number of atoms in hot part:" << hc << std::endl);
@@ -163,12 +188,82 @@ void sim::test_nanowire(int argc,char *argv[])
         llg::integrate(t);
         if(t%spins::update==0)
         {
+
+            unsigned int ccount=0,hcount=0,wcount=0;
+            for(int i = 0 ; i < geom::nspins ; i++)
+            {
+                int coords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                if(coords[2]<geom::cut0)
+                {
+                    SpmCold(ccount)[0]=spins::Sx[i];
+                    SpmCold(ccount)[1]=spins::Sy[i];
+                    ccount++;
+                }
+                else if(coords[2]>=geom::cut0 && coords[2]<geom::cut1)
+                {
+                    SpmWire(wcount)[0]=spins::Sx[i];
+                    SpmWire(wcount)[1]=spins::Sy[i];
+                    wcount++;
+                }
+                else if(coords[2]>=geom::cut1)
+                {
+                    SpmHot(hcount)[0]=spins::Sx[i];
+                    SpmHot(hcount)[1]=spins::Sy[i];
+                    hcount++;
+                }
+            }
+                if(ccount!=cc)
+                {
+                    std::cerr << "BLA1" << std::endl;
+                }
+                if(hcount!=hc)
+                {
+                    std::cerr << "BLA2" << std::endl;
+                }
+                if(wcount!=wc)
+                {
+                    std::cerr << "BLA3" << std::endl;
+                }
+
+            fftw_execute(cp);
+            fftw_execute(hp);
+            fftw_execute(wp);
+            //output wire structure factor
+            for(int i = wc/2 ; i < wc ; i++)
+            {
+                ws << t << "\t" << i-wc << "\t" << sqrt(SpmWire(i)[0]*SpmWire(i)[0]+SpmWire(i)[1]*SpmWire(i)[1]) << std::endl;
+            }
+            for(int i = 1 ; i < wc/2 ; i++)
+            {
+                ws << t << "\t" << i << "\t" << sqrt(SpmWire(i)[0]*SpmWire(i)[0]+SpmWire(i)[1]*SpmWire(i)[1]) << std::endl;
+            }
+            ws << std::endl;
+            //output cold structure factor
+            for(int i = cc/2 ; i < cc ; i++)
+            {
+                cs <<  t << "\t" << i-cc << "\t" << sqrt(SpmCold(i)[0]*SpmCold(i)[0]+SpmCold(i)[1]*SpmCold(i)[1]) << std::endl;
+            }
+            for(int i = 1 ; i < cc/2 ; i++)
+            {
+                cs << t << "\t" << i << "\t" << sqrt(SpmCold(i)[0]*SpmCold(i)[0]+SpmCold(i)[1]*SpmCold(i)[1]) << std::endl;
+            }
+            cs << std::endl;
+            //output hot structure factor
+            for(int i = hc/2 ; i < hc ; i++)
+            {
+                hs << t << "\t" << i-hc << "\t" << sqrt(SpmHot(i)[0]*SpmHot(i)[0]+SpmHot(i)[1]*SpmHot(i)[1]) << std::endl;
+            }
+            for(int i = 1 ; i < cc/2 ; i++)
+            {
+                hs << t << "\t" << i << "\t" << sqrt(SpmHot(i)[0]*SpmHot(i)[0]+SpmHot(i)[1]*SpmHot(i)[1]) << std::endl;
+            }
+            hs << std::endl;
             const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
             const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
             const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
             const double modm=sqrt(mx*mx+my*my+mz*mz);
             magout << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
-            util::outputSpinsVTU(t);
+            //util::outputSpinsVTU(t);
             unsigned int wire_counter=0,cold_counter=0,hot_counter=0;
             for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
             {

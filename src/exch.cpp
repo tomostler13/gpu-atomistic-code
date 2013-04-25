@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 17 Apr 2013 11:26:56
+// Last-modified: 25 Apr 2013 10:21:55
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -223,15 +223,16 @@ namespace exch
                                     {
                                         if(geom::coords(wc[0],wc[1],wc[2],0)>-2)
                                         {
-                                            intmat::Nrxx(wc[0],wc[1],wc[2])+=(J(i,0,0)/(mat::muB*mat::mu));
-                                            intmat::Nrxy(wc[0],wc[1],wc[2])+=(J(i,0,1)/(mat::muB*mat::mu));
-                                            intmat::Nrxz(wc[0],wc[1],wc[2])+=(J(i,0,2)/(mat::muB*mat::mu));
-                                            intmat::Nryx(wc[0],wc[1],wc[2])+=(J(i,1,0)/(mat::muB*mat::mu));
-                                            intmat::Nryy(wc[0],wc[1],wc[2])+=(J(i,1,1)/(mat::muB*mat::mu));
-                                            intmat::Nryz(wc[0],wc[1],wc[2])+=(J(i,1,2)/(mat::muB*mat::mu));
-                                            intmat::Nrzx(wc[0],wc[1],wc[2])+=(J(i,2,0)/(mat::muB*mat::mu));
-                                            intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mu));
-                                            intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mu));
+                                            intmat::Nrxx(wc[0],wc[1],wc[2])+=(J(i,0,0)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nrxy(wc[0],wc[1],wc[2])+=(J(i,0,1)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nrxz(wc[0],wc[1],wc[2])+=(J(i,0,2)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nryx(wc[0],wc[1],wc[2])+=(J(i,1,0)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nryy(wc[0],wc[1],wc[2])+=(J(i,1,1)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nryz(wc[0],wc[1],wc[2])+=(J(i,1,2)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nrzx(wc[0],wc[1],wc[2])+=(J(i,2,0)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mustore[0]));
+
                                             check(wc[0],wc[1],wc[2])=1;
                                             //intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
                                             for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
@@ -300,15 +301,15 @@ namespace exch
                                     {
                                         if(geom::coords(wc[0],wc[1],wc[2],0)>-2)
                                         {
-                                            intmat::Nrxx(wc[0],wc[1],wc[2])+=(J(i,0,0)/(mat::muB*mat::mu));
-                                            intmat::Nrxy(wc[0],wc[1],wc[2])+=(J(i,0,1)/(mat::muB*mat::mu));
-                                            intmat::Nrxz(wc[0],wc[1],wc[2])+=(J(i,0,2)/(mat::muB*mat::mu));
-                                            intmat::Nryx(wc[0],wc[1],wc[2])+=(J(i,1,0)/(mat::muB*mat::mu));
-                                            intmat::Nryy(wc[0],wc[1],wc[2])+=(J(i,1,1)/(mat::muB*mat::mu));
-                                            intmat::Nryz(wc[0],wc[1],wc[2])+=(J(i,1,2)/(mat::muB*mat::mu));
-                                            intmat::Nrzx(wc[0],wc[1],wc[2])+=(J(i,2,0)/(mat::muB*mat::mu));
-                                            intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mu));
-                                            intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mu));
+                                            intmat::Nrxx(wc[0],wc[1],wc[2])+=(J(i,0,0)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nrxy(wc[0],wc[1],wc[2])+=(J(i,0,1)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nrxz(wc[0],wc[1],wc[2])+=(J(i,0,2)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nryx(wc[0],wc[1],wc[2])+=(J(i,1,0)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nryy(wc[0],wc[1],wc[2])+=(J(i,1,1)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nryz(wc[0],wc[1],wc[2])+=(J(i,1,2)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nrzx(wc[0],wc[1],wc[2])+=(J(i,2,0)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mustore[0]));
+                                            intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mustore[0]));
                                             check(wc[0],wc[1],wc[2])=1;
                                             //intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
                                             for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
@@ -433,15 +434,15 @@ namespace exch
                         counter++;
                         if(geom::coords(c[0],c[1],c[2],0)>-2)
                         {
-                            intmat::Nrxx(c[0],c[1],c[2])+=(J[0][0]/(mat::muB*mat::mu));
-                            intmat::Nrxy(c[0],c[1],c[2])+=(J[0][1]/(mat::muB*mat::mu));
-                            intmat::Nrxz(c[0],c[1],c[2])+=(J[0][2]/(mat::muB*mat::mu));
-                            intmat::Nryx(c[0],c[1],c[2])+=(J[1][0]/(mat::muB*mat::mu));
-                            intmat::Nryy(c[0],c[1],c[2])+=(J[1][1]/(mat::muB*mat::mu));
-                            intmat::Nryz(c[0],c[1],c[2])+=(J[1][2]/(mat::muB*mat::mu));
-                            intmat::Nrzx(c[0],c[1],c[2])+=(J[2][0]/(mat::muB*mat::mu));
-                            intmat::Nrzy(c[0],c[1],c[2])+=(J[2][1]/(mat::muB*mat::mu));
-                            intmat::Nrzz(c[0],c[1],c[2])+=(J[2][2]/(mat::muB*mat::mu));
+                            intmat::Nrxx(c[0],c[1],c[2])+=(J[0][0]/(mat::muB*mat::mustore[0]));
+                            intmat::Nrxy(c[0],c[1],c[2])+=(J[0][1]/(mat::muB*mat::mustore[0]));
+                            intmat::Nrxz(c[0],c[1],c[2])+=(J[0][2]/(mat::muB*mat::mustore[0]));
+                            intmat::Nryx(c[0],c[1],c[2])+=(J[1][0]/(mat::muB*mat::mustore[0]));
+                            intmat::Nryy(c[0],c[1],c[2])+=(J[1][1]/(mat::muB*mat::mustore[0]));
+                            intmat::Nryz(c[0],c[1],c[2])+=(J[1][2]/(mat::muB*mat::mustore[0]));
+                            intmat::Nrzx(c[0],c[1],c[2])+=(J[2][0]/(mat::muB*mat::mustore[0]));
+                            intmat::Nrzy(c[0],c[1],c[2])+=(J[2][1]/(mat::muB*mat::mustore[0]));
+                            intmat::Nrzz(c[0],c[1],c[2])+=(J[2][2]/(mat::muB*mat::mustore[0]));
                             //intmat::Nrzz(c[0],c[1],c[2])+=((J[2][2]+2.0*2.0*1.6e-19*1e-3)/(mat::muB*mat::mu));
                             /*                std::cout << "Interaction: " << i << "\nJij:\n" << intmat::Nrxx(c[0],c[1],c[2]) << "\t" << intmat::Nrxy(c[0],c[1],c[2]) << "\t" << intmat::Nrxz(c[0],c[1],c[2]) << std::endl;
                                               std::cout <<  intmat::Nryx(c[0],c[1],c[2]) << "\t" << intmat::Nryy(c[0],c[1],c[2]) << "\t" << intmat::Nryz(c[0],c[1],c[2]) << std::endl;
@@ -655,9 +656,9 @@ namespace exch
                                             tJxx.push_back(1);
                                             tJyy.push_back(1);
                                             tJzz.push_back(1);
-                                            tJxx[adjncycount]=J(j,0,0)/(mat::muB*mat::mu);
-                                            tJyy[adjncycount]=J(j,1,1)/(mat::muB*mat::mu);
-                                            tJzz[adjncycount]=J(j,2,2)/(mat::muB*mat::mu);
+                                            tJxx[adjncycount]=J(j,0,0)/(mat::muB*mat::mu[i]);
+                                            tJyy[adjncycount]=J(j,1,1)/(mat::muB*mat::mu[i]);
+                                            tJzz[adjncycount]=J(j,2,2)/(mat::muB*mat::mu[i]);
                                             adjncycount++;
                                             neighcount++;
                                             check(luc[0],luc[1],luc[2])=1;

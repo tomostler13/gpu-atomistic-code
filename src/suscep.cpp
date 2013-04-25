@@ -1,7 +1,7 @@
 // File: suscep.h
 // Author: Tom Ostler
 // Created: 25 Jan 2013
-// Last-modified: 28 Mar 2013 14:47:52
+// Last-modified: 22 Apr 2013 15:27:39
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -37,7 +37,8 @@ void sim::suscep(int argc,char *argv[])
         std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
         exit(EXIT_FAILURE);
     }
-
+    error::errPreamble(__FILE__,__LINE__);
+    error::errMessage("This simulation is currently broken. Need to change susceptibility calculation to take into account on-site mu");
     libconfig::Setting &setting = config::cfg.lookup("suscep");
     double lT=0.0,uT=0.0,dT=0.0,convmean=0.0,convvar=0.0,met=0.0,et=0.0;
     setting.lookupValue("lower_temp",lT);
@@ -179,7 +180,7 @@ void sim::suscep(int argc,char *argv[])
                 }
             }
         }
-        ofs << T << "\t" << MS.Mean() << "\t" << (mat::mu*geom::nspins/(2.0*1.38e-23*llg::T))*(mz2r.Mean()-mzr.Mean()*mzr.Mean()) << "\t" << (mat::mu*geom::nspins/(1.38e-23*llg::T))*(mx2r.Mean()+my2r.Mean()-mxr.Mean()*mxr.Mean()-myr.Mean()*myr.Mean()) << std::endl;
+//        ofs << T << "\t" << MS.Mean() << "\t" << (mat::mu*geom::nspins/(2.0*1.38e-23*llg::T))*(mz2r.Mean()-mzr.Mean()*mzr.Mean()) << "\t" << (mat::mu*geom::nspins/(1.38e-23*llg::T))*(mx2r.Mean()+my2r.Mean()-mxr.Mean()*mxr.Mean()-myr.Mean()*myr.Mean()) << std::endl;
 
         FIXOUT(config::Info,"Converged?" << config::isTF(convTF) << std::endl);
     }

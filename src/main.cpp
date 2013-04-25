@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 12 Apr 2013 13:56:40
+// Last-modified: 24 Apr 2013 22:21:16
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -23,7 +23,7 @@
 #include "../inc/llgCPU.h"
 #include "../inc/util.h"
 #include "../inc/sim.h"
-#include <omp.h>
+//#include <omp.h>
 #include "../inc/llg.h"
 #ifdef CUDA
 #include "../inc/cuda.h"
@@ -35,7 +35,7 @@ int main(int argc,char *argv[])
 	geom::initGeom(argc,argv);
 	//Read the material properties
 	mat::initMat(argc,argv);
-    if(config::useintmat)
+    if(config::useintmat==true)
     {
         //initialize the interaction matrices
         intmat::initIntmat(argc,argv);
@@ -46,7 +46,7 @@ int main(int argc,char *argv[])
 	anis::initAnis(argc,argv);
     if(config::incdip==true)
     {
-        if(config::useintmat)
+        if(config::useintmat==true)
         {
             //add the dipolar fields
             intmat::fillIntmat();
@@ -54,7 +54,7 @@ int main(int argc,char *argv[])
     }
 
 
-    if(config::useintmat)
+    if(config::useintmat==true)
     {
         //Now we have all of the terms in our interaction matrix, fourier transform the result
         intmat::fftIntmat();
