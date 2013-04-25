@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Apr 2013 22:36:32
+// Last-modified: 25 Apr 2013 12:15:59
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -97,6 +97,15 @@ namespace util
         }
     }
     void copy3vecto1(int size1,Array<double> ia1,Array<double> ia2,Array<double> ia3,double *oa)
+    {
+        for(int i = 0 ; i < size1 ; i++)
+        {
+            oa[3*i]=ia1[i];
+            oa[3*i+1]=ia2[i];
+            oa[3*i+2]=ia3[i];
+        }
+    }
+    void copy3vecto1(int size1,Array<float> ia1,Array<float> ia2,Array<float> ia3,float *oa)
     {
         for(int i = 0 ; i < size1 ; i++)
         {

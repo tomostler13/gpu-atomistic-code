@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 25 Apr 2013 10:23:17
+// Last-modified: 25 Apr 2013 12:24:38
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -46,6 +46,8 @@ namespace cullg
 	int nrank=3;
     //has the on-site temperature on the device been copied?
     bool initosT=false;
+    //has the on-site field on the device being copied?
+    bool initosF=false;
 	//device pointers for Fourier space calculations
 	static  cufftComplex *CCNxx=NULL;
 	static  cufftComplex *CCNxy=NULL;
@@ -72,6 +74,7 @@ namespace cullg
 	//device pointers
 	static  double *Cspin=NULL;
 	static  double *Cespin=NULL;
+    static  float *CHApp=NULL;
 	static  float *Crand=NULL;
 	static  float *CH=NULL;
 	static  int *Czpsn=NULL;//The is the zero pad spin number
@@ -128,7 +131,7 @@ namespace cullg
 
 		//generate the random numbers
 		CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
-		cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,Csigma,Cllgpf,Clambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn);
+		cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,Csigma,Cllgpf,Clambda,llg::rdt,CHApp,CH,Cspin,Cespin,Crand,Cfn);
 		cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cespin,Clu,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
 		//forward transform
 		spins_forward();
@@ -139,7 +142,7 @@ namespace cullg
 		//copy the fields from the zero padded array to the demag field array
 		cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,Czpsn,CCHrx,CCHry,CCHrz);
 
-		cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,Csigma,Cllgpf,Clambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn);
+		cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,Csigma,Cllgpf,Clambda,llg::rdt,CHApp,CH,Cspin,Cespin,Crand,Cfn);
 		if(t%spins::update==0)
 		{
 			//copy spin arrays back to CPU
@@ -165,6 +168,13 @@ namespace cullg
         {
             CUDA_CALL(cudaMemcpy(CTemp,osT.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
             initosT=true;
+        }
+        if(!initosF)
+        {
+            float *fa=new float[3*geom::nspins];
+            util::copy3vecto1(geom::nspins,fields::HAppx,fields::HAppy,fields::HAppz,fa);
+            CUDA_CALL(cudaMemcpy(CHApp,fa,3*geom::nspins*sizeof(float),cudaMemcpyHostToDevice));
+            initosF=true;
         }
 		//copy the spin data to the zero padded arrays
 		cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cspin,Clu,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
@@ -197,7 +207,7 @@ namespace cullg
 
 		//generate the random numbers
 		CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
-		cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,CTemp,Csigma,Cllgpf,Clambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn);
+		cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,CTemp,Csigma,Cllgpf,Clambda,llg::rdt,CHApp,CH,Cspin,Cespin,Crand,Cfn);
 		cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cespin,Clu,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
 		//forward transform
 		spins_forward();
@@ -208,7 +218,7 @@ namespace cullg
 		//copy the fields from the zero padded array to the demag field array
 		cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,Czpsn,CCHrx,CCHry,CCHrz);
 
-		cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,CTemp,Csigma,Cllgpf,Clambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn);
+		cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,CTemp,Csigma,Cllgpf,Clambda,llg::rdt,CHApp,CH,Cspin,Cespin,Crand,Cfn);
 		if(t%spins::update==0)
 		{
 			//copy spin arrays back to CPU
@@ -239,7 +249,7 @@ namespace cullg
             cufields::CZeroField<<<blockspergrid,threadsperblock>>>(geom::nspins,CH);
         }
 		CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
-        cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,Csigma,Cllgpf,Clambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Cxadj,Cadjncy,CJDiag);
+        cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,Csigma,Cllgpf,Clambda,llg::rdt,CHApp,CH,Cspin,Cespin,Crand,Cfn,Cxadj,Cadjncy,CJDiag);
 /*		Array3D<float> temp2x(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
 		Array3D<float> temp2y(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
 		Array3D<float> temp2z(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);;
@@ -260,7 +270,7 @@ namespace cullg
 		exit(0);*/
 
 
-		cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,Csigma,Cllgpf,Clambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Cxadj,Cadjncy,CJDiag);
+		cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,Csigma,Cllgpf,Clambda,llg::rdt,CHApp,CH,Cspin,Cespin,Crand,Cfn,Cxadj,Cadjncy,CJDiag);
 		if(t%spins::update==0)
 		{
 			//copy spin arrays back to CPU
@@ -296,7 +306,7 @@ namespace cullg
             cufields::CZeroField<<<blockspergrid,threadsperblock>>>(geom::nspins,CH);
         }
 		CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
-        cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,CTemp,Csigma,Cllgpf,Clambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Cxadj,Cadjncy,CJDiag);
+        cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,CTemp,Csigma,Cllgpf,Clambda,llg::rdt,CHApp,CH,Cspin,Cespin,Crand,Cfn,Cxadj,Cadjncy,CJDiag);
 /*		Array3D<float> temp2x(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
 		Array3D<float> temp2y(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
 		Array3D<float> temp2z(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);;
@@ -317,7 +327,7 @@ namespace cullg
 		exit(0);*/
 
 
-		cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,CTemp,Csigma,Cllgpf,Clambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Cxadj,Cadjncy,CJDiag);
+		cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,CTemp,Csigma,Cllgpf,Clambda,llg::rdt,CHApp,CH,Cspin,Cespin,Crand,Cfn,Cxadj,Cadjncy,CJDiag);
 		if(t%spins::update==0)
 		{
 			//copy spin arrays back to CPU
@@ -516,6 +526,7 @@ namespace cullg
             CUDA_CALL(cudaMalloc((void**)&CJDiag,3*exch::Jxx.size()*sizeof(float)));
         }
         CUDA_CALL(cudaMalloc((void**)&Csigma,geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&CHApp,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Cllgpf,geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Clambda,geom::nspins*sizeof(double)));
 		CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
@@ -557,6 +568,8 @@ namespace cullg
         }
 		//copy spin data to single array
 		util::copy3vecto1(geom::nspins,spins::Sx,spins::Sy,spins::Sz,tnsda);
+        util::copy3vecto1(geom::nspins,fields::HAppx,fields::HAppy,fields::HAppz,tnsfa);
+        CUDA_CALL(cudaMemcpy(CHApp,tnsfa,3*geom::nspins*sizeof(float),cudaMemcpyHostToDevice));
 		//copy spin data to card
 		CUDA_CALL(cudaMemcpy(Cspin,tnsda,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         CUDA_CALL(cudaMemcpy(Csigma,mat::sigma.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));

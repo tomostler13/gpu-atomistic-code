@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 01 Feb 2013 11:08:50
+// Last-modified: 25 Apr 2013 12:16:18
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -107,6 +107,8 @@ namespace util
 	void copy3vecto1(int,double*,double*,double*,double*);
 	void copy3vecto1(int,float*,float*,float*,float*);
 	void copy3vecto1(int,Array<double>,Array<double>,Array<double>,double*);
+	void copy3vecto1(int,Array<float>,Array<float>,Array<float>,float*);
+
 	std::string exec(char*);
     void outputSpinsVTU(unsigned int);
 

@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 22 Apr 2013 15:42:58
+// Last-modified: 25 Apr 2013 11:50:53
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -75,15 +75,10 @@ namespace llg
             osT.IFill(0);
         }
         FIXOUT(config::Info,"Onsite temperature?:" << config::isTF(osTemp) << std::endl);
-        if(osHapp)
-        {
-            fields::HAppx.resize(geom::nspins);
-            fields::HAppy.resize(geom::nspins);
-            fields::HAppz.resize(geom::nspins);
-        }
+        fields::HAppx.resize(geom::nspins);
+        fields::HAppy.resize(geom::nspins);
+        fields::HAppz.resize(geom::nspins);
         SUCCESS(config::Info);
-        setting.lookupValue("Onsite_Kind",osk);
-        FIXOUT(config::Info,"Kind of onsite applied field:" << osk << std::endl);
         FIXOUT(config::Info,"Outputting correlation functions to file:" << rscfstr << std::endl);
         FIXOUT(config::Info,"Calculating real space correlation functions:" << config::isTF(rscf) << std::endl);
         if(ssf)
@@ -95,7 +90,21 @@ namespace llg
         {
             applied[i]=setting["applied"][i];
         }
-        FIXOUTVEC(config::Info,"Applied field:",applied[0],applied[1],applied[2]);
+        if(osHapp==false)
+        {
+            FIXOUTVEC(config::Info,"Applied field:",applied[0],applied[1],applied[2]);
+        }
+        else
+        {
+            FIXOUT(config::Info,"The applied field is onsite and should be set manually" << std::endl);
+        }
+        FIXOUT(config::Info,"Setting applied field arrays to default input"<<std::flush);
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            fields::HAppx[i]=applied[0];
+            fields::HAppy[i]=applied[1];
+            fields::HAppz[i]=applied[2];
+        }
         FIXOUT(config::Info,"Timestep:" << dt << " seconds" << std::endl);
         rdt=dt*mat::gamma;
 		FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);

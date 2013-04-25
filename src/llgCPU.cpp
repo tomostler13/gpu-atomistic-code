@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 25 Apr 2013 10:22:19
+// Last-modified: 25 Apr 2013 11:58:16
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -82,7 +82,7 @@ namespace llgCPU
         {
 
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
+            double h[3]={fields::HAppx[i]+fields::Hthx[i]+fields::Hx[i],fields::HAppy[i]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+fields::HAppz[i]};
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -103,7 +103,7 @@ namespace llgCPU
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
+            double h[3]={fields::HAppx[i]+fields::Hthx[i]+fields::Hx[i],fields::HAppy[i]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+fields::HAppz[i]};
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -149,7 +149,7 @@ namespace llgCPU
         {
 
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
+            double h[3]={fields::HAppx[i]+fields::Hthx[i]+fields::Hx[i],fields::HAppy[i]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+fields::HAppz[i]};
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -170,7 +170,7 @@ namespace llgCPU
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
+            double h[3]={fields::HAppx[i]+fields::Hthx[i]+fields::Hx[i],fields::HAppy[i]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+fields::HAppz[i]};
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -221,7 +221,7 @@ namespace llgCPU
             unsigned int spec=mat::speclist[i];
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
 
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
+            double h[3]={fields::HAppx[i]+fields::Hthx[i]+fields::Hx[i],fields::HAppy[i]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+fields::HAppz[i]};
 
             for(unsigned int n=xadj[i] ; n < xadj[i+1] ; n++)
             {
@@ -255,7 +255,7 @@ namespace llgCPU
         {
             unsigned int spec=mat::speclist[i];
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
+            double h[3]={fields::HAppx[i]+fields::Hthx[i]+fields::Hx[i],fields::HAppy[i]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+fields::HAppz[i]};
             for(unsigned int n=xadj[i] ; n < xadj[i+1] ; n++)
             {
                 unsigned int neigh=adjncy[n];
@@ -317,7 +317,7 @@ namespace llgCPU
         {
             const unsigned int spec=mat::speclist[i];
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
+            double h[3]={fields::HAppx[i]+fields::Hthx[i]+fields::Hx[i],fields::HAppy[i]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+fields::HAppz[i]};
             for(unsigned int n=xadj[i] ; n < xadj[i+1] ; n++)
             {
                 unsigned int neigh=adjncy[n];
@@ -348,7 +348,7 @@ namespace llgCPU
         {
             const unsigned int spec=mat::speclist[i];
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+llg::applied[2]};
+            double h[3]={fields::HAppx[i]+fields::Hthx[i]+fields::Hx[i],fields::HAppy[i]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthz[i]+fields::HAppz[i]};
             for(unsigned int n=xadj[i] ; n < xadj[i+1] ; n++)
             {
                 unsigned int neigh=adjncy[n];

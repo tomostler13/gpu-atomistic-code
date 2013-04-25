@@ -1,7 +1,7 @@
 // File: test_nanowire.cpp
 // Author: Tom Ostler
 // Created: 10 April 2013
-// Last-modified: 22 Apr 2013 17:33:57
+// Last-modified: 25 Apr 2013 12:40:22
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -48,6 +48,8 @@ void sim::test_nanowire(int argc,char *argv[])
     double HTR=0.0;
     //temperature of wire
     double TOW=0.0;
+    //fields of cold, hot and wire
+    double CF=0.0,HF=0.0,WF=0.0;
     //equilibration and runtime
     double et=0.0,rt=0.0;
     //steps
@@ -58,6 +60,9 @@ void sim::test_nanowire(int argc,char *argv[])
     setting.lookupValue("Wire_Temperature",TOW);
     setting.lookupValue("High_Temperature",HTR);
     setting.lookupValue("Low_Temperature",LTR);
+    setting.lookupValue("Hot_Field",HF);
+    setting.lookupValue("Cold_Field",CF);
+    setting.lookupValue("Wire_Field",WF);
     setting.lookupValue("outmag",outmag);
 
     unsigned int ets=int(et/llg::dt),rts=int(rt/llg::dt);
@@ -84,6 +89,9 @@ void sim::test_nanowire(int argc,char *argv[])
     FIXOUT(config::Info,"Temperature of high temperature reservoir:" << HTR << std::endl);
     FIXOUT(config::Info,"Temperature of low temperature reservoir:" << LTR << std::endl);
     FIXOUT(config::Info,"Temperature of wire:" << TOW << std::endl);
+    FIXOUT(config::Info,"Field in cold part:" << CF << std::endl);
+    FIXOUT(config::Info,"Field in hot part:" << HF << std::endl);
+    FIXOUT(config::Info,"Field in wire:" << WF << std::endl);
     FIXOUT(config::Info,"Equilibration time:" << et << std::endl);
     FIXOUT(config::Info,"Run time:" << rt << std::endl);
     FIXOUT(config::Info,"Number of equilibration timesteps:" << ets << std::endl);
@@ -93,6 +101,9 @@ void sim::test_nanowire(int argc,char *argv[])
     int cc=0,wc=0,hc=0,maxz;
     for(unsigned int i = 0 ; i < geom::nspins ; i++)
     {
+        fields::HAppy[i]=0;
+        fields::HAppz[i]=0;
+
         int coords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
         if(coords[2]>maxz)
         {
@@ -101,17 +112,20 @@ void sim::test_nanowire(int argc,char *argv[])
         if(coords[2]<geom::cut0)
         {
             llg::osT[i]=LTR;
+            fields::HAppx[i]=CF;
             cc++;
         }
         else if(coords[2]>=geom::cut0 && coords[2]<geom::cut1)// < geom::cut1 && coords[0] > (geom::dim[0]-geom::width)/2 && coords[0] < (geom::dim[0]+geom::width)/2 && coords[1] > (geom::dim[1]-geom::width)/2 && coords[1] < (geom::dim[1]+geom::width)/2)
         {
             llg::osT[i]=TOW;
+            fields::HAppx[i]=WF;
             wc++;
         }
         else if(coords[2]>=geom::cut1)
         {
             hc++;
             llg::osT[i]=HTR;
+            fields::HAppx[i]=HF;
         }
     }
     //at either end of the wire we want to set the damping to critical to try to dampen

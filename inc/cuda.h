@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 15 Apr 2013 12:29:15
+// Last-modified: 25 Apr 2013 12:22:31
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -18,6 +18,7 @@ namespace cullg
     extern curandGenerator_t gen;
     extern int nrank;
     extern bool initosT;
+    extern bool initosF;
     //device pointers
     void allocate_memory_on_card();
     void setup_fourier_transform();
