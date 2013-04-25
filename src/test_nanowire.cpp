@@ -1,7 +1,7 @@
 // File: test_nanowire.cpp
 // Author: Tom Ostler
 // Created: 10 April 2013
-// Last-modified: 25 Apr 2013 12:40:22
+// Last-modified: 25 Apr 2013 19:30:54
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -197,16 +197,35 @@ void sim::test_nanowire(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("Could not malloc fftw array");
     }
+    std::ofstream mx_chain_out("mx_time.dat");
+    mx_chain_out << "#\t" << std::flush;
+    int points_of_interest[9]={1,geom::cut0/2,geom::cut0-1,geom::cut0,(geom::cut1-geom::cut0)/2,geom::cut1-1,geom::cut1,geom::cut1+(geom::dim[2]-geom::cut1)/2,geom::dim[2]-1};
+    unsigned int count=0;
+    for(unsigned int i = 0 ; i < geom::nspins ; i++)
+    {
+        int coords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+        if(coords[2]==points_of_interest[count])
+        {
+            mx_chain_out << points_of_interest[count] << "\t" << std::flush;
+            count++;
+        }
+    }
+    bool topcheck=false;
     for(unsigned int t = ets ; t < rts+ets ; t++)
     {
         llg::integrate(t);
         if(t%spins::update==0)
         {
-
+            count=0;
             unsigned int ccount=0,hcount=0,wcount=0;
+            mx_chain_out << t << "\t";
             for(int i = 0 ; i < geom::nspins ; i++)
             {
                 int coords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                if(coords[2]==points_of_interest[count])
+                {
+                    mx_chain_out << spins::Sx[i] << "\t";
+                }
                 if(coords[2]<geom::cut0)
                 {
                     SpmCold(ccount)[0]=spins::Sx[i];
@@ -226,18 +245,19 @@ void sim::test_nanowire(int argc,char *argv[])
                     hcount++;
                 }
             }
-                if(ccount!=cc)
-                {
-                    std::cerr << "BLA1" << std::endl;
-                }
-                if(hcount!=hc)
-                {
-                    std::cerr << "BLA2" << std::endl;
-                }
-                if(wcount!=wc)
-                {
-                    std::cerr << "BLA3" << std::endl;
-                }
+            mx_chain_out << std::endl;
+            if(ccount!=cc)
+            {
+                std::cerr << "BLA1" << std::endl;
+            }
+            if(hcount!=hc)
+            {
+                std::cerr << "BLA2" << std::endl;
+            }
+            if(wcount!=wc)
+            {
+                std::cerr << "BLA3" << std::endl;
+            }
 
             fftw_execute(cp);
             fftw_execute(hp);
@@ -287,7 +307,7 @@ void sim::test_nanowire(int argc,char *argv[])
                     {
 
                         int sn=geom::coords(i,j,k,0);
-    //                    std::cout << sn << std::endl;
+                        //                    std::cout << sn << std::endl;
                         if(sn>-1)
                         {
                             if(k<geom::Nk[2]*geom::cut0)
@@ -323,6 +343,7 @@ void sim::test_nanowire(int argc,char *argv[])
 
         }
     }
+    mx_chain_out.close();
 
 
 
