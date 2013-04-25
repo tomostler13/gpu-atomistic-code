@@ -1,7 +1,7 @@
 // File: test_nanowire.cpp
 // Author: Tom Ostler
 // Created: 10 April 2013
-// Last-modified: 25 Apr 2013 19:30:54
+// Last-modified: 25 Apr 2013 19:47:10
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -199,7 +199,7 @@ void sim::test_nanowire(int argc,char *argv[])
     }
     std::ofstream mx_chain_out("mx_time.dat");
     mx_chain_out << "#\t" << std::flush;
-    int points_of_interest[9]={1,geom::cut0/2,geom::cut0-1,geom::cut0,(geom::cut1-geom::cut0)/2,geom::cut1-1,geom::cut1,geom::cut1+(geom::dim[2]-geom::cut1)/2,geom::dim[2]-1};
+    int points_of_interest[9]={1,geom::cut0/2,geom::cut0-1,geom::cut0,(geom::cut1-geom::cut0)/2+geom::cut0,geom::cut1-1,geom::cut1,geom::cut1+(geom::dim[2]-geom::cut1)/2,geom::dim[2]-1};
     unsigned int count=0;
     for(unsigned int i = 0 ; i < geom::nspins ; i++)
     {
@@ -225,6 +225,7 @@ void sim::test_nanowire(int argc,char *argv[])
                 if(coords[2]==points_of_interest[count])
                 {
                     mx_chain_out << spins::Sx[i] << "\t";
+                    count++;
                 }
                 if(coords[2]<geom::cut0)
                 {
