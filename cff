@@ -16,15 +16,15 @@ system:
 	Lex = [ 1.0 , 0.0 , 0.0 ];
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
-	dim = [ 1 , 1 , 700 ];
+	dim = [ 1 , 1 , 7 ];
 	nauc = 1;
 	atom0 = [ 0.0 , 0.0 , 0.0 , 0.0 ];
 	Element0="N";
 	Nk = [ 1 , 1 , 1 ];
 	abc = [ 0.386e-9 , 0.386e-9 , 0.386e-9 ];
     System_Type="nanowire";
-    cut0=300;
-    cut1=400;
+    cut0=3;
+    cut1=4;
     width=1;
     zpcheck=false;
 };
@@ -67,7 +67,7 @@ spins:
 };
 sim:
 {
-	sim_type="test_nanowire";
+	sim_type="stepchange";
 };
 test_nanowire:
 {
@@ -84,10 +84,11 @@ test_nanowire:
 };
 stepchange:
 {
-    T_start = 150.0;
-    T_final = 150.0;
-    RunTime = 0.0e-12;
-    EquilTime = 0.01e-12;
+    T_start = 1100.0;
+    T_final = 0.0;
+    Rate=-1.1e13;
+    RunTime = 150.0e-12;
+    EquilTime = 25.0e-12;
     outmag = TRUE;
     MagFileName = "mag";
 };

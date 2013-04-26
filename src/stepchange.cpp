@@ -1,6 +1,6 @@
 // File: stepchange.cpp
 // Author: Tom Ostler // Created: 29 Mar 2013
-// Last-modified: 26 Apr 2013 14:36:28
+// Last-modified: 26 Apr 2013 15:22:14
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -95,7 +95,6 @@ void sim::stepchange(int argc,char *argv[])
             }
         }
     }
-    llg::T=Tfinal;
     double Ti=Tstart;
     double Tip1=0.0;
     for(unsigned int t = ets ; t < mrts+ets ; t++)
@@ -103,6 +102,12 @@ void sim::stepchange(int argc,char *argv[])
         Tip1=rate*llg::dt+Ti;
         llg::T=Tip1;
         Ti=Tip1;
+        if(Ti<0)
+        {
+            Ti=0.0;
+            Tip1=0.0;
+            llg::T=0.0;
+        }
         llg::integrate(t);
         if(t%spins::update==0)
         {
@@ -111,11 +116,7 @@ void sim::stepchange(int argc,char *argv[])
             const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
             const double modm=sqrt(mx*mx+my*my+mz*mz);
 
-            magout << Tfinal << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
-            if(t%(spins::update*100)==0)
-            {
-//                util::outputSpinsVTU(t);
-            }
+            magout << llg::T << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
         }
     }
 
