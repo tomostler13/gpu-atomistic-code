@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 25 Apr 2013 10:21:55
+// Last-modified: 26 Apr 2013 12:10:37
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -335,6 +335,7 @@ namespace exch
                     }
                     if(counter!=numint(i))
                     {
+                        std::cerr << "Found " << counter << " should be " << numint(i) << "\tfor lc=[" << lc[0] <<" , " << lc[1] << " , " << lc[2] << "]" <<std::endl;
                         error::errPreamble(__FILE__,__LINE__);
                         error::errMessage("Number of interactions is not correct");
                     }
