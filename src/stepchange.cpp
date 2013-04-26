@@ -1,6 +1,6 @@
 // File: stepchange.cpp
 // Author: Tom Ostler // Created: 29 Mar 2013
-// Last-modified: 17 Apr 2013 11:44:52
+// Last-modified: 26 Apr 2013 14:36:28
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -39,11 +39,13 @@ void sim::stepchange(int argc,char *argv[])
     }
 
     libconfig::Setting &setting = config::cfg.lookup("stepchange");
-    double Tstart=0.0,Tfinal=0.0,met=0.0,et=0.0;
+    double Tstart=0.0,Tfinal=0.0,met=0.0,et=0.0,rate=0.0;
     setting.lookupValue("T_start",Tstart);
     FIXOUT(config::Info,"Initial temperature:" << Tstart << std::endl);
     setting.lookupValue("T_final",Tfinal);
     FIXOUT(config::Info,"Final temperature:" << Tfinal << std::endl);
+    setting.lookupValue("Rate",rate);
+    FIXOUT(config::Info,"Rate of cooling/heating:" << rate << " K/s" << std::endl);
     setting.lookupValue("RunTime",met);
     setting.lookupValue("EquilTime",et);
     FIXOUT(config::Info,"Equilibration time:" << et << " seconds" << std::endl);
@@ -94,8 +96,13 @@ void sim::stepchange(int argc,char *argv[])
         }
     }
     llg::T=Tfinal;
+    double Ti=Tstart;
+    double Tip1=0.0;
     for(unsigned int t = ets ; t < mrts+ets ; t++)
     {
+        Tip1=rate*llg::dt+Ti;
+        llg::T=Tip1;
+        Ti=Tip1;
         llg::integrate(t);
         if(t%spins::update==0)
         {
