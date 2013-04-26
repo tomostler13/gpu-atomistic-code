@@ -1,7 +1,7 @@
 // File: suscep.h
 // Author: Tom Ostler
 // Created: 25 Jan 2013
-// Last-modified: 26 Apr 2013 11:47:44
+// Last-modified: 26 Apr 2013 12:26:29
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -127,6 +127,53 @@ void sim::suscep(int argc,char *argv[])
         }
 
     }
+    std::ofstream fsc("final_spin_config.dat");
+    if(!fsc.is_open())
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not open file for outputting final spin config, outputting to cout");
+        for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+        {
+            for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+            {
+                for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2] ; k++)
+                {
+                    int an=geom::coords(i,j,k,0);
+                    if(an>=0)
+                    {
+                        std::cout << i << "\t" << j << "\t" << k << "\t" << spins::Sx[an] << "\t" << spins::Sy[an] << "\t" << spins::Sz[an] << std::endl;
+                    }
+                }
+            }
+        }
+
+    }
+    else
+    {
+        for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+        {
+            for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+            {
+                for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2] ; k++)
+                {
+                    int an=geom::coords(i,j,k,0);
+                    if(an>=0)
+                    {
+                        fsc << i << "\t" << j << "\t" << k << "\t" << spins::Sx[an] << "\t" << spins::Sy[an] << "\t" << spins::Sz[an] << std::endl;
+                    }
+                }
+            }
+        }
+
+        fsc.close();
+        if(fsc.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close file for outputting final spin config");
+        }
+    }
+
+
     ofs.close();
     if(ofs.is_open())
     {
