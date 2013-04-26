@@ -86,7 +86,7 @@ stepchange:
 {
     T_start = 1100.0;
     T_final = 0.0;
-    Rate=-1.1e13;
+    Rate=-1.1e20;
     RunTime = 150.0e-12;
     EquilTime = 25.0e-12;
     outmag = TRUE;
