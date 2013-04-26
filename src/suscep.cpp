@@ -1,7 +1,7 @@
 // File: suscep.h
 // Author: Tom Ostler
 // Created: 25 Jan 2013
-// Last-modified: 22 Apr 2013 15:27:39
+// Last-modified: 26 Apr 2013 11:47:44
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -37,8 +37,6 @@ void sim::suscep(int argc,char *argv[])
         std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
         exit(EXIT_FAILURE);
     }
-    error::errPreamble(__FILE__,__LINE__);
-    error::errMessage("This simulation is currently broken. Need to change susceptibility calculation to take into account on-site mu");
     libconfig::Setting &setting = config::cfg.lookup("suscep");
     double lT=0.0,uT=0.0,dT=0.0,convmean=0.0,convvar=0.0,met=0.0,et=0.0;
     setting.lookupValue("lower_temp",lT);
@@ -47,10 +45,6 @@ void sim::suscep(int argc,char *argv[])
     FIXOUT(config::Info,"Upper temperature:" << uT << std::endl);
     setting.lookupValue("temp_step",dT);
     FIXOUT(config::Info,"Temperature step:" << dT << std::endl);
-    setting.lookupValue("mean_tolerance",convmean);
-    setting.lookupValue("variance_tolerance",convvar);
-    FIXOUT(config::Info,"Converging mean to:" << convmean << std::endl);
-    FIXOUT(config::Info,"Converging variance to:" << convvar << std::endl);
     setting.lookupValue("MaxRunTime",met);
     setting.lookupValue("EquilTime",et);
     FIXOUT(config::Info,"Maximum run time per temperature:" << met << " seconds" << std::endl);
@@ -80,17 +74,11 @@ void sim::suscep(int argc,char *argv[])
     {
         ofs << "#Temperature\tMean" << std::endl;
     }
-    util::RunningStat MS,mzr,mz2r,mxr,mx2r,myr,my2r;
-    double mzro=0.0,mz2ro=0.0,mxro=0.0,mx2ro=0.0,myro=0.0,my2ro=0.0;
     //temperature loop
     for(double T = lT ; T < uT ; T+=dT)
     {
-        config::printline(config::Info);
         FIXOUT(config::Info,"Converging temperature:" << T << std::endl);
         llg::T=T;
-        MS.Clear();
-        double oldmean=0.0;
-        bool convTF=false;
         if(outmag)
         {
             std::stringstream MagFilesstr,eqsstr;
@@ -116,10 +104,6 @@ void sim::suscep(int argc,char *argv[])
                 const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
                 const double modm=sqrt(mx*mx+my*my+mz*mz);
                 emagout << T << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
-                if(t%(spins::update*10)==0)
-                {
-                    util::outputSpinsVTU(t);
-                }
             }
         }
         emagout.close();
@@ -138,51 +122,10 @@ void sim::suscep(int argc,char *argv[])
                 const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
                 const double modm=sqrt(mx*mx+my*my+mz*mz);
 
-                MS.Push(modm);
-                //longitudinal components
-                mzr.Push(mz);
-                mz2r.Push(mz*mz);
-                //transverse components
-                mxr.Push(mx);
-                myr.Push(my);
-                mx2r.Push(mx*mx);
-                my2r.Push(my*my);
                 magout << T << "\t" << t << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << std::endl;
-                config::Info.width(15);config::Info << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS.Mean()-oldmean) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Variance() << " [ " << convvar << " ]|" << std::endl;
-                ofs.width(15);ofs << "| <m_z> = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << mzr.Mean() << " | delta = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(mzr.Mean()-mzro) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << mzr.Variance() << " [ " << convvar << " ]|" << std::endl;
-                ofs.width(15);ofs << "| <m_z^2> = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << mz2r.Mean() << " | delta = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(mz2r.Mean()-mz2ro) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << mz2r.Variance() << " [ " << convvar << " ]|" << std::endl;
-                ofs.width(15);ofs << "| <m_x> = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << mxr.Mean() << " | delta = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(mxr.Mean()-mxro) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << mxr.Variance() << " [ " << convvar << " ]|" << std::endl;
-                ofs.width(15);ofs << "| <m_x^2> = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << mx2r.Mean() << " | delta = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(mx2r.Mean()-mx2ro) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << mx2r.Variance() << " [ " << convvar << " ]|" << std::endl;
-                ofs.width(15);ofs << "| <m_y> = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << myr.Mean() << " | delta = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(myr.Mean()-myro) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << myr.Variance() << " [ " << convvar << " ]|" << std::endl;
-                ofs.width(15);ofs << "| <m_y^2> = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << my2r.Mean() << " | delta = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(my2r.Mean()-my2ro) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << my2r.Variance() << " [ " << convvar << " ]|" << std::endl;
-                config::printline(ofs);
-
-
-
-
-
-
-                if(((fabs(MS.Mean()-oldmean)) < convmean) && (MS.Variance()<convvar) && ((fabs(mzr.Mean()-mzro)) < convmean) && (mzr.Variance()<convvar) && ((fabs(mxr.Mean()-mxro)) < convmean) && (mxr.Variance()<convvar) && ((fabs(myr.Mean()-myro)) < convmean) && (myr.Variance()<convvar) && ((fabs(mz2r.Mean()-mz2ro)) < convmean) && (mz2r.Variance()<convvar) && ((fabs(mx2r.Mean()-mx2ro)) < convmean) && (mx2r.Variance()<convvar) && ((fabs(my2r.Mean()-my2ro)) < convmean) && (my2r.Variance()<convvar))
-                {
-                    convTF=true;
-                    break;
-                }
-                oldmean=MS.Mean();
-                mzro=mzr.Mean();
-                mz2ro=mz2r.Mean();
-                mxro=mxr.Mean();
-                mx2ro=mx2r.Mean();
-                myro=myr.Mean();
-                my2ro=my2r.Mean();
-                if(t%(spins::update*10)==0)
-                {
-                    util::outputSpinsVTU(t);
-                }
             }
         }
-//        ofs << T << "\t" << MS.Mean() << "\t" << (mat::mu*geom::nspins/(2.0*1.38e-23*llg::T))*(mz2r.Mean()-mzr.Mean()*mzr.Mean()) << "\t" << (mat::mu*geom::nspins/(1.38e-23*llg::T))*(mx2r.Mean()+my2r.Mean()-mxr.Mean()*mxr.Mean()-myr.Mean()*myr.Mean()) << std::endl;
 
-        FIXOUT(config::Info,"Converged?" << config::isTF(convTF) << std::endl);
     }
     ofs.close();
     if(ofs.is_open())

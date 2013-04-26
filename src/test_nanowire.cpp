@@ -1,7 +1,7 @@
 // File: test_nanowire.cpp
 // Author: Tom Ostler
 // Created: 10 April 2013
-// Last-modified: 25 Apr 2013 19:47:10
+// Last-modified: 25 Apr 2013 19:51:45
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -210,6 +210,7 @@ void sim::test_nanowire(int argc,char *argv[])
             count++;
         }
     }
+    mx_chain_out << std::endl;
     bool topcheck=false;
     for(unsigned int t = ets ; t < rts+ets ; t++)
     {
