@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 29 Apr 2013 13:55:30
+// Last-modified: 17 May 2013 12:23:21
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -35,8 +35,8 @@ namespace spins
 {
     Array3D<fftw_complex> Skx,Sky,Skz;
     Array3D<double> Srx,Sry,Srz;
-    Array3D<double> Sznzp;
-    Array3D<fftw_complex> Sqznzp;
+    Array3D<double> Sznzp,Synzp,Sxnzp;
+    Array3D<fftw_complex> Sqznzp,Sqynzp,Sqxnzp;
     Array3D<fftw_complex> SpSm;
     unsigned int nzpcplxdim=0;
     double normsize=0;
@@ -44,7 +44,7 @@ namespace spins
     double *xdat=NULL;
     util::RunningStat corrLength;
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
-    fftw_plan SxP,SyP,SzP,SzcfPF,SzcfPB;
+    fftw_plan SxP,SyP,SzP,SzcfPF,SycfPF,SxcfPF,SzcfPB;
     fftw_plan SpSmF;
     unsigned int update=0;
     std::ifstream sfs;
@@ -106,9 +106,21 @@ namespace spins
         if(llg::rscf)
         {
             Sznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+			Synzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+			Sxnzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+
+
             nzpcplxdim=(geom::dim[2]*geom::Nk[2]/2)+1;
             Sqznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
-            SzcfPF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sznzp.ptr(),Sqznzp.ptr(),FFTW_ESTIMATE);
+			Sqynzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
+			Sqxnzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
+
+
+			SzcfPF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sznzp.ptr(),Sqznzp.ptr(),FFTW_ESTIMATE);
+			SycfPF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Synzp.ptr(),Sqynzp.ptr(),FFTW_ESTIMATE);
+			SxcfPF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sxnzp.ptr(),Sqxnzp.ptr(),FFTW_ESTIMATE);
+
+
             SzcfPB = fftw_plan_dft_c2r_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sqznzp.ptr(),Sznzp.ptr(),FFTW_ESTIMATE);
             normsize=geom::dim[0]*geom::Nk[0]*geom::dim[0]*geom::Nk[0];
             normsize*=geom::dim[1]*geom::Nk[1]*geom::dim[1]*geom::Nk[1];
@@ -266,22 +278,36 @@ namespace spins
     {
         Sqznzp.IFill(0);
         Sznzp.IFill(0);
+        Synzp.IFill(0);
+        Sxnzp.IFill(0);
+
+
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
             Sznzp(lc[0],lc[1],lc[2])=Sz[i];
+            Synzp(lc[0],lc[1],lc[2])=Sy[i];
+            Sxnzp(lc[0],lc[1],lc[2])=Sx[i];
         }
         fftw_execute(SzcfPF);
+        fftw_execute(SycfPF);
+        fftw_execute(SxcfPF);
+
+
         for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
         {
             for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
             {
                 for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
                 {
-                    double Sq[2]={Sqznzp(i,j,k)[0],Sqznzp(i,j,k)[1]};
-                    double CCSq[2]={Sqznzp(i,j,k)[0],-Sqznzp(i,j,k)[1]};
-                    Sqznzp(i,j,k)[0]=Sq[0]*CCSq[0]-Sq[1]*CCSq[1];//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[0]-Sqznzp(i,j,k)[1]*Sqznzp(i,j,k)[1];
-                    Sqznzp(i,j,k)[1]=Sq[0]*CCSq[1]+Sq[1]*CCSq[0];//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[1]+Sqznzp(i,j,k)[1]*Sqznzp
+                    const double Sqz[2]={Sqznzp(i,j,k)[0],Sqznzp(i,j,k)[1]};
+                    const double Sqy[2]={Sqynzp(i,j,k)[0],Sqynzp(i,j,k)[1]};
+                    const double Sqx[2]={Sqxnzp(i,j,k)[0],Sqxnzp(i,j,k)[1]};
+                    const double CCSqz[2]={Sqz[0],-Sqz[1]};
+					const double CCSqy[2]={Sqy[0],-Sqy[1]};
+					const double CCSqx[2]={Sqx[0],-Sqx[1]};
+                    Sqznzp(i,j,k)[0]=(Sqx[0]*CCSqx[0]-Sqx[1]*CCSqx[1])+(Sqy[0]*CCSqy[0]-Sqy[1]*CCSqy[1])+(Sqz[0]*CCSqz[0]-Sqz[1]*CCSqz[1]);//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[0]-Sqznzp(i,j,k)[1]*Sqznzp(i,j,k)[1];
+                    Sqznzp(i,j,k)[1]=(Sqx[0]*CCSqx[1]+Sqx[1]*CCSqx[0])+(Sqy[0]*CCSqy[1]+Sqy[1]*CCSqy[0])+(Sqz[0]*CCSqz[1]+Sqz[1]*CCSqz[0]);//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[1]+Sqznzp(i,j,k)[1]*Sqznzp
                 }
             }
         }

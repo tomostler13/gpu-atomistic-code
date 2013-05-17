@@ -1,7 +1,7 @@
 // File: spins.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 17 Apr 2013 10:57:46
+// Last-modified: 17 May 2013 10:39:53
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -19,8 +19,8 @@ namespace spins
     extern Array3D<fftw_complex> Skx,Sky,Skz;
     extern Array3D<double> Srx,Sry,Srz;
     extern Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
-    extern Array3D<double> Sznzp;
-    extern Array3D<fftw_complex> Sqznzp;
+    extern Array3D<double> Sznzp,Synzp,Sxnzp;
+    extern Array3D<fftw_complex> Sqznzp,Sqynzp,Sqxnzp;
     extern unsigned int nzpcplxdim;
     extern fftw_plan SzcfPF,SzcfPB;
     extern double normsize;

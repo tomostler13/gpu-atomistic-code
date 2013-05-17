@@ -8,11 +8,11 @@ export LC_ALL=C
 # LIBS
 DEFS=-DNDEBUG
 CUDEFS=-DCUDA
-LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ -llapack -lblas #-lconfig++
-INC=/home/tao500/opt/levmar-2.6/
+LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ -llapack -lblas -lconfig++
+INC=/opt/levmar/levmar-2.6/
 CPULIBS= -fopenmp -lpthread
 CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft
-STATIC_LINK=/home/tao500/opt/levmar-2.6/liblevmar.a  /usr/local/lib/libconfig++.a
+STATIC_LINK=/opt/levmar/levmar-2.6/liblevmar.a
 OPT_LEVEL=-O3
 GCC_FLAGS= $(OPT_LEVEL)
 #NVCC_FLAGS= -g $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 

@@ -1,13 +1,13 @@
 OutputFile = "opf.dat";
-seed = 1365787416;
+seed = 1367891401;
 include_dipolar=false;
-use_interaction_matrix=false;
+use_interaction_matrix=true;
 mat:
 {
     mu = [ 2.1 ];
     conc= [ 1.0 ];
     gamma = 1.76e11;
-    lambda = 0.01;
+    lambda = 0.1;
     NumSpec=1;
     Place="random";
 };
@@ -16,16 +16,13 @@ system:
 	Lex = [ 1.0 , 0.0 , 0.0 ];
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
-	dim = [ 1 , 1 , 7 ];
+	dim = [ 96 , 96 , 96 ];
 	nauc = 1;
 	atom0 = [ 0.0 , 0.0 , 0.0 , 0.0 ];
 	Element0="N";
 	Nk = [ 1 , 1 , 1 ];
 	abc = [ 0.386e-9 , 0.386e-9 , 0.386e-9 ];
-    System_Type="nanowire";
-    cut0=3;
-    cut1=4;
-    width=1;
+    System_Type="bulk";
     zpcheck=false;
 };
 exchange:
@@ -33,7 +30,7 @@ exchange:
     exchmethod="permute";
 	exchinput="extfile";
 	exchfile="exch.sc";
-    pbc = [ FALSE , FALSE , FALSE ];
+    pbc = [ TRUE , TRUE , TRUE ];
 };
 anisotropy:
 {
@@ -45,10 +42,10 @@ anisotropy:
 };
 llg:
 {
-	dt = 0.1e-15;
-    Onsite_Applied = TRUE;
+	dt = 0.25e-15;
+    Onsite_Applied = FALSE;
     Onsite_Kind = "special1";
-    Onsite_Temp = TRUE;
+    Onsite_Temp = FALSE;
 	applied = [ 0.0 , 0.0 , 0.001 ];
     RealSpaceCorrelations = TRUE;
     RSCFile = "RSCF_zz_";
@@ -61,34 +58,20 @@ cuda:
 };
 spins:
 {
-	spinconfig = "align";
-    sc = [ 1.0 , 0.0 , 0.0 ];
+	spinconfig = "random";
 	update=50;
 };
 sim:
 {
 	sim_type="stepchange";
 };
-test_nanowire:
-{
-    EquilTime=1e-12;
-    RunTime=1e-12;
-    outmag=TRUE;
-    MagFileName="mag";
-    Wire_Temperature=0.000001;
-    High_Temperature=30.0;
-    Low_Temperature=20.0;
-    High_Field=20.0;
-    Cold_Field=0.0;
-    Wire_Field=0.0;
-};
 stepchange:
 {
     T_start = 1100.0;
     T_final = 0.0;
-    Rate=-1e13;
-    RunTime = 150.0e-12;
-    EquilTime = 25.0e-12;
+    Rate=-1.0e17;
+    RunTime = 350.0e-12;
+    EquilTime = 1.0e-12;
     outmag = TRUE;
     MagFileName = "mag";
 };

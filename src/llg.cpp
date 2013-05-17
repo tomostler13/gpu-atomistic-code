@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 25 Apr 2013 11:50:53
+// Last-modified: 17 May 2013 11:44:53
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -121,6 +121,18 @@ namespace llg
 	}
     void integrate(unsigned int& t)
     {
+		if(t%spins::update==0)
+		{
+            if(rscf)
+            {
+                spins::calcRealSpaceCorrelationFunction(t);
+            }
+            if(ssf)
+            {
+                spins::calcStaticStructureFactor(t);
+            }
+		}
+
         #ifdef CUDA
         if(config::useintmat)
         {
@@ -168,17 +180,6 @@ namespace llg
             }
         }
         #endif
-		if(t%spins::update==0)
-		{
-            if(rscf)
-            {
-                spins::calcRealSpaceCorrelationFunction(t);
-            }
-            if(ssf)
-            {
-                spins::calcStaticStructureFactor(t);
-            }
-		}
 
     }
 
