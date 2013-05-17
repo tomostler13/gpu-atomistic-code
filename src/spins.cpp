@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 17 May 2013 12:23:21
+// Last-modified: 17 May 2013 14:34:06
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -336,7 +336,7 @@ namespace spins
            llg::rscfs << std::endl;
            }
            std::cin.get();*/
-        for(int k = -(geom::dim[2]*geom::Nk[2]/2)+1 ; k < 0 ; k++)
+        for(int k = -(geom::dim[2]*geom::Nk[2]/2)+1 ; k <= 0 ; k++)
         {
 
             int arluv=geom::dim[2]*geom::Nk[2]+k;
