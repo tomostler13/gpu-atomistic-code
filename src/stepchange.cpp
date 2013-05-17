@@ -1,6 +1,6 @@
 // File: stepchange.cpp
 // Author: Tom Ostler // Created: 29 Mar 2013
-// Last-modified: 17 May 2013 12:22:23
+// Last-modified: 17 May 2013 14:48:41
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -103,11 +103,17 @@ void sim::stepchange(int argc,char *argv[])
         Tip1=rate*llg::dt+Ti;
         llg::T=Tip1;
         Ti=Tip1;
-        if(Ti<0)
+        if(rate<0 && Ti<Tfinal)
         {
-            Ti=0.0;
-            Tip1=0.0;
-            llg::T=0.0;
+            Ti=Tfinal;
+            Tip1=Tfinal;
+            llg::T=Tfinal;
+        }
+        if(rate > 0 && Ti>Tfinal)
+        {
+            Ti=Tfinal;
+            Tip1=Tfinal;
+            llg::T=Tfinal;
         }
 		if(t%spins::update==0)
         {
