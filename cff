@@ -16,7 +16,7 @@ system:
 	Lex = [ 1.0 , 0.0 , 0.0 ];
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
-	dim = [ 96 , 96 , 96 ];
+	dim = [ 8 , 8 , 8 ];
 	nauc = 1;
 	atom0 = [ 0.0 , 0.0 , 0.0 , 0.0 ];
 	Element0="N";
@@ -58,8 +58,9 @@ cuda:
 };
 spins:
 {
-	spinconfig = "random";
-	update=50;
+	spinconfig = "align";
+    sc = [ 0.0 , 0.0 , 1.0 ];
+	update=20;
 };
 sim:
 {
@@ -67,9 +68,9 @@ sim:
 };
 stepchange:
 {
-    T_start = 1100.0;
-    T_final = 0.0;
-    Rate=-1.0e17;
+    T_start = 0.0;
+    T_final = 100.0;
+    Rate=1.0e17;
     RunTime = 350.0e-12;
     EquilTime = 1.0e-12;
     outmag = TRUE;

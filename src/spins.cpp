@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 17 May 2013 14:34:06
+// Last-modified: 21 May 2013 10:47:32
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -35,8 +35,10 @@ namespace spins
 {
     Array3D<fftw_complex> Skx,Sky,Skz;
     Array3D<double> Srx,Sry,Srz;
-    Array3D<double> Sznzp,Synzp,Sxnzp;
-    Array3D<fftw_complex> Sqznzp,Sqynzp,Sqxnzp;
+    Array3D<double> Sznzp;//,Synzp,Sxnzp;
+//    Array3D<fftw_complex> Sqznzp,Sqynzp,Sqxnzp;
+//    Array3D<double> Szij,Syij,Sxij;
+//    Array3D<fftw_complex> Sqzij,Sqyij,Sqxij;
     Array3D<fftw_complex> SpSm;
     unsigned int nzpcplxdim=0;
     double normsize=0;
@@ -44,7 +46,7 @@ namespace spins
     double *xdat=NULL;
     util::RunningStat corrLength;
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
-    fftw_plan SxP,SyP,SzP,SzcfPF,SycfPF,SxcfPF,SzcfPB;
+//    fftw_plan SxP,SyP,SzP,SzcfPF,SycfPF,SxcfPF,SzcfPB,SycfPB,SxcfPB,SzijF,SyijF,SxijF;
     fftw_plan SpSmF;
     unsigned int update=0;
     std::ifstream sfs;
@@ -108,20 +110,30 @@ namespace spins
             Sznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
 			Synzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
 			Sxnzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+            Szij.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+			Syij.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+			Sxij.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
 
 
             nzpcplxdim=(geom::dim[2]*geom::Nk[2]/2)+1;
             Sqznzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
 			Sqynzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
 			Sqxnzp.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
-
+            Sqzij.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
+			Sqyij.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
+			Sqxij.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
 
 			SzcfPF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sznzp.ptr(),Sqznzp.ptr(),FFTW_ESTIMATE);
 			SycfPF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Synzp.ptr(),Sqynzp.ptr(),FFTW_ESTIMATE);
 			SxcfPF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sxnzp.ptr(),Sqxnzp.ptr(),FFTW_ESTIMATE);
-
+			SzijF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Szij.ptr(),Sqzij.ptr(),FFTW_ESTIMATE);
+			SyijF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Syij.ptr(),Sqyij.ptr(),FFTW_ESTIMATE);
+			SxijF = fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sxij.ptr(),Sqxij.ptr(),FFTW_ESTIMATE);
 
             SzcfPB = fftw_plan_dft_c2r_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sqznzp.ptr(),Sznzp.ptr(),FFTW_ESTIMATE);
+            SycfPB = fftw_plan_dft_c2r_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sqynzp.ptr(),Synzp.ptr(),FFTW_ESTIMATE);
+            SxcfPB = fftw_plan_dft_c2r_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],Sqxnzp.ptr(),Sxnzp.ptr(),FFTW_ESTIMATE);
+
             normsize=geom::dim[0]*geom::Nk[0]*geom::dim[0]*geom::Nk[0];
             normsize*=geom::dim[1]*geom::Nk[1]*geom::dim[1]*geom::Nk[1];
             normsize*=geom::dim[2]*geom::Nk[2]*geom::dim[2]*geom::Nk[2];
@@ -276,22 +288,71 @@ namespace spins
     }
     void calcRealSpaceCorrelationFunction(unsigned int t)
     {
-        Sqznzp.IFill(0);
+//        Sqznzp.IFill(0);
+//        Sqynzp.IFill(0);
+//        Sqxnzp.IFill(0);
+//        Sqzij.IFill(0);
+//        Sqyij.IFill(0);
+//        Sqxij.IFill(0);
         Sznzp.IFill(0);
-        Synzp.IFill(0);
-        Sxnzp.IFill(0);
-
+//        Synzp.IFill(0);
+//        Sxnzp.IFill(0);
+//        Szij.IFill(0);
+//        Syij.IFill(0);
+//        Sxij.IFill(0);
 
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
-            unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
             Sznzp(lc[0],lc[1],lc[2])=Sz[i];
             Synzp(lc[0],lc[1],lc[2])=Sy[i];
             Sxnzp(lc[0],lc[1],lc[2])=Sx[i];
+            int mc[3]={lc[0],lc[1],lc[2]};
+            //if(mc[0]>((geom::dim[0]*geom::Nk[0]/2)-1)){mc[0]=geom::dim[0]*geom::Nk[0]-(mc[0]-1);}
+            //if(mc[1]>((geom::dim[1]*geom::Nk[1]/2)-1)){mc[1]=geom::dim[1]*geom::Nk[1]-(mc[1]-1);}
+            //if(mc[2]>((geom::dim[2]*geom::Nk[2]/2)-1)){mc[2]=geom::dim[2]*geom::Nk[2]-(mc[2]-1);}
+//            std::cout << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << mc[0] << "\t" << mc[1] << "\t" << mc[2] << std::endl;std::cin.get();
+            Szij(mc[0],mc[1],mc[2])=Sz[i];
+            Syij(mc[0],mc[1],mc[2])=Sy[i];
+            Sxij(mc[0],mc[1],mc[2])=Sx[i];
+        }
+        for( int i = 0 ; i < geom::dim[0]*geom::Nk[0]/2 ; i++)
+        {
+            for( int j = 0 ; j < geom::dim[1]*geom::Nk[1]/2 ; j++)
+            {
+                for( int k = 0 ; k < geom::dim[2]*geom::Nk[2]/2 ; k++)
+                {
+                    for( int x = 0 ; x < geom::dim[0]*geom::Nk[0]/2 ; x++)
+                    {
+                        for( int y = 0 ; y < geom::dim[1]*geom::Nk[1]/2 ; y++)
+                        {
+                            for( int z = 0 ; z < geom::dim[2]*geom::Nk[2]/2 ; z++)
+                            {
+                                int sn=geom::coords(x,y,z,0);
+                                int rij[3]={i-x,j-y,k-z};
+                                int nrij[3]={0,0,0};
+                                for(unsigned int c = 0 ; c < 3 ; c++)
+                                {
+                                    if(rij[c]<0)//geom::dim[c]*geom::Nk[c]/2)
+                                    {
+                                        nrij[c]=geom::dim[c]*geom::Nk[c]+rij[c];
+                                    }
+                                    Sxij(nrij[0],nrij[1],nrij[2])=Sx[sn];
+                                    Syij(nrij[0],nrij[1],nrij[2])=Sy[sn];
+                                    Szij(nrij[0],nrij[1],nrij[2])=Sz[sn];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         fftw_execute(SzcfPF);
         fftw_execute(SycfPF);
         fftw_execute(SxcfPF);
+        fftw_execute(SxijF);
+        fftw_execute(SyijF);
+        fftw_execute(SzijF);
 
 
         for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
@@ -303,15 +364,21 @@ namespace spins
                     const double Sqz[2]={Sqznzp(i,j,k)[0],Sqznzp(i,j,k)[1]};
                     const double Sqy[2]={Sqynzp(i,j,k)[0],Sqynzp(i,j,k)[1]};
                     const double Sqx[2]={Sqxnzp(i,j,k)[0],Sqxnzp(i,j,k)[1]};
-                    const double CCSqz[2]={Sqz[0],-Sqz[1]};
-					const double CCSqy[2]={Sqy[0],-Sqy[1]};
-					const double CCSqx[2]={Sqx[0],-Sqx[1]};
-                    Sqznzp(i,j,k)[0]=(Sqx[0]*CCSqx[0]-Sqx[1]*CCSqx[1])+(Sqy[0]*CCSqy[0]-Sqy[1]*CCSqy[1])+(Sqz[0]*CCSqz[0]-Sqz[1]*CCSqz[1]);//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[0]-Sqznzp(i,j,k)[1]*Sqznzp(i,j,k)[1];
-                    Sqznzp(i,j,k)[1]=(Sqx[0]*CCSqx[1]+Sqx[1]*CCSqx[0])+(Sqy[0]*CCSqy[1]+Sqy[1]*CCSqy[0])+(Sqz[0]*CCSqz[1]+Sqz[1]*CCSqz[0]);//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[1]+Sqznzp(i,j,k)[1]*Sqznzp
+                    const double CCSqz[2]={Sqzij(i,j,k)[0],Sqzij(i,j,k)[1]};
+					const double CCSqy[2]={Sqyij(i,j,k)[0],Sqyij(i,j,k)[1]};
+					const double CCSqx[2]={Sqxij(i,j,k)[0],Sqxij(i,j,k)[1]};
+                    Sqznzp(i,j,k)[0]=(Sqx[0]*CCSqx[0]-Sqx[1]*CCSqx[1]);
+                    Sqynzp(i,j,k)[0]=(Sqy[0]*CCSqy[0]-Sqy[1]*CCSqy[1]);
+                    Sqxnzp(i,j,k)[0]=(Sqz[0]*CCSqz[0]-Sqz[1]*CCSqz[1]);//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[0]-Sqznzp(i,j,k)[1]*Sqznzp(i,j,k)[1];
+                    Sqznzp(i,j,k)[1]=(Sqx[0]*CCSqx[1]+Sqx[1]*CCSqx[0]);
+                    Sqynzp(i,j,k)[1]=(Sqy[0]*CCSqy[1]+Sqy[1]*CCSqy[0]);
+                    Sqxnzp(i,j,k)[1]=(Sqz[0]*CCSqz[1]+Sqz[1]*CCSqz[0]);//Sqznzp(i,j,k)[0]*Sqznzp(i,j,k)[1]+Sqznzp(i,j,k)[1]*Sqznzp
                 }
             }
         }
         fftw_execute(SzcfPB);
+        fftw_execute(SycfPB);
+        fftw_execute(SxcfPB);
         /* CAN BE USED TO OUTPUT THE WHOLE CORRELATION FUNCTION IN ALL X,Y,Z directions
            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
            {
@@ -342,14 +409,14 @@ namespace spins
             int arluv=geom::dim[2]*geom::Nk[2]+k;
             if(geom::coords(0,0,arluv,0)>-1)
             {
-                llg::rscfs << t << "\t"<< k << "\t" << Sznzp(0,0,arluv)/(normsize*knorm) << std::endl;
+                llg::rscfs << t << "\t"<< k << "\t" << (Sznzp(0,0,arluv)+Sxnzp(0,0,arluv)+Synzp(0,0,arluv))/(normsize*knorm) << std::endl;
             }
         }
         for(int k = 1 ; k < (geom::dim[2]*geom::Nk[2]/2) ; k++)
         {
             if(geom::coords(0,0,k,0)>-1)
             {
-                llg::rscfs << t << "\t" << k << "\t" << Sznzp(0,0,k)/(normsize*knorm) << std::endl;
+                llg::rscfs << t << "\t" << k << "\t" << (Sznzp(0,0,k)+Synzp(0,0,k)+Sxnzp(0,0,k))/(normsize*knorm) << std::endl;
             }
         }
         llg::rscfs << std::endl;// << std::endl;
