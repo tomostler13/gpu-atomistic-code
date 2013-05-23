@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 17 May 2013 14:34:06
+// Last-modified: 21 May 2013 11:41:00
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -336,7 +336,7 @@ namespace spins
            llg::rscfs << std::endl;
            }
            std::cin.get();*/
-        for(int k = -(geom::dim[2]*geom::Nk[2]/2)+1 ; k <= 0 ; k++)
+        for(int k = -(geom::dim[2]*geom::Nk[2]/2)+1 ; k < 0 ; k++)
         {
 
             int arluv=geom::dim[2]*geom::Nk[2]+k;
@@ -345,7 +345,7 @@ namespace spins
                 llg::rscfs << t << "\t"<< k << "\t" << Sznzp(0,0,arluv)/(normsize*knorm) << std::endl;
             }
         }
-        for(int k = 1 ; k < (geom::dim[2]*geom::Nk[2]/2) ; k++)
+        for(int k = 0 ; k < (geom::dim[2]*geom::Nk[2]/2) ; k++)
         {
             if(geom::coords(0,0,k,0)>-1)
             {
