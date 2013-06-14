@@ -16,7 +16,7 @@ system:
 	Lex = [ 1.0 , 0.0 , 0.0 ];
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
-	dim = [ 8 , 8 , 8 ];
+	dim = [ 24 , 24 , 24 ];
 	nauc = 1;
 	atom0 = [ 0.0 , 0.0 , 0.0 , 0.0 ];
 	Element0="N";
@@ -43,7 +43,7 @@ anisotropy:
 llg:
 {
 	dt = 0.25e-15;
-    Onsite_Applied = FALSE;
+    Onsite_Applied = TRUE;
     Onsite_Kind = "special1";
     Onsite_Temp = FALSE;
 	applied = [ 0.0 , 0.0 , 0.001 ];
@@ -64,7 +64,8 @@ spins:
 };
 sim:
 {
-	sim_type="stepchange";
+//	sim_type="stepchange";
+    sim_type="fmr";
 };
 stepchange:
 {
@@ -76,3 +77,17 @@ stepchange:
     outmag = TRUE;
     MagFileName = "mag";
 };
+fmr:
+{
+    temperature = 300.0;
+    //Number of cycles to average over for power calculation
+    Ncycles = 15;
+    redfreq=19.0;
+    Bdrive = 0.005;
+    ConvVar = 2e-11;
+    ConvMean = 1e-8;
+    MaxCycles = 150;
+    //Equilibration
+    MinCycles = 50;
+    MagFile="mag.dat";
+}

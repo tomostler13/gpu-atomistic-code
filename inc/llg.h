@@ -1,7 +1,7 @@
 // File: llg.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 22 Apr 2013 14:42:14
+// Last-modified: 14 Jun 2013 09:18:31
 #ifndef _LLG_H_
 #define _LLG_H_
 #include "../inc/array.h"
@@ -19,7 +19,7 @@ namespace llg
 
     extern std::string rscfstr,ssffs;
     extern std::ofstream rscfs,ssffstr;
-	void initLLG(int argc,char *argv[]);
+    void initLLG(int argc,char *argv[]);
     void integrate(unsigned int&);
 }
 #endif /*_LLG_H_*/

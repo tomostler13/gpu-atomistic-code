@@ -39,7 +39,8 @@ obj/mvt.o \
 obj/suscep.o \
 obj/stepchange.o \
 obj/timeseries.o \
-obj/test_nanowire.o
+obj/test_nanowire.o \
+obj/fmr.o
 
 SWITCHOBJ= \
 obj/main.o \
