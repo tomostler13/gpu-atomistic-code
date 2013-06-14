@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Apr 2013 22:21:16
+// Last-modified: 14 Jun 2013 09:39:14
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -91,6 +91,10 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="test_nanowire")
     {
         sim::test_nanowire(argc,argv);
+    }
+    else if(sim::sim_type=="fmr")
+    {
+        sim::fmr(argc,argv);
     }
 	else if(sim::sim_type=="quick")
 	{

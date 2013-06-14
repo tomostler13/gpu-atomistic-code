@@ -63,7 +63,8 @@ spins:
 };
 sim:
 {
-	sim_type="stepchange";
+//	sim_type="stepchange";
+    sim_type="fmr";
 };
 stepchange:
 {
@@ -77,4 +78,15 @@ stepchange:
 };
 fmr:
 {
-    
+    temperature = 300.0;
+    //Number of cycles to average over for power calculation
+    Ncycles = 15;
+    redfreq=19.0;
+    Bdrive = 0.005;
+    ConvVar = 2e-11;
+    ConvMean = 1e-8;
+    MaxCycles = 150;
+    //Equilibration
+    MinCycles = 50;
+    MagFile="mag.dat";
+}

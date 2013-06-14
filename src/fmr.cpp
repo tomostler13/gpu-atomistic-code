@@ -1,7 +1,7 @@
 // File: fmr.cpp
 // Author: Tom Ostler
 // Created: 14 June 2013
-// Last-modified: 14 Jun 2013 09:32:35
+// Last-modified: 14 Jun 2013 09:37:23
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -42,6 +42,8 @@ void sim::fmr(int argc,char *argv[])
     libconfig::Setting &setting = config::cfg.lookup("fmr");
     double redfreq=0.0,Bdrive=0.0,Ncycles=0,MinCycles=0,MaxCycles=0;
     double temp=0.0,ConvVar=2e-11,ConvMean=1e-8;
+
+    std::string opfs;
     try
     {
         setting.lookupValue("temperature",temp);
@@ -52,9 +54,7 @@ void sim::fmr(int argc,char *argv[])
         setting.lookupValue("Ncycles",Ncycles);
         setting.lookupValue("MaxCycles",MaxCycles);
         setting.lookupValue("MinCycles",MinCycles);
-        setting.lookupValue("FieldRot",fieldrot);
         setting.lookupValue("MagFile",opfs);
-        std::string opfs;
     }
     catch(const libconfig::SettingTypeException &stex)
     {
@@ -75,7 +75,6 @@ void sim::fmr(int argc,char *argv[])
     FIXOUT(config::Info,"Maximum cycles to average over:" << MaxCycles << std::endl);
     FIXOUT(config::Info,"Average tolerance:" << ConvMean << std::endl);
     FIXOUT(config::Info,"Variance tolerance:" << ConvVar << std::endl);
-    FIXOUT(config::Info,"Field rotation:" << fieldrot << std::endl);
     FIXOUT(config::Info,"Outputting magnetization data to:" << opfs << std::endl);
     std::ofstream emagfile(opfs.c_str());
     if(!emagfile.is_open())
@@ -88,12 +87,12 @@ void sim::fmr(int argc,char *argv[])
     {//only want these variables to have temporary scope
         config::Info << std::setprecision(10);
         double Tp=2.0*M_PI/(redfreq*mat::gamma);//time period
-        double nts=Tp/sim::dt;//the correct number of timesteps may not be
+        double nts=Tp/llg::dt;//the correct number of timesteps may not be
         FIXOUT(config::Info,"Ideal number of timesteps per cycle:" << nts << std::endl);
         //an integer
         ntspc=int(nts+0.5);//round to nearest integer
         FIXOUT(config::Info,"Actual number of timesteps per cycle:" << ntspc << std::endl);
-        double newfreq=2.0*M_PI/(double(ntspc)*sim::dt);
+        double newfreq=2.0*M_PI/(double(ntspc)*llg::dt);
         FIXOUT(config::Info,"New frequency with corrected timesteps:" << newfreq << " rad/s" << std::endl);
         newfreq=newfreq/mat::gamma;
         redfreq=newfreq;
