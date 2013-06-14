@@ -43,7 +43,7 @@ anisotropy:
 llg:
 {
 	dt = 0.25e-15;
-    Onsite_Applied = FALSE;
+    Onsite_Applied = TRUE;
     Onsite_Kind = "special1";
     Onsite_Temp = FALSE;
 	applied = [ 0.0 , 0.0 , 0.001 ];
@@ -75,3 +75,6 @@ stepchange:
     outmag = TRUE;
     MagFileName = "mag";
 };
+fmr:
+{
+    
