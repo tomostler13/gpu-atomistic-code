@@ -1,10 +1,11 @@
 // File: fmr.cpp
 // Author: Tom Ostler
 // Created: 14 June 2013
-// Last-modified: 14 Jun 2013 14:35:05
+// Last-modified: 15 Jun 2013 19:59:06
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <cstdio>
 #include "../inc/arrays.h"
 #include "../inc/defines.h"
 #include "../inc/util.h"
@@ -111,6 +112,8 @@ void sim::fmr(int argc,char *argv[])
     SUCCESS(config::Info);
     const double HAppOrig[3]={llg::applied[0],llg::applied[1],llg::applied[2]};
     unsigned int counter=0;
+    //Dump the spin configuration when the program exits
+    atexit(spins::dump_spins);
     //equilibration
     for(unsigned int cc = 0 ; cc < MinCycles ; cc++)//cycle of driving field loop
     {

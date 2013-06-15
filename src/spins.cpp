@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 14 Jun 2013 12:29:42
+// Last-modified: 15 Jun 2013 19:57:48
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -178,6 +178,39 @@ namespace spins
             {
                 error::errPreamble(__FILE__,__LINE__);
                 error::errMessage("Could not open file for reading spin data");
+            }
+            int nx=0,ny=0,nz=0,nkx=0,nky=0,nkz=0;
+            sfs >> nx >> ny >> nz;
+            sfs >> nkx >> nky >> nkz;
+            if(nx!=geom::dim[0]*geom::Nk[0])
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Mismatch in x-dimension");
+            }
+            if(ny!=geom::dim[1]*geom::Nk[1])
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Mismatch in y-dimension");
+            }
+            if(nz!=geom::dim[2]*geom::Nk[2])
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Mismatch in z-dimension");
+            }
+            if(nkx!=geom::Nk[0])
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Mismatch in number of expansion points in x");
+            }
+            if(nky!=geom::Nk[1])
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Mismatch in number of expansion points in y");
+            }
+            if(nkz!=geom::Nk[2])
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Mismatch in number of expansion points in x");
             }
 
             for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
@@ -548,5 +581,56 @@ namespace spins
         std::cout << "#Average correlation length = " << spins::corrLength.Mean() << std::endl;
     }
 
+    void dump_spins(void)
+    {
+        std::ofstream sdump("sdump.txt");
+        if(!sdump.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            std::stringstream sstr;
+            sstr << "Could not open file for dumping spin configuration, writing to cout. Number of spins " << geom::nspins << " to extract the data from the redirected output apply the command: grep __SPIN__DUMP__ -A " << geom::nspins+1;
+            std::string str=sstr.str();
+            error::errWarning(str.c_str());
+            std::cout << "#__SPIN__DUMP__\n" << geom::dim[0]*geom::Nk[0] << "\t" << geom::dim[1]*geom::Nk[1] << "\t" << geom::dim[2]*geom::Nk[2] << "\t" << geom::Nk[0] << "\t" << geom::Nk[1] << "\t" << geom::Nk[2] << std::endl;
+            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            {
+                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                {
+                    for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2] ; k++)
+                    {
+                        int sn = geom::coords(i,j,k,0);
+                        if(sn>=0)
+                        {
+                            std::cout << i << "\t" << j << "\t" << k << "\t" << spins::Sx[sn] << "\t" << spins::Sy[sn] << "\t" << spins::Sz[sn] << std::endl;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            sdump << geom::dim[0]*geom::Nk[0] << "\t" << geom::dim[1]*geom::Nk[1] << "\t" << geom::dim[2]*geom::Nk[2] << "\t" << geom::Nk[0] << "\t" << geom::Nk[1] << "\t" << geom::Nk[2] << std::endl;
+            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            {
+                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                {
+                    for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2] ; k++)
+                    {
+                        int sn = geom::coords(i,j,k,0);
+                        if(sn>=0)
+                        {
+                            sdump << i << "\t" << j << "\t" << k << "\t" << spins::Sx[sn] << "\t" << spins::Sy[sn] << "\t" << spins::Sz[sn] << std::endl;
+                        }
+                    }
+                }
+            }
+            sdump.close();
+            if(sdump.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not close file for dumping spin configuration");
+            }
+        }
+    }
 
 }

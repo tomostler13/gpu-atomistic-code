@@ -1,7 +1,7 @@
 // File: spins.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 17 May 2013 10:39:53
+// Last-modified: 15 Jun 2013 19:57:39
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -38,5 +38,6 @@ namespace spins
 	extern util::RunningStat corrLength;
 	void sexit(void);
     void calcStaticStructureFactor(unsigned int);
+    void dump_spins(void);
 }
 #endif /*_SPINS_H_*/
