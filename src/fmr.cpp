@@ -1,7 +1,7 @@
 // File: fmr.cpp
 // Author: Tom Ostler
 // Created: 14 June 2013
-// Last-modified: 14 Jun 2013 09:37:23
+// Last-modified: 14 Jun 2013 14:35:05
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -40,7 +40,8 @@ void sim::fmr(int argc,char *argv[])
     }
 
     libconfig::Setting &setting = config::cfg.lookup("fmr");
-    double redfreq=0.0,Bdrive=0.0,Ncycles=0,MinCycles=0,MaxCycles=0;
+    double redfreq=0.0,Bdrive=0.0;
+    int Ncycles=0,MinCycles=0,MaxCycles=0;
     double temp=0.0,ConvVar=2e-11,ConvMean=1e-8;
 
     std::string opfs;
@@ -98,4 +99,108 @@ void sim::fmr(int argc,char *argv[])
         redfreq=newfreq;
         FIXOUT(config::Info,"New reduced frequency:" << redfreq << std::endl);
     }
+    util::RunningStat PC;
+    util::TrapezInt TI;
+    TI.Clear();
+    //TI.bma(2.0*PI*double(cycleaverage)/redfreq);
+    TI.bma(double(ntspc)*llg::dt*double(Ncycles));
+    PC.Clear();
+
+    FIXOUT(config::Info,"Setting temperature:" << std::flush);
+    llg::T=temp;
+    SUCCESS(config::Info);
+    const double HAppOrig[3]={llg::applied[0],llg::applied[1],llg::applied[2]};
+    unsigned int counter=0;
+    //equilibration
+    for(unsigned int cc = 0 ; cc < MinCycles ; cc++)//cycle of driving field loop
+    {
+
+        for(unsigned int i = 0 ; i < ntspc ; i++)
+        {
+            double vf=Bdrive*cos(redfreq*llg::rdt*double(i));
+            //std::cout << redfreq << "\t" << llg::rdt << "\t" << double(i) << std::endl;
+            llg::applied[0]=HAppOrig[0]+vf;
+            llg::applied[1]=HAppOrig[1];
+            llg::applied[2]=HAppOrig[2];
+
+            //apply rotation matrix in clockwise direction
+            //	[	cos(theta)	sin(theta)	]
+            //	[	-sin(theta)	cos(theta)	]
+            //  The matrix then takes the vector v and rotates it by an angle theta
+
+            //			v    v'
+            //	|     /     *
+            //	|    /    *
+            //	|   /   *
+            //	|  /  *
+            //	| / *
+            //	|/*_________________________
+
+            //This part was copied from the LLB code for FMR and
+            //needs changing if you want to include a rotation of
+            //the driving and static magnetic field
+            /*double hxt=fields::fH[0];
+            double hzt=fields::fH[2];
+            fields::fH[0]=hxt*cos(fieldrot)+hzt*sin(fieldrot);
+            fields::fH[2]=-hxt*sin(fieldrot)+hzt*cos(fieldrot);
+            #endif
+            sim::_simt_=counter;
+            */
+            llg::integrate(counter);
+            const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
+            const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
+            const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
+            const double modm=sqrt(mx*mx+my*my+mz*mz);
+
+            //calculation of m . dB/dt for FMR integral taking into
+            //account rotation in x-z plane
+            emagfile << double(counter)*llg::dt/1e-12 << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
+            counter++;
+
+        }
+    }
+    double oldpow=0.0;
+    bool broken=false;
+    for(unsigned int cc = 0 ; cc < MaxCycles ; cc++)//cycle of driving field loop
+    {
+
+        for(unsigned int i = 0 ; i < ntspc ; i++)
+        {
+            double vf=Bdrive*cos(redfreq*llg::rdt*double(i));
+            llg::applied[0]=HAppOrig[0]+vf;
+            llg::applied[1]=HAppOrig[1];
+            llg::applied[2]=HAppOrig[2];
+            llg::integrate(counter);
+
+            const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
+            const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
+            const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
+            const double modm=sqrt(mx*mx+my*my+mz*mz);
+
+            //calculation of m . dB/dt for FMR integral taking into
+            //account rotation in x-z plane
+            double mdbd=(Bdrive*redfreq*mx*sin(redfreq*llg::rdt*double(i)));
+            TI.Push(mdbd);
+            emagfile << double(counter)*llg::dt/1e-12 << "\t" << mx << "\t" << my << "\t" << mz << "\t" << modm << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
+            counter++;
+        }
+
+
+        if(cc%Ncycles==0)
+        {
+            PC.Push(TI.FinishAndReturn()/(double(ntspc)*llg::dt*double(Ncycles)));
+            config::Info << std::setprecision(16);
+            config::Info.width(15);config::Info << std::left <<  " | Mean Power = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << PC.Mean();
+            config::Info.width(15);config::Info << std::left <<  " | delta P = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(PC.Mean()-oldpow) << " [ " << ConvMean << " ]";
+            config::Info.width(15);config::Info << std::left <<  " | Variance = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << PC.Variance() << " [ " << ConvVar << " ] |" << std::endl;
+            if((PC.NumDataValues() > 10) && (fabs(PC.Mean()-oldpow) < ConvMean) && (PC.Variance() < ConvVar) && cc > MinCycles)
+            {
+                broken=true;
+                break;
+            }
+            oldpow=PC.Mean();
+            TI.Clear();
+        }
+    }
+
 }

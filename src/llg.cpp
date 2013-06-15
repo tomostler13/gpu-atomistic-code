@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 14 Jun 2013 09:11:22
+// Last-modified: 14 Jun 2013 13:24:44
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -143,6 +143,10 @@ namespace llg
             else
             {
                 cullg::llgGPU(t);
+                if(osHapp)
+                {
+                    cullg::llgGPU(t,osHapp);
+                }
             }
         }
         else
@@ -166,6 +170,10 @@ namespace llg
             else
             {
                 llgCPU::llgCPU(t);
+                if(osHapp)
+                {
+                    llgCPU::llgCPU(t,osHapp);
+                }
             }
         }
         else

@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 14 Jun 2013 12:17:49
+// Last-modified: 14 Jun 2013 12:29:42
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -35,10 +35,10 @@ namespace spins
 {
     Array3D<fftw_complex> Skx,Sky,Skz;
     Array3D<double> Srx,Sry,Srz;
-    Array3D<double> Sznzp;//,Synzp,Sxnzp;
-//    Array3D<fftw_complex> Sqznzp,Sqynzp,Sqxnzp;
-//    Array3D<double> Szij,Syij,Sxij;
-//    Array3D<fftw_complex> Sqzij,Sqyij,Sqxij;
+    Array3D<double> Sznzp,Synzp,Sxnzp;
+    Array3D<fftw_complex> Sqznzp,Sqynzp,Sqxnzp;
+    Array3D<double> Szij,Syij,Sxij;
+    Array3D<fftw_complex> Sqzij,Sqyij,Sqxij;
     Array3D<fftw_complex> SpSm;
     unsigned int nzpcplxdim=0;
     double normsize=0;
@@ -46,7 +46,7 @@ namespace spins
     double *xdat=NULL;
     util::RunningStat corrLength;
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
-//    fftw_plan SxP,SyP,SzP,SzcfPF,SycfPF,SxcfPF,SzcfPB,SycfPB,SxcfPB,SzijF,SyijF,SxijF;
+    fftw_plan SxP,SyP,SzP,SzcfPF,SycfPF,SxcfPF,SzcfPB,SycfPB,SxcfPB,SzijF,SyijF,SxijF;
     fftw_plan SpSmF;
     unsigned int update=0;
     std::ifstream sfs;

@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 25 Apr 2013 12:16:18
+// Last-modified: 14 Jun 2013 12:46:03
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -12,6 +12,54 @@
 #define _UTIL_H_
 namespace util
 {
+    class TrapezInt
+    {
+    public:
+        TrapezInt() : m_n(0) {}
+
+        void Clear()
+        {
+            m_n=0;
+            sum=0.0;
+        }
+
+        void bma(double x)
+        {
+            bminusa=x;
+        }
+
+
+        void Push(double x)
+        {
+
+            if(m_n==0)
+            {
+                sum+=x;
+            }
+            else
+            {
+                sum+=(2.0*x);
+            }
+            oldx=x;
+
+            m_n++;
+
+        }
+        int NumDataValues() const
+        {
+            return m_n;
+        }
+
+        double FinishAndReturn()
+        {
+            sum-=oldx;
+            return bminusa*sum/double(2*m_n);
+        }
+    private:
+        int m_n;
+        double sum, bminusa, oldx;
+    };
+
 	//convergence class
 	class RunningStat
 	{

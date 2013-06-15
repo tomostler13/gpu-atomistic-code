@@ -4,7 +4,7 @@ include_dipolar=false;
 use_interaction_matrix=true;
 mat:
 {
-    mu = [ 2.1 ];
+    mu = [ 3.23 ];
     conc= [ 1.0 ];
     gamma = 1.76e11;
     lambda = 0.1;
@@ -16,20 +16,23 @@ system:
 	Lex = [ 1.0 , 0.0 , 0.0 ];
 	Ley = [ 0.0 , 1.0 , 0.0 ];
 	Lez = [ 0.0 , 0.0 , 1.0 ];
-	dim = [ 24 , 24 , 24 ];
-	nauc = 1;
+	dim = [ 12 , 12 , 12 ];
+	nauc = 2;
 	atom0 = [ 0.0 , 0.0 , 0.0 , 0.0 ];
+	atom1 = [ 0.5 , 0.5 , 0.0 , 1.0 ];
+
 	Element0="N";
-	Nk = [ 1 , 1 , 1 ];
-	abc = [ 0.386e-9 , 0.386e-9 , 0.386e-9 ];
+    Element1="O";
+	Nk = [ 2 , 2 , 2 ];
+	abc = [ 0.386e-9 , 0.386e-9 , 0.374e-9 ];
     System_Type="bulk";
     zpcheck=false;
 };
 exchange:
 { 
-    exchmethod="permute";
+    exchmethod="direct";
 	exchinput="extfile";
-	exchfile="exch.sc";
+	exchfile="FePtOlegTrunk.in";
     pbc = [ TRUE , TRUE , TRUE ];
 };
 anisotropy:
@@ -38,18 +41,18 @@ anisotropy:
 	//The anisotropy tensor
 	d0xb = [ 0.0 , 0.0 , 0.0 ];
 	d0yb = [ 0.0 , 0.0 , 0.0 ];
-	d0zb = [ 0.0 , 0.0 , 1.0e-25 ];
+	d0zb = [ 0.0 , 0.0 , 4.0418841e-23 ];
 };
 llg:
 {
-	dt = 0.25e-15;
+	dt = 1.0e-15;
     Onsite_Applied = TRUE;
     Onsite_Kind = "special1";
     Onsite_Temp = FALSE;
-	applied = [ 0.0 , 0.0 , 0.001 ];
-    RealSpaceCorrelations = TRUE;
+	applied = [ 0.0 , 0.0 , 1.0 ];
+    RealSpaceCorrelations = FALSE;
     RSCFile = "RSCF_zz_";
-    StaticStructureFactor=TRUE;
+    StaticStructureFactor=FALSE;
     SSFile="SSF_z_X_Gamma_M_PosK";
 };
 cuda:
@@ -59,7 +62,7 @@ cuda:
 spins:
 {
 	spinconfig = "align";
-    sc = [ 0.0 , 0.0 , 1.0 ];
+    sc = [ 0.001 , 0.0 , 0.99999949999987499994 ];
 	update=20;
 };
 sim:
@@ -79,9 +82,9 @@ stepchange:
 };
 fmr:
 {
-    temperature = 300.0;
+    temperature = 0.0;
     //Number of cycles to average over for power calculation
-    Ncycles = 15;
+    Ncycles = 10;
     redfreq=19.0;
     Bdrive = 0.005;
     ConvVar = 2e-11;
