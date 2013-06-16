@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 16 Jun 2013 11:49:53
+// Last-modified: 16 Jun 2013 22:54:40
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -435,30 +435,15 @@ namespace exch
                         counter++;
                         if(geom::coords(c[0],c[1],c[2],0)>-2)
                         {
-                            if(readFile=="FePtOlegTrunk.in")
-                            {
-                                intmat::Nrxx(c[0],c[1],c[2])+=((J[0][0]/2.0)/(mat::muB*mat::mustore[0]));
-                                intmat::Nrxy(c[0],c[1],c[2])+=((J[0][1]/2.0)/(mat::muB*mat::mustore[0]));
-                                intmat::Nrxz(c[0],c[1],c[2])+=((J[0][2]/2.0)/(mat::muB*mat::mustore[0]));
-                                intmat::Nryx(c[0],c[1],c[2])+=((J[1][0]/2.0)/(mat::muB*mat::mustore[0]));
-                                intmat::Nryy(c[0],c[1],c[2])+=((J[1][1]/2.0)/(mat::muB*mat::mustore[0]));
-                                intmat::Nryz(c[0],c[1],c[2])+=((J[1][2]/2.0)/(mat::muB*mat::mustore[0]));
-                                intmat::Nrzx(c[0],c[1],c[2])+=((J[2][0]/2.0)/(mat::muB*mat::mustore[0]));
-                                intmat::Nrzy(c[0],c[1],c[2])+=((J[2][1]/2.0)/(mat::muB*mat::mustore[0]));
-                                intmat::Nrzz(c[0],c[1],c[2])+=((J[2][2]/2.0)/(mat::muB*mat::mustore[0]));
-                            }
-                            else
-                            {
-                                intmat::Nrxx(c[0],c[1],c[2])+=((J[0][0])/(mat::muB*mat::mustore[0]));
-                                intmat::Nrxy(c[0],c[1],c[2])+=((J[0][1])/(mat::muB*mat::mustore[0]));
-                                intmat::Nrxz(c[0],c[1],c[2])+=((J[0][2])/(mat::muB*mat::mustore[0]));
-                                intmat::Nryx(c[0],c[1],c[2])+=((J[1][0])/(mat::muB*mat::mustore[0]));
-                                intmat::Nryy(c[0],c[1],c[2])+=((J[1][1])/(mat::muB*mat::mustore[0]));
-                                intmat::Nryz(c[0],c[1],c[2])+=((J[1][2])/(mat::muB*mat::mustore[0]));
-                                intmat::Nrzx(c[0],c[1],c[2])+=((J[2][0])/(mat::muB*mat::mustore[0]));
-                                intmat::Nrzy(c[0],c[1],c[2])+=((J[2][1])/(mat::muB*mat::mustore[0]));
-                                intmat::Nrzz(c[0],c[1],c[2])+=((J[2][2])/(mat::muB*mat::mustore[0]));
-                            }
+                            intmat::Nrxx(c[0],c[1],c[2])+=((J[0][0])/(mat::muB*mat::mustore[0]));
+                            intmat::Nrxy(c[0],c[1],c[2])+=((J[0][1])/(mat::muB*mat::mustore[0]));
+                            intmat::Nrxz(c[0],c[1],c[2])+=((J[0][2])/(mat::muB*mat::mustore[0]));
+                            intmat::Nryx(c[0],c[1],c[2])+=((J[1][0])/(mat::muB*mat::mustore[0]));
+                            intmat::Nryy(c[0],c[1],c[2])+=((J[1][1])/(mat::muB*mat::mustore[0]));
+                            intmat::Nryz(c[0],c[1],c[2])+=((J[1][2])/(mat::muB*mat::mustore[0]));
+                            intmat::Nrzx(c[0],c[1],c[2])+=((J[2][0])/(mat::muB*mat::mustore[0]));
+                            intmat::Nrzy(c[0],c[1],c[2])+=((J[2][1])/(mat::muB*mat::mustore[0]));
+                            intmat::Nrzz(c[0],c[1],c[2])+=((J[2][2])/(mat::muB*mat::mustore[0]));
 
                             //intmat::Nrzz(c[0],c[1],c[2])+=((J[2][2]+2.0*2.0*1.6e-19*1e-3)/(mat::muB*mat::mu));
                             /*                std::cout << "Interaction: " << i << "\nJij:\n" << intmat::Nrxx(c[0],c[1],c[2]) << "\t" << intmat::Nrxy(c[0],c[1],c[2]) << "\t" << intmat::Nrxz(c[0],c[1],c[2]) << std::endl;
