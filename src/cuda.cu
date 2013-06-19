@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 14 Jun 2013 09:13:22
+// Last-modified: 19 Jun 2013 18:22:08
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -93,10 +93,10 @@ namespace cullg
 
 	void initGPU()
 	{
-//		CUDA_CALL(cudaDeviceReset());
+		CUDA_CALL(cudaDeviceReset());
 	}
-    //uniform temperature with interaction matrix
-	void llgGPU(unsigned int& t)
+    //uniform temperature with interaction matrix. Onsite applied field
+	void llgGPU(unsigned int& t,bool& faf)
 	{
 
 		//copy the spin data to the zero padded arrays
@@ -162,7 +162,7 @@ namespace cullg
 
 	}
     //uniform temperature with interaction matrix. Uniform applied field
-	void llgGPU(unsigned int& t,bool& faf)
+	void llgGPU(unsigned int& t)
 	{
 
 		//copy the spin data to the zero padded arrays

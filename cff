@@ -1,5 +1,5 @@
 OutputFile = "opf.dat";
-seed = 1367891401;
+seed = 1371580761;
 include_dipolar=false;
 use_interaction_matrix=true;
 mat:
@@ -41,12 +41,12 @@ anisotropy:
 	//The anisotropy tensor
 	d0xb = [ 0.0 , 0.0 , 0.0 ];
 	d0yb = [ 0.0 , 0.0 , 0.0 ];
-	d0zb = [ 0.0 , 0.0 , 4.0418841e-23 ];
+	d0zb = [ 0.0 , 0.0 , 0.0 ];
 };
 llg:
 {
 	dt = 1.0e-15;
-    Onsite_Applied = TRUE;
+    Onsite_Applied = FALSE;
     Onsite_Kind = "special1";
     Onsite_Temp = FALSE;
 	applied = [ 0.0 , 0.0 , 1.0 ];
@@ -62,35 +62,24 @@ cuda:
 spins:
 {
 	spinconfig = "align";
-    sc = [ 0.001 , 0.0 , 0.99999949999987499994 ];
-	update=20;
+    sc = [ 1e-7 , 0.0 , 0.999999999999995 ];
+	update=1;
 };
 sim:
 {
-//	sim_type="stepchange";
-    sim_type="fmr";
-};
-stepchange:
-{
-    T_start = 0.0;
-    T_final = 100.0;
-    Rate=1.0e17;
-    RunTime = 350.0e-12;
-    EquilTime = 1.0e-12;
-    outmag = TRUE;
-    MagFileName = "mag";
+    sim_type="quick";
 };
 fmr:
 {
     temperature = 0.0;
     //Number of cycles to average over for power calculation
     Ncycles = 10;
-    redfreq=19.0;
+    redfreq=13.0;
     Bdrive = 0.005;
     ConvVar = 2e-11;
     ConvMean = 1e-8;
-    MaxCycles = 150;
+    MaxCycles = 50;
     //Equilibration
-    MinCycles = 50;
+    MinCycles = 25;
     MagFile="mag.dat";
-}
+};

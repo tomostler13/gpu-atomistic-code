@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 14 Jun 2013 09:22:32
+// Last-modified: 19 Jun 2013 17:51:31
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -52,7 +52,7 @@ namespace llgCPU
         SUCCESS(config::Info);
     }
     //for uniform temperature with interaction matrix for field calculation
-    void llgCPU(unsigned int t)
+    void llgCPU(unsigned int t,bool& faf)
     {
         //calculate the 2 spin fields (dipolar, exchange, anisotropy)
         fields::ftdip();
@@ -119,7 +119,7 @@ namespace llgCPU
         }
     }
     //for uniform temperature with interaction matrix for field calculation (uniform field)
-    void llgCPU(unsigned int t,bool& faf)
+    void llgCPU(unsigned int t)
     {
         //calculate the 2 spin fields (dipolar, exchange, anisotropy)
         fields::ftdip();

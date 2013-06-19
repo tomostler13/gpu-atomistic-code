@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 14 Jun 2013 09:39:14
+// Last-modified: 18 Jun 2013 18:42:35
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -99,9 +99,9 @@ int main(int argc,char *argv[])
 	else if(sim::sim_type=="quick")
 	{
 
-		llg::T=600.0;
+		llg::T=0.0;
 
-        unsigned int ets=10000;
+        unsigned int ets=20000;
         unsigned int rts=10000;
 		for(unsigned int t = 0 ; t < ets ; t++)
 		{
