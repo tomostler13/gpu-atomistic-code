@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 18 Mar 2014 12:34:36
+// Last-modified: 18 Mar 2014 12:54:18
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -135,32 +135,7 @@ namespace llg
 		}
 
         #ifdef CUDA
-        if(config::useintmat)
-        {
-            if(osTemp)
-            {
-                cullg::llgGPU(t,osT);
-            }
-            else
-            {
-                cullg::llgGPU(t);
-                if(osHapp)
-                {
-                    cullg::llgGPU(t,osHapp);
-                }
-            }
-        }
-        else
-        {
-            if(osTemp)
-            {
-                cullg::llgGPU(t,osT,exch::xadj,exch::adjncy);
-            }
-            else
-            {
-                cullg::llgGPU(t,exch::xadj,exch::adjncy);
-            }
-        }
+        cullg::llgGPU(t);
         #else
         if(config::useintmat)
         {
