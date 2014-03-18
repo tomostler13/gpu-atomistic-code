@@ -1,7 +1,7 @@
 // File: anis.cpp
 // Author: Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 25 Apr 2013 10:23:48
+// Last-modified: 18 Mar 2014 11:43:02
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -140,18 +140,26 @@ namespace anis
 
         if(config::useintmat==true)
         {
+            if(mat::nspec<2)
+            {
 
-            FIXOUT(config::Info,"Normalising anisotropy and adding to interaction matrix:" << std::flush);
-            /*        intmat::Nrxx(0,0,0)+=(2.0*dT[0][0]/(mat::mu*mat::muB));
-                      intmat::Nrxy(0,0,0)+=(2.0*dT[0][1]/(mat::mu*mat::muB));
-                      intmat::Nrxz(0,0,0)+=(2.0*dT[0][2]/(mat::mu*mat::muB));
-                      intmat::Nryx(0,0,0)+=(2.0*dT[1][0]/(mat::mu*mat::muB));
-                      intmat::Nryy(0,0,0)+=(2.0*dT[1][1]/(mat::mu*mat::muB));
-                      intmat::Nryz(0,0,0)+=(2.0*dT[1][2]/(mat::mu*mat::muB));
-                      intmat::Nrzx(0,0,0)+=(2.0*dT[2][0]/(mat::mu*mat::muB));
-                      intmat::Nrzy(0,0,0)+=(2.0*dT[2][1]/(mat::mu*mat::muB));*/
-            intmat::Nrzz(0,0,0)+=dT(0,2,2);//(2.0*dT(0,2,2)/(mat::mustore[0]*mat::muB));
-            SUCCESS(config::Info);
+                FIXOUT(config::Info,"Normalising anisotropy and adding to interaction matrix:" << std::flush);
+                intmat::Nrxx(0,0,0)+=(2.0*dT(0,0,0)/(mat::mustore[0]*mat::muB));
+                intmat::Nrxy(0,0,0)+=(2.0*dT(0,0,1)/(mat::mustore[0]*mat::muB));
+                intmat::Nrxz(0,0,0)+=(2.0*dT(0,0,2)/(mat::mustore[0]*mat::muB));
+                intmat::Nryx(0,0,0)+=(2.0*dT(0,1,0)/(mat::mustore[0]*mat::muB));
+                intmat::Nryy(0,0,0)+=(2.0*dT(0,1,1)/(mat::mustore[0]*mat::muB));
+                intmat::Nryz(0,0,0)+=(2.0*dT(0,1,2)/(mat::mustore[0]*mat::muB));
+                intmat::Nrzx(0,0,0)+=(2.0*dT(0,2,0)/(mat::mustore[0]*mat::muB));
+                intmat::Nrzy(0,0,0)+=(2.0*dT(0,2,1)/(mat::mustore[0]*mat::muB));
+                intmat::Nrzz(0,0,0)+=(2.0*dT(0,2,2)/(mat::mustore[0]*mat::muB));
+                SUCCESS(config::Info);
+            }
+            else
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("You cannot currently use an interaction matrix with more than 1 species (Mar 2014)");
+            }
         }
 
 

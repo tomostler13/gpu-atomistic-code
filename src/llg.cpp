@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 14 Jun 2013 13:24:44
+// Last-modified: 18 Mar 2014 12:54:18
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -112,6 +112,7 @@ namespace llg
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             mat::sigma[i] = sqrt(2.0*1.38e-23*mat::lambda[i]/(mat::mu[i]*mat::muB*dt*mat::gamma));
+            //std::cout << mat::gamma << "\t" << dt << "\t" << mat::muB << std::endl;std::cin.get();
             llgpf[i] = -1./(1.0+mat::lambda[i]*mat::lambda[i]);
         }
         SUCCESS(config::Info);
@@ -134,32 +135,7 @@ namespace llg
 		}
 
         #ifdef CUDA
-        if(config::useintmat)
-        {
-            if(osTemp)
-            {
-                cullg::llgGPU(t,osT);
-            }
-            else
-            {
-                cullg::llgGPU(t);
-                if(osHapp)
-                {
-                    cullg::llgGPU(t,osHapp);
-                }
-            }
-        }
-        else
-        {
-            if(osTemp)
-            {
-                cullg::llgGPU(t,osT,exch::xadj,exch::adjncy);
-            }
-            else
-            {
-                cullg::llgGPU(t,exch::xadj,exch::adjncy);
-            }
-        }
+        cullg::llgGPU(t);
         #else
         if(config::useintmat)
         {

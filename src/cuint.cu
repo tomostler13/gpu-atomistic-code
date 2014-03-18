@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 14 Jun 2013 08:55:17
+// Last-modified: 18 Mar 2014 14:07:28
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -28,45 +28,6 @@
 namespace cuint
 {
     //uniform temperature with interaction matrix
-    __global__ void CHeun1(int N,double T,double *sigma,double *llgpf,double *lambda,double rdt,float *CHApp,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
-    {
-        register const int i = blockDim.x*blockIdx.x + threadIdx.x;
-        if(i<N)
-        {
-            const float appliedx=CHApp[3*i];
-            const float appliedy=CHApp[3*i+1];
-            const float appliedz=CHApp[3*i+2];
-
-			//The prefactor for the thermal term
-			const double TP=sqrt(T)*sigma[i];
-			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
-			const double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
-			const double s[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
-			const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
-			const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
-
-			double lfn[3]={0,0,0};
-			double es[3]={0,0,0};
-			double mods=0.0;
-            double llgpfi=llgpf[i];
-            double lambdai=lambda[i];
-			for(unsigned int j = 0 ; j < 3 ; j++)
-			{
-				lfn[j] = llgpfi*(sxh[j]+lambdai*sxsxh[j]);
-				Cfn[3*i+j]=lfn[j];
-				es[j]=s[j]+lfn[j]*rdt;
-				mods+=s[j]*s[j];
-			}
-			//calculate one over the square root of the spin modulus
-			const double nf=rsqrt(mods);
-			for(unsigned int j = 0 ; j < 3 ; j++)
-			{
-				//set the euler spin value and normalize
-				Cespin[3*i+j]=es[j]*nf;
-			}
-        }
-    }
-    //uniform temperature with interaction matrix
     __global__ void CHeun1(int N,double T,double *sigma,double *llgpf,double *lambda,double rdt,double Hx,double Hy,double Hz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
@@ -75,7 +36,6 @@ namespace cuint
             const float appliedx=Hx;
             const float appliedy=Hy;
             const float appliedz=Hz;
-
 			//The prefactor for the thermal term
 			const double TP=sqrt(T)*sigma[i];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
@@ -96,6 +56,7 @@ namespace cuint
 				es[j]=s[j]+lfn[j]*rdt;
 				mods+=s[j]*s[j];
 			}
+            printf("N=%d\t%4.5e\t%4.5e\t%4.5e\n",N,sxh[1],sxh[0],rdt);
 			//calculate one over the square root of the spin modulus
 			const double nf=rsqrt(mods);
 			for(unsigned int j = 0 ; j < 3 ; j++)
@@ -103,6 +64,7 @@ namespace cuint
 				//set the euler spin value and normalize
 				Cespin[3*i+j]=es[j]*nf;
 			}
+            printf("i=%d\tEspin:\t%4.5e\t%4.5e\t%4.5e\n",i,Cespin[3*i],Cespin[3*i+1],Cespin[3*i+2]);
         }
     }
     //on-site temperature with interaction matrix
@@ -267,7 +229,6 @@ namespace cuint
 			{
 				Cspin[3*i+j]=ps[j]*nf;
 			}
-
         }
     }
     //uniform temperature with interaction matrix and on-site field
@@ -304,6 +265,7 @@ namespace cuint
 				Cspin[3*i+j]=ps[j]*nf;
 			}
 
+printf("In CHeun2\n");
         }
     }
 

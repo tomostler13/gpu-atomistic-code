@@ -9,14 +9,15 @@ export LC_ALL=C
 DEFS=-DNDEBUG
 CUDEFS=-DCUDA
 LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ -llapack -lblas# -lconfig++
-INC=/home/tao500/opt/levmar-2.6/
+STATIC_LINK=
 CPULIBS= -fopenmp -lpthread
 CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft
 STATIC_LINK=/home/tao500/opt/levmar-2.6/liblevmar.a /usr/local/lib/libconfig++.a
 OPT_LEVEL=-O3
-GCC_FLAGS= $(OPT_LEVEL)
+GCC_FLAGS= $(OPT_LEVEL) -I/home/tao500/opt/levmar-2.6/
 #NVCC_FLAGS= -g $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 
-NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_13,code=sm_13 -gencode=arch=compute_13,code=compute_13 -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_30,code=compute_30
+#NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_13,code=sm_13 -gencode=arch=compute_13,code=compute_13 -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_30,code=compute_30
+NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_30,code=compute_30
 
 
 # Objects
@@ -61,26 +62,26 @@ all: $(OBJECTS) gcc
 
 # Serial Targets
 gcc: $(OBJECTS) $(SWITCHOBJ)
-	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTS) $(SWITCHOBJ) $(STATIC_LINK) -I$(INC) -o $(EXECUTABLE) $(LIBS) $(CPULIBS)
+	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTS) $(SWITCHOBJ) $(STATIC_LINK) -o $(EXECUTABLE) $(LIBS)
 
 $(OBJECTS): obj/%.o: src/%.cpp
-	$(GCC) -I$(INC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
+	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
 $(SWITCHOBJ): obj/%.o: src/%.cpp
-	$(GCC) -I$(INC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
+	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
 
 
 # cuda targets
 gcc-cuda: $(SWITCH_OBJECTS) $(NVCC_OBJECTS) $(CUDA_OBJECTS)
-	$(NVCC) $(CUDA_OBJECTS) $(SWITCH_OBJECTS) $(NVCC_OBJECTS) $(STATIC_LINK) $(CUDALIBS) $(LIBS) -I$(INC) -o $(EXECUTABLE) $(GITINFO) $(DEFS)
+	$(NVCC) $(CUDA_OBJECTS) $(SWITCH_OBJECTS) $(NVCC_OBJECTS) $(STATIC_LINK) $(CUDALIBS) $(LIBS) -o $(EXECUTABLE) $(GITINFO) $(DEFS)
 
 $(CUDA_OBJECTS): obj/%_cuda.o: src/%.cpp
-	$(GCC) -I$(INC) -c -o $@ $(GCC_FLAGS) $(DEFS) $(GITINFO) $<
+	$(GCC) -c -o $@ $(GCC_FLAGS) $(DEFS) $(GITINFO) $<
 
 $(NVCC_OBJECTS) : obj/%_cuda.o: src/%.cu
-	$(NVCC) $(NVCC_FLAGS) $(GITINFO) $(CUDEFS) $(DEFS) -I$(INC) -c $< -o $@
+	$(NVCC) $(NVCC_FLAGS) $(GITINFO) $(CUDEFS) $(DEFS) -c $< $(CUDALIBS) $(LIBS) -o $@
 
 $(SWITCH_OBJECTS) : obj/%_cuda.o: src/%.cpp
-	$(NVCC) $(NVCC_FLAGS) $(GITINFO) $(CUDEFS) $(DEFS) -I$(INC) -c $< -o $@
+	$(NVCC) $(NVCC_FLAGS) $(GITINFO) $(CUDEFS) $(DEFS) -c $< $(CUDALIBS) $(LIBS) -o $@
 
 clean:
 	@rm -f obj/*.o

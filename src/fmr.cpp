@@ -1,7 +1,7 @@
 // File: fmr.cpp
 // Author: Tom Ostler
 // Created: 14 June 2013
-// Last-modified: 15 Jun 2013 19:59:06
+// Last-modified: 17 Jun 2013 09:10:00
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -89,6 +89,7 @@ void sim::fmr(int argc,char *argv[])
     {//only want these variables to have temporary scope
         config::Info << std::setprecision(10);
         double Tp=2.0*M_PI/(redfreq*mat::gamma);//time period
+        FIXOUT(config::Info,"Time period of driving field (ideal):" << Tp << std::endl);
         double nts=Tp/llg::dt;//the correct number of timesteps may not be
         FIXOUT(config::Info,"Ideal number of timesteps per cycle:" << nts << std::endl);
         //an integer

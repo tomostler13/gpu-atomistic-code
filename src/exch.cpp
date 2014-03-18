@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 26 Apr 2013 12:10:37
+// Last-modified: 18 Mar 2014 13:35:12
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -358,8 +358,9 @@ namespace exch
                 check.IFill(0);
                 unsigned int counter=0;
 
-                int dump;
+                double dump;
                 ifs>>dump;
+                //std::cout << dump << std::endl;
                 std::ofstream map("map.dat");
                 if(!map.is_open())
                 {
@@ -371,12 +372,16 @@ namespace exch
                     int oc[3]={0,0,0},c[3]={0,0,0};
                     double J[3][3];
                     ifs>>dump;
+                    //std::cout << dump << "\t";
                     ifs>>dump;
+                    //std::cout << dump << "\t";
                     ifs>>dump;
+                    //std::cout << dump << "\t";
                     double dist=0.0;
                     for(unsigned int rc = 0 ; rc < 3 ; rc++)
                     {
                         ifs >> c[rc];
+                    //std::cout << c[rc] << "\t";
                         oc[rc]=c[rc];
                         if(geom::zpcheck==false && abs(oc[rc])>geom::dim[rc]*geom::Nk[rc]/2)
                         {
@@ -395,15 +400,18 @@ namespace exch
                         }
                     }
                     dist=sqrt(dist);
-
+//std::cout << "\tRead coords: reading J's\t";
                     //std::cout << c[0] << "\t" << c[1] << "\t" << c[2] << "\t" << 1 << std::endl;
                     for(unsigned int j1 = 0 ; j1 < 3 ; j1++)
                     {
                         for(unsigned int j2 = 0 ; j2 < 3 ; j2++)
                         {
                             ifs >> J[j1][j2];
+                            //std::cout << J[j1][j2] << "\t";
                         }
                     }
+
+//                    std::cout << std::endl;
                     if(c[2]==0)
                     {
                         map << oc[0] << "\t" << oc[1];
@@ -435,15 +443,26 @@ namespace exch
                         counter++;
                         if(geom::coords(c[0],c[1],c[2],0)>-2)
                         {
-                            intmat::Nrxx(c[0],c[1],c[2])+=(J[0][0]/(mat::muB*mat::mustore[0]));
-                            intmat::Nrxy(c[0],c[1],c[2])+=(J[0][1]/(mat::muB*mat::mustore[0]));
-                            intmat::Nrxz(c[0],c[1],c[2])+=(J[0][2]/(mat::muB*mat::mustore[0]));
-                            intmat::Nryx(c[0],c[1],c[2])+=(J[1][0]/(mat::muB*mat::mustore[0]));
-                            intmat::Nryy(c[0],c[1],c[2])+=(J[1][1]/(mat::muB*mat::mustore[0]));
-                            intmat::Nryz(c[0],c[1],c[2])+=(J[1][2]/(mat::muB*mat::mustore[0]));
-                            intmat::Nrzx(c[0],c[1],c[2])+=(J[2][0]/(mat::muB*mat::mustore[0]));
-                            intmat::Nrzy(c[0],c[1],c[2])+=(J[2][1]/(mat::muB*mat::mustore[0]));
-                            intmat::Nrzz(c[0],c[1],c[2])+=(J[2][2]/(mat::muB*mat::mustore[0]));
+
+                            //the isotropic bits are on the diagonals.
+                            intmat::Nrxx(c[0],c[1],c[2])+=((J[0][0])/(mat::muB*mat::mustore[0]));
+                            intmat::Nryy(c[0],c[1],c[2])+=((J[1][1])/(mat::muB*mat::mustore[0]));
+                            intmat::Nrzz(c[0],c[1],c[2])+=((J[2][2])/(mat::muB*mat::mustore[0]));
+                            //The format of the file that is read in is in Jxx. We want in our interaction
+                            //matrix the DM vectors.
+                            // Nxy = 1/2(Jyx-Jxy)
+                            intmat::Nrxy(c[0],c[1],c[2])+=((0.5*(J[1][0]-J[0][1]))/(mat::muB*mat::mustore[0]));
+                            // Nxz = 1/2(Jxz-Jzx)
+                            intmat::Nrxz(c[0],c[1],c[2])+=((0.5*(J[0][2]-J[2][0]))/(mat::muB*mat::mustore[0]));
+                            // Nyx = 1/2(Jxy-Jyx)
+                            intmat::Nryx(c[0],c[1],c[2])+=((0.5*(J[0][1]-J[1][0]))/(mat::muB*mat::mustore[0]));
+                            // Nyz = 1/2(Jzy-Jyz)
+                            intmat::Nryz(c[0],c[1],c[2])+=((0.5*(J[2][1]-J[1][2]))/(mat::muB*mat::mustore[0]));
+                            // Nzx = 1/2(Jzx - Jxz)
+                            intmat::Nrzx(c[0],c[1],c[2])+=((0.5*(J[2][0]-J[0][2]))/(mat::muB*mat::mustore[0]));
+                            // Nzy = 1/2(Jyz-Jzy)
+                            intmat::Nrzy(c[0],c[1],c[2])+=((0.5*(J[1][2]-J[2][1]))/(mat::muB*mat::mustore[0]));
+
                             //intmat::Nrzz(c[0],c[1],c[2])+=((J[2][2]+2.0*2.0*1.6e-19*1e-3)/(mat::muB*mat::mu));
                             /*                std::cout << "Interaction: " << i << "\nJij:\n" << intmat::Nrxx(c[0],c[1],c[2]) << "\t" << intmat::Nrxy(c[0],c[1],c[2]) << "\t" << intmat::Nrxz(c[0],c[1],c[2]) << std::endl;
                                               std::cout <<  intmat::Nryx(c[0],c[1],c[2]) << "\t" << intmat::Nryy(c[0],c[1],c[2]) << "\t" << intmat::Nryz(c[0],c[1],c[2]) << std::endl;
@@ -452,14 +471,14 @@ namespace exch
                         }
                         else
                         {
-                            //std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << "\t" <<  c[0] << "\t" << c[1] << "\t" << c[2] << std::endl;
+                            std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << "\t" <<  c[0] << "\t" << c[1] << "\t" << c[2] << std::endl;
                             error::errPreamble(__FILE__,__LINE__);
                             error::errMessage("You are trying to add an interaction to an empty mesh point.");
                         }
                     }
                     else
                     {
-                        std::cerr << c[0] << "\t" << c[1] << "\t" << c[2] << std::endl;
+                        std::cerr << c[0] << "\t" << c[1] << "\t" << c[2] << "\nOriginal coords\t" << oc[0] << "\t" << oc[1] << "\t" << oc[2] << std::endl;
                         error::errPreamble(__FILE__,__LINE__);
                         error::errMessage("That interaction has already been read");
                     }
