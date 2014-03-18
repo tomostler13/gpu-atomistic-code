@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 18 Jun 2013 18:42:35
+// Last-modified: 18 Mar 2014 12:29:36
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -99,7 +99,7 @@ int main(int argc,char *argv[])
 	else if(sim::sim_type=="quick")
 	{
 
-		llg::T=0.0;
+		llg::T=0.000001;
 
         unsigned int ets=20000;
         unsigned int rts=10000;
@@ -112,6 +112,7 @@ int main(int argc,char *argv[])
 				const double my = util::reduceCPU(spins::Sy,geom::nspins);
 				const double mz = util::reduceCPU(spins::Sz,geom::nspins);
 				std::cout << double(t)*llg::dt << "\t" << mx/double(geom::nspins) << "\t" << my/double(geom::nspins) << "\t" << mz/double(geom::nspins) << std::endl;
+                util::outputSpinsVTU(t);
 //                spins::calcRealSpaceCorrelationFunction(t);
 			}
 		}

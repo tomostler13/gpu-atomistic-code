@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 14 Jun 2013 08:55:17
+// Last-modified: 18 Mar 2014 12:43:42
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -75,7 +75,6 @@ namespace cuint
             const float appliedx=Hx;
             const float appliedy=Hy;
             const float appliedz=Hz;
-
 			//The prefactor for the thermal term
 			const double TP=sqrt(T)*sigma[i];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
@@ -96,6 +95,7 @@ namespace cuint
 				es[j]=s[j]+lfn[j]*rdt;
 				mods+=s[j]*s[j];
 			}
+            printf("N=%d\t%4.5e\t%4.5e\t%4.5e\n",N,sxh[1],sxh[0],rdt);
 			//calculate one over the square root of the spin modulus
 			const double nf=rsqrt(mods);
 			for(unsigned int j = 0 ; j < 3 ; j++)
@@ -103,6 +103,7 @@ namespace cuint
 				//set the euler spin value and normalize
 				Cespin[3*i+j]=es[j]*nf;
 			}
+            printf("i=%d\tEspin:\t%4.5e\t%4.5e\t%4.5e\n",i,Cespin[3*i],Cespin[3*i+1],Cespin[3*i+2]);
         }
     }
     //on-site temperature with interaction matrix

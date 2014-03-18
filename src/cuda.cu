@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 19 Jun 2013 18:22:08
+// Last-modified: 18 Mar 2014 12:49:55
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -197,7 +197,10 @@ namespace cullg
 
 		//generate the random numbers
 		CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
+        std::cout << "Calling CHeun1 at time " << t << std::endl;
 		cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,Csigma,Cllgpf,Clambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn);
+        std::cout << "Finished CHeun1 at time " << t << std::endl;
+        std::cin.get();
 		cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cespin,Clu,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
 		//forward transform
 		spins_forward();
