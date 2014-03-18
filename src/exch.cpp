@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 03 Feb 2013 19:41:38
+// Last-modified: 18 Mar 2014 14:25:27
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -401,15 +401,24 @@ namespace exch
                     counter++;
                     if(geom::coords(c[0],c[1],c[2],0)>-2)
                     {
+
                         intmat::Nrxx(c[0],c[1],c[2])+=(J[0][0]/(mat::muB*mat::mu));
-                        intmat::Nrxy(c[0],c[1],c[2])+=(J[0][1]/(mat::muB*mat::mu));
-                        intmat::Nrxz(c[0],c[1],c[2])+=(J[0][2]/(mat::muB*mat::mu));
-                        intmat::Nryx(c[0],c[1],c[2])+=(J[1][0]/(mat::muB*mat::mu));
                         intmat::Nryy(c[0],c[1],c[2])+=(J[1][1]/(mat::muB*mat::mu));
-                        intmat::Nryz(c[0],c[1],c[2])+=(J[1][2]/(mat::muB*mat::mu));
-                        intmat::Nrzx(c[0],c[1],c[2])+=(J[2][0]/(mat::muB*mat::mu));
-                        intmat::Nrzy(c[0],c[1],c[2])+=(J[2][1]/(mat::muB*mat::mu));
                         intmat::Nrzz(c[0],c[1],c[2])+=(J[2][2]/(mat::muB*mat::mu));
+                        //The format of the file that is read in is in Jxx. We want in our interaction
+                        //matrix the DM vectors.
+                        // Nxy = 1/2(Jyx-Jxy)
+                        intmat::Nrxy(c[0],c[1],c[2])+=((0.5*(J[1][0]-J[0][1]))/(mat::muB*mat::mu));
+                        // Nxz = 1/2(Jxz-Jzx)
+                        intmat::Nrxz(c[0],c[1],c[2])+=((0.5*(J[0][2]-J[2][0]))/(mat::muB*mat::mu));
+                        // Nyx = 1/2(Jxy-Jyx)
+                        intmat::Nryx(c[0],c[1],c[2])+=((0.5*(J[0][1]-J[1][0]))/(mat::muB*mat::mu));
+                        // Nyz = 1/2(Jzy-Jyz)
+                        intmat::Nryz(c[0],c[1],c[2])+=((0.5*(J[2][1]-J[1][2]))/(mat::muB*mat::mu));
+                        // Nzx = 1/2(Jzx - Jxz)
+                        intmat::Nrzx(c[0],c[1],c[2])+=((0.5*(J[2][0]-J[0][2]))/(mat::muB*mat::mu));
+                        // Nzy = 1/2(Jyz-Jzy)
+                        intmat::Nrzy(c[0],c[1],c[2])+=((0.5*(J[1][2]-J[2][1]))/(mat::muB*mat::mu));
                         //intmat::Nrzz(c[0],c[1],c[2])+=((J[2][2]+2.0*2.0*1.6e-19*1e-3)/(mat::muB*mat::mu));
 /*                std::cout << "Interaction: " << i << "\nJij:\n" << intmat::Nrxx(c[0],c[1],c[2]) << "\t" << intmat::Nrxy(c[0],c[1],c[2]) << "\t" << intmat::Nrxz(c[0],c[1],c[2]) << std::endl;
                 std::cout <<  intmat::Nryx(c[0],c[1],c[2]) << "\t" << intmat::Nryy(c[0],c[1],c[2]) << "\t" << intmat::Nryz(c[0],c[1],c[2]) << std::endl;

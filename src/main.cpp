@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 02 Feb 2013 11:45:55
+// Last-modified: 18 Mar 2014 14:24:55
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -72,11 +72,18 @@ int main(int argc,char *argv[])
 	{
 
 		llg::T=1.0e-27;
-		for(unsigned int t = 0 ; t < 5000 ; t++)
+        int counter=0;
+		for(unsigned int t = 0 ; t < 50000 ; t++)
 		{
 			llg::integrate(t);
 			if(t%spins::update==0)
 			{
+                if(counter%10==0)
+                {
+                    util::outputSpinsVTU(t);
+                    counter=0;
+                }
+                counter++;
 				const double mx = util::reduceCPU(spins::Sx,geom::nspins);
 				const double my = util::reduceCPU(spins::Sy,geom::nspins);
 				const double mz = util::reduceCPU(spins::Sz,geom::nspins);

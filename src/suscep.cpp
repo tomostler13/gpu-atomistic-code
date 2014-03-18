@@ -1,7 +1,7 @@
 // File: suscep.h
 // Author: Tom Ostler
 // Created: 25 Jan 2013
-// Last-modified: 25 Jan 2013 09:49:18
+// Last-modified: 18 Mar 2014 14:19:27
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -110,4 +110,4 @@ void sim::suscep(int argc,char *argv[])
 		error::errPreamble(__FILE__,__LINE__);
 		error::errWarning("Could not close file for outputting magnetization data.");
 	}
-
+}

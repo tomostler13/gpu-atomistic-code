@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 24 Jan 2013 14:55:28
+// Last-modified: 18 Mar 2014 17:40:45
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -27,7 +27,16 @@
 #include <iostream>
 namespace cuint
 {
+    __constant__ int CMAXNFOU=5;
+    __constant__ int Cnfou=0;
+    __constant__ CUK[MAXNFOU];
+    __constant__ CUKD[MAXNFOUT][3];
 
+    void copyConstData()
+    {
+        cudaMemcpyToSymbol(*(&Cnfou),&anis::nfou,sizeof(int));
+        cudaMemcpyToSymbol(CUK,anis::FirstOrderUniaxK.ptr(),anis::FirstOrderUniaxK.size()*sizeof(double));
+    }
     __global__ void CHeun1(int N,double T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;

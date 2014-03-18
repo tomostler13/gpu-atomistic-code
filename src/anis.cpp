@@ -1,7 +1,7 @@
 // File: anis.cpp
 // Author: Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 31 Jan 2013 20:35:57
+// Last-modified: 18 Mar 2014 17:25:42
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -25,6 +25,9 @@
 namespace anis
 {
     std::string units;
+    unsigned int nfou=0;
+    Array<double> FirstOrderUniaxK;
+    Array2D<double> FirstOrderUniaxDir;
     void initAnis(int argc,char *argv[])
     {
         config::printline(config::Info);
@@ -56,59 +59,62 @@ namespace anis
         setting.lookupValue("units",units);
         if(units==""){std::cerr << "Units not read correctly\t" << units << std::endl;}
         FIXOUT(config::Info,"Anisotropy units:" << units << std::endl);
-        FIXOUT(config::Info,"Reading anisotropy tensor:" << std::flush);
-        double dT[3][3]={{0,0,0},{0,0,0},{0,0,0}};
-        for(unsigned int i = 0 ; i < 3 ; i++)
+        setting.lookupValue("NumberFirstOrderUniaxAnis",nfou);
+        FIXOUT(config::Info,"Number of first order uniaxial anisotropy axes" << nfou << std::endl);
+        FirstOrderUniaxK.resize(nfou);
+        FirstOrderUniaxDir.resize(nfou,3);
+        for(unsigned int i = 0 ; i < nfou ; i++)
         {
-            dT[0][i]=setting["dxb"][i];
-            dT[1][i]=setting["dyb"][i];
-            dT[2][i]=setting["dzb"][i];
+            FirstOrderUniaxK[i]=0.0;
+            std::stringstream sstrK,sstrD;
+            std::string strK,strD;
+            sstrK << "FirstOrderUniaxK_" << i+1;
+            sstrD << "FirstOrderUniaxDir_" << i+1;
+            strK=sstrK.str();
+            strD=sstrD.str();
+            setting.lookupValue(strK.c_str(),FirstOrderUniaxK[i]);
+            FirstOrderUniaxDir(i,0)=setting[strD.c_str()][0];
+            FirstOrderUniaxDir(i,1)=setting[strD.c_str()][1];
+            FirstOrderUniaxDir(i,2)=setting[strD.c_str()][2];
+            std::stringstream outsstr;
+            std::string outstr;
+            outsstr << "Uniaxial anisotropy constant " << i+1 << ":";
+            outstr=outsstr.str();
+            FIXOUT(config::Info,outstr.c_str() << FirstOrderUniaxK[i] << " " << units << std::endl);
+            FIXOUTVEC(config::Info,"Direction:",FirstOrderUniaxDir(i,0),FirstOrderUniaxDir(i,1),FirstOrderUniaxDir(i,2));
         }
         SUCCESS(config::Info);
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
-            for(unsigned int j = 0 ; j < 3 ; j++)
+            if(units=="mRy")
             {
-                if(units=="mRy")
-                {
-                    dT[i][j]*=2.179872172e-18;
-                    //now to milli
-                    dT[i][j]*=1.0e-3;
-                }
-                else if(units=="joules" || units=="Joules" || units=="J")
-                {
-                    //do nothing
-                }
-                else if(units=="eV")
-                {
-                    dT[i][j]*=1.602176565e-19;
-                }
-                else if(units=="meV")
-                {
-                    dT[i][j]*=1.602176565e-19;
-                    dT[i][j]*=1e-3;
-                }
-                else
-                {
-                    error::errPreamble(__FILE__,__LINE__);
-                    error::errMessage("Anisotropy units not recognised");
-                }
+                FirstOrderUniaxK(i)*=2.179872172e-18;
+                //now to milli
+                FirstOrderUniaxK(i)*=1.0e-3;
+            }
+            else if(units=="joules" || units=="Joules" || units=="J")
+            {
+                //do nothing
+            }
+            else if(units=="eV")
+            {
+                FirstOrderUniaxK(i)*=1.602176565e-19;
+            }
+            else if(units=="meV")
+            {
+                FirstOrderUniaxK(i)*=1.602176565e-19;
+                FirstOrderUniaxK(i)*=1e-3;
+            }
+            else
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Anisotropy units not recognised");
             }
         }
-        FIXOUTVEC(config::Info,"dx_{beta}:",dT[0][0],dT[0][1],dT[0][2]);
-        FIXOUTVEC(config::Info,"dy_{beta}:",dT[1][0],dT[1][1],dT[1][2]);
-        FIXOUTVEC(config::Info,"dz_{beta}:",dT[2][0],dT[2][1],dT[2][2]);
-        FIXOUT(config::Info,"Normalising anisotropy and adding to interaction matrix:" << std::flush);
-/*        intmat::Nrxx(0,0,0)+=(2.0*dT[0][0]/(mat::mu*mat::muB));
-        intmat::Nrxy(0,0,0)+=(2.0*dT[0][1]/(mat::mu*mat::muB));
-        intmat::Nrxz(0,0,0)+=(2.0*dT[0][2]/(mat::mu*mat::muB));
-        intmat::Nryx(0,0,0)+=(2.0*dT[1][0]/(mat::mu*mat::muB));
-        intmat::Nryy(0,0,0)+=(2.0*dT[1][1]/(mat::mu*mat::muB));
-        intmat::Nryz(0,0,0)+=(2.0*dT[1][2]/(mat::mu*mat::muB));
-        intmat::Nrzx(0,0,0)+=(2.0*dT[2][0]/(mat::mu*mat::muB));
-        intmat::Nrzy(0,0,0)+=(2.0*dT[2][1]/(mat::mu*mat::muB));*/
-        intmat::Nrzz(0,0,0)+=(2.0*dT[2][2]/(mat::mu*mat::muB));
-        SUCCESS(config::Info);
+        for(unsigned int i = 0 ; i < nfou ; i++)
+        {
+            FirstOrderUniaxK[i]*=(2.0/(mat::mu*mat::muB));
+        }
 
 
     }
