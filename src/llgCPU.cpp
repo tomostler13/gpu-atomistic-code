@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 18 Mar 2014 17:27:59
+// Last-modified: 18 Mar 2014 19:11:17
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -22,6 +22,7 @@
 #include "../inc/llg.h"
 #include "../inc/random.h"
 #include "../inc/mat.h"
+#include "../inc/anis.h"
 namespace llgCPU
 {
     Array<double> fnx;
@@ -80,10 +81,12 @@ namespace llgCPU
             //calculate the anisotropy
             for(unsigned int na = 0 ; na < anis::nfou ; na++)
             {
-                const double sdotn=s[0]*anis::FirstOrderUniaxK(na,0)+s[1]*anis::FirstOrderUniaxK(na,1)+s[2]*anis::FirstOrderUniaxK(na,2);
-                h[0]+=sdotn*s[0];
-                h[1]+=sdotn*s[1];
-                h[2]+=sdotn*s[2];
+                const double lK=anis::FirstOrderUniaxK(na);
+                const double dir[3]={anis::FirstOrderUniaxDir(na,0),anis::FirstOrderUniaxDir(na,1),anis::FirstOrderUniaxDir(na,2)};
+                const double sdotn=s[0]*dir[0]*lK+s[1]*dir[1]*lK+s[2]*dir[2]*lK;
+                h[0]+=sdotn*dir[0];
+                h[1]+=sdotn*dir[1];
+                h[2]+=sdotn*dir[2];
             }
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
@@ -109,10 +112,12 @@ namespace llgCPU
             //calculate the anisotropy
             for(unsigned int na = 0 ; na < anis::nfou ; na++)
             {
-                const double sdotn=s[0]*anis::FirstOrderUniaxK(na,0)+s[1]*anis::FirstOrderUniaxK(na,1)+s[2]*anis::FirstOrderUniaxK(na,2);
-                h[0]+=sdotn*s[0];
-                h[1]+=sdotn*s[1];
-                h[2]+=sdotn*s[2];
+                const double lK=anis::FirstOrderUniaxK(na);
+                const double dir[3]={anis::FirstOrderUniaxDir(na,0),anis::FirstOrderUniaxDir(na,1),anis::FirstOrderUniaxDir(na,2)};
+                const double sdotn=s[0]*dir[0]*lK+s[1]*dir[1]*lK+s[2]*dir[2]*lK;
+                h[0]+=sdotn*dir[0];
+                h[1]+=sdotn*dir[1];
+                h[2]+=sdotn*dir[2];
             }
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};

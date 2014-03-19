@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 31 Jan 2013 21:43:19
+// Last-modified: 18 Mar 2014 18:56:47
 // Formally cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -269,6 +269,7 @@ namespace cullg
 		config::Info << "Done" << std::endl;
 		config::printline(config::Info);
 		config::Info << "NVIDIA-SMI output:\n" << util::exec("nvidia-smi");
+        cuint::copyConstData();
 	}
 
 	void spins_forward()
