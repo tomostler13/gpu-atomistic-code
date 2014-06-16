@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 31 Jan 2013 18:07:39
+// Last-modified: 16 Jun 2014 19:31:04
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -152,9 +152,17 @@ namespace geom
         FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
         FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
         outstruc << maxss << std::endl << std::endl;
-        lu.resize(nspins,4);
+        //the 5 entries for each spin correspond to
+        // 0,1,2 - the x,y,z positions in the unit cell
+        // 3 is the atom number (nothing to do with whether it is magnetic or not) in the unit cell (probably won't be used much
+        // 4 is the magnetic species number
+        lu.resize(nspins,5);
         lu.IFill(0);
-        coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2],2);
+        //the 3 bits of information:
+        // 0 - the magnetic atom number
+        // 1 - the atom type (not magnetic)
+        // 2 - the magnetic species type
+        coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2],3);
         //-2 here corresponds to empty k-mesh point
         //-1 corresponds to an empty k-mesh point but with an imaginary atom
         //there for the determination of the interaction matrix
@@ -188,17 +196,22 @@ namespace geom
                         {
                             coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
                             coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+                            coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=-1;
+
 
                             lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
                             lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
                             lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
                             lu(atom_counter,3)=t;
+                            //set all atoms to zero (i.e initially they are species 0)
+                            lu(atom_counter,4)=0;
                             atom_counter++;
                         }
                         else
                         {
                             coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=-1;
                             coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+                            coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),2)=-1;
                         }
 
 
@@ -215,7 +228,7 @@ namespace geom
                     if(coords(i,j,k,0)>=0)
                     {
                         sloc << "\"" << ucm.GetElement(coords(i,j,k,1)) << "\"\t" << i << "\t" << j << "\t" << k << std::endl;
-                        // the *5 is just a scaling factor
+                        // the *2 is just a scaling factor
                         outstruc << ucm.GetElement(coords(i,j,k,1)) << "\t" << i*2 << "\t" << j*2 << "\t" << k*2 << std::endl;
                     }
                     else
