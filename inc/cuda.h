@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 22 Jan 2013 16:06:42
+// Last-modified: 26 Jun 2014 10:30:44
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -15,7 +15,47 @@ namespace cullg
 {
     extern cudaDeviceProp deviceProp;
     extern curandGenerator_t gen;
+    //number of threads per block and blocks per grid
+    extern int threadsperblock,blockspergrid;
+    //same but for the zero padded work spaces
+    extern int zpblockspergrid;
+    //same but for the complex zero padded work space (N_Z/2+1) for r2c and c2r transforms
+    extern int czpblockspergrid;
+    //rank of the FFT
     extern int nrank;
+    //device pointers for Fourier space calculations
+    extern  cufftComplex *CCNxx;
+    extern  cufftComplex *CCNxy;
+    extern  cufftComplex *CCNxz;
+    extern  cufftComplex *CCNyx;
+    extern  cufftComplex *CCNyy;
+    extern  cufftComplex *CCNyz;
+    extern  cufftComplex *CCNzx;
+    extern  cufftComplex *CCNzy;
+    extern  cufftComplex *CCNzz;
+    extern  cufftComplex *CCSkx;
+    extern  cufftComplex *CCSky;
+    extern  cufftComplex *CCSkz;
+    extern  cufftReal *CCSrx;
+    extern  cufftReal *CCSry;
+    extern  cufftReal *CCSrz;
+    extern  cufftComplex *CCHkx;
+    extern  cufftComplex *CCHky;
+    extern  cufftComplex *CCHkz;
+    extern  cufftReal *CCHrx;
+    extern  cufftReal *CCHry;
+    extern  cufftReal *CCHrz;
+
+    //device pointers
+    extern  double *Cspin;
+    extern  double *Cespin;
+    extern  float *Crand;
+    extern  float *CH;
+    extern  int *Czpsn;//The is the zero pad spin number
+    extern  int *Clu;
+    extern  double *Cfn;
+    //cufft plans
+    extern cufftHandle C3DPr2c,C3DPc2r;
     //device pointers
     void allocate_memory_on_card();
     void setup_fourier_transform();

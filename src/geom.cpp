@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 16 Jun 2014 19:31:04
+// Last-modified: 26 Jun 2014 10:13:49
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -17,33 +17,10 @@
 #define FIXOUTVEC(a,b,c,d,e) FIXOUT(a,b << "[   ");a.width(5);a << std::left << c << " , ";a.width(5);a << std::left << d << " , ";a.width(5);a << std::left << e << "   ]" << std::endl;
 
 
+//All global variables for the geom namespace are in the file
+//geom_glob.cpp
 namespace geom
 {
-
-    //the number of unit cells
-    unsigned int dim[3]={0,0,0};
-    //zero pad size (in unit cells)
-    unsigned int zpdim[3]={0,0,0};
-    //For r2c transform the final dimension must be zpdim[2]/2+1
-    unsigned int cplxdim=0;
-    //the number of atoms in the unit cell
-    unsigned int nauc=0;
-    //maximum system size
-    unsigned int maxss=0,nspins=0,zps=0,czps=0;
-    //The unit vectors describing the lattice unit cell (unit vectors)
-    Array2D<double> L,Linv;
-    //The a,b and c values (i.e. lattice constants)
-    Array<double> abc;
-    //Number of K points
-    Array<unsigned int> Nk;
-    //lookup array. Give atom number and return coordinates
-    Array2D<int> lu;
-    //Coords array. Give coords and returns atom number. This coords array
-    //is the size of the zero padded arrays and has places where atoms do
-    //not exist
-    Array4D<int> coords;
-    //instance of the unit cell
-    unitCellMembers ucm;
     void initGeom(int argc,char *argv[])
     {
         assert(config::lcf);
@@ -79,6 +56,7 @@ namespace geom
         Linv.IFill(0);
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
+            //read the unit vector (this can probably be removed but oh well)
             L(0,i)=setting["Lex"][i];
             L(1,i)=setting["Ley"][i];
             L(2,i)=setting["Lez"][i];
@@ -91,6 +69,7 @@ namespace geom
             dim[i]=setting["dim"][i];
             zpdim[i]=2*dim[i];
         }
+        //how mamy magnetic types
         FIXOUT(config::Info,"Unit cell matrix (L):" << std::showpos << "[ " << L(0,0) << " , " << L(0,1) << " , " << L(0,2) << " ]" << std::endl);
         FIXOUT(config::Info,"" << "[ " << std::showpos << L(1,0) << " , " << L(1,1) << " , " << L(1,2) << " ]" << std::endl);
         FIXOUT(config::Info,"" << "[ " << std::showpos << L(2,0) << " , " << L(2,1) << " , " << L(2,2) << " ]" << std::endl);
@@ -167,7 +146,7 @@ namespace geom
         //-1 corresponds to an empty k-mesh point but with an imaginary atom
         //there for the determination of the interaction matrix
         coords.IFill(-2);
-        std::ofstream sloc("zeropad.dat");
+        std::ofstream sloc("magat.dat");
         if(sloc.is_open()!=true)
         {
             error::errPreamble(__FILE__,__LINE__);
@@ -219,22 +198,28 @@ namespace geom
                 }
             }
         }
-        for(unsigned int i = 0 ; i < geom::zpdim[0]*Nk[0] ; i++)
+        config::printline(config::Info);
+        config::Info.width(45);config::Info << std::right << "*" << "**Magnetic atom placement details***" << std::endl;
+        setting.lookupValue("NumberMagneticTypes",nms);
+        setting.lookupValue("PlaceMagneticType",place);
+        FIXOUT(config::Info,"Number of magnetic types:" << nms << std::endl);
+        FIXOUT(config::Info,"Method for placing magnetic atoms:" << place << std::endl);
+        //check that the atom placement method is recognised
+        //random is as it says on the tin
+        //NULL is for the case where there is one atom only
+        if(place != "random" && place != "NULL" && place!= "unitcell")
         {
-            for(unsigned int j = 0 ; j < geom::zpdim[1]*Nk[1] ; j++)
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Method of placing magnetic atoms not recognised");
+        }
+        sloc << "#This file contains the positions of the magnetic species and their type" << std::endl;
+        sloc << "# x [m] - y [m] - z[m] - Atom type" << std::endl;
+        for(unsigned int i = 0 ; i < geom::dim[0]*Nk[0] ; i++)
+        {
+            for(unsigned int j = 0 ; j < geom::dim[1]*Nk[1] ; j++)
             {
-                for(unsigned int k = 0 ; k < geom::zpdim[2]*Nk[2] ; k++)
+                for(unsigned int k = 0 ; k < geom::dim[2]*Nk[2] ; k++)
                 {
-                    if(coords(i,j,k,0)>=0)
-                    {
-                        sloc << "\"" << ucm.GetElement(coords(i,j,k,1)) << "\"\t" << i << "\t" << j << "\t" << k << std::endl;
-                        // the *2 is just a scaling factor
-                        outstruc << ucm.GetElement(coords(i,j,k,1)) << "\t" << i*2 << "\t" << j*2 << "\t" << k*2 << std::endl;
-                    }
-                    else
-                    {
-                        sloc << "\".\"\t" << i << "\t" << j << "\t" << k << std::endl;
-                    }
                 }
             }
         }
@@ -250,6 +235,5 @@ namespace geom
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Number of atoms placed on mesh is more or less than expected.");
         }
-
     }
 }

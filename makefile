@@ -25,6 +25,7 @@ OBJECTS= \
 obj/config.o \
 obj/error.o \
 obj/random.o \
+obj/geom_glob.o \
 obj/geom.o \
 obj/util.o \
 obj/mat.o \
@@ -45,6 +46,8 @@ obj/llg.o
 
 NVCCOBJ= \
 obj/cuda.o \
+obj/cuda_glob.o \
+obj/cuda_util.o \
 obj/cufields.o \
 obj/cuint.o
 
