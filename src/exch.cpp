@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 19 Mar 2014 13:57:51
+// Last-modified: 26 Jun 2014 13:37:59
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -174,8 +174,8 @@ namespace exch
             {
                 unsigned int counter=0;
                 //store the original vector
-                unsigned int lc[3]={kvec(i,0),kvec(i,1),kvec(i,2)};
-                for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
+                int lc[3]={kvec(i,0),kvec(i,1),kvec(i,2)};
+                for(int wrap = 0 ; wrap < 3 ; wrap++)
                 {
                     //reference array
                     int rc[3]={lc[wrap%3],lc[(1+wrap)%3],lc[(2+wrap)%3]};
@@ -192,14 +192,18 @@ namespace exch
                                 wc[1]=rc[1]*pow(-1,b+1);
                                 wc[2]=rc[2]*pow(-1,c+1);
                                 int wc_orig[3]={wc[0],wc[1],wc[2]};
+                                bool checkmonolayer[3]={false,false,false};
                                 //check the boundaries for each component
                                 for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
                                 {
 
                                     if(wc[xyz]<0)
                                     {
+                                        if(geom::dim[xyz]*geom::Nk[xyz] < 2 && wc[xyz]<0)
+                                        {
+                                            checkmonolayer[xyz]=true;
+                                        }
                                         wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
-
                                     }
 
                                 }
@@ -217,7 +221,14 @@ namespace exch
                                         intmat::Nrzx(wc[0],wc[1],wc[2])+=(J(i,2,0)/(mat::muB*mat::mu));
                                         intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mu));
                                         intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mu));
-                                        check(wc[0],wc[1],wc[2])=1;
+                                        if(checkmonolayer[0]==true || checkmonolayer[1]==true || checkmonolayer[2]==true)
+                                        {
+                                            //do nothing
+                                        }
+                                        else
+                                        {
+                                            check(wc[0],wc[1],wc[2])=1;
+                                        }
                                         //intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
                                         for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
                                         {
@@ -261,13 +272,17 @@ namespace exch
                                 wc[1]=rc[1]*pow(-1,b+1);
                                 wc[2]=rc[2]*pow(-1,c+1);
                                 int wc_orig[3]={wc[0],wc[1],wc[2]};
+                                bool checkmonolayer[3]={false,false,false};
                                 //check the boundaries for each component
                                 for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
                                 {
                                     if(wc[xyz]<0)
                                     {
+                                        if(geom::dim[xyz]*geom::Nk[xyz] < 2 && wc[xyz]<0)
+                                        {
+                                            checkmonolayer[xyz]=true;
+                                        }
                                         wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
-
                                     }
 
                                 }
@@ -285,7 +300,14 @@ namespace exch
                                         intmat::Nrzx(wc[0],wc[1],wc[2])+=(J(i,2,0)/(mat::muB*mat::mu));
                                         intmat::Nrzy(wc[0],wc[1],wc[2])+=(J(i,2,1)/(mat::muB*mat::mu));
                                         intmat::Nrzz(wc[0],wc[1],wc[2])+=(J(i,2,2)/(mat::muB*mat::mu));
-                                        check(wc[0],wc[1],wc[2])=1;
+                                        if(checkmonolayer[0]==true || checkmonolayer[1]==true || checkmonolayer[2]==true)
+                                        {
+                                            //do nothing
+                                        }
+                                        else
+                                        {
+                                            check(wc[0],wc[1],wc[2])=1;
+                                        }
                                         //intmap << wc_orig[0] << "\t" << wc_orig[1] << "\t" << wc_orig[2] << "\t" << sqrt(double(wc_orig[0]*wc_orig[0]+wc_orig[1]*wc_orig[1]+wc_orig[2]*wc_orig[2]));
                                         for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
                                         {
@@ -310,6 +332,9 @@ namespace exch
                 }
                 if(counter!=numint(i))
                 {
+                    std::cerr << "Number of interactions counted = " << counter << std::endl;
+                    std::cerr << "Should be " << numint(i) << std::endl;
+
                     error::errPreamble(__FILE__,__LINE__);
                     error::errMessage("Number of interactions is not correct");
                 }

@@ -1,11 +1,12 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 01 Feb 2013 11:08:50
+// Last-modified: 26 Jun 2014 11:06:13
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <cmath>
 #include <fftw3.h>
+#include <iostream>
 #include "../inc/array.h"
 #include "../inc/array3d.h"
 #ifndef _UTIL_H_
@@ -102,6 +103,7 @@ namespace util
 			}
 			return sum;
 		}
+    double reduceArrayDouble(Array<double>,unsigned int);
 	void fillfloat(int,double*,float*);
 	void fillfloat(int,int,int,Array3D<fftw_complex>,Array3D<fftwf_complex>);
 	void copy3vecto1(int,double*,double*,double*,double*);

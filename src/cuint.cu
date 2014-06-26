@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 18 Mar 2014 19:20:47
+// Last-modified: 26 Jun 2014 11:45:09
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -56,6 +56,8 @@ namespace cuint
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 			double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
 			const double s[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
+
+            printf("%f\t%f\t%f\n",s[0],s[1],s[2]);
             for(unsigned int k = 0 ; k < Cnfou ; k++)
             {
                 double sdotn=s[0]*CUKD[k*3]*CUK[k]+s[1]*CUKD[k*3+1]*CUK[k]+s[2]*CUKD[k*3+2]*CUK[k];

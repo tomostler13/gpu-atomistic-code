@@ -23,6 +23,7 @@ NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 
 # Objects
 OBJECTS= \
 obj/config.o \
+obj/config_glob.o \
 obj/error.o \
 obj/random.o \
 obj/geom_glob.o \

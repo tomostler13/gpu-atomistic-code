@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 25 Jan 2013 19:24:03
+// Last-modified: 26 Jun 2014 11:23:04
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -13,14 +13,11 @@
 #include "../inc/error.h"
 #include "../inc/random.h"
 #include "../inc/util.h"
+#include "../inc/config.h"
 #include <cassert>
 #define FIXOUT(a,b) a.width(75);a << std::left << b;
 namespace config
 {
-    libconfig::Config cfg;
-    bool lcf=false;
-    unsigned int seed=0;
-    std::ofstream Info;
     void initConfig(int argc,char *argv[])
     {
         libconfig::Config cfg;
@@ -79,6 +76,11 @@ namespace config
         FIXOUT(Info,"Localhost:" << util::exec("hostname") << std::endl);
         FIXOUT(Info,"Seed:" << seed << std::endl);
 
+        printline(Info);
+		Info.width(45);Info << std::right << "*" << "**Magnetic system details***" << std::endl;
+        libconfig::Setting &setting = cfg.lookup("magnetic_system");
+        inc_dip=setting.lookupValue("include_dipole",inc_dip);
+        FIXOUT(Info,"Dipole fields included?" << isTF(inc_dip) << std::endl);
         assert(seed>0);
         lcf=true;
     }
