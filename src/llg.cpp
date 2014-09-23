@@ -1,26 +1,31 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 23 Jan 2013 11:02:16
+// Last-modified: 23 Sep 2014 11:01:04
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
 #include "../inc/defines.h"
 #include "../inc/mat.h"
+#include "../inc/geom.h"
 #include <cmath>
+#include <sstream>
 #ifdef CUDA
 #include <cuda.h>
 #include "../inc/cuda.h"
 #endif /*CUDA*/
 namespace llg
 {
-    double applied[3]={0,0,0},T,dt,rdt,llgpf;
+    double applied[3]={0,0,0},T,dt,rdt;
+    Array<double> llgpf;
 
 	void initLLG(int argc,char *argv[])
 	{
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**LLG details***" << std::endl;
 
+        //resize the llgpf array
+        llgpf.resize(geom::nms);
         SUCCESS(config::Info);
         try
         {
@@ -46,13 +51,22 @@ namespace llg
         }
         FIXOUTVEC(config::Info,"Applied field:",applied[0],applied[1],applied[2]);
         FIXOUT(config::Info,"Timestep:" << dt << " seconds" << std::endl);
-        rdt=dt*mat::gamma;
+        rdt=dt*mat::gyro;
 		FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
-
-        mat::sigma = sqrt(2.0*1.38e-23*mat::lambda/(mat::mu*mat::muB*dt*mat::gamma));
-        FIXOUT(config::Info,"Sigma prefactor:" << mat::sigma << std::endl);
-        llgpf = -1./(1.0+mat::lambda*mat::lambda);
-		FIXOUT(config::Info,"Prefactor to LLG equation:" << llgpf << std::endl);
+        //set the prefactor of the LLG for each species
+        for(unsigned int i = 0 ; i < geom::nms ; i++)
+        {
+            mat::sigma[i] = sqrt(2.0*1.38e-23*mat::lambda[i]/(mat::mu[i]*mat::muB*dt*mat::gyro*mat::gamma[i]));
+            std::stringstream sstr;
+            sstr << "Sigma prefactor for species " << i << ":";
+            std::string str=sstr.str();
+            FIXOUT(config::Info,str.c_str() << mat::sigma[i] << std::endl);
+            llgpf[i] = -1./(1.0+mat::lambda[i]*mat::lambda[i]);
+            sstr.str("");
+            sstr << "Prefactor for LLG for species " << i << ":";
+            str=sstr.str();
+            FIXOUT(config::Info,str.c_str() << llgpf[i] << std::endl);
+        }
 
 	}
     void integrate(unsigned int& t)

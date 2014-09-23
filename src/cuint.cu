@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 26 Jun 2014 11:45:09
+// Last-modified: 23 Sep 2014 12:19:09
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -27,12 +27,14 @@
 #include <cstdlib>
 #include <iostream>
 #define MAXNFOU 5
+#define MAXNSPEC 5
 namespace cuint
 {
     __constant__ int Cnfou=0;
     __constant__ double CUK[MAXNFOU] = {0,0,0,0,0};
     //Will need to do a 2D array lookup on this
     __constant__ double CUKD[MAXNFOU*3] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    __constant__ double Csigma[MAXNSPEC],Cllgpf[MAXNSPEC],Clambda[MAXNSPEC],Crdt;
 
     void copyConstData()
     {
@@ -40,9 +42,13 @@ namespace cuint
         cudaMemcpyToSymbol(*(&Cnfou),&anis::nfou,sizeof(int));
         cudaMemcpyToSymbol(CUK,anis::FirstOrderUniaxK.ptr(),anis::FirstOrderUniaxK.size()*sizeof(double));
         cudaMemcpyToSymbol(CUKD,anis::FirstOrderUniaxDir.ptr(),anis::FirstOrderUniaxDir.size()*sizeof(double));
+        cudaMemcpyToSymbol(Csigma,mat::sigma.ptr(),mat::sigma.size()*sizeof(double);
+        cudaMemcpyToSymbol(Cllgpf,llg::llgpf.ptr(),llg::llgpf.size()*sizeof(double);
+        cudaMemcpyToSymbol(Clambda,mat::lambda.ptr(),mat::lambda.size()*sizeof(double);
+        cudaMemcpyToSymbol(*(&Crdt),&llg::rdt,sizeof(double));
         config::Info << "Done" << std::endl;
     }
-    __global__ void CHeun1(int N,double T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
+    __global__ void CHeun1(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,unsigned int *Cspec)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -51,13 +57,15 @@ namespace cuint
             {
                 printf("Uniaxial anisotropy constant %d of %d:\t%4.10f\tin direction\t(%4.2f,%4.2f,%4.2f)\n",k,Cnfou,CUK[k],CUKD[k*3],CUKD[k*3+1],CUKD[k*3+2]);
             }*/
+            //Get the species number
+            unsigned int spec=Cspec[i];
             //The prefactor for the thermal term
-			const double TP=sqrt(T)*sigma;
+			const double TP=sqrt(T)*sigma[spec];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 			double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
 			const double s[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
 
-            printf("%f\t%f\t%f\n",s[0],s[1],s[2]);
+//            printf("%f\t%f\t%f\n",s[0],s[1],s[2]);
             for(unsigned int k = 0 ; k < Cnfou ; k++)
             {
                 double sdotn=s[0]*CUKD[k*3]*CUK[k]+s[1]*CUKD[k*3+1]*CUK[k]+s[2]*CUKD[k*3+2]*CUK[k];
@@ -74,7 +82,7 @@ namespace cuint
 			double mods=0.0;
 			for(unsigned int j = 0 ; j < 3 ; j++)
 			{
-				lfn[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
+				lfn[j] = llgpf[spec]*(sxh[j]+lambda[spec]*sxsxh[j]);
 				Cfn[3*i+j]=lfn[j];
 				es[j]=s[j]+lfn[j]*rdt;
 				mods+=s[j]*s[j];
@@ -89,13 +97,15 @@ namespace cuint
         }
     }
 
-    __global__ void CHeun2(int N,double T,double sigma,double llgpf,double lambda,double rdt,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn)
+    __global__ void CHeun2(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,unsigned int *Cspec)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
+            //Get the species number
+            unsigned int spec=Cspec[i];
 			//The prefactor for the thermal term
-			const double TP=sqrt(T)*sigma;
+			const double TP=sqrt(T)*sigma[spec];
 			const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 			double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
 			const double s[3]={Cespin[3*i],Cespin[3*i+1],Cespin[3*i+2]};
@@ -114,7 +124,7 @@ namespace cuint
 			double mods=0.0;
 			for(unsigned int j = 0 ; j < 3 ; j++)
 			{
-				fnp1[j]=llgpf*(sxh[j]+lambda*sxsxh[j]);
+				fnp1[j]=llgpf[spec]*(sxh[j]+lambda[spec]*sxsxh[j]);
 				ps[j]+=(0.5*(fn[j]+fnp1[j])*rdt);
 				mods+=ps[j]*ps[j];
 			}

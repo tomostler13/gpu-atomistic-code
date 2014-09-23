@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 26 Jun 2014 10:30:44
+// Last-modified: 23 Sep 2014 12:23:05
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -51,6 +51,7 @@ namespace cullg
     extern  double *Cespin;
     extern  float *Crand;
     extern  float *CH;
+    extern  unsigned int *Cspec;
     extern  int *Czpsn;//The is the zero pad spin number
     extern  int *Clu;
     extern  double *Cfn;

@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 26 Jun 2014 11:46:25
+// Last-modified: 23 Sep 2014 12:24:35
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -32,7 +32,7 @@
 #include <iostream>
 //The function of this file is to house a number of routines
 //that deal with a number of underlying routines, such as
-//mallocing/demallocing memory, setting up fft's etc.
+//mallocing/de(m)allocing memory, setting up fft's etc.
 // Requires: cullg::cuinit() to be called
 namespace cullg
 {
@@ -92,6 +92,7 @@ namespace cullg
             }
         }
 
+        //copy the FT'd interaction matrix to the card
         CUDA_CALL(cudaMemcpy(CCNxx,tempxx.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
         CUDA_CALL(cudaMemcpy(CCNxy,tempxy.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
         CUDA_CALL(cudaMemcpy(CCNxz,tempxz.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
@@ -101,6 +102,7 @@ namespace cullg
         CUDA_CALL(cudaMemcpy(CCNzx,tempzx.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
         CUDA_CALL(cudaMemcpy(CCNzy,tempzy.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
         CUDA_CALL(cudaMemcpy(CCNzz,tempzz.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        //clear the memory on the CPU
         intmat::Nxx.clear();
         intmat::Nxy.clear();
         intmat::Nxz.clear();
@@ -110,6 +112,7 @@ namespace cullg
         intmat::Nzx.clear();
         intmat::Nzy.clear();
         intmat::Nzz.clear();
+        //clear the floating point holding arrays as well
         tempxx.clear();
         tempxy.clear();
         tempxz.clear();
@@ -201,6 +204,7 @@ namespace cullg
         CUDA_CALL(cudaMalloc((void**)&CH,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Clu,geom::zps*sizeof(int)));
         CUDA_CALL(cudaMalloc((void**)&Czpsn,geom::nspins*sizeof(int)));
+        CUDA_CALL(cudaMalloc((void**)&Cspec,geom::nspins*sizeof(unsigned int)));
 
         CUDA_CALL(cudaMalloc((void**)&Cfn,3*geom::nspins*sizeof(double)));
 
@@ -221,6 +225,8 @@ namespace cullg
         util::copy3vecto1(geom::nspins,spins::Sx,spins::Sy,spins::Sz,tnsda);
         //copy spin data to card
         CUDA_CALL(cudaMemcpy(Cspin,tnsda,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+        //copy the species information to the card
+        CUDA_CALL(cudaMemcpy(Cspec,geom::spec,geom::nspins*sizeof(unsigned int),cudaMemcpyHostToDevice));
         int *sn=NULL;
         sn=new int[geom::zps];
         int count=0;

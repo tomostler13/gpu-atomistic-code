@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Jun 2014 10:13:49
+// Last-modified: 23 Sep 2014 13:19:37
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -56,16 +56,14 @@ namespace geom
         Linv.IFill(0);
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
-            //read the unit vector (this can probably be removed but oh well)
-            L(0,i)=setting["Lex"][i];
-            L(1,i)=setting["Ley"][i];
-            L(2,i)=setting["Lez"][i];
+            L(i,i)=1.0;
+        }
+
+        for(unsigned int i = 0 ; i < 3 ; i++)
+        {
             Linv(0,i)=L(0,i);
             Linv(1,i)=L(1,i);
             Linv(2,i)=L(2,i);
-        }
-        for(unsigned int i = 0 ; i < 3 ; i++)
-        {
             dim[i]=setting["dim"][i];
             zpdim[i]=2*dim[i];
         }
@@ -201,6 +199,11 @@ namespace geom
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Magnetic atom placement details***" << std::endl;
         setting.lookupValue("NumberMagneticTypes",nms);
+        if(nms > 5)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Too many magnetic types. If you want more edit cuint.cu variable MAXNSPEC (a #define).\n This is because the constant memory allocation for the species dependent variables cannot be\ndynamic.");
+        }
         setting.lookupValue("PlaceMagneticType",place);
         FIXOUT(config::Info,"Number of magnetic types:" << nms << std::endl);
         FIXOUT(config::Info,"Method for placing magnetic atoms:" << place << std::endl);
@@ -212,6 +215,12 @@ namespace geom
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Method of placing magnetic atoms not recognised");
         }
+        //place each species on the lattice randomly
+        if(place=="random")
+        {
+            setting.lookupValue("
+        }
+
         sloc << "#This file contains the positions of the magnetic species and their type" << std::endl;
         sloc << "# x [m] - y [m] - z[m] - Atom type" << std::endl;
         for(unsigned int i = 0 ; i < geom::dim[0]*Nk[0] ; i++)
@@ -220,6 +229,9 @@ namespace geom
             {
                 for(unsigned int k = 0 ; k < geom::dim[2]*Nk[2] ; k++)
                 {
+                    if(coords(i,j,k,0)>0)//then the atom exists in this location
+                    {
+                        sloc << double(i)*abc[0] << "\t" << double(j)*abc[1] << "\t" << double(k)*abc[2] <<
                 }
             }
         }
