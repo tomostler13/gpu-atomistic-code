@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Sep 2014 12:58:26
+// Last-modified: 24 Sep 2014 14:59:43
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -22,7 +22,6 @@
 #include "../inc/llgCPU.h"
 #include "../inc/util.h"
 #include "../inc/sim.h"
-#include <omp.h>
 #include "../inc/llg.h"
 #ifdef CUDA
 #include "../inc/cuda.h"

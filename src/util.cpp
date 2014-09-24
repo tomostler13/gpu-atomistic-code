@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Sep 2014 10:59:01
+// Last-modified: 24 Sep 2014 14:58:37
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -12,7 +12,6 @@
 #include "../inc/error.h"
 #include <string>
 #include <sstream>
-#include <omp.h>
 extern "C" {
     // LU decomoposition of a general matrix
     void dgetrf_(int* M, int *N, double* A, int* lda, int* IPIV, int* INFO);
@@ -43,13 +42,10 @@ namespace util
 
         //perform convolution in fourier space
         unsigned int i = 0,j = 0, k = 0;
-        #pragma omp parallel for private (i)
         for(i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
         {
-            #pragma omp parallel for private (j)
             for(j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
             {
-                #pragma omp parallel for private (k) shared (intmat::Hkx,intmat::Hky,intmat::Hkz)
                 for(k = 0 ; k < geom::cplxdim ; k++)
                 {
 

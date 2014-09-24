@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 31 Jan 2013 21:40:33
+// Last-modified: 24 Sep 2014 14:58:49
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -15,7 +15,6 @@
 #include "../inc/config.h"
 #include "../inc/geom.h"
 #include "../inc/fields.h"
-#include "../inc/mat.h"
 #include "../inc/intmat.h"
 #include "../inc/defines.h"
 #include "../inc/maths.h"

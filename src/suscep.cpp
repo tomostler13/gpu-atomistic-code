@@ -1,7 +1,7 @@
 // File: suscep.h
 // Author: Tom Ostler
 // Created: 25 Jan 2013
-// Last-modified: 18 Mar 2014 14:19:27
+// Last-modified: 24 Sep 2014 14:59:34
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -10,7 +10,6 @@
 #include "../inc/util.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
-#include "../inc/mat.h"
 #include "../inc/geom.h"
 #include "../inc/config.h"
 #include "../inc/random.h"

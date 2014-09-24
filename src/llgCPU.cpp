@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 24 Sep 2014 11:05:56
+// Last-modified: 24 Sep 2014 14:58:17
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -10,7 +10,6 @@
 #include <cstdio>
 #include <iomanip>
 #include <string>
-#include <omp.h>
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -101,7 +100,6 @@ namespace llgCPU
         }
         //perform the calculation of the 2 spin fields using the euler spin arrays
         fields::eftdip();
-        #pragma omp parallel for private (i) shared(spins::Sx,spins::Sy,spins::Sz)
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
