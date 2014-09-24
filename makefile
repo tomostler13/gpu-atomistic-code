@@ -65,6 +65,7 @@ all: $(OBJECTS) gcc
 gcc: $(OBJECTS) $(SWITCHOBJ)
 	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTS) $(SWITCHOBJ) $(STATIC_LINK) -o $(EXECUTABLE) $(LIBS)
 
+
 $(OBJECTS): obj/%.o: src/%.cpp
 	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
 $(SWITCHOBJ): obj/%.o: src/%.cpp

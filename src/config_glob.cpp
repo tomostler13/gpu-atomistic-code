@@ -1,6 +1,6 @@
 // File: config_glob.cpp
 // Author:Tom Ostler
-// Last-modified: 26 Jun 2014 11:19:31
+// Last-modified: 23 Sep 2014 14:44:51
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -23,5 +23,5 @@ namespace config
     bool lcf=false;
     bool inc_dip=false;
     unsigned int seed=0;
-    std::ofstream Info;
+    std::ofstream Info,Log;
 }

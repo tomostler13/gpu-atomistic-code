@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 26 Jun 2014 11:23:04
+// Last-modified: 23 Sep 2014 19:50:43
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -78,11 +78,23 @@ namespace config
 
         printline(Info);
 		Info.width(45);Info << std::right << "*" << "**Magnetic system details***" << std::endl;
-        libconfig::Setting &setting = cfg.lookup("magnetic_system");
+        libconfig::Setting &setting = cfg.lookup("system");
         inc_dip=setting.lookupValue("include_dipole",inc_dip);
         FIXOUT(Info,"Dipole fields included?" << isTF(inc_dip) << std::endl);
         assert(seed>0);
         lcf=true;
+    }
+    void openLogFile()
+    {
+        if(!Log.is_open())
+        {
+            Log.open("log.dat");
+            if(!Log.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open log file");
+            }
+        }
     }
     void printline(std::ofstream& os)
     {
