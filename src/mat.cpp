@@ -1,7 +1,7 @@
 // File: mat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 23 Sep 2014 13:13:14
+// Last-modified: 24 Sep 2014 10:31:56
 #include "../inc/mat.h"
 #include "../inc/config.h"
 #include "../inc/geom.h"
@@ -35,27 +35,5 @@ namespace mat
         }
 
         libconfig::Setting &setting = config::cfg.lookup("mat");
-        //resize all of the arrays that are number of magetic species (geom::nms) long
-        lambda.resize(geom::nms);gamma.resize(geom::nms);mu.resize(geom::nms);sigma.resize(geom::nms);
-        for(unsigned int i = 0 ; i < geom::nms ; i++)
-        {
-            //get damping constants
-            lambda[i]=setting["lambda"][i];
-            std::stringstream sstr;
-            sstr << "Coupling constants (lambda) for species " << i << ":";
-            std::string str=sstr.str();
-            FIXOUT(config::Info,str.c_str() << lambda[i] << std::endl);
-            //get gyromagnetic ratios
-            gamma[i]=setting["gamma"][i];
-            sstr.str("");
-            sstr << "Gyromagnetic ratio for species " << i << ":";
-            str=sstr.str();
-            FIXOUT(config::Info,str.c_str() << gamma[i] << " [in units of gyromagnetic ratio]\n");
-            //get the magnetic moments
-            mu[i]=setting["mu"][i];
-            sstr.str("");sstr << "Magnetic moment for species " << i << ":";
-            str=sstr.str();
-            FIXOUT(config::Info,str.c_str() << mu[i] << " [muB]" << std::endl);
-        }
-    }
+   }
 }
