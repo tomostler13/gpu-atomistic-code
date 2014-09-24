@@ -1,25 +1,15 @@
 // File: llg.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 14 Jun 2013 09:18:31
+// Last-modified: 24 Sep 2014 11:34:23
+#include "../inc/arrays.h"
 #ifndef _LLG_H_
 #define _LLG_H_
-#include "../inc/array.h"
-#include <string>
-#include <sstream>
-#include <fstream>
 namespace llg
 {
-	extern double applied[],T,dt,rdt;
-    extern Array<double> osT,llgpf;
-    extern bool rscf,ssf;
-    extern std::string osk;
-    extern bool osHapp;
-    extern bool osTemp;
-
-    extern std::string rscfstr,ssffs;
-    extern std::ofstream rscfs,ssffstr;
-    void initLLG(int argc,char *argv[]);
+	extern double applied[],T,dt,rdt,gyro,muB;
+    extern Array<double> llgpf;
+	void initLLG(int argc,char *argv[]);
     void integrate(unsigned int&);
 }
 #endif /*_LLG_H_*/

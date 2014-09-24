@@ -5,28 +5,8 @@
 #define _CUINT_H_
 namespace cuint
 {
-    //--------------------------------------on-site applied field--------------------------------------
-    //interaction matrix with uniform temperature
-    extern __global__ void CHeun1(int,double,double*,double*,double*,double,float*,float*,double*,double*,float*,double*);
-    //CSR neighbourlist with uniform temperature
-    extern __global__ void CHeun1(int,double,double*,double*,double*,double,float*,float*,double*,double*,float*,double*,int*,int*,float*);
-    //CSR neighbourlist with on-site temperature
-    extern __global__ void CHeun1(int,double*,double*,double*,double*,double,float*,float*,double*,double*,float*,double*,int*,int*,float*);
-    //interaction matrix with on-site temperature
-    extern __global__ void CHeun1(int,double*,double*,double*,double*,double,float*,float*,double*,double*,float*,double*);
-    //interaction matrix with uniform temperature
-    extern __global__ void CHeun2(int,double,double*,double*,double*,double,float*,float*,double*,double*,float*,double*);
-    //interaction matrix with on-site temperature
-    extern __global__ void CHeun2(int,double*,double*,double*,double*,double,float*,float*,double*,double*,float*,double*);
-    //CSR neighbourlist with uniform temperature
-    extern __global__ void CHeun2(int,double,double*,double*,double*,double,float*,float*,double*,double*,float*,double*,int*,int*,float*);
-    //CSR neighbourlist with on-site temperature
-    extern __global__ void CHeun2(int,double*,double*,double*,double*,double,float*,float*,double*,double*,float*,double*,int*,int*,float*);
-    //--------------------------------------uniform applied field---------------------------------------
-    //interaction matrix with uniform temperature
-    extern __global__ void CHeun1(int,double,double*,double*,double*,double,double,double,double,float*,double*,double*,float*,double*);
-    //interaction matrix with uniform temperature
-    extern __global__ void CHeun2(int,double,double*,double*,double*,double,double,double,double,float*,double*,double*,float*,double*);
-
+    extern __global__ void CHeun1(int,double,double,double,double,double,double,double,double,float*,double*,double*,float*,double*);
+    extern __global__ void CHeun2(int,double,double,double,double,double,double,double,double,float*,double*,double*,float*,double*);
+    extern void copyConstData();
 }
 #endif /*_CUINT_H_*/

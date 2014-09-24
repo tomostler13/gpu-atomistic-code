@@ -1,19 +1,12 @@
 // File: llg.h
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 14 Jun 2013 09:19:05
-#include "../inc/array.h"
+// Last-modified: 22 Jan 2013 16:18:48
 #ifndef _LLGCPU_H_
 #define _LLGCPU_H_
 namespace llgCPU
 {
     void initLLG(int argc,char *argv[]);
-    void llgCPU(unsigned int,Array<double>&);
     void llgCPU(unsigned int);
-    void llgCPU(unsigned int,bool&);
-    void llgCPU(unsigned int,bool&);
-    void llgCPU(unsigned int,Array<double>&,Array<unsigned int>&,Array<unsigned int>&);
-    void llgCPU(unsigned int,Array<unsigned int>&,Array<unsigned int>&);
-
 }
 #endif /*_LLG_H_*/

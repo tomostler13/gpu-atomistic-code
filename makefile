@@ -23,11 +23,12 @@ NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 
 # Objects
 OBJECTS= \
 obj/config.o \
+obj/config_glob.o \
 obj/error.o \
 obj/random.o \
+obj/geom_glob.o \
 obj/geom.o \
 obj/util.o \
-obj/mat.o \
 obj/intmat.o \
 obj/spins.o \
 obj/fields.o \
@@ -37,11 +38,7 @@ obj/llgCPU.o \
 obj/maths.o \
 obj/sim.o \
 obj/mvt.o \
-obj/suscep.o \
-obj/stepchange.o \
-obj/timeseries.o \
-obj/test_nanowire.o \
-obj/fmr.o
+obj/suscep.o
 
 SWITCHOBJ= \
 obj/main.o \
@@ -49,6 +46,8 @@ obj/llg.o
 
 NVCCOBJ= \
 obj/cuda.o \
+obj/cuda_glob.o \
+obj/cuda_util.o \
 obj/cufields.o \
 obj/cuint.o
 
@@ -63,6 +62,7 @@ all: $(OBJECTS) gcc
 # Serial Targets
 gcc: $(OBJECTS) $(SWITCHOBJ)
 	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTS) $(SWITCHOBJ) $(STATIC_LINK) -o $(EXECUTABLE) $(LIBS)
+
 
 $(OBJECTS): obj/%.o: src/%.cpp
 	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<

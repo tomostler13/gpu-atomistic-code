@@ -1,7 +1,6 @@
 // File: stepchange.cpp
-// Author: Tom Ostler
-// Created: 29 Mar 2013
-// Last-modified: 14 Jun 2013 08:57:41
+// Author: Tom Ostler // Created: 29 Mar 2013
+// Last-modified: 17 May 2013 14:48:41
 #include <iostream>
 #include <cstdlib>
 #include <cmath>

@@ -1,65 +1,18 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 14 Jun 2013 12:46:03
+// Last-modified: 26 Jun 2014 11:06:13
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <cmath>
 #include <fftw3.h>
+#include <iostream>
 #include "../inc/array.h"
 #include "../inc/array3d.h"
 #ifndef _UTIL_H_
 #define _UTIL_H_
 namespace util
 {
-    class TrapezInt
-    {
-    public:
-        TrapezInt() : m_n(0) {}
-
-        void Clear()
-        {
-            m_n=0;
-            sum=0.0;
-        }
-
-        void bma(double x)
-        {
-            bminusa=x;
-        }
-
-
-        void Push(double x)
-        {
-
-            if(m_n==0)
-            {
-                sum+=x;
-            }
-            else
-            {
-                sum+=(2.0*x);
-            }
-            oldx=x;
-
-            m_n++;
-
-        }
-        int NumDataValues() const
-        {
-            return m_n;
-        }
-
-        double FinishAndReturn()
-        {
-            sum-=oldx;
-            return bminusa*sum/double(2*m_n);
-        }
-    private:
-        int m_n;
-        double sum, bminusa, oldx;
-    };
-
 	//convergence class
 	class RunningStat
 	{
@@ -150,13 +103,12 @@ namespace util
 			}
 			return sum;
 		}
+    double reduceArrayDouble(Array<double>,unsigned int);
 	void fillfloat(int,double*,float*);
 	void fillfloat(int,int,int,Array3D<fftw_complex>,Array3D<fftwf_complex>);
 	void copy3vecto1(int,double*,double*,double*,double*);
 	void copy3vecto1(int,float*,float*,float*,float*);
 	void copy3vecto1(int,Array<double>,Array<double>,Array<double>,double*);
-	void copy3vecto1(int,Array<float>,Array<float>,Array<float>,float*);
-
 	std::string exec(char*);
     void outputSpinsVTU(unsigned int);
 

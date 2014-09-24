@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 22 Apr 2013 13:37:34
+// Last-modified: 24 Sep 2014 13:02:43
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -17,364 +17,187 @@
 #define FIXOUTVEC(a,b,c,d,e) FIXOUT(a,b << "[   ");a.width(5);a << std::left << c << " , ";a.width(5);a << std::left << d << " , ";a.width(5);a << std::left << e << "   ]" << std::endl;
 
 
+//All global variables for the geom namespace are in the file
+//geom_glob.cpp
 namespace geom
 {
-
-    //the number of unit cells
-    unsigned int dim[3]={0,0,0};
-    //zero pad size (in unit cells)
-    unsigned int zpdim[3]={0,0,0};
-    //For r2c transform the final dimension must be zpdim[2]/2+1
-    unsigned int cplxdim=0;
-    //the number of atoms in the unit cell
-    unsigned int nauc=0;
-    //maximum system size
-    unsigned int maxss=0,nspins=0,zps=0,czps=0;
-    //The unit vectors describing the lattice unit cell (unit vectors)
-    Array2D<double> L,Linv;
-    //The a,b and c values (i.e. lattice constants)
-    Array<double> abc;
-    //Number of K points
-    Array<unsigned int> Nk;
-    //lookup array. Give atom number and return coordinates
-    Array2D<int> lu;
-    //Coords array. Give coords and returns atom number. This coords array
-    //is the size of the zero padded arrays and has places where atoms do
-    //not exist
-    Array4D<int> coords;
-    //instance of the unit cell
-    unitCellMembers ucm;
-    //check if we are zeropadding the fourier transform
-    bool zpcheck=true;
-    //type of system (bulk/nanowire)
-    std::string systype;
-    //where to cut the system (in unit cells) and width of the wire
-    unsigned int cut0,cut1,width;
     void initGeom(int argc,char *argv[])
     {
-        assert(config::lcf);
-        config::printline(config::Info);
-        config::Info.width(45);config::Info << std::right << "*" << "**Geometry details***" << std::endl;
-        try
-        {
-            config::cfg.readFile(argv[1]);
-        }
-        catch(const libconfig::FileIOException &fioex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("I/O error while reading config file");
-        }
-        catch(const libconfig::ParseException &pex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-            exit(EXIT_FAILURE);
-        }
+        readconfig(argc,argv);
+        //The unit cell file has a strict format
+        //first line -  number of distinct atomic type
+        //second line - number of magnetic atoms in unit cell
+        //sublattice - kx - ky - kz - mu - lambda - gamma - Element - sx - sy - sz
 
-        libconfig::Setting &setting = config::cfg.lookup("system");
-        std::ofstream outstruc;
-        outstruc.open("outstruc.xyz");
-        if(!outstruc.is_open())
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not open file for writing structure");
-        }
-        setting.lookupValue("zpcheck",zpcheck);
-        if(zpcheck==false && config::incdip==true)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("You must zero pad the fourier transform if you want to include the dipolar field terms.");
-        }
-        FIXOUT(config::Info,"Zero pad the fourier transform:" << config::isTF(zpcheck) << std::endl);
-        L.resize(3,3);
-        L.IFill(0);
-        Linv.resize(3,3);
-        Linv.IFill(0);
-        for(unsigned int i = 0 ; i < 3 ; i++)
-        {
-            L(0,i)=setting["Lex"][i];
-            L(1,i)=setting["Ley"][i];
-            L(2,i)=setting["Lez"][i];
-            Linv(0,i)=L(0,i);
-            Linv(1,i)=L(1,i);
-            Linv(2,i)=L(2,i);
-        }
-        for(unsigned int i = 0 ; i < 3 ; i++)
-        {
-            dim[i]=setting["dim"][i];
-            if(zpcheck==true)
-            {
-                zpdim[i]=2*dim[i];
-            }
-            else
-            {
-                zpdim[i]=dim[i];
-            }
-        }
-        FIXOUT(config::Info,"Unit cell matrix (L):" << std::showpos << "[ " << L(0,0) << " , " << L(0,1) << " , " << L(0,2) << " ]" << std::endl);
-        FIXOUT(config::Info,"" << "[ " << std::showpos << L(1,0) << " , " << L(1,1) << " , " << L(1,2) << " ]" << std::endl);
-        FIXOUT(config::Info,"" << "[ " << std::showpos << L(2,0) << " , " << L(2,1) << " , " << L(2,2) << " ]" << std::endl);
-        FIXOUT(config::Info,"Inverting matrix (L):" << std::flush);
-        util::inverse(Linv.ptr(),3);
-        config::Info << "Done" << std::endl;
-        FIXOUT(config::Info,"Unit cell matrix inverse (Linv):" << "[ " << std::showpos << Linv(0,0) << " , " << Linv(0,1) << " , " << Linv(0,2) << " ]" << std::endl);
-        FIXOUT(config::Info,"" << "[ " << std::showpos << Linv(1,0) << " , " << Linv(1,1) << " , " << Linv(1,2) << " ]" << std::endl);
-        FIXOUT(config::Info,"" << "[ " << std::showpos << Linv(2,0) << " , " << Linv(2,1) << " , " << Linv(2,2) << " ]" << std::endl);
-        setting.lookupValue("nauc",nauc);
-        FIXOUT(config::Info,"Dimensions (unit cells):" << "[ " << dim[0] << " , " << dim[1] << " , " << dim[2] << " ]" << std::endl);
-        FIXOUT(config::Info,"Number of atoms in primitive cell:" << nauc << std::endl);
-
-        ucm.init(nauc);
-        config::Info << "Positions:" << std::endl;
-        for(unsigned int i = 0 ; i < nauc ; i++)
-        {
-            std::stringstream sstr;
-            sstr << "atom" << i;
-            std::string str=sstr.str(),str1;
-            ucm.SetPosVec(setting[str.c_str()][0],setting[str.c_str()][1],setting[str.c_str()][2],i);
-            FIXOUTVEC(config::Info,str,ucm.GetX(i),ucm.GetY(i),ucm.GetZ(i));
-
-        }
-        for(unsigned int i = 0 ; i < nauc ; i++)
-        {
-            std::stringstream sstr;
-            sstr << "Element" << i;
-            std::string str=sstr.str(),str1;
-            setting.lookupValue(str.c_str(),str1);
-            FIXOUT(config::Info,"Element string:" << str1 << std::endl);
-            ucm.SetElement(str1,i);
-        }
-
-        maxss=dim[0]*dim[1]*dim[2]*nauc;
-        Nk.resize(3);
-        abc.resize(3);
-        for(unsigned int i = 0 ; i < 3 ; i++)
-        {
-            Nk[i]=setting["Nk"][i];
-            abc[i]=setting["abc"][i];
-        }
-        FIXOUT(config::Info,"Number of K-points:" << "[ " << Nk[0] << " , " << Nk[1] << " , " << Nk[2] << " ]" << std::endl);
+        //calculate the number of spins
+        nspins=dim[0]*dim[1]*dim[2]*ucm.NumAtomsUnitCell();
+        //resize these 1D arrays. The atom number should return the value
+        gamma.resize(nspins);lambda.resize(nspins);llgpf.resize(nspins);rx.resize(nspins);ry.resize(nspins);rz.resize(nspins);sublattice.resize(nspins);
+        FIXOUTVEC(config::Info,"Number of K-points:",Nk[0],Nk[1],Nk[2]);
         FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
-        cplxdim=(zpdim[2]*Nk[2]/2)+1;
+        //For real to complex (or c2r) transforms we can save computation
+        //by exploiting half dim size of this type of transform
+        cplxdim=(dim[2]*Nk[2])+1;
 
-		czps=zpdim[0]*Nk[0]*zpdim[1]*Nk[1]*cplxdim;
-		FIXOUT(config::Info,"czps:" << czps << std::endl);
+        //The total number of elements involved in the 3D transform
+        czps=zpdim[0]*Nk[0]*zpdim[1]*Nk[1]*cplxdim;
+        FIXOUT(config::Info,"czps:" << czps << std::endl);
         FIXOUT(config::Info,"Z-dimension for r2c and c2r transforms:" << cplxdim << std::endl);
 
-        nspins=maxss;
+        //Calculate the size of the real space 3 array
         zps=1;
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
-            zps*=(zpdim[i]*Nk[i]);
+            zps*=(2*dim[i]*Nk[i]);
         }
 
-        FIXOUT(config::Info,"Maximum number of spins:" << maxss << std::endl);
-        //FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
+        FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
         FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
-        lu.resize(maxss,4);
+
+        //Next we want to output the information stored in the class to an output file.
+        //If the number of atoms in the unit cell is large (usually when we are using a bit supercell)
+        //the we don't want to mess up the format of the output file as it would make it unreadable if
+        //we output the information for potentially millions of spins.
+        //We will always output the information for the first 5 atoms but the whole data will
+        //be output to the log file if selected in the config file.
+        if(ucm.NumAtomsUnitCell() > 5)
+        {
+            config::openLogFile();
+        }
+        config::printline(config::Info);
+        for(unsigned int i = 0 ; i < ucm.NumAtomsUnitCell() ; i++)
+        {
+            //output to the config file (up to 5)
+            if(i < 5)
+            {
+                FIXOUT(config::Info,"Unit cell atom:" << i << std::endl);
+                FIXOUTVEC(config::Info,"Positions:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
+                FIXOUT(config::Info,"Part of sublattice:" << ucm.GetSublattice(i) << std::endl);
+                FIXOUT(config::Info,"Damping:" << ucm.GetDamping(i) << std::endl);
+                FIXOUT(config::Info,"Gyromagnetic ratio:" << ucm.GetGamma(i) << std::endl);
+                FIXOUT(config::Info,"Magnetic moment:" << ucm.GetMu(i) << std::endl);
+                FIXOUTVEC(config::Info,"Initial spin position:",ucm.GetInitS(i,0),ucm.GetInitS(i,1),ucm.GetInitS(i,2));
+                config::printline(config::Info);
+            }
+            if(ucm.NumAtomsUnitCell() > 5)
+            {
+                FIXOUT(config::Log,"Unit cell atom:" << i << std::endl);
+                FIXOUTVEC(config::Log,"Positions:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
+                FIXOUT(config::Log,"Part of sublattice:" << ucm.GetSublattice(i) << std::endl);
+                FIXOUT(config::Log,"Damping:" << ucm.GetDamping(i) << std::endl);
+                FIXOUT(config::Log,"Gyromagnetic ratio:" << ucm.GetGamma(i) << std::endl);
+                FIXOUT(config::Log,"Magnetic moment:" << ucm.GetMu(i) << std::endl);
+                FIXOUTVEC(config::Log,"Initial spin position:",ucm.GetInitS(i,0),ucm.GetInitS(i,1),ucm.GetInitS(i,2));
+                config::printline(config::Log);
+            }
+
+        }
+        if(ucm.NumAtomsUnitCell()>5)
+        {
+            for(unsigned int i = 0 ; i < 4 ; i++)
+            {
+                FIXOUT(config::Info,"             . . . " << "    . . ." << std::endl);
+            }
+            FIXOUT(config::Info,"FOR COMPLETE UNIT CELL INFORMATION SEE LOG FILE:" << "   log.dat" << std::endl);
+            for(unsigned int i = 0 ; i < 4 ; i++)
+            {
+                FIXOUT(config::Info,"             . . . " << "    . . ." << std::endl);
+            }
+            config::printline(config::Info);
+
+        }
+        //for the use of the interaction matrix we require that each magnetic species
+        //(in the unit cell) has the same magnetic moment
+        unsigned int errStatus=ucm.CheckSpecies();
+        if(errStatus!=0)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage(ucm.errorCode(errStatus));
+        }
+
+
+        //the 5 entries for each spin correspond to
+        // 0,1,2 - the x,y,z positions in the unit cell
+        // 3 is the magnetic species number
+        lu.resize(nspins,5);
         lu.IFill(0);
+        //the 3 bits of information:
+        // 0 - the magnetic atom number
+        // 1 - the magnetic species type
         coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2],3);
-        //-2 here corresponds to empty k-mesh point
-        //-1 corresponds to an empty k-mesh point but with an imaginary atom
+        //IF element 0 has the following numbers
+        //-2 THEN here corresponds to empty k-mesh point
+        //-1 THEN corresponds to an empty k-mesh point but with an imaginary atom
+
         //there for the determination of the interaction matrix
         coords.IFill(-2);
-        std::ofstream sloc("zeropad.dat");
+        std::ofstream sloc("structure.xyz");
         if(sloc.is_open()!=true)
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not open file for writing zero pad information");
-        }
-        setting.lookupValue("System_Type",systype);
-        FIXOUT(config::Info,"System type:" << systype << std::endl);
-        if(systype=="nanowire")
-        {
-            //need to read in the dimensions (we do the wire along z)
-            setting.lookupValue("cut0",cut0);
-            setting.lookupValue("cut1",cut1);
-            setting.lookupValue("width",width);
-            FIXOUT(config::Info,"Bottom cut:" << cut0 << std::endl);
-            FIXOUT(config::Info,"Top cut:" << cut0 << std::endl);
-            FIXOUT(config::Info,"Wire width:" << cut0 << std::endl);
-            //---------                   -----------
-            //        |                   |
-            //        |                   |        y
-            //        |__________________ | _      |
-            //        |__________________ | |width |
-            //        |                   | -      |------->z
-            //        |                   |
-            //        |                   |
-            //---------                   ----------
-            //      cut0                cut1
-            if(cut0>cut1)
-            {
-                error::errPreamble(__FILE__,__LINE__);
-                error::errWarning("Cut 1 cannot be smaller than cut 0");
-            }
-            if(cut1>geom::dim[2])
-            {
-                error::errPreamble(__FILE__,__LINE__);
-                error::errWarning("Cannot have a cut greater than the second cut");
-            }
-            if(geom::dim[2]<5)
-            {
-                error::errPreamble(__FILE__,__LINE__);
-                error::errWarning("Really the system is too small");
-            }
+            error::errMessage("Could not open file for writing atomic position information");
         }
         unsigned int atom_counter=0;
-        for(unsigned int i = 0 ; i < zpdim[0] ; i++)
+        //loop over dimensions in x,y and z
+        for(unsigned int i = 0 ; i < dim[0] ; i++)
         {
-            for(unsigned int j = 0 ; j < zpdim[1] ; j++)
+            for(unsigned int j = 0 ; j < dim[1] ; j++)
             {
-                for(unsigned int k = 0 ; k < zpdim[2] ; k++)
+                for(unsigned int k = 0 ; k < dim[2] ; k++)
                 {
-                    for(unsigned int t = 0 ; t < nauc ; t++)
+                    for(unsigned int t = 0 ; t < ucm.NumAtomsUnitCell() ; t++)
                     {
                         double ri[3]={0,0,0};
-                        double qi[3]={double(i),double(j),double(k)};
-                        for(unsigned int a = 0 ; a < 3 ; a++)
-                        {
-                            for(unsigned int b = 0 ; b < 3 ; b++)
-                            {
-                                ri[a]+=L(a,b)*qi[b];
-                            }
-                            ri[a]+=ucm.GetComp(t,a);
-                        }
-                        if(i<dim[0] && j<dim[1] && k<dim[2])
-                        {
-                            if(systype=="nanowire")
-                            {
-                                if(width>1)
-                                {
-                                    if(k < cut0)
-                                    {
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
+                        coords(i*Nk[0],j*Nk[1],k*Nk[2],0)=atom_counter;
+                        coords(i*Nk[0],j*Nk[1],k*Nk[2],1)=ucm.GetSublattice(t);
+                        lu(atom_counter,0)=i*Nk[0];
+                        lu(atom_counter,1)=j*Nk[1];
+                        lu(atom_counter,2)=k*Nk[2];
+                        lu(atom_counter,3)=ucm.GetSublattice(t);
+                        //1D arrays
+                        sublattice[atom_counter]=ucm.GetSublattice(t);
+                        gamma[atom_counter]=ucm.GetGamma(t);
+                        lambda[atom_counter]=ucm.GetDamping(t);
+                        llgpf[atom_counter]=-gamma[atom_counter]/((1.0+lambda[atom_counter]*lambda[atom_counter]));
+                        // The real space position is equal to
+                        // r_x = ((k_x+i*N_{k,x})/N_{k,x})*lattice constant_x
+                        // where k_x is the location of the atom in the unit cell
+                        // N_{k,x} is the number of k-points in the x direction
+                        // This can of course be generalised the each direction
 
-                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
-                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
-                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
-                                        lu(atom_counter,3)=t;
-                                        atom_counter++;
-                                    }
-                                    else if(k < cut1 && i > (geom::dim[0]-width)/2 && i < (geom::dim[0]+width)/2 && j > (geom::dim[1]-width)/2 && j < (geom::dim[1]+width)/2)
-                                    {
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
-
-                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
-                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
-                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
-                                        lu(atom_counter,3)=t;
-                                        atom_counter++;
-                                    }
-                                    else if(k>=cut1-1)
-                                    {
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
-
-                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
-                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
-                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
-                                        lu(atom_counter,3)=t;
-                                        atom_counter++;
-                                    }
-
-                                }
-                                else
-                                {
-                                    if(k<cut0)
-                                    {
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
-
-                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
-                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
-                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
-                                        lu(atom_counter,3)=t;
-                                        atom_counter++;
-                                    }
-                                    else if(k >= cut0 && k < cut1)
-                                    {
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
-
-                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
-                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
-                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
-                                        lu(atom_counter,3)=t;
-                                        atom_counter++;
-                                    }
-                                    else if(k>=cut1)
-                                    {
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
-                                        coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
-
-                                        lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
-                                        lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
-                                        lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
-                                        lu(atom_counter,3)=t;
-                                        atom_counter++;
-                                    }
-                                }
-                            }
-                            else if(systype=="bulk")
-                            {
-                                coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=atom_counter;
-                                coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
-
-                                lu(atom_counter,0)=int(double(Nk[0])*(double(i)+ucm.GetX(t)));
-                                lu(atom_counter,1)=int(double(Nk[1])*(double(j)+ucm.GetY(t)));
-                                lu(atom_counter,2)=int(double(Nk[2])*(double(k)+ucm.GetZ(t)));
-                                lu(atom_counter,3)=t;
-                                atom_counter++;
-                            }
-                        }
-                        else
-                        {
-                            coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),0)=-1;
-                            coords(int(double(Nk[0])*(double(i)+ucm.GetX(t))),int(double(Nk[1])*(double(j)+ucm.GetY(t))),int(double(Nk[2])*(double(k)+ucm.GetZ(t))),1)=t;
-                        }
-
+                        rx[atom_counter]=((ucm.GetCoord(t,0)+double(i*Nk[0]))/double(Nk[0]))*abc[0];
+                        ry[atom_counter]=((ucm.GetCoord(t,1)+double(j*Nk[1]))/double(Nk[1]))*abc[1];
+                        rz[atom_counter]=((ucm.GetCoord(t,2)+double(k*Nk[2]))/double(Nk[2]))*abc[2];
+                        atom_counter++;
 
                     }
                 }
             }
         }
-        nspins=atom_counter;
-        FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
-        outstruc << nspins << std::endl << std::endl;
-
-        for(unsigned int i = 0 ; i < geom::zpdim[0]*Nk[0] ; i++)
-        {
-            for(unsigned int j = 0 ; j < geom::zpdim[1]*Nk[1] ; j++)
-            {
-                for(unsigned int k = 0 ; k < geom::zpdim[2]*Nk[2] ; k++)
-                {
-                    if(coords(i,j,k,0)>=0)
-                    {
-                        sloc << "\"" << ucm.GetElement(coords(i,j,k,1)) << "\"\t" << i << "\t" << j << "\t" << k << std::endl;
-                        // the *5 is just a scaling factor
-                        outstruc << ucm.GetElement(coords(i,j,k,1)) << "\t" << i*2 << "\t" << j*2 << "\t" << k*2 << std::endl;
-                    }
-                    else
-                    {
-                        sloc << "\".\"\t" << i << "\t" << j << "\t" << k << std::endl;
-                    }
-                }
-            }
-        }
-        sloc.close();
-        outstruc.close();
-        if(sloc.is_open() || outstruc.is_open())
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errWarning("Could not close structure files.");
-        }
+        //a bit of error checking for consistency with number of spins
         if(atom_counter!=nspins)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Number of atoms placed on mesh is more or less than expected.");
+        }
+
+        if(nms > 5)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Too many magnetic types. If you want more edit cuint.cu variable MAXNSPEC (a #define).\n This is because the constant memory allocation for the species dependent variables cannot be\ndynamic.");
+        }
+        //sloc << "#This file contains the positions of the magnetic species and their type" << std::endl;
+        //sloc << "# Element - x [A] - y [A] - z[A]" << std::endl;
+        sloc << nspins << "\n\n";
+        for(unsigned int i = 0 ; i < nspins; i++)
+        {
+            sloc << ucm.GetElement(sublattice[i]) << "\t" << rx[i]/1e-10 << "\t" << ry[i]/1e-10 << "\t" << rz[i]/1e-10 << std::endl;
+        }
+        sloc.close();
+        if(sloc.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close structure files.");
         }
     }
 }

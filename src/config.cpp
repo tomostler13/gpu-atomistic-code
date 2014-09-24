@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 09 Apr 2013 20:39:46
+// Last-modified: 24 Sep 2014 13:00:47
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -13,17 +13,11 @@
 #include "../inc/error.h"
 #include "../inc/random.h"
 #include "../inc/util.h"
-#include <cassert>
 #include "../inc/config.h"
+#include <cassert>
 #define FIXOUT(a,b) a.width(75);a << std::left << b;
 namespace config
 {
-    libconfig::Config cfg;
-    bool lcf=false;
-    bool useintmat=true;
-    bool incdip=true;
-    unsigned int seed=0;
-    std::ofstream Info;
     void initConfig(int argc,char *argv[])
     {
         libconfig::Config cfg;
@@ -52,10 +46,6 @@ namespace config
         char *dtime=ctime(&now);
         std::string iffstr=cfg.lookup("OutputFile");
         seed = cfg.lookup("seed");
-        incdip=cfg.lookup("include_dipolar");
-        useintmat=cfg.lookup("use_interaction_matrix");
-        FIXOUT(config::Info,"Including dipolar terms:" << isTF(incdip) << std::endl);
-        FIXOUT(config::Info,"Using interaction matrix for field calculation?:" << isTF(useintmat) << std::endl);
         Random::seed(seed,seed+100);
         Info.open(iffstr.c_str());
         //open the output info file
@@ -86,8 +76,22 @@ namespace config
         FIXOUT(Info,"Localhost:" << util::exec("hostname") << std::endl);
         FIXOUT(Info,"Seed:" << seed << std::endl);
 
+        libconfig::Setting &setting = cfg.lookup("system");
+        inc_dip=setting.lookupValue("include_dipole",inc_dip);
         assert(seed>0);
         lcf=true;
+    }
+    void openLogFile()
+    {
+        if(!Log.is_open())
+        {
+            Log.open("log.dat");
+            if(!Log.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open log file");
+            }
+        }
     }
     void printline(std::ofstream& os)
     {

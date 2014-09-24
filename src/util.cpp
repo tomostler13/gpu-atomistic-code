@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 25 Apr 2013 12:15:59
+// Last-modified: 24 Sep 2014 10:59:01
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -32,8 +32,8 @@ namespace util
         dgetrf_(&N,&N,A,&N,IPIV,&INFO);
         dgetri_(&N,A,&N,IPIV,WORK,&LWORK,&INFO);
 
-        delete [] IPIV;
-        delete [] WORK;
+        delete IPIV;
+        delete WORK;
     }
     void cpuConvFourier()
     {
@@ -53,7 +53,7 @@ namespace util
                 for(k = 0 ; k < geom::cplxdim ; k++)
                 {
 
-                    fields::Hkx(i,j,k)[0]=intmat::Nxx(i,j,k)[0]*spins::Skx(i,j,k)[0]-intmat::Nxx(i,j,k)[1]*spins::Skx(i,j,k)[1]
+/*                    fields::Hkx(i,j,k)[0]=intmat::Nxx(i,j,k)[0]*spins::Skx(i,j,k)[0]-intmat::Nxx(i,j,k)[1]*spins::Skx(i,j,k)[1]
                         +intmat::Nxy(i,j,k)[0]*spins::Sky(i,j,k)[0]-intmat::Nxy(i,j,k)[1]*spins::Sky(i,j,k)[1]
                         +intmat::Nxz(i,j,k)[0]*spins::Skz(i,j,k)[0]-intmat::Nxz(i,j,k)[1]*spins::Skz(i,j,k)[1];
                     fields::Hkx(i,j,k)[1]=intmat::Nxx(i,j,k)[0]*spins::Skx(i,j,k)[1]+intmat::Nxx(i,j,k)[1]*spins::Skx(i,j,k)[0]
@@ -72,7 +72,7 @@ namespace util
                         +intmat::Nzz(i,j,k)[0]*spins::Skz(i,j,k)[0]-intmat::Nzz(i,j,k)[1]*spins::Skz(i,j,k)[1];
                     fields::Hkz(i,j,k)[1]=intmat::Nzx(i,j,k)[0]*spins::Skx(i,j,k)[1]+intmat::Nzx(i,j,k)[1]*spins::Skx(i,j,k)[0]
                         +intmat::Nzy(i,j,k)[0]*spins::Sky(i,j,k)[1]+intmat::Nzy(i,j,k)[1]*spins::Sky(i,j,k)[0]
-                        +intmat::Nzz(i,j,k)[0]*spins::Skz(i,j,k)[1]+intmat::Nzz(i,j,k)[1]*spins::Skz(i,j,k)[0];
+                        +intmat::Nzz(i,j,k)[0]*spins::Skz(i,j,k)[1]+intmat::Nzz(i,j,k)[1]*spins::Skz(i,j,k)[0];*/
 
                 }
             }
@@ -97,15 +97,6 @@ namespace util
         }
     }
     void copy3vecto1(int size1,Array<double> ia1,Array<double> ia2,Array<double> ia3,double *oa)
-    {
-        for(int i = 0 ; i < size1 ; i++)
-        {
-            oa[3*i]=ia1[i];
-            oa[3*i+1]=ia2[i];
-            oa[3*i+2]=ia3[i];
-        }
-    }
-    void copy3vecto1(int size1,Array<float> ia1,Array<float> ia2,Array<float> ia3,float *oa)
     {
         for(int i = 0 ; i < size1 ; i++)
         {
@@ -199,7 +190,6 @@ namespace util
         pvf << "</VTKFile>" << "\n";
         pvf.close();
     }
-
 
 }
 

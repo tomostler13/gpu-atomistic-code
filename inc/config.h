@@ -1,6 +1,6 @@
 // File: config.h
 // Author:Tom Ostler
-// Last-modified: 09 Apr 2013 15:43:45
+// Last-modified: 23 Sep 2014 20:49:12
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -16,12 +16,14 @@ namespace config
 {
     extern libconfig::Config cfg;
     extern unsigned int seed;
+    //Config initialised
     extern bool lcf;
-    extern bool incdip;
-    extern std::ofstream Info;
+    //include dipolar fields?
+    extern bool inc_dip;
+    extern std::ofstream Info,Log;
     void initConfig(int argc,char *argv[]);
     void printline(std::ofstream&);
+    void openLogFile();
     std::string isTF(bool);
-    extern bool useintmat;
 }
 #endif /*_CONFIG_H_*/

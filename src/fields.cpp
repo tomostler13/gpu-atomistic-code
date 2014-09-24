@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 22 Apr 2013 15:26:06
+// Last-modified: 24 Sep 2014 11:01:11
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -15,7 +15,6 @@
 #include "../inc/config.h"
 #include "../inc/geom.h"
 #include "../inc/fields.h"
-#include "../inc/mat.h"
 #include "../inc/spins.h"
 #include "../inc/util.h"
 #include "../inc/intmat.h"
@@ -25,7 +24,6 @@ namespace fields
     Array3D<fftw_complex> Hkx,Hky,Hkz;
     Array3D<double> Hrx,Hry,Hrz;
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz;
-    Array<float> HAppx,HAppy,HAppz;
     fftw_plan HxP,HyP,HzP;
     void initFields(int argc,char *argv[])
     {
@@ -44,7 +42,6 @@ namespace fields
         HyP = fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hky.ptr(),Hry.ptr(),FFTW_ESTIMATE);
         HzP = fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hkz.ptr(),Hrz.ptr(),FFTW_ESTIMATE);
     }
-
 
     void bfdip()
     {
@@ -90,9 +87,9 @@ namespace fields
 
                 }
             }
-            fields::Hx[i]=h[0]*1e-7*mat::mu[0]*mat::muB;
-            fields::Hy[i]=h[1]*1e-7*mat::mu[0]*mat::muB;
-            fields::Hz[i]=h[2]*1e-7*mat::mu[0]*mat::muB;
+//            fields::Hx[i]=h[0]*1e-7*mat::mu*mat::muB;
+//            fields::Hy[i]=h[1]*1e-7*mat::mu*mat::muB;
+//            fields::Hz[i]=h[2]*1e-7*mat::mu*mat::muB;
             std::cerr << ri[0]/geom::abc[0] << "\t" << ri[1]/geom::abc[1] << "\t" << ri[2]/geom::abc[2] << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
 
         }
