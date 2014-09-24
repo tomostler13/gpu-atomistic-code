@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 23 Jan 2013 09:25:57
+// Last-modified: 24 Sep 2014 11:01:11
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -15,7 +15,6 @@
 #include "../inc/config.h"
 #include "../inc/geom.h"
 #include "../inc/fields.h"
-#include "../inc/mat.h"
 #include "../inc/spins.h"
 #include "../inc/util.h"
 #include "../inc/intmat.h"
@@ -88,9 +87,9 @@ namespace fields
 
                 }
             }
-            fields::Hx[i]=h[0]*1e-7*mat::mu*mat::muB;
-            fields::Hy[i]=h[1]*1e-7*mat::mu*mat::muB;
-            fields::Hz[i]=h[2]*1e-7*mat::mu*mat::muB;
+//            fields::Hx[i]=h[0]*1e-7*mat::mu*mat::muB;
+//            fields::Hy[i]=h[1]*1e-7*mat::mu*mat::muB;
+//            fields::Hz[i]=h[2]*1e-7*mat::mu*mat::muB;
             std::cerr << ri[0]/geom::abc[0] << "\t" << ri[1]/geom::abc[1] << "\t" << ri[2]/geom::abc[2] << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
 
         }

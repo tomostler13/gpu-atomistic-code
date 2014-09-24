@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 24 Sep 2014 10:18:21
+// Last-modified: 24 Sep 2014 12:59:41
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -46,7 +46,7 @@ namespace geom
     {
         assert(config::lcf);
         config::printline(config::Info);
-        config::Info.width(45);config::Info << std::right << "*" << "**Geometry details***" << std::endl;
+        config::Info.width(45);config::Info << std::right << "*" << "**Geometry and magnetic property details***" << std::endl;
         try
         {
             config::cfg.readFile(argv[1]);
@@ -62,6 +62,7 @@ namespace geom
             std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
             exit(EXIT_FAILURE);
         }
+        FIXOUT(config::Info,"Dipole fields included?" << config::isTF(config::inc_dip) << std::endl);
 
         libconfig::Setting &setting = config::cfg.lookup("system");
         //do we want to write the unit cell info to the log file?

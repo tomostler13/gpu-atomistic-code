@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Jun 2014 11:52:32
+// Last-modified: 24 Sep 2014 12:58:26
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -15,7 +15,6 @@
 #include "../inc/config.h"
 #include "../inc/geom.h"
 #include "../inc/intmat.h"
-#include "../inc/mat.h"
 #include "../inc/fields.h"
 #include "../inc/spins.h"
 #include "../inc/exch.h"
@@ -33,20 +32,18 @@ int main(int argc,char *argv[])
     config::initConfig(argc,argv);
     //Initialize the lattice
     geom::initGeom(argc,argv);
-    //Read the material properties
-    mat::initMat(argc,argv);
     //initialize the interaction matrices
     intmat::initIntmat(argc,argv);
-
-    //Read in the exchange matrix
-    exch::initExch(argc,argv);
-    //Read in the anisotropy tensor
-    anis::initAnis(argc,argv);
     if(config::inc_dip)
     {
         //add the dipolar fields
         intmat::fillIntmat();
     }
+
+    //Read in the exchange matrix
+    exch::initExch(argc,argv);
+    //Read in the anisotropy tensor
+    anis::initAnis(argc,argv);
 
 
     //Now we have all of the terms in our interaction matrix, fourier transform the result

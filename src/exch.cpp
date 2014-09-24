@@ -1,14 +1,13 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 26 Jun 2014 13:37:59
+// Last-modified: 24 Sep 2014 11:00:48
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
 #include "../inc/geom.h"
 #include "../inc/exch.h"
 #include "../inc/intmat.h"
-#include "../inc/mat.h"
 #include <iostream>
 #include <fstream>
 #include <libconfig.h++>
@@ -29,15 +28,10 @@ namespace exch
     std::string enerType;
     void initExch(int argc,char *argv[])
     {
+    /*
         std::string readMethod,readFile,method;
         libconfig::Config exchcfg;
         config::printline(config::Info);
-/*        std::ofstream intmap("interaction_map.dat");
-        if(!(intmap.is_open()))
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not open interaction map file");
-        }*/
         config::Info.width(45);config::Info << std::right << "*" << "**Exchange details***" << std::endl;
         try
         {
@@ -412,17 +406,6 @@ namespace exch
                         map << std::endl;
                     }
                 }
-               /*if(dist<2.0)
-                {
-                std::cout << oc[0] << "\t" << oc[1] << "\t" << oc[2] << "\t" << J[0][0] << "\t" << J[0][1] << "\t" << J[0][2] << "\t";
-                std::cout << J[1][0] << "\t" << J[1][1] << "\t" << J[1][2] << "\t";
-                std::cout << J[2][0] << "\t" << J[2][1] << "\t" << J[2][2] << std::endl;
-                }
-
-                //std::cout << "Jij:\n" << J[0][0] << "\t" << J[0][1] << "\t" << J[0][2] << std::endl;
-                //std::cout << J[1][0] << "\t" << J[1][1] << "\t" << J[1][2] << std::endl;
-                //std::cout << J[2][0] << "\t" << J[2][1] << "\t" << J[2][2] << std::endl;
-                //std::cin.get();*/
 
                 if(check(c[0],c[1],c[2])==0)//then we do not already have an interaction there
                 {
@@ -451,10 +434,10 @@ namespace exch
                             intmat::Nrzy(c[0],c[1],c[2])+=((0.5*(J[1][2]-J[2][1]))/(mat::muB*mat::mu));
                         }
                         //intmat::Nrzz(c[0],c[1],c[2])+=((J[2][2]+2.0*2.0*1.6e-19*1e-3)/(mat::muB*mat::mu));
-/*                std::cout << "Interaction: " << i << "\nJij:\n" << intmat::Nrxx(c[0],c[1],c[2]) << "\t" << intmat::Nrxy(c[0],c[1],c[2]) << "\t" << intmat::Nrxz(c[0],c[1],c[2]) << std::endl;
-                std::cout <<  intmat::Nryx(c[0],c[1],c[2]) << "\t" << intmat::Nryy(c[0],c[1],c[2]) << "\t" << intmat::Nryz(c[0],c[1],c[2]) << std::endl;
-                std::cout <<  intmat::Nrzx(c[0],c[1],c[2]) << "\t" << intmat::Nrzy(c[0],c[1],c[2]) << "\t" << intmat::Nrzz(c[0],c[1],c[2]) << std::endl;
-                std::cin.get();*/
+//                std::cout << "Interaction: " << i << "\nJij:\n" << intmat::Nrxx(c[0],c[1],c[2]) << "\t" << intmat::Nrxy(c[0],c[1],c[2]) << "\t" << intmat::Nrxz(c[0],c[1],c[2]) << std::endl;
+//                std::cout <<  intmat::Nryx(c[0],c[1],c[2]) << "\t" << intmat::Nryy(c[0],c[1],c[2]) << "\t" << intmat::Nryz(c[0],c[1],c[2]) << std::endl;
+//                std::cout <<  intmat::Nrzx(c[0],c[1],c[2]) << "\t" << intmat::Nrzy(c[0],c[1],c[2]) << "\t" << intmat::Nrzz(c[0],c[1],c[2]) << std::endl;
+//                std::cin.get();
                     }
                     else
                     {
@@ -492,6 +475,6 @@ namespace exch
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Exchange method not recognized");
         }
-
+*/
     }
 }

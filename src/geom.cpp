@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Sep 2014 10:14:48
+// Last-modified: 24 Sep 2014 13:02:43
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -28,6 +28,31 @@ namespace geom
         //first line -  number of distinct atomic type
         //second line - number of magnetic atoms in unit cell
         //sublattice - kx - ky - kz - mu - lambda - gamma - Element - sx - sy - sz
+
+        //calculate the number of spins
+        nspins=dim[0]*dim[1]*dim[2]*ucm.NumAtomsUnitCell();
+        //resize these 1D arrays. The atom number should return the value
+        gamma.resize(nspins);lambda.resize(nspins);llgpf.resize(nspins);rx.resize(nspins);ry.resize(nspins);rz.resize(nspins);sublattice.resize(nspins);
+        FIXOUTVEC(config::Info,"Number of K-points:",Nk[0],Nk[1],Nk[2]);
+        FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
+        //For real to complex (or c2r) transforms we can save computation
+        //by exploiting half dim size of this type of transform
+        cplxdim=(dim[2]*Nk[2])+1;
+
+        //The total number of elements involved in the 3D transform
+        czps=zpdim[0]*Nk[0]*zpdim[1]*Nk[1]*cplxdim;
+        FIXOUT(config::Info,"czps:" << czps << std::endl);
+        FIXOUT(config::Info,"Z-dimension for r2c and c2r transforms:" << cplxdim << std::endl);
+
+        //Calculate the size of the real space 3 array
+        zps=1;
+        for(unsigned int i = 0 ; i < 3 ; i++)
+        {
+            zps*=(2*dim[i]*Nk[i]);
+        }
+
+        FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
+        FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
 
         //Next we want to output the information stored in the class to an output file.
         //If the number of atoms in the unit cell is large (usually when we are using a bit supercell)
@@ -67,17 +92,20 @@ namespace geom
             }
 
         }
+        if(ucm.NumAtomsUnitCell()>5)
+        {
+            for(unsigned int i = 0 ; i < 4 ; i++)
+            {
+                FIXOUT(config::Info,"             . . . " << "    . . ." << std::endl);
+            }
+            FIXOUT(config::Info,"FOR COMPLETE UNIT CELL INFORMATION SEE LOG FILE:" << "   log.dat" << std::endl);
+            for(unsigned int i = 0 ; i < 4 ; i++)
+            {
+                FIXOUT(config::Info,"             . . . " << "    . . ." << std::endl);
+            }
+            config::printline(config::Info);
 
-        for(unsigned int i = 0 ; i < 4 ; i++)
-        {
-            FIXOUT(config::Info,"             . . . " << "    . . ." << std::endl);
         }
-        FIXOUT(config::Info,"FOR COMPLETE UNIT CELL INFORMATION SEE LOG FILE:" << "   log.dat" << std::endl);
-        for(unsigned int i = 0 ; i < 4 ; i++)
-        {
-            FIXOUT(config::Info,"             . . . " << "    . . ." << std::endl);
-        }
-        config::printline(config::Info);
         //for the use of the interaction matrix we require that each magnetic species
         //(in the unit cell) has the same magnetic moment
         unsigned int errStatus=ucm.CheckSpecies();
@@ -88,30 +116,6 @@ namespace geom
         }
 
 
-        //calculate the number of spins
-        nspins=dim[0]*dim[1]*dim[2]*ucm.NumAtomsUnitCell();
-        //resize these 1D arrays. The atom number should return the value
-        gamma.resize(nspins);lambda.resize(nspins);llgpf.resize(nspins);rx.resize(nspins);ry.resize(nspins);rz.resize(nspins);sublattice.resize(nspins);
-        FIXOUTVEC(config::Info,"Number of K-points:",Nk[0],Nk[1],Nk[2]);
-        FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
-        //For real to complex (or c2r) transforms we can save computation
-        //by exploiting half dim size of this type of transform
-        cplxdim=(dim[2]*Nk[2])+1;
-
-        //The total number of elements involved in the 3D transform
-        czps=zpdim[0]*Nk[0]*zpdim[1]*Nk[1]*cplxdim;
-        FIXOUT(config::Info,"czps:" << czps << std::endl);
-        FIXOUT(config::Info,"Z-dimension for r2c and c2r transforms:" << cplxdim << std::endl);
-
-        //Calculate the size of the real space 3 array
-        zps=1;
-        for(unsigned int i = 0 ; i < 3 ; i++)
-        {
-            zps*=(2*dim[i]*Nk[i]);
-        }
-
-        FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
-        FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
         //the 5 entries for each spin correspond to
         // 0,1,2 - the x,y,z positions in the unit cell
         // 3 is the magnetic species number

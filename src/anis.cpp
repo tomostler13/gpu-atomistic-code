@@ -1,14 +1,13 @@
 // File: anis.cpp
 // Author: Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 18 Mar 2014 17:25:42
+// Last-modified: 24 Sep 2014 11:06:14
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
 #include "../inc/geom.h"
 #include "../inc/exch.h"
 #include "../inc/intmat.h"
-#include "../inc/mat.h"
 #include "../inc/anis.h"
 #include <iostream>
 #include <fstream>
@@ -113,7 +112,7 @@ namespace anis
         }
         for(unsigned int i = 0 ; i < nfou ; i++)
         {
-            FirstOrderUniaxK[i]*=(2.0/(mat::mu*mat::muB));
+//            FirstOrderUniaxK[i]*=(2.0/(mat::mu*mat::muB));
         }
 
 

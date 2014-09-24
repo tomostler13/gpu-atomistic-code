@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 23 Sep 2014 19:50:43
+// Last-modified: 24 Sep 2014 13:00:47
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -76,11 +76,8 @@ namespace config
         FIXOUT(Info,"Localhost:" << util::exec("hostname") << std::endl);
         FIXOUT(Info,"Seed:" << seed << std::endl);
 
-        printline(Info);
-		Info.width(45);Info << std::right << "*" << "**Magnetic system details***" << std::endl;
         libconfig::Setting &setting = cfg.lookup("system");
         inc_dip=setting.lookupValue("include_dipole",inc_dip);
-        FIXOUT(Info,"Dipole fields included?" << isTF(inc_dip) << std::endl);
         assert(seed>0);
         lcf=true;
     }

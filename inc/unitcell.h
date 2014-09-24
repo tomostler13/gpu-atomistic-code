@@ -1,7 +1,7 @@
 // File: array.h
 // Author: Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 24 Sep 2014 10:19:27
+// Last-modified: 24 Sep 2014 11:33:20
 #ifndef __UNITCELL_H__
 #define __UNITCELL_H__
 #include "../inc/arrays.h"
@@ -90,6 +90,10 @@ class unitCellMembers
             }
             sublattice[t]=s;
         }
+        inline double GetMuBase(unsigned int s)
+        {
+            return(base_mom[s]);
+        }
         unsigned int CheckSpecies()
         {
             //loop over the atoms in the unit cell and determine the first
@@ -163,6 +167,10 @@ class unitCellMembers
             mu.clear();
             gamma.clear();
             damping.clear();
+        }
+        inline unsigned int GetNMS()
+        {
+            return(nms);
         }
         inline unsigned int NumAtomsUnitCell()
         {

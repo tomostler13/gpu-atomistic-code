@@ -1,12 +1,11 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 23 Sep 2014 11:01:04
+// Last-modified: 24 Sep 2014 11:54:26
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
 #include "../inc/defines.h"
-#include "../inc/mat.h"
 #include "../inc/geom.h"
 #include <cmath>
 #include <sstream>
@@ -16,7 +15,7 @@
 #endif /*CUDA*/
 namespace llg
 {
-    double applied[3]={0,0,0},T,dt,rdt;
+    double applied[3]={0,0,0},T,dt,rdt,gyro=1.76e11,muB=9.27e-23;
     Array<double> llgpf;
 
 	void initLLG(int argc,char *argv[])
@@ -51,17 +50,17 @@ namespace llg
         }
         FIXOUTVEC(config::Info,"Applied field:",applied[0],applied[1],applied[2]);
         FIXOUT(config::Info,"Timestep:" << dt << " seconds" << std::endl);
-        rdt=dt*mat::gyro;
+        rdt=dt*gyro;
 		FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
         //set the prefactor of the LLG for each species
         for(unsigned int i = 0 ; i < geom::nms ; i++)
         {
-            mat::sigma[i] = sqrt(2.0*1.38e-23*mat::lambda[i]/(mat::mu[i]*mat::muB*dt*mat::gyro*mat::gamma[i]));
+            //mat::sigma[i] = sqrt(2.0*1.38e-23*mat::lambda[i]/(mat::mu[i]*mat::muB*dt*mat::gyro*mat::gamma[i]));
             std::stringstream sstr;
             sstr << "Sigma prefactor for species " << i << ":";
             std::string str=sstr.str();
-            FIXOUT(config::Info,str.c_str() << mat::sigma[i] << std::endl);
-            llgpf[i] = -1./(1.0+mat::lambda[i]*mat::lambda[i]);
+            //FIXOUT(config::Info,str.c_str() << mat::sigma[i] << std::endl);
+            //llgpf[i] = -1./(1.0+mat::lambda[i]*mat::lambda[i]);
             sstr.str("");
             sstr << "Prefactor for LLG for species " << i << ":";
             str=sstr.str();

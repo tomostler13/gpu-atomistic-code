@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 26 Jun 2014 10:52:44
+// Last-modified: 24 Sep 2014 11:05:56
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -21,7 +21,6 @@
 #include "../inc/defines.h"
 #include "../inc/llg.h"
 #include "../inc/random.h"
-#include "../inc/mat.h"
 #include "../inc/anis.h"
 namespace llgCPU
 {
@@ -63,16 +62,14 @@ namespace llgCPU
         exit(0);*/
 
         const double sqrtT=sqrt(llg::T);
-        #pragma omp parallel for private (i) shared(fields::Hthx,fields::Hthy,fields::Hthz,sqrtT,mat::sigma)
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
 
-            fields::Hthx[i]=sqrtT*mat::sigma*Random::normal();
-            fields::Hthy[i]=sqrtT*mat::sigma*Random::normal();
-            fields::Hthz[i]=sqrtT*mat::sigma*Random::normal();
+//            fields::Hthx[i]=sqrtT*mat::sigma*Random::normal();
+//            fields::Hthy[i]=sqrtT*mat::sigma*Random::normal();
+//            fields::Hthz[i]=sqrtT*mat::sigma*Random::normal();
 
         }
-        #pragma omp parallel for private (i) shared(spins::eSx,spins::eSy,spins::eSz,fnx,fny,fnz)
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
 
@@ -91,9 +88,9 @@ namespace llgCPU
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
-            fnx[i]=llg::llgpf*(sxh[0]+mat::lambda*sxsxh[0]);
-            fny[i]=llg::llgpf*(sxh[1]+mat::lambda*sxsxh[1]);
-            fnz[i]=llg::llgpf*(sxh[2]+mat::lambda*sxsxh[2]);
+            fnx[i]=geom::llgpf[i]*(sxh[0]+geom::lambda[i]*sxsxh[0]);
+            fny[i]=geom::llgpf[i]*(sxh[1]+geom::lambda[i]*sxsxh[1]);
+            fnz[i]=geom::llgpf[i]*(sxh[2]+geom::lambda[i]*sxsxh[2]);
             spins::eSx[i] = s[0] + fnx[i]*llg::rdt;
             spins::eSy[i] = s[1] + fny[i]*llg::rdt;
             spins::eSz[i] = s[2] + fnz[i]*llg::rdt;
@@ -122,7 +119,7 @@ namespace llgCPU
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
-            const double fnp1[3]={llg::llgpf*(sxh[0]+mat::lambda*sxsxh[0]),llg::llgpf*(sxh[1]+mat::lambda*sxsxh[1]),llg::llgpf*(sxh[2]+mat::lambda*sxsxh[2])};
+            const double fnp1[3]={geom::llgpf[i]*(sxh[0]+geom::lambda[i]*sxsxh[0]),geom::llgpf[i]*(sxh[1]+geom::lambda[i]*sxsxh[1]),geom::llgpf[i]*(sxh[2]+geom::lambda[i]*sxsxh[2])};
 
             spins::Sx[i] +=(0.5*(fnx[i]+fnp1[0])*llg::rdt);
             spins::Sy[i] +=(0.5*(fny[i]+fnp1[1])*llg::rdt);

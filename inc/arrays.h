@@ -3,3 +3,5 @@
 #include "../inc/array3d.h"
 #include "../inc/array4d.h"
 #include "../inc/array5d.h"
+#include "../inc/array6d.h"
+#include "../inc/array7d.h"
