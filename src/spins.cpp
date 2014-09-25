@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 24 Sep 2014 14:58:49
+// Last-modified: 25 Sep 2014 14:40:06
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -20,164 +20,84 @@
 #include "../inc/maths.h"
 namespace spins
 {
-    Array3D<fftw_complex> Skx,Sky,Skz;
-    Array3D<double> Srx,Sry,Srz;
+    Array5D<fftw_complex> Sk;
+    Array5D<double> Sr;
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
-    fftw_plan SxP,SyP,SzP;
-	unsigned int update=0;
-	std::ifstream sfs;
+    fftw_plan SP;
+    unsigned int update=0;
+    std::ifstream sfs;
     void initSpins(int argc,char *argv[])
     {
-		config::printline(config::Info);
-		config::Info.width(45);config::Info << std::right << "*" << "**Spin details***" << std::endl;
-		try
-		{
-			config::cfg.readFile(argv[1]);
-		}
-        catch(const libconfig::FileIOException &fioex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("I/O error while reading config file");
-        }
-        catch(const libconfig::ParseException &pex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-		FIXOUT(config::Info,"Resizing arrays:" << std::flush);
-        Skx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        Sky.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        Skz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        Srx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Sry.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Srz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Srx.IFill(0);
-        Sry.IFill(0);
-        Srz.IFill(0);
+        config::printline(config::Info);
+        config::Info.width(45);config::Info << std::right << "*" << "**Spin details***" << std::endl;
+        FIXOUT(config::Info,"Resizing arrays:" << std::flush);
+        Sk.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+        Sr.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        Sr.IFill(0);
+        Sk.IFill(0);
         Sx.resize(geom::nspins);
         Sy.resize(geom::nspins);
         Sz.resize(geom::nspins);
-		SUCCESS(config::Info);
-		std::string sc;
-		libconfig::Setting &setting = config::cfg.lookup("spins");
-		setting.lookupValue("update",update);
-		FIXOUT(config::Info,"Spin update:" << update << " (timesteps)" << std::endl);
-		if(update<1)
-		{
-			error::errPreamble(__FILE__,__LINE__);
-			error::errMessage("Spin data should be updated on cpu, i.e. spins::update>0");
-		}
-		setting.lookupValue("spinconfig",sc);
-		FIXOUT(config::Info,"Initial spin config specifier method:" << sc << std::endl);
-		if(sc=="file")
-		{
-			std::string spinfile;
-			try
-			{
-				setting.lookupValue("sf",spinfile);
-			}
-			catch(const libconfig::SettingTypeException &stex)
-			{
-				error::errPreamble(__FILE__,__LINE__);
-				error::errMessage("Setting type error");
-			}
-			FIXOUT(config::Info,"Reading spin data from file:" << spinfile << std::flush);
-			sfs.open(spinfile.c_str());
-			if(!sfs.is_open())
-			{
-				error::errPreamble(__FILE__,__LINE__);
-				error::errMessage("Could not open file for reading spin data");
-			}
-			else
-			{
-				for(unsigned int i = 0 ; i < geom::nspins ; i++)
-				{
-                    sfs >> Sx(i);
-                    sfs >> Sy(i);
-                    sfs >> Sz(i);
-				}
-				sfs.close();
-				if(sfs.is_open())
-				{
-					error::errPreamble(__FILE__,__LINE__);
-					error::errWarning("Could not close spin file for reading in spin data");
-				}
-			}
-		}
-		else if(sc=="align")
-		{
-			double sr[3]={0,0,0};
-			try
-			{
-				for(unsigned int l = 0 ; l < 3 ; l++){sr[l]=setting["sc"][l];}
-			}
-			catch(const libconfig::SettingTypeException &stex)
-			{
-				error::errPreamble(__FILE__,__LINE__);
-				error::errMessage("Setting type error");
-			}
-			FIXOUT(config::Info,"Spins aligned to:" << "(" << sr[0] << "," << sr[1] << "," << sr[2] << ")" <<std::endl);
-			for(unsigned int i = 0 ; i < geom::nspins ; i++)
-			{
-                Sx(i)=sr[0];
-                Sy(i)=sr[1];
-                Sz(i)=sr[2];//sqrt(1.0-(Sx[i]*Sx[i]+Sy[i]*Sy[i]));//+sr[2];
-			}
-		}
-		else if(sc=="random")
-		{
-			for(unsigned int i = 0 ; i < geom::nspins ; i++)
-			{
-                maths::sphereRandom(Sx(i),Sy(i),Sz(i));
-			}
-		}
-		else
-		{
-			error::errPreamble(__FILE__,__LINE__);
-			error::errMessage("Spin configuration not recognised, check you config file.");
-		}
+        Sx.IFill(geom::nspins);
+        Sy.IFill(geom::nspins);
+        Sz.IFill(geom::nspins);
+        SUCCESS(config::Info);
 
-		FIXOUT(config::Info,"Planning r2c and c2r transforms:" << std::flush);
+        FIXOUT(config::Info,"Planning r2c and c2r transforms:" << std::flush);
+        int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
+        int *inembed=n;
+        int *onembed=n;
+        int istride=1;
+        int ostride=1;
+        int odist=geom::cplxdim;
+        int idist=geom::zps;
+
+        config::openLogFile();
+        config::printline(config::Log);
+        FIXOUT(config::Log,"Parameters entering into r2c FFTW plan of spins (forward transform)" << std::endl);
+        FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
+        FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
+        FIXOUT(config::Log,"How many (FFT's) = " << geom::ucm.GetNMS()*3 << std::endl);
+        FIXOUT(config::Log,"Pointer of real space fields (Sr):" << Sr.ptr() << std::endl);
+        FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],inembed[2]);
+        FIXOUT(config::Log,"istride = " << istride << std::endl);
+        FIXOUT(config::Log,"idist = " << idist << std::endl);
+        FIXOUT(config::Log,"Pointer of reciprocal space fields (Sk):" << Sk.ptr() << std::endl);
+        FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
+        FIXOUT(config::Log,"ostride = " << ostride << std::endl);
+        FIXOUT(config::Log,"odist = " << odist << std::endl);
+        FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
+        SP = fftw_plan_many_dft_r2c(3,n,geom::ucm.GetNMS()*3,Sr.ptr(),inembed,istride,idist,Sk.ptr(),onembed,ostride,odist,FFTW_PATIENT);
         //forward transform of spin arrays
-        SxP=fftw_plan_dft_r2c_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Srx.ptr(),Skx.ptr(),FFTW_ESTIMATE);
-        SyP=fftw_plan_dft_r2c_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Sry.ptr(),Sky.ptr(),FFTW_ESTIMATE);
-        SzP=fftw_plan_dft_r2c_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Srz.ptr(),Skz.ptr(),FFTW_ESTIMATE);
-		SUCCESS(config::Info);
+        SUCCESS(config::Info);
 
     }
     void FFTForward()
     {
-        Skx.IFill(0);
-        Sky.IFill(0);
-        Skz.IFill(0);
+        Sk.IFill(0);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-            Srx(lc[0],lc[1],lc[2])=Sx[i];
-            Sry(lc[0],lc[1],lc[2])=Sy[i];
-            Srz(lc[0],lc[1],lc[2])=Sz[i];
-//            std::cout << "Lookup\t" << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << Skx(lc[0],lc[1],lc[2])[0] << "\t" << Sky(lc[0],lc[1],lc[2])[0] << "\t" << Skz(lc[0],lc[1],lc[2])[0] << std::endl;
+            unsigned int sl=geom::sublattice[i];
+            Sr(sl,0,lc[0],lc[1],lc[2])=Sx[i];
+            Sr(sl,1,lc[0],lc[1],lc[2])=Sx[i];
+            Sr(sl,2,lc[0],lc[1],lc[2])=Sx[i];
+            //            std::cout << "Lookup\t" << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << Skx(lc[0],lc[1],lc[2])[0] << "\t" << Sky(lc[0],lc[1],lc[2])[0] << "\t" << Skz(lc[0],lc[1],lc[2])[0] << std::endl;
         }
-        fftw_execute(SxP);
-        fftw_execute(SyP);
-        fftw_execute(SzP);
+        fftw_execute(SP);
     }
     void eFFTForward()
     {
-        Skx.IFill(0);
-        Sky.IFill(0);
-        Skz.IFill(0);
+        Sk.IFill(0);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-            Srx(lc[0],lc[1],lc[2])=eSx[i];
-            Sry(lc[0],lc[1],lc[2])=eSy[i];
-            Srz(lc[0],lc[1],lc[2])=eSz[i];
-//            std::cout << "Lookup\t" << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << Skx(lc[0],lc[1],lc[2])[0] << "\t" << Sky(lc[0],lc[1],lc[2])[0] << "\t" << Skz(lc[0],lc[1],lc[2])[0] << std::endl;
+            unsigned int sl=geom::sublattice[i];
+            Sr(sl,0,lc[0],lc[1],lc[2])=eSx[i];
+            Sr(sl,1,lc[0],lc[1],lc[2])=eSy[i];
+            Sr(sl,2,lc[0],lc[1],lc[2])=eSz[i];
+            //            std::cout << "Lookup\t" << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << Skx(lc[0],lc[1],lc[2])[0] << "\t" << Sky(lc[0],lc[1],lc[2])[0] << "\t" << Skz(lc[0],lc[1],lc[2])[0] << std::endl;
         }
-        fftw_execute(SxP);
-        fftw_execute(SyP);
-        fftw_execute(SzP);
+        fftw_execute(SP);
     }
 }
