@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 24 Sep 2014 11:01:11
+// Last-modified: 25 Sep 2014 14:20:17
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -18,32 +18,50 @@
 #include "../inc/spins.h"
 #include "../inc/util.h"
 #include "../inc/intmat.h"
+#include "../inc/defines.h"
 #define FIXOUT(a,b) a.width(75);a << std::left << b;
 namespace fields
 {
-    Array3D<fftw_complex> Hkx,Hky,Hkz;
-    Array3D<double> Hrx,Hry,Hrz;
+    Array5D<fftw_complex> Hk;
+    Array5D<double> Hr;
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz;
-    fftw_plan HxP,HyP,HzP;
+    fftw_plan HP;
     void initFields(int argc,char *argv[])
     {
-        Hkx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        Hky.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        Hkz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+        Hk.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+        Hr.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
         Hx.resize(geom::nspins);
         Hy.resize(geom::nspins);
         Hz.resize(geom::nspins);
-        Hrx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Hry.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Hrz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
         //plan the transforms as in-place as we do not need to use the fft arrays
         //as we copy the data back to the normal field arrayl
-        HxP = fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hkx.ptr(),Hrx.ptr(),FFTW_ESTIMATE);
-        HyP = fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hky.ptr(),Hry.ptr(),FFTW_ESTIMATE);
-        HzP = fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],Hkz.ptr(),Hrz.ptr(),FFTW_ESTIMATE);
+        int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
+        int *inembed=n;
+        int *onembed=n;
+        int istride=1;
+        int ostride=1;
+        int odist=geom::zps;
+        int idist=geom::cplxdim;
+
+        config::openLogFile();
+        config::printline(config::Log);
+        FIXOUT(config::Log,"Parameters entering into c2r FFTW plan of fields matrix (back transform)" << std::endl);
+        FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
+        FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
+        FIXOUT(config::Log,"How many (FFT's) = " << geom::ucm.GetNMS()*3 << std::endl);
+        FIXOUT(config::Log,"Pointer of reciprocal space fields (Hk):" << Hk.ptr() << std::endl);
+        FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],inembed[2]);
+        FIXOUT(config::Log,"istride = " << istride << std::endl);
+        FIXOUT(config::Log,"idist = " << idist << std::endl);
+        FIXOUT(config::Log,"Pointer of real space fields (Hr):" << Hr.ptr() << std::endl);
+        FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
+        FIXOUT(config::Log,"ostride = " << ostride << std::endl);
+        FIXOUT(config::Log,"odist = " << odist << std::endl);
+        FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
+        HP = fftw_plan_many_dft_c2r(3,n,geom::ucm.GetNMS()*3,Hk.ptr(),inembed,istride,idist,Hr.ptr(),onembed,ostride,odist,FFTW_PATIENT);
     }
 
-    void bfdip()
+    /*void bfdip()
     {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
@@ -93,19 +111,18 @@ namespace fields
             std::cerr << ri[0]/geom::abc[0] << "\t" << ri[1]/geom::abc[1] << "\t" << ri[2]/geom::abc[2] << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
 
         }
-    }//bfdip function
+    }//bfdip function*/
     //back transform the fields
     void FFTBack()
     {
-        fftw_execute(HxP);
-        fftw_execute(HyP);
-        fftw_execute(HzP);
+        fftw_execute(HP);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-            Hx[i]=Hrx(lc[0],lc[1],lc[2])/(double(geom::zps));
-            Hy[i]=Hry(lc[0],lc[1],lc[2])/(double(geom::zps));
-            Hz[i]=Hrz(lc[0],lc[1],lc[2])/(double(geom::zps));
+            unsigned int sl=geom::sublattice[i];
+            Hx[i]=Hr(sl,0,lc[0],lc[1],lc[2])/(double(geom::zps));
+            Hy[i]=Hr(sl,1,lc[0],lc[1],lc[2])/(double(geom::zps));
+            Hz[i]=Hr(sl,2,lc[0],lc[1],lc[2])/(double(geom::zps));
             //std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
             //std::cin.get();
         }
