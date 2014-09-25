@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 24 Sep 2014 13:00:47
+// Last-modified: 25 Sep 2014 09:44:05
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -73,7 +73,8 @@ namespace config
 		FIXOUT(Info,"Compile Data/Time:" << __DATE__ << ", " << __TIME__ << std::endl);
 		FIXOUT(Info,"Compiler:" << COMP << std::endl);
 		FIXOUT(Info,"Compiled on machine:" << HOSTNAME << std::endl);
-        FIXOUT(Info,"Localhost:" << util::exec("hostname") << std::endl);
+        char c[] = "hostname";
+        FIXOUT(Info,"Localhost:" << util::exec(c) << std::endl);
         FIXOUT(Info,"Seed:" << seed << std::endl);
 
         libconfig::Setting &setting = cfg.lookup("system");

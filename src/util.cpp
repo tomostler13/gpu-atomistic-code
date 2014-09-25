@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Sep 2014 14:58:37
+// Last-modified: 25 Sep 2014 09:45:21
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"

@@ -1,10 +1,9 @@
 // File: sim.cpp
 // Author:Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 23 Jan 2013 22:14:21
+// Last-modified: 24 Sep 2014 15:03:20
 #include "../inc/config.h"
 #include "../inc/sim.h"
-#include "../inc/mat.h"
 #include "../inc/geom.h"
 #include "../inc/defines.h"
 #include <iostream>

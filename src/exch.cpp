@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 24 Sep 2014 14:49:07
+// Last-modified: 25 Sep 2014 11:28:22
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -174,102 +174,27 @@ namespace exch
                     }
                 }
             }
+            //we are going to write the exchange information to the log file. Make sure it if open.
+            config::openLogFile();
             for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
             {
+                config::Log << "Exchange parameters acting on species " << s1 << std::endl;
                 for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
                 {
+                    config::Log << "Interaction with species " << s2 << std::endl;
+                    Array3D<unsigned int> check;
+                    check.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+                    check.IFill(0);
                     //This section of code takes the kvec interactions and
                     //adds the appropriate Jij to the appropriate interaction matrix
-                    Array3D<unsigned int> check(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);//This array is used to check if we already have the Jij for this interaction
-                    check.IFill(0);
-
                     for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
                     {
+                        config::Log << "Shell " << shell_list(s1,s2) << " of " << numint(s1,s2,i) << std::endl;
                         unsigned int counter=0;
-                        //store the original vector
-                        int lc[3]={kvec(s1,s2,i,0),kvec(s1,s2,i,1),kvec(s1,s2,i,2)};
-
-                        for(int wrap = 0 ; wrap < 3 ; wrap++)
-                        {
-                            //reference array
-                            int rc[3]={lc[wrap%3],lc[(1+wrap)%3],lc[(2+wrap)%3]};
-                            //work array
-                            int wc[3]={rc[0],rc[1],rc[2]};
-                            //change the signs of each element
-                            for(unsigned int a = 0 ; a < 2 ; a++)
-                            {
-                                for(unsigned int b = 0 ; b < 2 ; b++)
-                                {
-                                    for(unsigned int c = 0 ; c < 2 ; c++)
-                                    {
-
-                                        wc[0]=rc[0]*pow(-1,a+1);
-                                        wc[1]=rc[1]*pow(-1,b+1);
-                                        wc[2]=rc[2]*pow(-1,c+1);
-                                        int wc_orig[3]={wc[0],wc[1],wc[2]};
-                                        bool checkmonolayer[3]={false,false,false};
-                                        //check the boundaries for each component
-                                        for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
-                                        {
-
-                                            if(wc[xyz]<0)
-                                            {
-                                                if(geom::dim[xyz]*geom::Nk[xyz] < 2 && wc[xyz]<0)
-                                                {
-                                                    checkmonolayer[xyz]=true;
-                                                }
-                                                wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
-                                            }
-
-                                        }
-                                            std::cout << "Checking check\t" << check(wc[0],wc[1],wc[2]) << std::endl;
-                                        if(check(wc[0],wc[1],wc[2])==0)
-                                        {
-                                            std::cout << "Inside if :" << wc[0] << "," << wc[1] << "," << wc[2] << std::endl;
-                                            //loop over the elements of the interaction tensor
-                                            for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
-                                            {
-                                                for(unsigned int beta = 0 ; beta < 3 ; beta++)
-                                                {
-                                                    if(checkmonolayer[0]==true || checkmonolayer[1]==true || checkmonolayer[2]==true)
-                                                    {
-                                                        //do nothing
-                                                    }
-                                                    else
-                                                    {
-                                                        intmat::Nrab(s1,s2,alpha,beta,wc[0],wc[1],wc[2])+=(J(s1,s2,i,alpha,beta)/(geom::ucm.GetMuBase(s1)*llg::muB));
-                                                        check(wc[0],wc[1],wc[2])=1;
-                                                    }
-                                                }
-                                            }
-                                            /*for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
-                                              {
-                                              for(unsigned int jc2 = 0 ; jc2< 3 ; jc2++)
-                                              {
-                                            //intmap << "\t" << J(i,jc1,jc2);
-                                            }
-                                            }
-                                            intmap << std::endl;*/
-                                        }
-                                        /*else
-                                        {
-                                            error::errPreamble(__FILE__,__LINE__);
-                                            std::stringstream sstr;
-                                            sstr << "Interaction (" << wc[0] << "," << wc[1] << "," << wc[2] << "), originally (" << lc[0] << "," << lc[1] << "," << lc[2] << ") between species " << s1 << " and " << s2 << " has already been set.";
-                                            std::string str=sstr.str();
-                                            error::errMessage(str.c_str());
-                                        }*/
-
-                                        counter++;
-                                    }
-                                }
-                            }
-                        }
-
-                        //store the original vector
-                        lc[0]=kvec(s1,s2,i,2);
+                        int lc[3]={0,0,0};
+                        lc[0]=kvec(s1,s2,i,0);
                         lc[1]=kvec(s1,s2,i,1);
-                        lc[2]=kvec(s1,s2,i,0);
+                        lc[2]=kvec(s1,s2,i,2);
                         for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
                         {
                             //reference array
@@ -286,7 +211,8 @@ namespace exch
                                         wc[0]=rc[0]*pow(-1,a+1);
                                         wc[1]=rc[1]*pow(-1,b+1);
                                         wc[2]=rc[2]*pow(-1,c+1);
-                                        int wc_orig[3]={wc[0],wc[1],wc[2]};
+                                        //This array is purely for outputting the exchange information to the log file
+                                        int owc[3]={wc[0],wc[1],wc[2]};
                                         bool checkmonolayer[3]={false,false,false};
                                         //check the boundaries for each component
                                         for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
@@ -299,59 +225,62 @@ namespace exch
                                                 }
                                                 wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
                                             }
-
-                                        }
-
+                                        }//end of xyz loop
                                         if(check(wc[0],wc[1],wc[2])==0)
                                         {
+                                            config::Log << "Interaction Vector:  [" << owc[0] << "," << owc[1] << "," << owc[2] << "]\t -> [" << wc[0] << "," << wc[1] << "," << wc[2] << "]" << std::endl;
                                             //loop over the elements of the interaction tensor
                                             for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                                             {
                                                 for(unsigned int beta = 0 ; beta < 3 ; beta++)
                                                 {
-                                                    intmat::Nrab(s1,s2,alpha,beta,wc[0],wc[1],wc[2])+=(J(s1,s2,i,alpha,beta)/(geom::ucm.GetMuBase(s1)*llg::muB));
                                                     if(checkmonolayer[0]==true || checkmonolayer[1]==true || checkmonolayer[2]==true)
                                                     {
                                                         //do nothing
                                                     }
                                                     else
                                                     {
-                                                        check(wc[0],wc[1],wc[2])=1;
+                                                        intmat::Nrab(s1,s2,alpha,beta,wc[0],wc[1],wc[2])+=(J(s1,s2,i,alpha,beta)/(geom::ucm.GetMuBase(s1)*llg::muB));
                                                     }
-                                                }
-                                            }
+                                                }//end of beta loop
+                                            }//end of alpha loop
 
-                                            for(unsigned int jc1 = 0 ;jc1 < 3 ;jc1++)
-                                            {
-                                                for(unsigned int jc2 = 0 ; jc2< 3 ; jc2++)
-                                                {
-                                                    //intmap << "\t" << J(i,jc1,jc2);
-                                                }
-                                            }
-                                            //intmap << std::endl;
-
+                                            config::Log << "[ " << J(s1,s2,i,0,0) << " , " << J(s1,s2,i,0,1) << " , " << J(s1,s2,i,0,2) << " ]" << std::endl;
+                                            config::Log << "[ " << J(s1,s2,i,1,0) << " , " << J(s1,s2,i,1,1) << " , " << J(s1,s2,i,1,2) << " ]\t (Joules)" << std::endl;
+                                            config::Log << "[ " << J(s1,s2,i,2,0) << " , " << J(s1,s2,i,2,1) << " , " << J(s1,s2,i,2,2) << " ]" << std::endl;
+                                            config::Log << std::endl;
+                                            config::Log << "[ " << J(s1,s2,i,0,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,0,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,0,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
+                                            config::Log << "[ " << J(s1,s2,i,1,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,1,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,1,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]\t (Tesla)" << std::endl;
+                                            config::Log << "[ " << J(s1,s2,i,2,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,2,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,2,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
+                                            config::Log << std::endl;
+                                            check(wc[0],wc[1],wc[2])=1;
                                             counter++;
-                                        }
-                                    }
-                                }
-                            }
-                        }
+
+                                        }//end of check if statement
+                                    }//end of c loop
+                                }//end of b loop
+                            }//end of a loop
+
+                        }//end of wrap loop
                         if(counter!=numint(s1,s2,i))
                         {
-                            std::cerr << "Number of interactions counted = " << counter << std::endl;
-                            std::cerr << "Should be " << numint(s1,s2,i) << std::endl;
-
                             error::errPreamble(__FILE__,__LINE__);
-                            error::errMessage("Number of interactions is not correct");
-                        }
-                    }
-
-                }
-            }
-            //check.clear();
-        }
+                            std::stringstream sstr;
+                            sstr << "The number of interactions between species " << s1 << " and " << s2 << " in shell " << shell_list(s1,s2) << " should be " << numint(s1,s2,i) << ", instead the number counted was " << counter;
+                            std::string str=sstr.str();
+                            error::errMessage(str.c_str());
+                        }//end of counter check if statement
+                        counter=0;
+                        config::printline(config::Log);
+                    }//end of shell list loop
+                }//end of s2 loop
+            }//end of s1 loop
+        }//end of if(method=="permute") statement
         else if(method=="direct")
         {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("The use of \"direct\" method of reading in the exchange is currently not written for a general N lattice code and needs to be fixed");
+
             std::ifstream ifs;
             ifs.open(readFile.c_str());
             if(!ifs.is_open())
@@ -452,7 +381,6 @@ namespace exch
 //                std::cout << "Interaction: " << i << "\nJij:\n" << intmat::Nrxx(c[0],c[1],c[2]) << "\t" << intmat::Nrxy(c[0],c[1],c[2]) << "\t" << intmat::Nrxz(c[0],c[1],c[2]) << std::endl;
 //                std::cout <<  intmat::Nryx(c[0],c[1],c[2]) << "\t" << intmat::Nryy(c[0],c[1],c[2]) << "\t" << intmat::Nryz(c[0],c[1],c[2]) << std::endl;
 //                std::cout <<  intmat::Nrzx(c[0],c[1],c[2]) << "\t" << intmat::Nrzy(c[0],c[1],c[2]) << "\t" << intmat::Nrzz(c[0],c[1],c[2]) << std::endl;
-//                std::cin.get();
                     }
                     else
                     {

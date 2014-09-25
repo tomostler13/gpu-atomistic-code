@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 24 Sep 2014 11:54:26
+// Last-modified: 25 Sep 2014 10:42:38
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -15,7 +15,7 @@
 #endif /*CUDA*/
 namespace llg
 {
-    double applied[3]={0,0,0},T,dt,rdt,gyro=1.76e11,muB=9.27e-23;
+    double applied[3]={0,0,0},T,dt,rdt,gyro=1.76e11,muB=9.27e-24;
     Array<double> llgpf;
 
 	void initLLG(int argc,char *argv[])

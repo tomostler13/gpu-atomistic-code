@@ -1,7 +1,7 @@
 // File: array.h
 // Author: Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 24 Sep 2014 11:33:20
+// Last-modified: 25 Sep 2014 09:51:56
 #ifndef __UNITCELL_H__
 #define __UNITCELL_H__
 #include "../inc/arrays.h"
@@ -21,7 +21,7 @@ class unitCellMembers
         //base_mom - the number of unique moments there should be
         unitCellMembers(): nms(0), size(0), coords(0,0), elements(0), damping(0), mu(0), gamma(0), sublattice(0), initspin(0,0), lambda(0), base_mom(0){}
         //constructor
-        unitCellMembers(unsigned int nauc): coords(nauc,3), elements(nauc), damping(nauc), mu(nauc), gamma(nauc), sublattice(nauc), initspin(nauc,3), size(nauc), base_mom(nms) {}
+        unitCellMembers(unsigned int nauc,unsigned int nms): coords(nauc,3), elements(nauc), damping(nauc), mu(nauc), gamma(nauc), sublattice(nauc), initspin(nauc,3), size(nauc), base_mom(nms) {}
         //destructor
         ~unitCellMembers(){clean();}
         inline void init(unsigned int nauc,unsigned int num_mag)
@@ -192,7 +192,8 @@ class unitCellMembers
             }
         }
     private:
-        unsigned int size,nms;
+        unsigned int size;
+        unsigned int nms;
         Array2D<double> coords,initspin;
         Array<double> damping,mu,gamma,sublattice,lambda,base_mom;
         std::vector<std::string> elements;
