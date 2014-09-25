@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 25 Sep 2014 09:45:21
+// Last-modified: 25 Sep 2014 14:47:54
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -36,9 +36,7 @@ namespace util
     }
     void cpuConvFourier()
     {
-        fields::Hkx.IFill(0);
-        fields::Hky.IFill(0);
-        fields::Hkz.IFill(0);
+        fields::Hk.IFill(0);
 
         //perform convolution in fourier space
         unsigned int i = 0,j = 0, k = 0;
@@ -48,27 +46,20 @@ namespace util
             {
                 for(k = 0 ; k < geom::cplxdim ; k++)
                 {
-
-/*                    fields::Hkx(i,j,k)[0]=intmat::Nxx(i,j,k)[0]*spins::Skx(i,j,k)[0]-intmat::Nxx(i,j,k)[1]*spins::Skx(i,j,k)[1]
-                        +intmat::Nxy(i,j,k)[0]*spins::Sky(i,j,k)[0]-intmat::Nxy(i,j,k)[1]*spins::Sky(i,j,k)[1]
-                        +intmat::Nxz(i,j,k)[0]*spins::Skz(i,j,k)[0]-intmat::Nxz(i,j,k)[1]*spins::Skz(i,j,k)[1];
-                    fields::Hkx(i,j,k)[1]=intmat::Nxx(i,j,k)[0]*spins::Skx(i,j,k)[1]+intmat::Nxx(i,j,k)[1]*spins::Skx(i,j,k)[0]
-                        +intmat::Nxy(i,j,k)[0]*spins::Sky(i,j,k)[1]+intmat::Nxy(i,j,k)[1]*spins::Sky(i,j,k)[0]
-                        +intmat::Nxz(i,j,k)[0]*spins::Skz(i,j,k)[1]+intmat::Nxz(i,j,k)[1]*spins::Skz(i,j,k)[0];
-
-                    fields::Hky(i,j,k)[0]=intmat::Nyx(i,j,k)[0]*spins::Skx(i,j,k)[0]-intmat::Nyx(i,j,k)[1]*spins::Skx(i,j,k)[1]
-                        +intmat::Nyy(i,j,k)[0]*spins::Sky(i,j,k)[0]-intmat::Nyy(i,j,k)[1]*spins::Sky(i,j,k)[1]
-                        +intmat::Nyz(i,j,k)[0]*spins::Skz(i,j,k)[0]-intmat::Nyz(i,j,k)[1]*spins::Skz(i,j,k)[1];
-                    fields::Hky(i,j,k)[1]=intmat::Nyx(i,j,k)[0]*spins::Skx(i,j,k)[1]+intmat::Nyx(i,j,k)[1]*spins::Skx(i,j,k)[0]
-                        +intmat::Nyy(i,j,k)[0]*spins::Sky(i,j,k)[1]+intmat::Nyy(i,j,k)[1]*spins::Sky(i,j,k)[0]
-                        +intmat::Nyz(i,j,k)[0]*spins::Skz(i,j,k)[1]+intmat::Nyz(i,j,k)[1]*spins::Skz(i,j,k)[0];
-
-                    fields::Hkz(i,j,k)[0]=intmat::Nzx(i,j,k)[0]*spins::Skx(i,j,k)[0]-intmat::Nzx(i,j,k)[1]*spins::Skx(i,j,k)[1]
-                        +intmat::Nzy(i,j,k)[0]*spins::Sky(i,j,k)[0]-intmat::Nzy(i,j,k)[1]*spins::Sky(i,j,k)[1]
-                        +intmat::Nzz(i,j,k)[0]*spins::Skz(i,j,k)[0]-intmat::Nzz(i,j,k)[1]*spins::Skz(i,j,k)[1];
-                    fields::Hkz(i,j,k)[1]=intmat::Nzx(i,j,k)[0]*spins::Skx(i,j,k)[1]+intmat::Nzx(i,j,k)[1]*spins::Skx(i,j,k)[0]
-                        +intmat::Nzy(i,j,k)[0]*spins::Sky(i,j,k)[1]+intmat::Nzy(i,j,k)[1]*spins::Sky(i,j,k)[0]
-                        +intmat::Nzz(i,j,k)[0]*spins::Skz(i,j,k)[1]+intmat::Nzz(i,j,k)[1]*spins::Skz(i,j,k)[0];*/
+                    for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
+                    {
+                        for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
+                        {
+                            for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                            {
+                                for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                {
+                                    fields::Hk(s1,alpha,i,j,k)[0]+=(intmat::Nkab(s1,s2,alpha,beta,i,j,k)[0]*spins::Sk(s2,beta,i,j,k)[0]-intmat::Nkab(s1,s2,alpha,beta,i,j,k)[1]*spins::Sk(s2,beta,i,j,k)[1]);
+                                    fields::Hk(s1,alpha,i,j,k)[1]+=(intmat::Nkab(s1,s2,alpha,beta,i,j,k)[0]*spins::Sk(s2,beta,i,j,k)[1]+intmat::Nkab(s1,s2,alpha,beta,i,j,k)[1]*spins::Sk(s2,beta,i,j,k)[0]);
+                                }
+                            }
+                        }
+                    }
 
                 }
             }
