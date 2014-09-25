@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Sep 2014 14:59:43
+// Last-modified: 25 Sep 2014 13:40:10
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -38,12 +38,8 @@ int main(int argc,char *argv[])
         //add the dipolar fields
         intmat::fillIntmat();
     }
-
     //Read in the exchange matrix
     exch::initExch(argc,argv);
-    //Read in the anisotropy tensor
-    anis::initAnis(argc,argv);
-
 
     //Now we have all of the terms in our interaction matrix, fourier transform the result
     intmat::fftIntmat();

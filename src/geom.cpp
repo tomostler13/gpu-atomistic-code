@@ -1,13 +1,15 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Sep 2014 13:02:43
+// Last-modified: 25 Sep 2014 13:35:46
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
 #include "../inc/util.h"
 #include "../inc/arrays.h"
 #include "../inc/unitcell.h"
+#include "../inc/anis.h"
+#include "../inc/llg.h"
 #include <sstream>
 #include <cstdlib>
 #include <iostream>
@@ -32,7 +34,9 @@ namespace geom
         //calculate the number of spins
         nspins=dim[0]*dim[1]*dim[2]*ucm.NumAtomsUnitCell();
         //resize these 1D arrays. The atom number should return the value
-        gamma.resize(nspins);lambda.resize(nspins);llgpf.resize(nspins);rx.resize(nspins);ry.resize(nspins);rz.resize(nspins);sublattice.resize(nspins);
+        mu.resize(nspins);gamma.resize(nspins);lambda.resize(nspins);llgpf.resize(nspins);rx.resize(nspins);ry.resize(nspins);rz.resize(nspins);sublattice.resize(nspins);
+        //resize the anisotropy arrays
+        anis::k1u.resize(nspins);anis::k1udir.resize(nspins,3);
         FIXOUTVEC(config::Info,"Number of K-points:",Nk[0],Nk[1],Nk[2]);
         FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
         //For real to complex (or c2r) transforms we can save computation
@@ -74,9 +78,11 @@ namespace geom
                 FIXOUTVEC(config::Info,"Positions:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
                 FIXOUT(config::Info,"Part of sublattice:" << ucm.GetSublattice(i) << std::endl);
                 FIXOUT(config::Info,"Damping:" << ucm.GetDamping(i) << std::endl);
-                FIXOUT(config::Info,"Gyromagnetic ratio:" << ucm.GetGamma(i) << std::endl);
-                FIXOUT(config::Info,"Magnetic moment:" << ucm.GetMu(i) << std::endl);
+                FIXOUT(config::Info,"Gyromagnetic ratio:" << ucm.GetGamma(i) << " [gamma_free]" << std::endl);
+                FIXOUT(config::Info,"Magnetic moment:" << ucm.GetMu(i) << " [muB]" << std::endl);
                 FIXOUTVEC(config::Info,"Initial spin position:",ucm.GetInitS(i,0),ucm.GetInitS(i,1),ucm.GetInitS(i,2));
+                FIXOUT(config::Info,"K_1^u: " << ucm.GetK1U(i) << " [Joules]" << std::endl);
+                FIXOUTVEC(config::Info,"Direction of anisotropy axis:",ucm.GetK1UDir(i,0),ucm.GetK1UDir(i,1),ucm.GetK1UDir(i,2));
                 config::printline(config::Info);
             }
             if(ucm.NumAtomsUnitCell() > 5)
@@ -85,9 +91,11 @@ namespace geom
                 FIXOUTVEC(config::Log,"Positions:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
                 FIXOUT(config::Log,"Part of sublattice:" << ucm.GetSublattice(i) << std::endl);
                 FIXOUT(config::Log,"Damping:" << ucm.GetDamping(i) << std::endl);
-                FIXOUT(config::Log,"Gyromagnetic ratio:" << ucm.GetGamma(i) << std::endl);
-                FIXOUT(config::Log,"Magnetic moment:" << ucm.GetMu(i) << std::endl);
+                FIXOUT(config::Log,"Gyromagnetic ratio:" << ucm.GetGamma(i) << " [gamma_free]" << std::endl);
+                FIXOUT(config::Log,"Magnetic moment:" << ucm.GetMu(i)  << " [muB]" << std::endl);
                 FIXOUTVEC(config::Log,"Initial spin position:",ucm.GetInitS(i,0),ucm.GetInitS(i,1),ucm.GetInitS(i,2));
+                FIXOUT(config::Log,"K_1^u: " << ucm.GetK1U(i) << " [Joules]" << std::endl);
+                FIXOUTVEC(config::Log,"Direction of anisotropy axis:",ucm.GetK1UDir(i,0),ucm.GetK1UDir(i,1),ucm.GetK1UDir(i,2));
                 config::printline(config::Log);
             }
 
@@ -158,7 +166,12 @@ namespace geom
                         sublattice[atom_counter]=ucm.GetSublattice(t);
                         gamma[atom_counter]=ucm.GetGamma(t);
                         lambda[atom_counter]=ucm.GetDamping(t);
+                        mu[atom_counter]=ucm.GetMu(t);
                         llgpf[atom_counter]=-gamma[atom_counter]/((1.0+lambda[atom_counter]*lambda[atom_counter]));
+                        anis::k1u[atom_counter]=ucm.GetK1U(t)/(llg::muB*mu[atom_counter]);
+                        anis::k1udir(atom_counter,0)=ucm.GetK1UDir(t,0);
+                        anis::k1udir(atom_counter,1)=ucm.GetK1UDir(t,1);
+                        anis::k1udir(atom_counter,2)=ucm.GetK1UDir(t,2);
                         // The real space position is equal to
                         // r_x = ((k_x+i*N_{k,x})/N_{k,x})*lattice constant_x
                         // where k_x is the location of the atom in the unit cell

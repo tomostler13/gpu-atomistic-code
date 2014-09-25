@@ -1,7 +1,7 @@
 // File: geom.h
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Sep 2014 09:22:40
+// Last-modified: 25 Sep 2014 13:34:55
 #include "../inc/arrays.h"
 #include "../inc/unitcell.h"
 #include <string>
@@ -15,7 +15,7 @@ namespace geom
     void readconfig(int argc,char *argv[]);
     extern Array2D<int> lu,zplu;
     extern Array4D<int> coords;
-    extern Array<double> abc,gamma,lambda,llgpf,rx,ry,rz,sublattice;
+    extern Array<double> abc,mu,gamma,lambda,llgpf,rx,ry,rz,sublattice;
     extern Array<unsigned int> Nk;
 
     extern unitCellMembers ucm;

@@ -1,7 +1,7 @@
 // File: array.h
 // Author: Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 25 Sep 2014 09:51:56
+// Last-modified: 25 Sep 2014 12:38:17
 #ifndef __UNITCELL_H__
 #define __UNITCELL_H__
 #include "../inc/arrays.h"
@@ -19,9 +19,9 @@ class unitCellMembers
         //elements - string holding element type
         //sublattice - which sublattice (magnetic species type) does this unit cell atom belog to?
         //base_mom - the number of unique moments there should be
-        unitCellMembers(): nms(0), size(0), coords(0,0), elements(0), damping(0), mu(0), gamma(0), sublattice(0), initspin(0,0), lambda(0), base_mom(0){}
+        unitCellMembers(): nms(0), size(0), coords(0,0), elements(0), damping(0), mu(0), gamma(0), k1u(0), k1udir(0,0), sublattice(0), initspin(0,0), lambda(0), base_mom(0){}
         //constructor
-        unitCellMembers(unsigned int nauc,unsigned int nms): coords(nauc,3), elements(nauc), damping(nauc), mu(nauc), gamma(nauc), sublattice(nauc), initspin(nauc,3), size(nauc), base_mom(nms) {}
+        unitCellMembers(unsigned int nauc,unsigned int nms): coords(nauc,3), elements(nauc), damping(nauc), mu(nauc), gamma(nauc), sublattice(nauc), initspin(nauc,3), size(nauc), base_mom(nms), k1u(nauc), k1udir(nauc,3) {}
         //destructor
         ~unitCellMembers(){clean();}
         inline void init(unsigned int nauc,unsigned int num_mag)
@@ -46,6 +46,9 @@ class unitCellMembers
             nms=num_mag;
             //resize the base_mom array
             base_mom.resize(nms);
+            //resize the first order uniaxial anisotropy constant array and direction
+            k1u.resize(nauc);
+            k1udir.resize(nauc,3);
         }
         inline std::string GetElement(unsigned int t)
         {
@@ -89,6 +92,29 @@ class unitCellMembers
                 error::errMessage("You have specified a given number of sublattices but one of your atoms in your unit cell has a species number greater than this.");
             }
             sublattice[t]=s;
+        }
+        inline unsigned int SetK1U(unsigned int t,double K,double x,double y,double z)
+        {
+            k1u[t]=K;
+            k1udir(t,0)=x;
+            k1udir(t,1)=y;
+            k1udir(t,2)=z;
+            if(fabs(sqrt(x*x+y*y+z*z)-1)>1e-12)
+            {
+                return(2);
+            }
+            else
+            {
+                return(0);
+            }
+        }
+        inline double GetK1U(unsigned int t)
+        {
+            return(k1u[t]);
+        }
+        inline double GetK1UDir(unsigned int t,unsigned int c)
+        {
+            return(k1udir(t,c));
         }
         inline double GetMuBase(unsigned int s)
         {
@@ -167,6 +193,8 @@ class unitCellMembers
             mu.clear();
             gamma.clear();
             damping.clear();
+            k1u.clear();
+            k1udir.clear();
         }
         inline unsigned int GetNMS()
         {
@@ -180,11 +208,15 @@ class unitCellMembers
         {
             if(errNo==0)
             {
-                return("No error");
+                return("No error, why are you asking?");
             }
             else if(errNo==1)
             {
                 return("A magnetic moment was associated with an atom in the unit cell whose magnetic moment is not consistent with others in that species. Check your unit cell file.");
+            }
+            else if(errNo==2)
+            {
+                return("The input direction for the uniaxial anisotropy constant must have a modulus of 1 (i.e. it must be a unit vector. Check the unit cell file.");
             }
             else
             {
@@ -194,8 +226,8 @@ class unitCellMembers
     private:
         unsigned int size;
         unsigned int nms;
-        Array2D<double> coords,initspin;
-        Array<double> damping,mu,gamma,sublattice,lambda,base_mom;
+        Array2D<double> coords,initspin,k1udir;
+        Array<double> damping,mu,gamma,sublattice,lambda,base_mom,k1u;
         std::vector<std::string> elements;
 };
 #endif /*_UNITCELL_H_*/

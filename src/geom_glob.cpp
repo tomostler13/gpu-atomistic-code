@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 24 Sep 2014 12:59:41
+// Last-modified: 25 Sep 2014 13:35:07
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -29,7 +29,7 @@ namespace geom
     //number of magnetic species
     unsigned int nspins=0,zps=0,czps=0,nms=0;
     //The a,b and c values (i.e. lattice constants)
-    Array<double> abc,gamma,lambda,llgpf,sublattice,rx,ry,rz;
+    Array<double> abc,mu,gamma,lambda,llgpf,sublattice,rx,ry,rz;
     //Number of K points
     Array<unsigned int> Nk;
     //lookup array. Give atom number and return coordinates
@@ -96,6 +96,7 @@ namespace geom
         FIXOUT(config::Info,"Number of atoms in the unit cell:" << nauc << std::endl);
         //initialize an instance of the unit cell class
         ucm.init(nauc,nms);
+        unsigned int errcheck=0;//for a bit of error checking from unit cell class
         //loop over the atoms in the unit cell and set the properties in the class (ucm)
         for(unsigned int i = 0 ; i < nauc ; i++)
         {
@@ -128,6 +129,17 @@ namespace geom
             //Get the initial spin configuration (reuse the c array)
             ucfi >> c[0] >> c[1] >> c[2];
             ucm.SetInitSpin(c[0],c[1],c[2],i);
+            //get the first order uniaxial anisotropy constant (reuse the temp variable
+            ucfi >> temp;
+            //get it's direction and reuse c array
+            ucfi >> c[0] >> c[1] >> c[2];
+            errcheck=ucm.SetK1U(i,temp,c[0],c[1],c[2]);
+            //check what the error is
+            if(errcheck!=0)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage(ucm.errorCode(errcheck));
+            }
 
 
         }
