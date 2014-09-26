@@ -1,7 +1,7 @@
 // File: array.h
 // Author: Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 26 Sep 2014 11:26:54
+// Last-modified: 26 Sep 2014 13:45:28
 #ifndef __UNITCELL_H__
 #define __UNITCELL_H__
 #include "../inc/arrays.h"
@@ -129,7 +129,7 @@ class unitCellMembers
         inline void SetNES(unsigned int s,unsigned int n)
         {
             nes[s]=n;
-            oones[s]=1./double(n);
+            oones[s]=1./static_cast<double>(n);
         }
         inline double GetNES(unsigned int s)
         {
@@ -215,7 +215,7 @@ class unitCellMembers
         {
             return(mu(t));
         }
-        inline double GetSublattice(unsigned int t)
+        inline unsigned int GetSublattice(unsigned int t)
         {
             return(sublattice(t));
         }

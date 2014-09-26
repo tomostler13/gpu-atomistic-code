@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Sep 2014 11:44:05
+// Last-modified: 26 Sep 2014 13:53:05
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -156,7 +156,7 @@ namespace util
         pvf << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
-            pvf << double(geom::lu(i,0))*geom::abc[0] << "\t" << double(geom::lu(i,1))*geom::abc[1] << "\t" << double(geom::lu(i,2))*geom::abc[2] << "\n";
+            pvf << static_cast<double>(geom::lu(i,0))*geom::abc[0] << "\t" << static_cast<double>(geom::lu(i,1))*geom::abc[1] << "\t" << static_cast<double>(geom::lu(i,2))*geom::abc[2] << "\n";
         }
 
         pvf << "</DataArray>" << "\n";
@@ -183,7 +183,10 @@ namespace util
         //This section of code can be used to add new ways to calculate the magnetization.
         //For example if one wanted to calculate the height resolved magnetization then it should
         //be added here. It should be added to the list below just incase I ever want to write a
-        //manual (insert ridiculous laugh here).
+        //manual (insert ridiculous laugh here). It may be possible that you have to create a
+        //new set of arrays for storing and calculating the magnetization. Using the above example
+        //(m(height)) you would have to create an array in src/spins.cpp and also declare an
+        //extern array in inc/spins.h.
         //
         //
         // List of arguements and what they do
@@ -191,6 +194,7 @@ namespace util
         // 0 - calculate the sublattice resolved magnetization
         if(spins::mag_calc_method==0)
         {
+            spins::mag.IFill(0);
             //add up the magnetization for each sublattice
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
             {
@@ -202,8 +206,7 @@ namespace util
             //divide by the number of spins in each sublattice
             for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
             {
-                unsigned int oones=geom::ucm.GetOONES(i);
-                std::cout << oones << std::endl;
+                double oones=1./static_cast<double>(geom::ucm.GetNES(i));
                 spins::mag(i,0)*=oones;
                 spins::mag(i,1)*=oones;
                 spins::mag(i,2)*=oones;

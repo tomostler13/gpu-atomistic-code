@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 24 Sep 2014 13:11:17
+// Last-modified: 26 Sep 2014 13:48:13
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -87,7 +87,7 @@ namespace intmat
                                         lc[l]=geom::dim[l]*geom::Nk[l]-lc[l];
                                         tc[l]=geom::zpdim[l]*geom::Nk[l]+lc[l];
                                     }
-                                    rij[l]=double(lc[l])*geom::abc[l]/double(geom::Nk[l]);
+                                    rij[l]=static_cast<double>(lc[l])*geom::abc[l]/static_cast<double>(geom::Nk[l]);
                                 }
                                 double mrij=sqrt(rij[0]*rij[0]+rij[1]*rij[1]+rij[2]*rij[2]);
                                 double oomrij3=1./(mrij*mrij*mrij);

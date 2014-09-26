@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Sep 2014 10:42:33
+// Last-modified: 26 Sep 2014 13:47:24
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -147,6 +147,12 @@ namespace geom
             error::errMessage("Could not open file for writing atomic position information");
         }
         unsigned int atom_counter=0;
+        //for counting the number of species
+        unsigned int spec_counter[ucm.GetNMS()];
+        for(unsigned int i = 0 ; i < ucm.GetNMS() ; i++)
+        {
+            spec_counter[i]=0;
+        }
         //loop over dimensions in x,y and z
         for(unsigned int i = 0 ; i < dim[0] ; i++)
         {
@@ -163,6 +169,7 @@ namespace geom
                         lu(atom_counter,1)=j*Nk[1];
                         lu(atom_counter,2)=k*Nk[2];
                         lu(atom_counter,3)=ucm.GetSublattice(t);
+                        spec_counter[ucm.GetSublattice(t)]++;
                         lu(atom_counter,4)=t;
                         //1D arrays
                         sublattice[atom_counter]=ucm.GetSublattice(t);
@@ -180,9 +187,9 @@ namespace geom
                         // N_{k,x} is the number of k-points in the x direction
                         // This can of course be generalised the each direction
 
-                        rx[atom_counter]=((ucm.GetCoord(t,0)+double(i*Nk[0]))/double(Nk[0]))*abc[0];
-                        ry[atom_counter]=((ucm.GetCoord(t,1)+double(j*Nk[1]))/double(Nk[1]))*abc[1];
-                        rz[atom_counter]=((ucm.GetCoord(t,2)+double(k*Nk[2]))/double(Nk[2]))*abc[2];
+                        rx[atom_counter]=((ucm.GetCoord(t,0)+static_cast<double>(i*Nk[0]))/static_cast<double>(Nk[0]))*abc[0];
+                        ry[atom_counter]=((ucm.GetCoord(t,1)+static_cast<double>(j*Nk[1]))/static_cast<double>(Nk[1]))*abc[1];
+                        rz[atom_counter]=((ucm.GetCoord(t,2)+static_cast<double>(k*Nk[2]))/static_cast<double>(Nk[2]))*abc[2];
                         atom_counter++;
 
                     }
@@ -194,6 +201,14 @@ namespace geom
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Number of atoms placed on mesh is more or less than expected.");
+        }
+        for(unsigned int i = 0 ; i < ucm.GetNMS() ; i++)
+        {
+            ucm.SetNES(i,spec_counter[i]);
+            std::stringstream sstr;
+            sstr << "Number of species " << i << ":";
+            std::string str=sstr.str();
+            FIXOUT(config::Info,str.c_str() << ucm.GetNES(i) << " [ " << 100*(static_cast<double>(ucm.GetNES(i))/static_cast<double>(nspins)) << "% ]" << std::endl);
         }
 
         if(nms > 5)

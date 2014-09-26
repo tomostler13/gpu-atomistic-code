@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 26 Sep 2014 11:39:08
+// Last-modified: 26 Sep 2014 13:58:13
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -72,14 +72,15 @@ namespace llg
             if(i < 5)
             {
                 FIXOUT(config::Info,str.c_str() << geom::ucm.GetSigma(i) << std::endl);
+                str=sstr1.str();
                 FIXOUT(config::Info,str.c_str() << geom::ucm.Getllgpf(i) << std::endl);
                 config::printline(config::Info);
-                str=sstr1.str();
             }
             if(geom::ucm.NumAtomsUnitCell() > 5)
             {
                 FIXOUT(config::Log,str.c_str() << geom::ucm.GetSigma(i) << std::endl);
-                FIXOUT(config::Info,str.c_str() << geom::ucm.Getllgpf(i) << std::endl);
+                str=sstr1.str();
+                FIXOUT(config::Log,str.c_str() << geom::ucm.Getllgpf(i) << std::endl);
                 config::printline(config::Log);
             }
         }

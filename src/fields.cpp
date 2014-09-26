@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 25 Sep 2014 14:20:17
+// Last-modified: 26 Sep 2014 13:49:22
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -120,9 +120,9 @@ namespace fields
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
             unsigned int sl=geom::sublattice[i];
-            Hx[i]=Hr(sl,0,lc[0],lc[1],lc[2])/(double(geom::zps));
-            Hy[i]=Hr(sl,1,lc[0],lc[1],lc[2])/(double(geom::zps));
-            Hz[i]=Hr(sl,2,lc[0],lc[1],lc[2])/(double(geom::zps));
+            Hx[i]=Hr(sl,0,lc[0],lc[1],lc[2])/(static_cast<double>(geom::zps));
+            Hy[i]=Hr(sl,1,lc[0],lc[1],lc[2])/(static_cast<double>(geom::zps));
+            Hz[i]=Hr(sl,2,lc[0],lc[1],lc[2])/(static_cast<double>(geom::zps));
             //std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
             //std::cin.get();
         }
