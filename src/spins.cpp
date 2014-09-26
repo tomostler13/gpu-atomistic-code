@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 26 Sep 2014 11:40:56
+// Last-modified: 26 Sep 2014 16:08:13
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -54,7 +54,7 @@ namespace spins
         }
         SUCCESS(config::Info);
 
-        FIXOUT(config::Info,"Method for calculating the magnetization:" << mag_calc_method << " (see notes in src/util.cpp, function calc_mag" << std::endl);
+        FIXOUT(config::Info,"Method for calculating the magnetization:" << mag_calc_method << " (see notes in src/util.cpp, function -> calc_mag)" << std::endl);
         FIXOUT(config::Info,"Planning r2c and c2r transforms:" << std::flush);
         int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
         int *inembed=n;
