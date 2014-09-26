@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Sep 2014 13:47:24
+// Last-modified: 26 Sep 2014 15:43:04
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -177,7 +177,7 @@ namespace geom
                         lambda[atom_counter]=ucm.GetDamping(t);
                         mu[atom_counter]=ucm.GetMu(t);
                         llgpf[atom_counter]=-gamma[atom_counter]/((1.0+lambda[atom_counter]*lambda[atom_counter]));
-                        anis::k1u[atom_counter]=ucm.GetK1U(t)/(llg::muB*mu[atom_counter]);
+                        anis::k1u[atom_counter]=2.0*ucm.GetK1U(t)/(llg::muB*mu[atom_counter]);
                         anis::k1udir(atom_counter,0)=ucm.GetK1UDir(t,0);
                         anis::k1udir(atom_counter,1)=ucm.GetK1UDir(t,1);
                         anis::k1udir(atom_counter,2)=ucm.GetK1UDir(t,2);

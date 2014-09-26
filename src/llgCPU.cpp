@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 26 Sep 2014 11:39:36
+// Last-modified: 26 Sep 2014 15:52:59
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -73,16 +73,19 @@ namespace llgCPU
 
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthx[i]+llg::applied[2]};
-            //calculate the anisotropy
-            /*            for(unsigned int na = 0 ; na < anis::nfou ; na++)
-                          {
-                          const double lK=anis::FirstOrderUniaxK(na);
-                          const double dir[3]={anis::FirstOrderUniaxDir(na,0),anis::FirstOrderUniaxDir(na,1),anis::FirstOrderUniaxDir(na,2)};
-                          const double sdotn=s[0]*dir[0]*lK+s[1]*dir[1]*lK+s[2]*dir[2]*lK;
-                          h[0]+=sdotn*dir[0];
-                          h[1]+=sdotn*dir[1];
-                          h[2]+=sdotn*dir[2];
-                          }*/
+            //--------------------------------------------------------
+            //calculate the first order uniaxial anisotropy component
+            //direction of the axis
+            const double d[3]={anis::k1udir(i,0),anis::k1udir(i,1),anis::k1udir(i,2)};
+            // S . n (n=direction of anisotropy axis)
+            const double sdn=s[0]*d[0]+s[1]*d[1]+s[2]*d[2];
+            // 2 * D (where D is anisotropy constant
+            const double TwoD=anis::k1u[i];
+            h[0]+=(TwoD*sdn*d[0]);
+            h[1]+=(TwoD*sdn*d[1]);
+            h[2]+=(TwoD*sdn*d[2]);
+            //--------------------------------------------------------
+
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -103,16 +106,19 @@ namespace llgCPU
         {
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthx[i]+llg::applied[2]};
-            /*            //calculate the anisotropy
-                          for(unsigned int na = 0 ; na < anis::nfou ; na++)
-                          {
-                          const double lK=anis::FirstOrderUniaxK(na);
-                          const double dir[3]={anis::FirstOrderUniaxDir(na,0),anis::FirstOrderUniaxDir(na,1),anis::FirstOrderUniaxDir(na,2)};
-                          const double sdotn=s[0]*dir[0]*lK+s[1]*dir[1]*lK+s[2]*dir[2]*lK;
-                          h[0]+=sdotn*dir[0];
-                          h[1]+=sdotn*dir[1];
-                          h[2]+=sdotn*dir[2];
-                          }*/
+            //--------------------------------------------------------
+            //calculate the first order uniaxial anisotropy component
+            //direction of the axis
+            const double d[3]={anis::k1udir(i,0),anis::k1udir(i,1),anis::k1udir(i,2)};
+            // S . n (n=direction of anisotropy axis)
+            const double sdn=s[0]*d[0]+s[1]*d[1]+s[2]*d[2];
+            // 2 * D (where D is anisotropy constant
+            const double TwoD=anis::k1u[i];
+            h[0]+=(TwoD*sdn*d[0]);
+            h[1]+=(TwoD*sdn*d[1]);
+            h[2]+=(TwoD*sdn*d[2]);
+            //--------------------------------------------------------
+
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
