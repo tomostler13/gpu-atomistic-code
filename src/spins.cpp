@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 25 Sep 2014 14:40:06
+// Last-modified: 26 Sep 2014 11:40:56
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -23,26 +23,38 @@ namespace spins
     Array5D<fftw_complex> Sk;
     Array5D<double> Sr;
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
+    Array2D<double> mag;
     fftw_plan SP;
-    unsigned int update=0;
+    unsigned int update=0,mag_calc_method=0;
     std::ifstream sfs;
     void initSpins(int argc,char *argv[])
     {
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Spin details***" << std::endl;
-        FIXOUT(config::Info,"Resizing arrays:" << std::flush);
+        FIXOUT(config::Info,"Resizing arrays and initializing spin directions:" << std::flush);
         Sk.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
         Sr.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
         Sr.IFill(0);
         Sk.IFill(0);
+        mag.resize(geom::ucm.GetNMS(),3);
+        mag.IFill(0);
         Sx.resize(geom::nspins);
         Sy.resize(geom::nspins);
         Sz.resize(geom::nspins);
         Sx.IFill(geom::nspins);
         Sy.IFill(geom::nspins);
         Sz.IFill(geom::nspins);
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            //get which atom in the unit cell spin i is
+            unsigned int aiuc=geom::lu(i,4);
+            Sx[i]=geom::ucm.GetInitS(aiuc,0);
+            Sy[i]=geom::ucm.GetInitS(aiuc,1);
+            Sz[i]=geom::ucm.GetInitS(aiuc,2);
+        }
         SUCCESS(config::Info);
 
+        FIXOUT(config::Info,"Method for calculating the magnetization:" << mag_calc_method << " (see notes in src/util.cpp, function calc_mag" << std::endl);
         FIXOUT(config::Info,"Planning r2c and c2r transforms:" << std::flush);
         int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
         int *inembed=n;
@@ -80,8 +92,8 @@ namespace spins
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
             unsigned int sl=geom::sublattice[i];
             Sr(sl,0,lc[0],lc[1],lc[2])=Sx[i];
-            Sr(sl,1,lc[0],lc[1],lc[2])=Sx[i];
-            Sr(sl,2,lc[0],lc[1],lc[2])=Sx[i];
+            Sr(sl,1,lc[0],lc[1],lc[2])=Sy[i];
+            Sr(sl,2,lc[0],lc[1],lc[2])=Sz[i];
             //            std::cout << "Lookup\t" << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << Skx(lc[0],lc[1],lc[2])[0] << "\t" << Sky(lc[0],lc[1],lc[2])[0] << "\t" << Skz(lc[0],lc[1],lc[2])[0] << std::endl;
         }
         fftw_execute(SP);

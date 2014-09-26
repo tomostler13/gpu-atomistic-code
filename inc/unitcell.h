@@ -1,7 +1,7 @@
 // File: array.h
 // Author: Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 25 Sep 2014 12:38:17
+// Last-modified: 26 Sep 2014 11:26:54
 #ifndef __UNITCELL_H__
 #define __UNITCELL_H__
 #include "../inc/arrays.h"
@@ -15,13 +15,15 @@ class unitCellMembers
     public:
         //default constructor
         //nms - number of magnetic species
+        //nes - number of each species
+        //oones - one over the number of each species
         //size - number of atoms in the unit cell
         //elements - string holding element type
         //sublattice - which sublattice (magnetic species type) does this unit cell atom belog to?
         //base_mom - the number of unique moments there should be
-        unitCellMembers(): nms(0), size(0), coords(0,0), elements(0), damping(0), mu(0), gamma(0), k1u(0), k1udir(0,0), sublattice(0), initspin(0,0), lambda(0), base_mom(0){}
+        unitCellMembers(): nes(0), nms(0), size(0), oones(0), coords(0,0), elements(0), damping(0), mu(0), gamma(0), k1u(0), k1udir(0,0), sublattice(0), initspin(0,0), lambda(0), llgpf(0), sigma(0), base_mom(0){}
         //constructor
-        unitCellMembers(unsigned int nauc,unsigned int nms): coords(nauc,3), elements(nauc), damping(nauc), mu(nauc), gamma(nauc), sublattice(nauc), initspin(nauc,3), size(nauc), base_mom(nms), k1u(nauc), k1udir(nauc,3) {}
+        unitCellMembers(unsigned int nauc,unsigned int nms): coords(nauc,3), elements(nauc), damping(nauc), mu(nauc), gamma(nauc), sublattice(nauc), llgpf(nauc), sigma(nauc), initspin(nauc,3), size(nauc), base_mom(nms), k1u(nauc), k1udir(nauc,3) {}
         //destructor
         ~unitCellMembers(){clean();}
         inline void init(unsigned int nauc,unsigned int num_mag)
@@ -46,6 +48,14 @@ class unitCellMembers
             nms=num_mag;
             //resize the base_mom array
             base_mom.resize(nms);
+            //prefactor to the LLG
+            llgpf.resize(nauc);
+            //prefactor to thermal term
+            sigma.resize(nauc);
+            //number of each species
+            nes.resize(nms);
+            //one over the number of magnetic species
+            oones.resize(nms);
             //resize the first order uniaxial anisotropy constant array and direction
             k1u.resize(nauc);
             k1udir.resize(nauc,3);
@@ -107,6 +117,35 @@ class unitCellMembers
             {
                 return(0);
             }
+        }
+        inline void Setllgpf(unsigned int t,double x)
+        {
+            llgpf[t]=x;
+        }
+        inline void SetSigma(unsigned int t,double x)
+        {
+            sigma[t]=x;
+        }
+        inline void SetNES(unsigned int s,unsigned int n)
+        {
+            nes[s]=n;
+            oones[s]=1./double(n);
+        }
+        inline double GetNES(unsigned int s)
+        {
+            return(double(nes[s]));
+        }
+        inline double GetOONES(unsigned int s)
+        {
+            return(oones[s]);
+        }
+        inline double Getllgpf(unsigned int t)
+        {
+            return(llgpf[t]);
+        }
+        inline double GetSigma(unsigned int t)
+        {
+            return(sigma[t]);
         }
         inline double GetK1U(unsigned int t)
         {
@@ -195,6 +234,8 @@ class unitCellMembers
             damping.clear();
             k1u.clear();
             k1udir.clear();
+            llgpf.clear();
+            sigma.clear();
         }
         inline unsigned int GetNMS()
         {
@@ -227,7 +268,8 @@ class unitCellMembers
         unsigned int size;
         unsigned int nms;
         Array2D<double> coords,initspin,k1udir;
-        Array<double> damping,mu,gamma,sublattice,lambda,base_mom,k1u;
+        Array<double> damping,mu,gamma,lambda,base_mom,k1u,sigma,llgpf,oones;
+        Array<unsigned int> sublattice,nes;
         std::vector<std::string> elements;
 };
 #endif /*_UNITCELL_H_*/

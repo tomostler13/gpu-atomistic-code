@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 25 Sep 2014 13:08:07
+// Last-modified: 26 Sep 2014 11:39:36
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -54,19 +54,18 @@ namespace llgCPU
         //calculate the 2 spin fields (dipolar, exchange)
         fields::ftdip();
         //FOR DEBUGGING THE FIELD
-/*        for(unsigned int i = 0 ; i < geom::nspins ; i++)
-        {
-            std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx(i) << "\t" << fields::Hy(i) << "\t" << fields::Hz(i) << std::endl;
-        }
-        exit(0);*/
-
+        /*        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                  {
+                  std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx(i) << "\t" << fields::Hy(i) << "\t" << fields::Hz(i) << std::endl;
+                  }
+                  exit(0);*/
         const double sqrtT=sqrt(llg::T);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
 
-//            fields::Hthx[i]=sqrtT*mat::sigma*Random::normal();
-//            fields::Hthy[i]=sqrtT*mat::sigma*Random::normal();
-//            fields::Hthz[i]=sqrtT*mat::sigma*Random::normal();
+            fields::Hthx[i]=sqrtT*geom::sigma[i]*Random::normal();
+            fields::Hthy[i]=sqrtT*geom::sigma[i]*Random::normal();
+            fields::Hthz[i]=sqrtT*geom::sigma[i]*Random::normal();
 
         }
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -75,15 +74,15 @@ namespace llgCPU
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthx[i]+llg::applied[2]};
             //calculate the anisotropy
-/*            for(unsigned int na = 0 ; na < anis::nfou ; na++)
-            {
-                const double lK=anis::FirstOrderUniaxK(na);
-                const double dir[3]={anis::FirstOrderUniaxDir(na,0),anis::FirstOrderUniaxDir(na,1),anis::FirstOrderUniaxDir(na,2)};
-                const double sdotn=s[0]*dir[0]*lK+s[1]*dir[1]*lK+s[2]*dir[2]*lK;
-                h[0]+=sdotn*dir[0];
-                h[1]+=sdotn*dir[1];
-                h[2]+=sdotn*dir[2];
-            }*/
+            /*            for(unsigned int na = 0 ; na < anis::nfou ; na++)
+                          {
+                          const double lK=anis::FirstOrderUniaxK(na);
+                          const double dir[3]={anis::FirstOrderUniaxDir(na,0),anis::FirstOrderUniaxDir(na,1),anis::FirstOrderUniaxDir(na,2)};
+                          const double sdotn=s[0]*dir[0]*lK+s[1]*dir[1]*lK+s[2]*dir[2]*lK;
+                          h[0]+=sdotn*dir[0];
+                          h[1]+=sdotn*dir[1];
+                          h[2]+=sdotn*dir[2];
+                          }*/
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -93,10 +92,10 @@ namespace llgCPU
             spins::eSx[i] = s[0] + fnx[i]*llg::rdt;
             spins::eSy[i] = s[1] + fny[i]*llg::rdt;
             spins::eSz[i] = s[2] + fnz[i]*llg::rdt;
-			const double mods = sqrt(spins::eSx[i]*spins::eSx[i]+spins::eSy[i]*spins::eSy[i]+spins::eSz[i]*spins::eSz[i]);
-			spins::eSx[i]/=mods;
-			spins::eSy[i]/=mods;
-			spins::eSz[i]/=mods;
+            const double mods = sqrt(spins::eSx[i]*spins::eSx[i]+spins::eSy[i]*spins::eSy[i]+spins::eSz[i]*spins::eSz[i]);
+            spins::eSx[i]/=mods;
+            spins::eSy[i]/=mods;
+            spins::eSz[i]/=mods;
         }
         //perform the calculation of the 2 spin fields using the euler spin arrays
         fields::eftdip();
@@ -104,16 +103,16 @@ namespace llgCPU
         {
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthx[i]+llg::applied[2]};
-/*            //calculate the anisotropy
-            for(unsigned int na = 0 ; na < anis::nfou ; na++)
-            {
-                const double lK=anis::FirstOrderUniaxK(na);
-                const double dir[3]={anis::FirstOrderUniaxDir(na,0),anis::FirstOrderUniaxDir(na,1),anis::FirstOrderUniaxDir(na,2)};
-                const double sdotn=s[0]*dir[0]*lK+s[1]*dir[1]*lK+s[2]*dir[2]*lK;
-                h[0]+=sdotn*dir[0];
-                h[1]+=sdotn*dir[1];
-                h[2]+=sdotn*dir[2];
-            }*/
+            /*            //calculate the anisotropy
+                          for(unsigned int na = 0 ; na < anis::nfou ; na++)
+                          {
+                          const double lK=anis::FirstOrderUniaxK(na);
+                          const double dir[3]={anis::FirstOrderUniaxDir(na,0),anis::FirstOrderUniaxDir(na,1),anis::FirstOrderUniaxDir(na,2)};
+                          const double sdotn=s[0]*dir[0]*lK+s[1]*dir[1]*lK+s[2]*dir[2]*lK;
+                          h[0]+=sdotn*dir[0];
+                          h[1]+=sdotn*dir[1];
+                          h[2]+=sdotn*dir[2];
+                          }*/
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
 
@@ -122,10 +121,11 @@ namespace llgCPU
             spins::Sx[i] +=(0.5*(fnx[i]+fnp1[0])*llg::rdt);
             spins::Sy[i] +=(0.5*(fny[i]+fnp1[1])*llg::rdt);
             spins::Sz[i] +=(0.5*(fnz[i]+fnp1[2])*llg::rdt);
-			const double mods = sqrt(spins::Sx[i]*spins::Sx[i]+spins::Sy[i]*spins::Sy[i]+spins::Sz[i]*spins::Sz[i]);
-			spins::Sx[i]/=mods;
-			spins::Sy[i]/=mods;
-			spins::Sz[i]/=mods;
+            const double mods = sqrt(spins::Sx[i]*spins::Sx[i]+spins::Sy[i]*spins::Sy[i]+spins::Sz[i]*spins::Sz[i]);
+            spins::Sx[i]/=mods;
+            spins::Sy[i]/=mods;
+            spins::Sz[i]/=mods;
         }
+
     }
 }

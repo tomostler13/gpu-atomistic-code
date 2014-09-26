@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 25 Sep 2014 13:35:07
+// Last-modified: 26 Sep 2014 10:42:46
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -29,7 +29,8 @@ namespace geom
     //number of magnetic species
     unsigned int nspins=0,zps=0,czps=0,nms=0;
     //The a,b and c values (i.e. lattice constants)
-    Array<double> abc,mu,gamma,lambda,llgpf,sublattice,rx,ry,rz;
+    Array<double> abc,mu,gamma,lambda,llgpf,sigma,rx,ry,rz;
+    Array<unsigned int> sublattice;
     //Number of K points
     Array<unsigned int> Nk;
     //lookup array. Give atom number and return coordinates

@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 25 Sep 2014 13:40:10
+// Last-modified: 26 Sep 2014 11:40:16
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -75,17 +75,18 @@ int main(int argc,char *argv[])
             {
                 if(counter%10==0)
                 {
-//                    util::outputSpinsVTU(t);
                     counter=0;
                 }
                 counter++;
-                const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
-                const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
-                const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
-                std::cout << double(t)*llg::dt << "\t" << mx << "\t" << my << "\t" << mz << "\t" << sqrt(mx*mx+my*my+mz*mz) << std::endl;
+                util::calc_mag();
+                std::cout << double(t)*llg::dt << "\t";
+                for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
+                {
+                   std::cout << spins::mag(s,0) << "\t" << spins::mag(s,1) << "\t" << spins::mag(s,2) << "\t";
+                }
+                std::cout << std::endl;
             }
         }
-//        util::outputSpinsVTU(-1);
     }
     return(0);
 }

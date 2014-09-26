@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 25 Sep 2014 14:47:54
+// Last-modified: 26 Sep 2014 11:44:05
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -176,6 +176,44 @@ namespace util
         pvf << "</UnstructuredGrid>" << "\n";
         pvf << "</VTKFile>" << "\n";
         pvf.close();
+    }
+
+    void calc_mag()
+    {
+        //This section of code can be used to add new ways to calculate the magnetization.
+        //For example if one wanted to calculate the height resolved magnetization then it should
+        //be added here. It should be added to the list below just incase I ever want to write a
+        //manual (insert ridiculous laugh here).
+        //
+        //
+        // List of arguements and what they do
+        //
+        // 0 - calculate the sublattice resolved magnetization
+        if(spins::mag_calc_method==0)
+        {
+            //add up the magnetization for each sublattice
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                unsigned int sl = geom::sublattice[i];
+                spins::mag(sl,0)+=spins::Sx[i];
+                spins::mag(sl,1)+=spins::Sy[i];
+                spins::mag(sl,2)+=spins::Sz[i];
+            }
+            //divide by the number of spins in each sublattice
+            for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+            {
+                unsigned int oones=geom::ucm.GetOONES(i);
+                std::cout << oones << std::endl;
+                spins::mag(i,0)*=oones;
+                spins::mag(i,1)*=oones;
+                spins::mag(i,2)*=oones;
+            }
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("The method for calculating the magnetization is not recognised.");
+        }
     }
 
 }

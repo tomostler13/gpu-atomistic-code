@@ -1,7 +1,7 @@
 // File: spins.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 25 Sep 2014 14:47:09
+// Last-modified: 26 Sep 2014 11:03:21
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -18,7 +18,8 @@ namespace spins
     extern Array5D<fftw_complex> Sk;
     extern Array5D<double> Sr;
     extern Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
-	extern unsigned int update;
+    extern Array2D<double> mag;
+    extern unsigned int update,mag_calc_method;
     void initSpins(int argc,char *argv[]);
     void FFTForward();
     void eFFTForward();

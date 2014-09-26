@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 25 Sep 2014 13:35:46
+// Last-modified: 26 Sep 2014 10:42:33
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -34,7 +34,7 @@ namespace geom
         //calculate the number of spins
         nspins=dim[0]*dim[1]*dim[2]*ucm.NumAtomsUnitCell();
         //resize these 1D arrays. The atom number should return the value
-        mu.resize(nspins);gamma.resize(nspins);lambda.resize(nspins);llgpf.resize(nspins);rx.resize(nspins);ry.resize(nspins);rz.resize(nspins);sublattice.resize(nspins);
+        mu.resize(nspins);gamma.resize(nspins);lambda.resize(nspins);sigma.resize(nspins);llgpf.resize(nspins);rx.resize(nspins);ry.resize(nspins);rz.resize(nspins);sublattice.resize(nspins);
         //resize the anisotropy arrays
         anis::k1u.resize(nspins);anis::k1udir.resize(nspins,3);
         FIXOUTVEC(config::Info,"Number of K-points:",Nk[0],Nk[1],Nk[2]);
@@ -127,12 +127,13 @@ namespace geom
         //the 5 entries for each spin correspond to
         // 0,1,2 - the x,y,z positions in the unit cell
         // 3 is the magnetic species number
+        // 4 is te atom in the unit cell
         lu.resize(nspins,5);
         lu.IFill(0);
         //the 3 bits of information:
         // 0 - the magnetic atom number
         // 1 - the magnetic species type
-        coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2],3);
+        coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2],2);
         //IF element 0 has the following numbers
         //-2 THEN here corresponds to empty k-mesh point
         //-1 THEN corresponds to an empty k-mesh point but with an imaginary atom
@@ -162,6 +163,7 @@ namespace geom
                         lu(atom_counter,1)=j*Nk[1];
                         lu(atom_counter,2)=k*Nk[2];
                         lu(atom_counter,3)=ucm.GetSublattice(t);
+                        lu(atom_counter,4)=t;
                         //1D arrays
                         sublattice[atom_counter]=ucm.GetSublattice(t);
                         gamma[atom_counter]=ucm.GetGamma(t);
