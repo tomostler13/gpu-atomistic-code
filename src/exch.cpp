@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 26 Sep 2014 16:36:19
+// Last-modified: 27 Sep 2014 17:04:01
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -175,6 +175,17 @@ namespace exch
                         }
                     }
                 }
+                //check if we have a single layer of atoms in any dimension
+                bool checkmonolayer[3]={false,false,false};
+                for(unsigned int xyz = 0 ; xyz < 3; xyz++)
+                {
+                    if(geom::dim[xyz]*geom::Nk[xyz] < 2)
+                    {
+                        checkmonolayer[xyz]=true;
+                    }
+                }
+                FIXOUTVEC(config::Info,"Monolayer check:",config::isTF(checkmonolayer[0]),config::isTF(checkmonolayer[1]),config::isTF(checkmonolayer[2]));
+
                 //we are going to write the exchange information to the log file. Make sure it if open.
                 config::openLogFile();
                 for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
@@ -202,66 +213,60 @@ namespace exch
                                 int rc[3]={lc[wrap%3],lc[(1+wrap)%3],lc[(2+wrap)%3]};
                                 //work array
                                 int wc[3]={rc[0],rc[1],rc[2]};
-                                //change the signs of each element
-                                for(unsigned int a = 0 ; a < 2 ; a++)
+                                if((abs(wc[0]>0) && checkmonolayer[0]==true) || (abs(wc[1]>0) && checkmonolayer[1]==true) || (abs(wc[2]>0) && checkmonolayer[2]==true) )
                                 {
-                                    for(unsigned int b = 0 ; b < 2 ; b++)
+                                    //then do nothing, we don't want to add anything in this direction
+                                }
+                                else
+                                {
+                                    //change the signs of each element
+                                    for(unsigned int a = 0 ; a < 2 ; a++)
                                     {
-                                        for(unsigned int c = 0 ; c < 2 ; c++)
+                                        for(unsigned int b = 0 ; b < 2 ; b++)
                                         {
-                                            wc[0]=rc[0]*pow(-1,a+1);
-                                            wc[1]=rc[1]*pow(-1,b+1);
-                                            wc[2]=rc[2]*pow(-1,c+1);
-                                            //This array is purely for outputting the exchange information to the log file
-                                            int owc[3]={wc[0],wc[1],wc[2]};
-                                            bool checkmonolayer[3]={false,false,false};
-                                            //check the boundaries for each component
-                                            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                                            for(unsigned int c = 0 ; c < 2 ; c++)
                                             {
-                                                if(wc[xyz]<0)
+                                                wc[0]=rc[0]*pow(-1,a+1);
+                                                wc[1]=rc[1]*pow(-1,b+1);
+                                                wc[2]=rc[2]*pow(-1,c+1);
+                                                //This array is purely for outputting the exchange information to the log file
+                                                int owc[3]={wc[0],wc[1],wc[2]};
+                                                //check the boundaries for each component
+                                                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
                                                 {
-                                                    if(geom::dim[xyz]*geom::Nk[xyz] < 2 && wc[xyz]<0)
+                                                    if(wc[xyz]<0)
                                                     {
-                                                        checkmonolayer[xyz]=true;
+                                                        wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
                                                     }
-                                                    wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
-                                                }
-                                            }//end of xyz loop
-                                            if(check(wc[0],wc[1],wc[2])==0)
-                                            {
-                                                config::Log << "Interaction Vector:  [" << owc[0] << "," << owc[1] << "," << owc[2] << "]\t -> [" << wc[0] << "," << wc[1] << "," << wc[2] << "]" << std::endl;
-                                                //loop over the elements of the interaction tensor
-                                                for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                                                }//end of xyz loop
+                                                if(check(wc[0],wc[1],wc[2])==0)
                                                 {
-                                                    for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                                    config::Log << "Interaction Vector:  [" << owc[0] << "," << owc[1] << "," << owc[2] << "]\t -> [" << wc[0] << "," << wc[1] << "," << wc[2] << "]" << std::endl;
+                                                    //loop over the elements of the interaction tensor
+                                                    for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                                                     {
-                                                        if(checkmonolayer[0]==true || checkmonolayer[1]==true || checkmonolayer[2]==true)
-                                                        {
-                                                            //do nothing
-                                                        }
-                                                        else
+                                                        for(unsigned int beta = 0 ; beta < 3 ; beta++)
                                                         {
                                                             intmat::Nrab(s1,s2,alpha,beta,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,alpha,beta)/(geom::ucm.GetMuBase(s1)*llg::muB));
-                                                        }
-                                                    }//end of beta loop
-                                                }//end of alpha loop
+                                                        }//end of beta loop
+                                                    }//end of alpha loop
 
-                                                config::Log << "[ " << J(s1,s2,i,0,0) << " , " << J(s1,s2,i,0,1) << " , " << J(s1,s2,i,0,2) << " ]" << std::endl;
-                                                config::Log << "[ " << J(s1,s2,i,1,0) << " , " << J(s1,s2,i,1,1) << " , " << J(s1,s2,i,1,2) << " ]\t (Joules)" << std::endl;
-                                                config::Log << "[ " << J(s1,s2,i,2,0) << " , " << J(s1,s2,i,2,1) << " , " << J(s1,s2,i,2,2) << " ]" << std::endl;
-                                                config::Log << std::endl;
-                                                config::Log << "[ " << J(s1,s2,i,0,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,0,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,0,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
-                                                config::Log << "[ " << J(s1,s2,i,1,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,1,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,1,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]\t (Tesla)" << std::endl;
-                                                config::Log << "[ " << J(s1,s2,i,2,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,2,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,2,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
-                                                config::Log << std::endl;
-                                                check(wc[0],wc[1],wc[2])=1;
-                                                counter++;
+                                                    config::Log << "[ " << J(s1,s2,i,0,0) << " , " << J(s1,s2,i,0,1) << " , " << J(s1,s2,i,0,2) << " ]" << std::endl;
+                                                    config::Log << "[ " << J(s1,s2,i,1,0) << " , " << J(s1,s2,i,1,1) << " , " << J(s1,s2,i,1,2) << " ]\t (Joules)" << std::endl;
+                                                    config::Log << "[ " << J(s1,s2,i,2,0) << " , " << J(s1,s2,i,2,1) << " , " << J(s1,s2,i,2,2) << " ]" << std::endl;
+                                                    config::Log << std::endl;
+                                                    config::Log << "[ " << J(s1,s2,i,0,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,0,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,0,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
+                                                    config::Log << "[ " << J(s1,s2,i,1,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,1,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,1,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]\t (Tesla)" << std::endl;
+                                                    config::Log << "[ " << J(s1,s2,i,2,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,2,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,2,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
+                                                    config::Log << std::endl;
+                                                    check(wc[0],wc[1],wc[2])=1;
+                                                    counter++;
 
-                                            }//end of check if statement
-                                        }//end of c loop
-                                    }//end of b loop
-                                }//end of a loop
-
+                                                }//end of check if statement
+                                            }//end of c loop
+                                        }//end of b loop
+                                    }//end of a loop
+                                }//end of monolayer if statement
                             }//end of wrap loop
                             if(counter!=numint(s1,s2,i))
                             {
@@ -276,6 +281,22 @@ namespace exch
                         }//end of shell list loop
                     }//end of s2 loop
                 }//end of s1 loop
+/*                for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+                {
+                    for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+                    {
+                        for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
+                        {
+                            std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(0,0,2,2,i,j,k)[0] << std::endl;
+                            std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(0,1,2,2,i,j,k)[0] << std::endl;
+                            std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(1,0,2,2,i,j,k)[0] << std::endl;
+                            std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(1,1,2,2,i,j,k)[0] << std::endl;
+                            std::cin.get();
+                        }
+                    }
+                }
+                */
+
             }//end of if(method=="permute") statement
             else if(method=="direct")
             {

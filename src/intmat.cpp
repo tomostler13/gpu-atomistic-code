@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 27 Sep 2014 14:29:23
+// Last-modified: 27 Sep 2014 17:06:30
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -62,7 +62,17 @@ namespace intmat
         double rij[3]={0,0,0};
         //the identity matrix
         int I[3][3]={{1,0,0},{0,1,0},{0,0,1}};
-
+        //check if we have a single layer of atoms in any dimension
+        //we are not going to output any information about this at this
+        //point as we are going to do it in the exchange
+        bool checkmonolayer[3]={false,false,false};
+        for(unsigned int xyz = 0 ; xyz < 3; xyz++)
+        {
+            if(geom::dim[xyz]*geom::Nk[xyz] < 2)
+            {
+                checkmonolayer[xyz]=true;
+            }
+        }
         //loop over species 1
         for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
         {
@@ -78,28 +88,35 @@ namespace intmat
                             {
                                 int lc[3]={i,j,k};
                                 int tc[3]={lc[0],lc[1],lc[2]};
-
-                                //The interaction matrix must be wrapped around for a C-array format
-                                for(unsigned int l = 0 ; l < 3 ; l++)
+                                //check if we have a single layer on any dimension
+                                if((abs(tc[0]>0) && checkmonolayer[0]==true) || (abs(tc[1]>0) && checkmonolayer[1]==true) || (abs(tc[2]>0) && checkmonolayer[2]==true) )
                                 {
-                                    if(lc[l]>geom::dim[l]*geom::Nk[l])
-                                    {
-                                        lc[l]=geom::dim[l]*geom::Nk[l]-lc[l];
-                                        tc[l]=geom::zpdim[l]*geom::Nk[l]+lc[l];
-                                    }
-                                    rij[l]=static_cast<double>(lc[l])*geom::abc[l]/static_cast<double>(geom::Nk[l]);
+                                    //don't add anything to the interaction matrix
                                 }
-                                double mrij=sqrt(rij[0]*rij[0]+rij[1]*rij[1]+rij[2]*rij[2]);
-                                double oomrij3=1./(mrij*mrij*mrij);
-                                //unit vector from i to j
-                                double eij[3]={rij[0]/mrij,rij[1]/mrij,rij[2]/mrij};
-                                //loop over (alpha) the row of the tensor
-                                for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                                else
                                 {
-                                    //loop over the column of the tensor (alpha)
-                                    for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                    //The interaction matrix must be wrapped around for a C-array format
+                                    for(unsigned int l = 0 ; l < 3 ; l++)
                                     {
-                                        Nrab(s1,s2,alpha,beta,tc[0],tc[1],tc[2])[0]+=1e-7*((3.0*eij[alpha]*eij[beta])-I[alpha][beta])*oomrij3*geom::ucm.GetMuBase(s2)*llg::muB;
+                                        if(lc[l]>geom::dim[l]*geom::Nk[l])
+                                        {
+                                            lc[l]=geom::dim[l]*geom::Nk[l]-lc[l];
+                                            tc[l]=geom::zpdim[l]*geom::Nk[l]+lc[l];
+                                        }
+                                        rij[l]=static_cast<double>(lc[l])*geom::abc[l]/static_cast<double>(geom::Nk[l]);
+                                    }
+                                    double mrij=sqrt(rij[0]*rij[0]+rij[1]*rij[1]+rij[2]*rij[2]);
+                                    double oomrij3=1./(mrij*mrij*mrij);
+                                    //unit vector from i to j
+                                    double eij[3]={rij[0]/mrij,rij[1]/mrij,rij[2]/mrij};
+                                    //loop over (alpha) the row of the tensor
+                                    for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                                    {
+                                        //loop over the column of the tensor (alpha)
+                                        for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                        {
+                                            Nrab(s1,s2,alpha,beta,tc[0],tc[1],tc[2])[0]+=1e-7*((3.0*eij[alpha]*eij[beta])-I[alpha][beta])*oomrij3*geom::ucm.GetMuBase(s2)*llg::muB;
+                                        }
                                     }
                                 }
                             }

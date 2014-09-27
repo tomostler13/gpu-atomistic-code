@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 27 Sep 2014 14:31:43
+// Last-modified: 27 Sep 2014 15:20:14
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -48,7 +48,7 @@ namespace geom
         FIXOUT(config::Info,"czps:" << czps << std::endl);
         FIXOUT(config::Info,"Z-dimension for r2c and c2r transforms:" << cplxdim << std::endl);
 
-        //Calculate the size of the real space 3 array
+        //Calculate the size of the real space zero padded array
         zps=1;
         for(unsigned int i = 0 ; i < 3 ; i++)
         {

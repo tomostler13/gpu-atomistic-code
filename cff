@@ -8,9 +8,9 @@ system:
     //on the locations of the magnetic system
     unitcellfile="sc.test";
     //Number of k-points in each direction
-    Nk = [ 2 , 2 , 2 ];
+    Nk = [ 1 , 1 , 1 ];
     //lattice constants
-    abc = [ 0.739584e-9 , 0.739584e-9 , 0.739584e-9 ];
+    abc = [ 300e-12 , 300e-12 , 300e-12 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
     //Do you want to output the unit cell info to the log file?

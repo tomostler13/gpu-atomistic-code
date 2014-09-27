@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Sep 2014 16:13:12
+// Last-modified: 27 Sep 2014 15:02:25
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -39,20 +39,20 @@ namespace util
         fields::Hk.IFill(0);
 
         //perform convolution in fourier space
-        unsigned int i = 0,j = 0, k = 0;
+        register unsigned int i = 0,j = 0, k = 0, s1 = 0, s2=0, alpha=0, beta=0;
         for(i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
         {
             for(j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
             {
                 for(k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
                 {
-                    for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
+                    for(s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
                     {
-                        for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
+                        for(s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
                         {
-                            for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                            for(alpha = 0 ; alpha < 3 ; alpha++)
                             {
-                                for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                for(beta = 0 ; beta < 3 ; beta++)
                                 {
                                     fields::Hk(s1,alpha,i,j,k)[0]+=(intmat::Nkab(s1,s2,alpha,beta,i,j,k)[0]*spins::Sk(s2,beta,i,j,k)[0]-intmat::Nkab(s1,s2,alpha,beta,i,j,k)[1]*spins::Sk(s2,beta,i,j,k)[1]);
                                     fields::Hk(s1,alpha,i,j,k)[1]+=(intmat::Nkab(s1,s2,alpha,beta,i,j,k)[0]*spins::Sk(s2,beta,i,j,k)[1]+intmat::Nkab(s1,s2,alpha,beta,i,j,k)[1]*spins::Sk(s2,beta,i,j,k)[0]);

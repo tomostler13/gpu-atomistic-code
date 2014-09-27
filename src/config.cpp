@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 27 Sep 2014 13:35:10
+// Last-modified: 27 Sep 2014 16:23:46
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -79,8 +79,6 @@ namespace config
 
         libconfig::Setting &setting = cfg.lookup("system");
         setting.lookupValue("include_dipole",inc_dip);
-        //inc_dip=false;
-        std::cout << isTF(inc_dip) << std::endl;
         assert(seed>0);
         lcf=true;
     }

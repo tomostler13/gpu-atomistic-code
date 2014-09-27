@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 26 Sep 2014 16:21:39
+// Last-modified: 27 Sep 2014 15:12:13
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -89,6 +89,7 @@ namespace spins
     void FFTForward()
     {
         Sk.IFill(0);
+        Sr.IFill(0);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
@@ -96,13 +97,15 @@ namespace spins
             Sr(sl,0,lc[0],lc[1],lc[2])[0]=Sx[i];
             Sr(sl,1,lc[0],lc[1],lc[2])[0]=Sy[i];
             Sr(sl,2,lc[0],lc[1],lc[2])[0]=Sz[i];
-            //            std::cout << "Lookup\t" << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << Skx(lc[0],lc[1],lc[2])[0] << "\t" << Sky(lc[0],lc[1],lc[2])[0] << "\t" << Skz(lc[0],lc[1],lc[2])[0] << std::endl;
+            //std::cout << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << Sr(0,2,lc[0],lc[1],lc[2])[0] << std::endl;
+            //std::cerr << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << Sr(1,2,lc[0],lc[1],lc[2])[0] << std::endl;
         }
         fftw_execute(SP);
     }
     void eFFTForward()
     {
         Sk.IFill(0);
+        Sr.IFill(0);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
