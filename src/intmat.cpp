@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 26 Sep 2014 13:48:13
+// Last-modified: 27 Sep 2014 14:29:23
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -18,7 +18,7 @@
 namespace intmat
 {
     Array7D<fftw_complex> Nkab;
-    Array7D<double> Nrab;
+    Array7D<fftw_complex> Nrab;
     Array<unsigned int> zpsn;
 
     void initIntmat(int argc,char *argv[])
@@ -44,9 +44,9 @@ namespace intmat
         //Second is the species (j) that species (i) is interacting with
         //Third and fourth elements are the elements of the tensor
         //fifth, sixth and seventh are the space (reciprocal space) elements
-        Nkab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+        Nkab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
         Nrab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        FIXOUT(config::Info,"The real space interaction matrix contains:" << Nrab.size() << " elements (double)" << std::endl);
+        FIXOUT(config::Info,"The real space interaction matrix contains:" << Nrab.size() << " elements (double complex)" << std::endl);
         FIXOUT(config::Info,"The reciprocal space interaction matrix contains:" << Nkab.size() << " elements (double complex)" << std::endl);
         Nrab.IFill(0.0);
         Nkab.IFill(0.0);
@@ -99,7 +99,7 @@ namespace intmat
                                     //loop over the column of the tensor (alpha)
                                     for(unsigned int beta = 0 ; beta < 3 ; beta++)
                                     {
-                                        Nrab(s1,s2,alpha,beta,tc[0],tc[1],tc[2])+=1e-7*((3.0*eij[alpha]*eij[beta])-I[alpha][beta])*oomrij3*geom::ucm.GetMuBase(s2)*llg::muB;
+                                        Nrab(s1,s2,alpha,beta,tc[0],tc[1],tc[2])[0]+=1e-7*((3.0*eij[alpha]*eij[beta])-I[alpha][beta])*oomrij3*geom::ucm.GetMuBase(s2)*llg::muB;
                                     }
                                 }
                             }
@@ -116,6 +116,17 @@ namespace intmat
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Interaction matrix details***" << std::endl;
         FIXOUT(config::Info,"Setting up fftw of interaction matrix:" << std::endl);
+        //FOR DEBUGGING: TO LOOK AT THE REAL SPACE INTERACTION MATRIX
+        /*for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+        {
+            for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+            {
+                for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
+                {
+                    std::cout << i << "\t" << j << "\t" << k << "\t" << Nrab(0,0,0,0,i,j,k)[0] << "\t"<< Nrab(0,0,1,1,i,j,k)[0] << "\t"<< Nrab(0,0,2,2,i,j,k)[0] << std::endl;
+                }
+            }
+        }*/
         //set the time limit for optimizing the plan of the FFT to 60 seconds
         fftw_set_timelimit(60);
         //plans for the transform. Only done once, so not persistent
@@ -125,7 +136,7 @@ namespace intmat
         int *onembed=n;
         int istride=1;
         int ostride=1;
-        int odist=geom::cplxdim;
+        int odist=geom::zps;
         int idist=geom::zps;
 
         config::openLogFile();
@@ -142,9 +153,10 @@ namespace intmat
         FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
         FIXOUT(config::Log,"ostride = " << ostride << std::endl);
         FIXOUT(config::Log,"odist = " << odist << std::endl);
+        FIXOUT(config::Log,"Direction (sign) = " << "FFTW_FORWARD" << std::endl);
         FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
 
-        ftP=fftw_plan_many_dft_r2c(3,n,geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3,Nrab.ptr(),inembed,istride,idist,Nkab.ptr(),onembed,ostride,odist,FFTW_PATIENT);
+        ftP=fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3,Nrab.ptr(),inembed,istride,idist,Nkab.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
 
         FIXOUT(config::Info,"Performing forward transform of N and destroying plan:" << std::flush);
         //execute the demag tensor transforms and destroy the plans

@@ -1,0 +1,57 @@
+OutputFile = "opf.dat";
+seed = 1359107107;
+system:
+{
+    //number of unit cells
+    dim = [ 2 , 2 , 2 ];
+    //The unit cell file. This file gives all of the information
+    //on the locations of the magnetic system
+    unitcellfile="sc.test";
+    //Number of k-points in each direction
+    Nk = [ 2 , 2 , 2 ];
+    //lattice constants
+    abc = [ 0.739584e-9 , 0.739584e-9 , 0.739584e-9 ];
+    //do we include the dipole-dipole calculation?
+    include_dipole = FALSE;
+    //Do you want to output the unit cell info to the log file?
+    log_unit_cell = TRUE;
+};
+exchange:
+{
+    //Exchange reading method 
+    //direct (by reading in all interactions directly)
+    //permute (take a neighbour and calculate permutations)
+    exchmethod="permute";
+    //How are we to read in the exchange
+    //- thisfile (read from the config file)
+    //- extfile (read from an external file)
+    exchinput="extfile";
+    exchfile="exch.sc";
+};
+llg:
+{
+    dt = 1.0e-15;
+    applied = [ 0.0 , 0.0 , 1.0 ];
+    update=1;
+    MagnetizationCalculationMethod=0;
+};
+cuda:
+{
+    threadsperblock=256;
+};
+sim:
+{
+    //sim_type = "MvT";
+    sim_type = "quick";
+};
+mvt:
+{
+    lower_temp = 1.0e-27;
+    upper_temp = 700.0;
+    temp_step = 25.0;
+    mean_tolerance = 0.0001;
+    variance_tolerance = 0.00025;
+    MaxRunTime = 0.5e-10;
+    MinRunTime = 1e-15;
+    MvTFile = "MvT.dat";
+};

@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Sep 2014 15:43:04
+// Last-modified: 27 Sep 2014 14:31:43
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -75,7 +75,9 @@ namespace geom
             if(i < 5)
             {
                 FIXOUT(config::Info,"Unit cell atom:" << i << std::endl);
-                FIXOUTVEC(config::Info,"Positions:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
+                FIXOUT(config::Info,"Element:" << ucm.GetElement(i) << std::endl);
+                FIXOUTVEC(config::Info,"Positions [real space]:",ucm.GetCoord(i,0)/static_cast<double>(Nk[0]),ucm.GetCoord(i,1)/static_cast<double>(Nk[1]),ucm.GetCoord(i,2)/static_cast<double>(Nk[2]));
+                FIXOUTVEC(config::Info,"Positions [k-lattice]:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
                 FIXOUT(config::Info,"Part of sublattice:" << ucm.GetSublattice(i) << std::endl);
                 FIXOUT(config::Info,"Damping:" << ucm.GetDamping(i) << std::endl);
                 FIXOUT(config::Info,"Gyromagnetic ratio:" << ucm.GetGamma(i) << " [gamma_free]" << std::endl);
@@ -88,7 +90,9 @@ namespace geom
             if(ucm.NumAtomsUnitCell() > 5)
             {
                 FIXOUT(config::Log,"Unit cell atom:" << i << std::endl);
-                FIXOUTVEC(config::Log,"Positions:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
+                FIXOUT(config::Log,"Element:" << ucm.GetElement(i) << std::endl);
+                FIXOUTVEC(config::Log,"Positions [real space]:",ucm.GetCoord(i,0)/static_cast<double>(Nk[0]),ucm.GetCoord(i,1)/static_cast<double>(Nk[1]),ucm.GetCoord(i,2)/static_cast<double>(Nk[2]));
+                FIXOUTVEC(config::Log,"Positions [k-lattice]:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
                 FIXOUT(config::Log,"Part of sublattice:" << ucm.GetSublattice(i) << std::endl);
                 FIXOUT(config::Log,"Damping:" << ucm.GetDamping(i) << std::endl);
                 FIXOUT(config::Log,"Gyromagnetic ratio:" << ucm.GetGamma(i) << " [gamma_free]" << std::endl);
@@ -165,9 +169,9 @@ namespace geom
                         double ri[3]={0,0,0};
                         coords(i*Nk[0],j*Nk[1],k*Nk[2],0)=atom_counter;
                         coords(i*Nk[0],j*Nk[1],k*Nk[2],1)=ucm.GetSublattice(t);
-                        lu(atom_counter,0)=i*Nk[0];
-                        lu(atom_counter,1)=j*Nk[1];
-                        lu(atom_counter,2)=k*Nk[2];
+                        lu(atom_counter,0)=i*Nk[0]+ucm.GetCoord(t,0);
+                        lu(atom_counter,1)=j*Nk[1]+ucm.GetCoord(t,1);
+                        lu(atom_counter,2)=k*Nk[2]+ucm.GetCoord(t,2);
                         lu(atom_counter,3)=ucm.GetSublattice(t);
                         spec_counter[ucm.GetSublattice(t)]++;
                         lu(atom_counter,4)=t;
@@ -221,7 +225,7 @@ namespace geom
         sloc << nspins << "\n\n";
         for(unsigned int i = 0 ; i < nspins; i++)
         {
-            sloc << ucm.GetElement(sublattice[i]) << "\t" << rx[i]/1e-10 << "\t" << ry[i]/1e-10 << "\t" << rz[i]/1e-10 << std::endl;
+            sloc << ucm.GetElement(lu(i,4)) << "\t" << rx[i]/1e-10 << "\t" << ry[i]/1e-10 << "\t" << rz[i]/1e-10 << std::endl;
         }
         sloc.close();
         if(sloc.is_open())

@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 26 Sep 2014 10:42:46
+// Last-modified: 27 Sep 2014 14:29:56
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -90,6 +90,13 @@ namespace geom
         }
 
         ucfi >> nms;
+        Nk.resize(3);
+        abc.resize(3);
+        for(unsigned int i = 0 ; i < 3 ; i++)
+        {
+            Nk[i]=setting["Nk"][i];
+            abc[i]=setting["abc"][i];
+        }
 
         FIXOUT(config::Info,"Number of magnetic species (sublattices):" << nms << std::endl);
         unsigned int nauc=0;
@@ -111,7 +118,7 @@ namespace geom
             double c[3]={0,0,0};
             ucfi >> c[0] >> c[1] >> c[2];
             //set the position vector
-            ucm.SetPosVec(c[0],c[1],c[2],i);
+            ucm.SetPosVec(static_cast<unsigned int>(c[0]*Nk[0]+0.5),static_cast<unsigned int>(c[1]*Nk[1]+0.5),static_cast<unsigned int>(c[2]*Nk[2]+0.5),i);
 
             double temp=0.0;//this is going to hold mu, lambda and gamma so we call it temp
             //set the magnetic moment
@@ -149,13 +156,6 @@ namespace geom
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errWarning("Could not close unit cell file.");
-        }
-        Nk.resize(3);
-        abc.resize(3);
-        for(unsigned int i = 0 ; i < 3 ; i++)
-        {
-            Nk[i]=setting["Nk"][i];
-            abc[i]=setting["abc"][i];
         }
 
     }

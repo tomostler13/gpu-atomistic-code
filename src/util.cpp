@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Sep 2014 13:53:05
+// Last-modified: 26 Sep 2014 16:13:12
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/arrays.h"
@@ -44,7 +44,7 @@ namespace util
         {
             for(j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
             {
-                for(k = 0 ; k < geom::cplxdim ; k++)
+                for(k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
                 {
                     for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
                     {

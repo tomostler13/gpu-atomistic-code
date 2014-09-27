@@ -1,7 +1,7 @@
 // File: array.h
 // Author: Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 26 Sep 2014 13:45:28
+// Last-modified: 27 Sep 2014 14:31:13
 #ifndef __UNITCELL_H__
 #define __UNITCELL_H__
 #include "../inc/arrays.h"
@@ -199,7 +199,7 @@ class unitCellMembers
             initspin(t,1)=sy;
             initspin(t,2)=sz;
         }
-        inline double GetCoord(unsigned int t,unsigned int c)
+        inline unsigned int GetCoord(unsigned int t,unsigned int c)
         {
             return(coords(t,c));
         }
@@ -267,7 +267,8 @@ class unitCellMembers
     private:
         unsigned int size;
         unsigned int nms;
-        Array2D<double> coords,initspin,k1udir;
+        Array2D<double> initspin,k1udir;
+        Array2D<unsigned int> coords;
         Array<double> damping,mu,gamma,lambda,base_mom,k1u,sigma,llgpf,oones;
         Array<unsigned int> sublattice,nes;
         std::vector<std::string> elements;

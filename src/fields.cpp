@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 26 Sep 2014 13:49:22
+// Last-modified: 26 Sep 2014 16:22:24
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -23,12 +23,12 @@
 namespace fields
 {
     Array5D<fftw_complex> Hk;
-    Array5D<double> Hr;
+    Array5D<fftw_complex> Hr;
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz;
     fftw_plan HP;
     void initFields(int argc,char *argv[])
     {
-        Hk.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+        Hk.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
         Hr.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
         Hx.resize(geom::nspins);
         Hy.resize(geom::nspins);
@@ -41,11 +41,11 @@ namespace fields
         int istride=1;
         int ostride=1;
         int odist=geom::zps;
-        int idist=geom::cplxdim;
+        int idist=geom::zps;
 
         config::openLogFile();
         config::printline(config::Log);
-        FIXOUT(config::Log,"Parameters entering into c2r FFTW plan of fields matrix (back transform)" << std::endl);
+        FIXOUT(config::Log,"Parameters entering into FFTW plan of fields matrix (back transform)" << std::endl);
         FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
         FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
         FIXOUT(config::Log,"How many (FFT's) = " << geom::ucm.GetNMS()*3 << std::endl);
@@ -57,8 +57,9 @@ namespace fields
         FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
         FIXOUT(config::Log,"ostride = " << ostride << std::endl);
         FIXOUT(config::Log,"odist = " << odist << std::endl);
+        FIXOUT(config::Log,"Direction (sign) = " << "FFTW_BACKWARD" << std::endl);
         FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
-        HP = fftw_plan_many_dft_c2r(3,n,geom::ucm.GetNMS()*3,Hk.ptr(),inembed,istride,idist,Hr.ptr(),onembed,ostride,odist,FFTW_PATIENT);
+        HP = fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*3,Hk.ptr(),inembed,istride,idist,Hr.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_PATIENT);
     }
 
     /*void bfdip()
@@ -120,9 +121,9 @@ namespace fields
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
             unsigned int sl=geom::sublattice[i];
-            Hx[i]=Hr(sl,0,lc[0],lc[1],lc[2])/(static_cast<double>(geom::zps));
-            Hy[i]=Hr(sl,1,lc[0],lc[1],lc[2])/(static_cast<double>(geom::zps));
-            Hz[i]=Hr(sl,2,lc[0],lc[1],lc[2])/(static_cast<double>(geom::zps));
+            Hx[i]=Hr(sl,0,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
+            Hy[i]=Hr(sl,1,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
+            Hz[i]=Hr(sl,2,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
             //std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
             //std::cin.get();
         }

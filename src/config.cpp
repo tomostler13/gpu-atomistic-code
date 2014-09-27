@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 25 Sep 2014 09:44:05
+// Last-modified: 27 Sep 2014 13:35:10
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -78,7 +78,9 @@ namespace config
         FIXOUT(Info,"Seed:" << seed << std::endl);
 
         libconfig::Setting &setting = cfg.lookup("system");
-        inc_dip=setting.lookupValue("include_dipole",inc_dip);
+        setting.lookupValue("include_dipole",inc_dip);
+        //inc_dip=false;
+        std::cout << isTF(inc_dip) << std::endl;
         assert(seed>0);
         lcf=true;
     }

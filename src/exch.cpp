@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 26 Sep 2014 14:14:45
+// Last-modified: 26 Sep 2014 16:36:19
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -241,7 +241,7 @@ namespace exch
                                                         }
                                                         else
                                                         {
-                                                            intmat::Nrab(s1,s2,alpha,beta,wc[0],wc[1],wc[2])+=(J(s1,s2,i,alpha,beta)/(geom::ucm.GetMuBase(s1)*llg::muB));
+                                                            intmat::Nrab(s1,s2,alpha,beta,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,alpha,beta)/(geom::ucm.GetMuBase(s1)*llg::muB));
                                                         }
                                                     }//end of beta loop
                                                 }//end of alpha loop
