@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 26 Jun 2014 10:39:28
+// Last-modified: 30 Sep 2014 16:16:56
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -43,15 +43,7 @@ namespace cullg
     //rank of the FFT
     int nrank=3;
     //device pointers for Fourier space calculations
-    cufftComplex *CCNxx=NULL;
-    cufftComplex *CCNxy=NULL;
-    cufftComplex *CCNxz=NULL;
-    cufftComplex *CCNyx=NULL;
-    cufftComplex *CCNyy=NULL;
-    cufftComplex *CCNyz=NULL;
-    cufftComplex *CCNzx=NULL;
-    cufftComplex *CCNzy=NULL;
-    cufftComplex *CCNzz=NULL;
+    cufftComplex *CNk=NULL;
     cufftComplex *CCSkx=NULL;
     cufftComplex *CCSky=NULL;
     cufftComplex *CCSkz=NULL;
