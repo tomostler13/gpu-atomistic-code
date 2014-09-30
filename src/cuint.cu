@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 30 Sep 2014 17:40:22
+// Last-modified: 30 Sep 2014 18:34:13
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -39,7 +39,7 @@ namespace cuint
 
     void copyConstData()
     {
-        FIXOUT(config::Info,"Copying const data to card:" << std::flush);
+        FIXOUT(config::Info,"Copying const data with cuint scope to card:" << std::flush);
         cudaMemcpyToSymbol(*(&Crdt),&llg::rdt,sizeof(double));
         cudaMemcpyToSymbol(K,geom::Nk.ptr(),3*sizeof(unsigned int));
         cudaMemcpyToSymbol(ZPDIM,&geom::zpdim,3*sizeof(unsigned int));

@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 30 Sep 2014 17:56:24
+// Last-modified: 30 Sep 2014 19:31:54
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -44,27 +44,18 @@ namespace cullg
     int nrank=3;
     //device pointers for Fourier space calculations
     cufftComplex *CNk=NULL;
-    cufftComplex *CCSkx=NULL;
-    cufftComplex *CCSky=NULL;
-    cufftComplex *CCSkz=NULL;
-    cufftReal *CCSrx=NULL;
-    cufftReal *CCSry=NULL;
-    cufftReal *CCSrz=NULL;
-    cufftComplex *CCHkx=NULL;
-    cufftComplex *CCHky=NULL;
-    cufftComplex *CCHkz=NULL;
-    cufftReal *CCHrx=NULL;
-    cufftReal *CCHry=NULL;
-    cufftReal *CCHrz=NULL;
+    cufftComplex *CSk=NULL;
+    cufftReal *CSr=NULL;
+    cufftComplex *CHk=NULL;
+    cufftReal *CHr=NULL;
+    //unsigned int the kx, ky and kz positions of the spins. The point is that you can use these arrays to
+    //lookup which element of the array the the spin data should be copied to.
+    unsigned int *Ckx=NULL,*Cky=NULL,*Ckz=NULL,*Cspec=NULL;
 
     //device pointers
-    double *Cspin=NULL;
-    double *Cespin=NULL;
-    float *Crand=NULL;
+    double *Cspin=NULL,*Cespin=NULL,*Crand=NULL;
     float *CH=NULL;
-    int *Czpsn=NULL;//This is the zero pad spin number
-    int *Clu=NULL;
-    double *Cfn=NULL;
+    double *Clambda=NULL,*Csigma=NULL,*Cfn=NULL,*Cllgpf=NULL;
     //cufft plans
     cufftHandle C3DPr2c,C3DPc2r;
 

@@ -1,11 +1,10 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 30 Sep 2014 17:56:32
+// Last-modified: 30 Sep 2014 18:36:19
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
-#include "../inc/mat.h"
 #include "../inc/geom.h"
 #include "../inc/config.h"
 #include "../inc/random.h"
@@ -63,7 +62,7 @@ namespace cullg
 
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
-        cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,mat::sigma,llg::llgpf,mat::lambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn);
+        cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda);
         cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cespin,Clu,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
         //forward transform
         spins_forward();
@@ -202,6 +201,9 @@ namespace cullg
         config::Info << "Done" << std::endl;
         config::printline(config::Info);
         config::Info << "NVIDIA-SMI output:\n" << util::exec("nvidia-smi");
+        //__constant__ memory only have .cu scope therefore to use the variables 
+        //the variables have to be declared in each .cu file and the variables initialized.
         cuint::copyConstData();
+        cufields::copyConstData();
     }
 }

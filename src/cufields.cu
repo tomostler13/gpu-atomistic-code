@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 31 Jan 2013 21:31:49
+// Last-modified: 30 Sep 2014 19:58:53
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -17,6 +17,23 @@
 #include "../inc/defines.h"
 namespace cufields
 {
+    //This stores the interaction matrix dimensions for the lookup and the number
+    //of species
+    __constant__ unsigned int IMDIMS[7]={0,0,3,3,0,0,0},NUMSPEC=0;
+    //The number of k-points and the zero pad size
+    __constant__ unsigned int K[3]={0,0,0},ZPDIM[3]={0,0,0};
+    //Reduced timestep
+    __constant__ double Crdt;
+
+    void copyConstData()
+    {
+        FIXOUT(config::Info,"Copying const data with cufields scope to card:" << std::flush);
+        cudaMemcpyToSymbol(*(&Crdt),&llg::rdt,sizeof(double));
+        cudaMemcpyToSymbol(K,geom::Nk.ptr(),3*sizeof(unsigned int));
+        cudaMemcpyToSymbol(ZPDIM,&geom::zpdim,3*sizeof(unsigned int));
+        cudaMemcpyToSymbol(*(&NUMSPEC),&geom::ucm.GetNMS(),sizeof(unsigned int));
+        config::Info << "Done" << std::endl;
+    }
     //perform the convolution in Fourier space
     __global__ void CFConv(int N,
                            cufftComplex *CCNxx,
@@ -53,39 +70,51 @@ namespace cufields
 
     //This needs to be done with a seperate kernel because the size (N)
     //of the zero padded spin arrays is bigger than the number of spins
-    __global__ void CCopySpin(int zpN,unsigned int N,double *Cspin,int *Czpsn,cufftReal *CCSx,cufftReal *CCSy,cufftReal *CCSz,cufftReal *CHrx,cufftReal *CHry,cufftReal *CHrz)
-    {
-        const int i = blockDim.x*blockIdx.x + threadIdx.x;
-        if(i<zpN)
-		{
-			CCSx[i]=0.0;
-			CCSy[i]=0.0;
-			CCSz[i]=0.0;
-			CHrx[i]=0.0;
-			CHry[i]=0.0;
-			CHrz[i]=0.0;
-			//lookup the array value for spin i in the zero pad array
-			int lzpsn=Czpsn[i];
-			//copy the spin data to the zero padded spin arrays
-			//for the fourier transform
-			if(lzpsn>=0)
-			{
-				CCSx[i]=float(Cspin[3*lzpsn]);
-				CCSy[i]=float(Cspin[3*lzpsn+1]);
-				CCSz[i]=float(Cspin[3*lzpsn+2]);
-			}
-		}
-    }
-
-    __global__ void CCopyFields(int N,int zpN,float *CH,int *Czpsn,cufftReal *CCHx,cufftReal *CCHy,cufftReal *CCHz)
+    __global__ void CCopySpin(int N,double *Cspin,int *Czpsn,cufftReal *CSr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
-            int lzpsn=Czpsn[i];
-            CH[3*i]=(CCHx[lzpsn])/float(zpN);
-            CH[3*i+1]=(CCHy[lzpsn])/float(zpN);
-            CH[3*i+2]=(CCHz[lzpsn])/float(zpN);
+            //For a 5D array lookup we need i,j,k,m,n
+            //(((i*dim1+j)*dim2+k)*dim3+l)*dim4+m
+            //For the spin arrays the indices correspond to
+            // i -> species
+            // j -> spin component
+            // k -> x-coordinate
+            // l -> y-coordinate
+            // m -> z-coordinate
+            // Here lookup i,k,l,m (call them li,lk,ll,lm
+            unsigned int lk=Ckx[i],ll=Cky[i],lm=Ckz[i],li=Cspec[i];
+            //loop over the 3 spin coordinates (j)
+            for(unsigned int lj = 0 ; lj < 3 ; lj++)
+            {
+                unsigned int ac=
+                CSr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm]=float(Cspin[3*i+lj]);
+            }
+        }
+    }
+}
+
+    __global__ void CCopyFields(int N,int zpN,float *CH,int *Czpsn,cufftReal *CHr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
+    {
+        const int i = blockDim.x*blockIdx.x + threadIdx.x;
+        if(i<N)
+        {
+            //For a 5D array lookup we need i,j,k,m,n
+            //(((i*dim1+j)*dim2+k)*dim3+l)*dim4+m
+            //For the spin arrays the indices correspond to
+            // i -> species
+            // j -> spin component
+            // k -> x-coordinate
+            // l -> y-coordinate
+            // m -> z-coordinate
+            // Here lookup i,k,l,m (call them li,lk,ll,lm
+            unsigned int lk=Ckx[i],ll=Cky[i],lm=Ckz[i],li=Cspec[i];
+            //loop over the 3 spin coordinates (j)
+            for(unsigned int lj = 0 ; lj < 3 ; lj++)
+            {
+                CH[3*i+lj]=(CCHx[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm])/static_cast<float>(zpN);
+            }
         }
     }
 }

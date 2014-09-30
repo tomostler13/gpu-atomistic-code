@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 23 Sep 2014 12:23:05
+// Last-modified: 30 Sep 2014 18:21:01
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -24,37 +24,21 @@ namespace cullg
     //rank of the FFT
     extern int nrank;
     //device pointers for Fourier space calculations
-    extern  cufftComplex *CCNxx;
-    extern  cufftComplex *CCNxy;
-    extern  cufftComplex *CCNxz;
-    extern  cufftComplex *CCNyx;
-    extern  cufftComplex *CCNyy;
-    extern  cufftComplex *CCNyz;
-    extern  cufftComplex *CCNzx;
-    extern  cufftComplex *CCNzy;
-    extern  cufftComplex *CCNzz;
-    extern  cufftComplex *CCSkx;
-    extern  cufftComplex *CCSky;
-    extern  cufftComplex *CCSkz;
-    extern  cufftReal *CCSrx;
-    extern  cufftReal *CCSry;
-    extern  cufftReal *CCSrz;
-    extern  cufftComplex *CCHkx;
-    extern  cufftComplex *CCHky;
-    extern  cufftComplex *CCHkz;
-    extern  cufftReal *CCHrx;
-    extern  cufftReal *CCHry;
-    extern  cufftReal *CCHrz;
+    extern  cufftComplex *CNk;
+    extern  cufftComplex *CSk;
+    extern  cufftReal *CSr;
+    extern  cufftComplex *CHk;
+    extern  cufftReal *CHr;
 
     //device pointers
     extern  double *Cspin;
     extern  double *Cespin;
     extern  float *Crand;
     extern  float *CH;
-    extern  unsigned int *Cspec;
-    extern  int *Czpsn;//The is the zero pad spin number
-    extern  int *Clu;
     extern  double *Cfn;
+    extern  double *Csigma;
+    extern  double *Clambda;
+    extern  double *Cllgpf;
     //cufft plans
     extern cufftHandle C3DPr2c,C3DPc2r;
     //device pointers
