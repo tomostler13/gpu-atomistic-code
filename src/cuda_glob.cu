@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 26 Jun 2014 10:39:28
+// Last-modified: 30 Sep 2014 14:41:04
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -70,7 +70,7 @@ namespace cullg
     double *Cespin=NULL;
     float *Crand=NULL;
     float *CH=NULL;
-    int *Czpsn=NULL;//The is the zero pad spin number
+    int *Czpsn=NULL;//This is the zero pad spin number
     int *Clu=NULL;
     double *Cfn=NULL;
     //cufft plans

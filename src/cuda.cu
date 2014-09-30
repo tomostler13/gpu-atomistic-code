@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 26 Jun 2014 11:50:23
+// Last-modified: 30 Sep 2014 14:42:39
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -35,7 +35,7 @@ namespace cullg
 
     void initGPU()
     {
-        		CUDA_CALL(cudaDeviceReset());
+        CUDA_CALL(cudaDeviceReset());
     }
     void llgGPU(unsigned int& t)
     {
