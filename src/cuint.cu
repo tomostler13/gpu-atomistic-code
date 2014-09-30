@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 30 Sep 2014 16:26:58
+// Last-modified: 30 Sep 2014 17:40:22
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -43,11 +43,6 @@ namespace cuint
         cudaMemcpyToSymbol(*(&Crdt),&llg::rdt,sizeof(double));
         cudaMemcpyToSymbol(K,geom::Nk.ptr(),3*sizeof(unsigned int));
         cudaMemcpyToSymbol(ZPDIM,&geom::zpdim,3*sizeof(unsigned int));
-        cudaMemcpyToSymbol(*(&IMDIMS[0]),&geom::ucm.GetNMS(),sizeof(unsigned int));
-        cudaMemcpyToSymbol(*(&IMDIMS[1]),&geom::ucm.GetNMS(),sizeof(unsigned int));
-        cudaMemcpyToSymbol(*(&IMDIMS[4]),&geom::zpdim[0],sizeof(unsigned int));
-        cudaMemcpyToSymbol(*(&IMDIMS[5]),&geom::zpdim[1],sizeof(unsigned int));
-        cudaMemcpyToSymbol(*(&IMDIMS[6]),&geom::zpdim[2],sizeof(unsigned int));
         cudaMemcpyToSymbol(*(&NUMSPEC),&geom::ucm.GetNMS(),sizeof(unsigned int));
         config::Info << "Done" << std::endl;
     }

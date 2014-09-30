@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 30 Sep 2014 16:33:05
+// Last-modified: 30 Sep 2014 17:54:38
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -44,7 +44,8 @@ namespace cullg
         //we can reuse the plan and alternate the sign depending on whether
         //we have a forward or a back transform
         /*Create a 3D FFT plan. */
-        if(cufftPlan3d(&C3DPr2c,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],CUFFT_R2C)!=CUFFT_SUCCESS)
+        int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
+        if(cufftPlanMany(&C3DPr2c,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],CUFFT_R2C)!=CUFFT_SUCCESS)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
@@ -139,22 +140,10 @@ namespace cullg
     {
         //all of the GPU memory allocations should happen here.
         //--------------------------------------------------------------------------------
-        CUDA_CALL(cudaMalloc((void**)&CCNxx,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNxy,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNxz,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNyx,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNyy,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNyz,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNzx,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNzy,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNzz,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CNk,geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zps*sizeof(cufftComplex)));
 
-        CUDA_CALL(cudaMalloc((void**)&CCSkx,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCSky,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCSkz,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCSrx,geom::zps*sizeof(cufftReal)));
-        CUDA_CALL(cudaMalloc((void**)&CCSry,geom::zps*sizeof(cufftReal)));
-        CUDA_CALL(cudaMalloc((void**)&CCSrz,geom::zps*sizeof(cufftReal)));
+        CUDA_CALL(cudaMalloc((void**)&CSk,geom::zps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CSr,geom::zps*sizeof(cufftReal)));
         CUDA_CALL(cudaMalloc((void**)&CCHkx,geom::czps*sizeof(cufftComplex)));
         CUDA_CALL(cudaMalloc((void**)&CCHky,geom::czps*sizeof(cufftComplex)));
         CUDA_CALL(cudaMalloc((void**)&CCHkz,geom::czps*sizeof(cufftComplex)));
