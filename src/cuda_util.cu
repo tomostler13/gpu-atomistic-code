@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 23 Sep 2014 12:24:35
+// Last-modified: 30 Sep 2014 17:54:38
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -44,7 +44,8 @@ namespace cullg
         //we can reuse the plan and alternate the sign depending on whether
         //we have a forward or a back transform
         /*Create a 3D FFT plan. */
-        if(cufftPlan3d(&C3DPr2c,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],CUFFT_R2C)!=CUFFT_SUCCESS)
+        int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
+        if(cufftPlanMany(&C3DPr2c,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],CUFFT_R2C)!=CUFFT_SUCCESS)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
@@ -60,68 +61,39 @@ namespace cullg
         //as there is no need to do the determination of the interaction
         //matrix on the card.
         //declare a holder on the heap
-        Array3D<fftwf_complex> tempxx,tempxy,tempxz,tempyx,tempyy,tempyz,tempzx,tempzy,tempzz;
-        tempxx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        tempxy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        tempxz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        tempyx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        tempyy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        tempyz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        tempzx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        tempzy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        tempzz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
-        for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+        Array7D<fftwf_complex> tempNkab;
+        tempNkab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+        for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
         {
-            for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+            for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
             {
-                for(unsigned int k = 0 ; k < geom::cplxdim ; k++)
+                for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                 {
-                    for(unsigned int l = 0 ; l < 2 ; l++)
+                    for(unsigned int beta = 0 ; beta < 3 ; beta++)
                     {
-                        tempxx(i,j,k)[l]=float(intmat::Nxx(i,j,k)[l]);
-                        tempxy(i,j,k)[l]=float(intmat::Nxy(i,j,k)[l]);
-                        tempxz(i,j,k)[l]=float(intmat::Nxz(i,j,k)[l]);
-                        tempyx(i,j,k)[l]=float(intmat::Nyx(i,j,k)[l]);
-                        tempyy(i,j,k)[l]=float(intmat::Nyy(i,j,k)[l]);
-                        tempyz(i,j,k)[l]=float(intmat::Nyz(i,j,k)[l]);
-                        tempzx(i,j,k)[l]=float(intmat::Nzx(i,j,k)[l]);
-                        tempzy(i,j,k)[l]=float(intmat::Nzy(i,j,k)[l]);
-                        tempzz(i,j,k)[l]=float(intmat::Nzz(i,j,k)[l]);
+                        for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+                        {
+                            for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+                            {
+                                for(unsigned int k = 0 ; k < geom::cplxdim ; k++)
+                                {
+                                    for(unsigned int l = 0 ; l < 2 ; l++)
+                                    {
+                                        tempNkab(s1,s2,alpha,beta,i,j,k)[l]=float(intmat::Nkab(s1,s2,alpha,beta,i,j,k)[l]);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
         //copy the FT'd interaction matrix to the card
-        CUDA_CALL(cudaMemcpy(CCNxx,tempxx.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNxy,tempxy.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNxz,tempxz.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNyx,tempyx.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNyy,tempyy.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNyz,tempyz.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNzx,tempzx.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNzy,tempzy.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        CUDA_CALL(cudaMemcpy(CCNzz,tempzz.ptr(),geom::czps*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-        //clear the memory on the CPU
-        intmat::Nxx.clear();
-        intmat::Nxy.clear();
-        intmat::Nxz.clear();
-        intmat::Nyx.clear();
-        intmat::Nyy.clear();
-        intmat::Nyz.clear();
-        intmat::Nzx.clear();
-        intmat::Nzy.clear();
-        intmat::Nzz.clear();
+        CUDA_CALL(cudaMemcpy(CNk,tempNkab.ptr(),geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zpdim[0]*geom::zpdim[1]*geom::zpdim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2]*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        intmat::Nkab.clear();
         //clear the floating point holding arrays as well
-        tempxx.clear();
-        tempxy.clear();
-        tempxz.clear();
-        tempyx.clear();
-        tempyy.clear();
-        tempyz.clear();
-        tempzx.clear();
-        tempzy.clear();
-        tempzz.clear();
+        tempNkab.clear();
         check_cuda_errors(__FILE__,__LINE__);
     }
     void deallocate_cuda_memory()
@@ -129,15 +101,7 @@ namespace cullg
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**EXIT information***" << std::endl;
         FIXOUT(config::Info,"Freeing space on GPU device" << std::flush);
-        CUDA_CALL(cudaFree(CCNxx));
-        CUDA_CALL(cudaFree(CCNxy));
-        CUDA_CALL(cudaFree(CCNxz));
-        CUDA_CALL(cudaFree(CCNyx));
-        CUDA_CALL(cudaFree(CCNyy));
-        CUDA_CALL(cudaFree(CCNyz));
-        CUDA_CALL(cudaFree(CCNzx));
-        CUDA_CALL(cudaFree(CCNzy));
-        CUDA_CALL(cudaFree(CCNzz));
+        CUDA_CALL(cudaFree(CNk));
         CUDA_CALL(cudaFree(CCSrx));
         CUDA_CALL(cudaFree(CCSry));
         CUDA_CALL(cudaFree(CCSrz));
@@ -176,22 +140,10 @@ namespace cullg
     {
         //all of the GPU memory allocations should happen here.
         //--------------------------------------------------------------------------------
-        CUDA_CALL(cudaMalloc((void**)&CCNxx,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNxy,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNxz,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNyx,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNyy,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNyz,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNzx,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNzy,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCNzz,geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CNk,geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zps*sizeof(cufftComplex)));
 
-        CUDA_CALL(cudaMalloc((void**)&CCSkx,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCSky,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCSkz,geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CCSrx,geom::zps*sizeof(cufftReal)));
-        CUDA_CALL(cudaMalloc((void**)&CCSry,geom::zps*sizeof(cufftReal)));
-        CUDA_CALL(cudaMalloc((void**)&CCSrz,geom::zps*sizeof(cufftReal)));
+        CUDA_CALL(cudaMalloc((void**)&CSk,geom::zps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CSr,geom::zps*sizeof(cufftReal)));
         CUDA_CALL(cudaMalloc((void**)&CCHkx,geom::czps*sizeof(cufftComplex)));
         CUDA_CALL(cudaMalloc((void**)&CCHky,geom::czps*sizeof(cufftComplex)));
         CUDA_CALL(cudaMalloc((void**)&CCHkz,geom::czps*sizeof(cufftComplex)));
