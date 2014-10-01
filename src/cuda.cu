@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 30 Sep 2014 18:36:19
+// Last-modified: 01 Oct 2014 18:24:38
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -40,15 +40,15 @@ namespace cullg
     {
 
         //copy the spin data to the zero padded arrays
-        cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cspin,Clu,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
+        cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cspec);
         //forward transform
         spins_forward();
         //perform convolution
-        cufields::CFConv<<<czpblockspergrid,threadsperblock>>>(geom::czps,CCNxx,CCNxy,CCNxz,CCNyx,CCNyy,CCNyz,CCNzx,CCNzy,CCNzz,CCHkx,CCHky,CCHkz,CCSkx,CCSky,CCSkz);
+        cufields::CFConv<<<czpblockspergrid,threadsperblock>>>(geom::czps,geom::ucm.GetNMS(),CNk,CHk,CSk);
         //transform the fields back
         fields_back();
         //copy the fields from the zero padded array to the demag field array
-        cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,Czpsn,CCHrx,CCHry,CCHrz);
+        cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,CHr,Ckx,Cky,Ckz,Cspec);
         //FOR DEBUGGING THE DIPOLAR FIELD/
         float temp1[3*geom::nspins];
         CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
@@ -63,17 +63,17 @@ namespace cullg
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
         cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda);
-        cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::nspins,Cespin,Clu,CCSrx,CCSry,CCSrz,CCHrx,CCHry,CCHrz);
+        cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cspec);
         //forward transform
         spins_forward();
         //perform convolution
-        cufields::CFConv<<<czpblockspergrid,threadsperblock>>>(geom::czps,CCNxx,CCNxy,CCNxz,CCNyx,CCNyy,CCNyz,CCNzx,CCNzy,CCNzz,CCHkx,CCHky,CCHkz,CCSkx,CCSky,CCSkz);
+        cufields::CFConv<<<czpblockspergrid,threadsperblock>>>(geom::czps,geom::ucm.GetNMS(),CNk,CHk,CSk);
         //transform the fields back
         fields_back();
         //copy the fields from the zero padded array to the demag field array
-        cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,Czpsn,CCHrx,CCHry,CCHrz);
+        cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,CHr,Ckx,Cky,Ckz,Cspec);
 
-        cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,mat::sigma,llg::llgpf,mat::lambda,llg::rdt,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn);
+        cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda);
         if(t%spins::update==0)
         {
             //copy spin arrays back to CPU

@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 27 Sep 2014 14:29:56
+// Last-modified: 01 Oct 2014 09:54:04
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -34,7 +34,7 @@ namespace geom
     //Number of K points
     Array<unsigned int> Nk;
     //lookup array. Give atom number and return coordinates
-    Array2D<int> lu;
+    Array2D<int> lu,zplu;
     //Coords array. Give coords and returns atom number. This coords array
     //is the size of the zero padded arrays and has places where atoms do
     //not exist

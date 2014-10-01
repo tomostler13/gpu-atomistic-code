@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 27 Sep 2014 15:20:14
+// Last-modified: 01 Oct 2014 18:47:31
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -54,10 +54,12 @@ namespace geom
         {
             zps*=(2*dim[i]*Nk[i]);
         }
-
+        //The point of this array is to number each k-point and assign it a value on the k-point
+        //mesh. The reason is so that when we do the convolution on the GPU we can look up the
+        //correct array elements
+        zplu.resize(zps,3);
         FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
         FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
-
         //Next we want to output the information stored in the class to an output file.
         //If the number of atoms in the unit cell is large (usually when we are using a bit supercell)
         //the we don't want to mess up the format of the output file as it would make it unreadable if
@@ -127,7 +129,6 @@ namespace geom
             error::errMessage(ucm.errorCode(errStatus));
         }
 
-
         //the 5 entries for each spin correspond to
         // 0,1,2 - the x,y,z positions in the unit cell
         // 3 is the magnetic species number
@@ -141,6 +142,7 @@ namespace geom
         //IF element 0 has the following numbers
         //-2 THEN here corresponds to empty k-mesh point
         //-1 THEN corresponds to an empty k-mesh point but with an imaginary atom
+
 
         //there for the determination of the interaction matrix
         coords.IFill(-2);

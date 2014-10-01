@@ -1,11 +1,10 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 30 Sep 2014 19:31:54
+// Last-modified: 01 Oct 2014 18:50:23
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
-#include "../inc/mat.h"
 #include "../inc/geom.h"
 #include "../inc/config.h"
 #include "../inc/random.h"
@@ -53,10 +52,10 @@ namespace cullg
     unsigned int *Ckx=NULL,*Cky=NULL,*Ckz=NULL,*Cspec=NULL;
 
     //device pointers
-    double *Cspin=NULL,*Cespin=NULL,*Crand=NULL;
-    float *CH=NULL;
+    double *Cspin=NULL,*Cespin=NULL;
+    float *CH=NULL,*Crand=NULL;
     double *Clambda=NULL,*Csigma=NULL,*Cfn=NULL,*Cllgpf=NULL;
     //cufft plans
-    cufftHandle C3DPr2c,C3DPc2r;
+    cufftHandle FPc2r,SPr2c;
 
 }

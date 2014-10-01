@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 30 Sep 2014 19:58:53
+// Last-modified: 01 Oct 2014 18:46:03
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -15,13 +15,16 @@
 #include "../inc/cufields.h"
 #include "../inc/cudadefs.h"
 #include "../inc/defines.h"
+#include "../inc/config.h"
+#include "../inc/geom.h"
+#include "../inc/llg.h"
 namespace cufields
 {
     //This stores the interaction matrix dimensions for the lookup and the number
     //of species
     __constant__ unsigned int IMDIMS[7]={0,0,3,3,0,0,0},NUMSPEC=0;
     //The number of k-points and the zero pad size
-    __constant__ unsigned int K[3]={0,0,0},ZPDIM[3]={0,0,0};
+    __constant__ unsigned int K[3]={0,0,0},ZPDIM[3]={0,0,0},CPLXDIM=0;
     //Reduced timestep
     __constant__ double Crdt;
 
@@ -31,46 +34,59 @@ namespace cufields
         cudaMemcpyToSymbol(*(&Crdt),&llg::rdt,sizeof(double));
         cudaMemcpyToSymbol(K,geom::Nk.ptr(),3*sizeof(unsigned int));
         cudaMemcpyToSymbol(ZPDIM,&geom::zpdim,3*sizeof(unsigned int));
-        cudaMemcpyToSymbol(*(&NUMSPEC),&geom::ucm.GetNMS(),sizeof(unsigned int));
+        unsigned int nms=geom::ucm.GetNMS();
+        cudaMemcpyToSymbol(*(&NUMSPEC),&nms,sizeof(unsigned int));
+        cudaMemcpyToSymbol(*(&CPLXDIM),&geom::cplxdim,sizeof(unsigned int));
         config::Info << "Done" << std::endl;
     }
     //perform the convolution in Fourier space
     __global__ void CFConv(int N,
-                           cufftComplex *CCNxx,
-                           cufftComplex *CCNxy,
-                           cufftComplex *CCNxz,
-                           cufftComplex *CCNyx,
-                           cufftComplex *CCNyy,
-                           cufftComplex *CCNyz,
-                           cufftComplex *CCNzx,
-                           cufftComplex *CCNzy,
-                           cufftComplex *CCNzz,
-                           cufftComplex *CCHx,
-                           cufftComplex *CCHy,
-                           cufftComplex *CCHz,
-                           cufftComplex *CCSx,
-                           cufftComplex *CCSy,
-                           cufftComplex *CCSz
+                           unsigned int NMS,
+                           cufftComplex *CNk,
+                           cufftComplex *CHk,
+                           cufftComplex *CSk
                            )
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
-            CCHx[i].x = (CCNxx[i].x*CCSx[i].x - CCNxx[i].y*CCSx[i].y + CCNxy[i].x*CCSy[i].x - CCNxy[i].y*CCSy[i].y + CCNxz[i].x*CCSz[i].x - CCNxz[i].y*CCSz[i].y);
-            CCHx[i].y = (CCNxx[i].x*CCSx[i].y + CCNxx[i].y*CCSx[i].x + CCNxy[i].x*CCSy[i].y + CCNxy[i].y*CCSy[i].x + CCNxz[i].x*CCSz[i].y + CCNxz[i].y*CCSz[i].x);
+            //the number of threads is the zps (zero pad size). We can then find the coordinate of the
+            //fourier space k-point
+            const unsigned int kx=i/(ZPDIM[0]*ZPDIM[1]),ky=i%(ZPDIM[0]*ZPDIM[1])/ZPDIM[2],kz=i%CPLXDIM;
+            for(unsigned int s1 = 0 ; s1 < NMS ; s1++)
+            {
+                for(unsigned int s2 = 0 ; s2 < NMS ; s2++)
+                {
+                    for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                    {
+                        for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                        {
+                            //calculate the interaction matrix array element
+                            //from the 7D array lookup
+                            //(((((i*dim1+j)*dim2+k)*dim3+l)*dim4+m)*dim5+n)*dim6+o
+                            //dim0 = NMS, dim1 = NMS, dim2 = 3, dim3 = 3,
+                            //dim4 = ZPDIM[0], dim5 = ZPDIM[1], dim6 = ZPDIM[2]
 
-            CCHy[i].x = (CCNyx[i].x*CCSx[i].x - CCNyx[i].y*CCSx[i].y + CCNyy[i].x*CCSy[i].x - CCNyy[i].y*CCSy[i].y + CCNyz[i].x*CCSz[i].x - CCNyz[i].y*CCSz[i].y);
-            CCHy[i].y = (CCNyx[i].x*CCSx[i].y + CCNyx[i].y*CCSx[i].x + CCNyy[i].x*CCSy[i].y + CCNyy[i].y*CCSy[i].x + CCNyz[i].x*CCSz[i].y + CCNyz[i].y*CCSz[i].x);
+                            unsigned int Nari=(((((s1*NMS+s2)*3+alpha)*3+beta)*ZPDIM[0]+kx)*ZPDIM[1]+ky)*ZPDIM[2]+kz;
 
-            CCHz[i].x = (CCNzx[i].x*CCSx[i].x - CCNzx[i].y*CCSx[i].y + CCNzy[i].x*CCSy[i].x - CCNzy[i].y*CCSy[i].y + CCNzz[i].x*CCSz[i].x - CCNzz[i].y*CCSz[i].y);
-            CCHz[i].y = (CCNzx[i].x*CCSx[i].y + CCNzx[i].y*CCSx[i].x + CCNzy[i].x*CCSy[i].y + CCNzy[i].y*CCSy[i].x + CCNzz[i].x*CCSz[i].y + CCNzz[i].y*CCSz[i].x);
+                            //Calculate the field and spin array element (5D lookup)
+                            //(((i*dim1+j)*dim2+k)*dim3+l)*dim4+m
+                            //dim0 = NMS , dim1 = 3
+                            //dim2 = ZPDIM[0], dim3 = ZPDIM[1], dim4 = ZPDIM[2]
+                            unsigned int sfari=(((s1*3+alpha)*ZPDIM[0]+kx)*ZPDIM[1]+ky)*ZPDIM[2]+kz;
+                            CHk[sfari].x = (CNk[Nari].x*CSk[sfari].x - CNk[Nari].y*CSk[sfari].y);
+                            CHk[sfari].y = (CNk[Nari].x*CSk[sfari].y + CNk[Nari].y*CSk[sfari].x);
+                        }
+                    }
+                }
+            }
         }
     }
 
 
     //This needs to be done with a seperate kernel because the size (N)
     //of the zero padded spin arrays is bigger than the number of spins
-    __global__ void CCopySpin(int N,double *Cspin,int *Czpsn,cufftReal *CSr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
+    __global__ void CCopySpin(int N,double *Cspin,cufftReal *CSr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -88,14 +104,12 @@ namespace cufields
             //loop over the 3 spin coordinates (j)
             for(unsigned int lj = 0 ; lj < 3 ; lj++)
             {
-                unsigned int ac=
                 CSr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm]=float(Cspin[3*i+lj]);
             }
         }
     }
-}
 
-    __global__ void CCopyFields(int N,int zpN,float *CH,int *Czpsn,cufftReal *CHr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
+    __global__ void CCopyFields(int N,int zpN,float *CH,cufftReal *CHr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -113,7 +127,7 @@ namespace cufields
             //loop over the 3 spin coordinates (j)
             for(unsigned int lj = 0 ; lj < 3 ; lj++)
             {
-                CH[3*i+lj]=(CCHx[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm])/static_cast<float>(zpN);
+                CH[3*i+lj]=(CHr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm])/static_cast<float>(zpN);
             }
         }
     }

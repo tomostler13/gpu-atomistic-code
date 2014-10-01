@@ -1,11 +1,10 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 30 Sep 2014 19:34:41
+// Last-modified: 01 Oct 2014 18:49:51
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
-#include "../inc/mat.h"
 #include "../inc/geom.h"
 #include "../inc/config.h"
 #include "../inc/random.h"
@@ -44,7 +43,7 @@ namespace cullg
         int *inembed=n;
         int *onembed=n;
         int istride=1;
-        int istide=1
+        int ostride=1;
         int idist=geom::zps;
         int odist=geom::czps;
         config::openLogFile();
@@ -60,13 +59,12 @@ namespace cullg
         FIXOUT(config::Log,"ostride = " << ostride << std::endl);
         FIXOUT(config::Log,"odist = " << odist << std::endl);
         FIXOUT(config::Log,"Direction (sign) = " << "FFTW_FORWARD" << std::endl);
-        FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
         if(cufftPlanMany(&SPr2c,3,n,inembed,istride,idist,onembed,ostride,odist,CUFFT_R2C,geom::ucm.GetNMS()*3)!=CUFFT_SUCCESS)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
         }
-        if(cufftPlan3d(&C3DPc2r,3,n,onembed,ostride,odist,inembed,istride,idist,CUFFT_C2R,geom::ucm.GetNMS()*3)!=CUFFT_SUCCESS)
+        if(cufftPlanMany(&FPc2r,3,n,onembed,ostride,odist,inembed,istride,idist,CUFFT_C2R,geom::ucm.GetNMS()*3)!=CUFFT_SUCCESS)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
@@ -131,23 +129,19 @@ namespace cullg
         CUDA_CALL(cudaFree(Clambda));
         CUDA_CALL(cudaFree(Cllgpf));
         CUDA_CALL(cudaFree(Cspec));
-        CUDA_CALL(cudaFree(ckx));
-        CUDA_CALL(cudaFree(cky));
-        CUDA_CALL(cudaFree(ckz));
+        CUDA_CALL(cudaFree(Ckx));
+        CUDA_CALL(cudaFree(Cky));
+        CUDA_CALL(cudaFree(Ckz));
         config::Info << "Done" << std::endl;
     }
     void spins_forward()
     {
-        CUFFT_CALL(cufftExecR2C(C3DPr2c,CCSrx,CCSkx));
-        CUFFT_CALL(cufftExecR2C(C3DPr2c,CCSry,CCSky));
-        CUFFT_CALL(cufftExecR2C(C3DPr2c,CCSrz,CCSkz));
+        CUFFT_CALL(cufftExecR2C(SPr2c,CSr,CSk));
     }
 
     void fields_back()
     {
-        CUFFT_CALL(cufftExecC2R(C3DPc2r,CCHkx,CCHrx));
-        CUFFT_CALL(cufftExecC2R(C3DPc2r,CCHky,CCHry));
-        CUFFT_CALL(cufftExecC2R(C3DPc2r,CCHkz,CCHrz));
+        CUFFT_CALL(cufftExecC2R(FPc2r,CHk,CHr));
     }
 
     void allocate_memory_on_card()
@@ -156,10 +150,10 @@ namespace cullg
         //--------------------------------------------------------------------------------
         CUDA_CALL(cudaMalloc((void**)&CNk,geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zps*sizeof(cufftComplex)));
 
-        CUDA_CALL(cudaMalloc((void**)&CSk,geom::ucm.GetNMS()*geom::zps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CSr,geom::ucm.GetNMS()*geom::zps*sizeof(cufftReal)));
-        CUDA_CALL(cudaMalloc((void**)&CHk,geom::ucm.GetNMS()*geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CHr,geom::ucm.GetNMS()*geom::zps*sizeof(cufftReal)));
+        CUDA_CALL(cudaMalloc((void**)&CSk,geom::ucm.GetNMS()*3*geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CSr,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftReal)));
+        CUDA_CALL(cudaMalloc((void**)&CHk,geom::ucm.GetNMS()*3*geom::czps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CHr,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftReal)));
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Crand,3*geom::nspins*sizeof(float)));
