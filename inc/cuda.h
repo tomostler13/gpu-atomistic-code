@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 01 Oct 2014 18:34:05
+// Last-modified: 02 Oct 2014 09:38:10
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -21,6 +21,12 @@ namespace cullg
     extern int zpblockspergrid;
     //same but for the complex zero padded work space (N_Z/2+1) for r2c and c2r transforms
     extern int czpblockspergrid;
+    //This is the number of block per grid for addressing the elements of the real space
+    //spin and field arrays (dimensions: NUMSPEC x 3 x ZPDIM[0] x ZPDIM[1] x ZPDIM[2]
+    extern int rsarzpblockspergrid;
+    //Same as the rsarzpblockspergrid but with the ZPDIM[2] dimension now replaced with the (ZPDIM[2]+1)/2
+    //for the c2r/r2c transforms
+    extern int ksarzpblockspergrid;
     //rank of the FFT
     extern int nrank;
     //lookup for the x,y and z locations (on k-mesh) of the spins

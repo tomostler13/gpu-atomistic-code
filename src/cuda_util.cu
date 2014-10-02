@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 01 Oct 2014 18:49:51
+// Last-modified: 02 Oct 2014 10:02:06
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -93,8 +93,10 @@ namespace cullg
                                 {
                                     for(unsigned int l = 0 ; l < 2 ; l++)
                                     {
-                                        tempNkab(s1,s2,alpha,beta,i,j,k)[l]=float(intmat::Nkab(s1,s2,alpha,beta,i,j,k)[l]);
+                                        tempNkab(s1,s2,alpha,beta,i,j,k)[l]=static_cast<float>(intmat::Nkab(s1,s2,alpha,beta,i,j,k)[l]);
                                     }
+
+                                    std::cout << tempNkab(s1,s2,alpha,beta,i,j,k)[0] << "\t" << tempNkab(s1,s2,alpha,beta,i,j,k)[1] << std::endl;
                                 }
                             }
                         }
@@ -102,6 +104,7 @@ namespace cullg
                 }
             }
         }
+        std::cin.get();
 
         //copy the FT'd interaction matrix to the card
         CUDA_CALL(cudaMemcpy(CNk,tempNkab.ptr(),geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zpdim[0]*geom::zpdim[1]*geom::zpdim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2]*sizeof(cufftComplex),cudaMemcpyHostToDevice));
@@ -149,7 +152,6 @@ namespace cullg
         //all of the GPU memory allocations should happen here.
         //--------------------------------------------------------------------------------
         CUDA_CALL(cudaMalloc((void**)&CNk,geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zps*sizeof(cufftComplex)));
-
         CUDA_CALL(cudaMalloc((void**)&CSk,geom::ucm.GetNMS()*3*geom::czps*sizeof(cufftComplex)));
         CUDA_CALL(cudaMalloc((void**)&CSr,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftReal)));
         CUDA_CALL(cudaMalloc((void**)&CHk,geom::ucm.GetNMS()*3*geom::czps*sizeof(cufftComplex)));
@@ -207,8 +209,7 @@ namespace cullg
         CUDA_CALL(cudaMemcpy(Cspin,tnsda,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         //zero the field array
         for(unsigned int i = 0 ; i < 3*geom::nspins ; i++){tnsfa[i]=0.0;}CUDA_CALL(cudaMemcpy(CH,tnsfa,3*geom::nspins*sizeof(float),cudaMemcpyHostToDevice));
-        //		cufftReal
-        //--------------------------------------------------------------------------------
+        //call the kernel to zero the spin array
 
 
         //make sure we clean up when the program exits

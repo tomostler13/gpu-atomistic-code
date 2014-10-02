@@ -6,7 +6,7 @@ GITINFO=-DGIT_SHA1='"$(shell git rev-parse HEAD)"' -DGITDIRTY='"$(shell git stat
 export LANG=C
 export LC_ALL=C
 # LIBS
-DEFS=-DNDEBUG
+DEFS=-DDEBUG
 CUDEFS=-DCUDA
 LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ -llapack -lblas# -lconfig++
 STATIC_LINK=

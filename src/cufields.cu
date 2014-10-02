@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 01 Oct 2014 18:46:03
+// Last-modified: 02 Oct 2014 09:51:32
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -76,6 +76,7 @@ namespace cufields
                             unsigned int sfari=(((s1*3+alpha)*ZPDIM[0]+kx)*ZPDIM[1]+ky)*ZPDIM[2]+kz;
                             CHk[sfari].x = (CNk[Nari].x*CSk[sfari].x - CNk[Nari].y*CSk[sfari].y);
                             CHk[sfari].y = (CNk[Nari].x*CSk[sfari].y + CNk[Nari].y*CSk[sfari].x);
+                            printf("%f\t%f\n",CNk[Nari].x,CNk[Nari].y);
                         }
                     }
                 }
@@ -104,11 +105,13 @@ namespace cufields
             //loop over the 3 spin coordinates (j)
             for(unsigned int lj = 0 ; lj < 3 ; lj++)
             {
+
                 CSr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm]=float(Cspin[3*i+lj]);
             }
         }
     }
 
+                //printf("%d\t%d\t%d\n",(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm,0,0);
     __global__ void CCopyFields(int N,int zpN,float *CH,cufftReal *CHr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
@@ -129,6 +132,28 @@ namespace cufields
             {
                 CH[3*i+lj]=(CHr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm])/static_cast<float>(zpN);
             }
+        }
+    }
+    //Cuda Set to Zero 5D Real Space Arrays
+    __global__ void CZero5DRSArrays(int N,cufftReal *CHr,cufftReal *CSr)
+    {
+        const int i = blockDim.x*blockIdx.x + threadIdx.x;
+        if(i<N)
+        {
+            CHr[i]=0.0;
+            CSr[i]=0.0;
+        }
+    }
+    //Cuda Set to Zero 5D Fourier Space Arrays
+    __global__ void CZero5DFSArrays(int N,cufftComplex *CHk,cufftComplex *CSk)
+    {
+        const int i = blockDim.x*blockIdx.x + threadIdx.x;
+        if(i<N)
+        {
+            CHk[i].x=0.0;
+            CHk[i].y=0.0;
+            CSk[i].x=0.0;
+            CSk[i].y=0.0;
         }
     }
 }

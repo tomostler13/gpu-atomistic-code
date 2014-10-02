@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 01 Oct 2014 18:47:02
+// Last-modified: 02 Oct 2014 09:16:25
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
