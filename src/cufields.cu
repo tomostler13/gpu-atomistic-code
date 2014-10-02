@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 14:43:40
+// Last-modified: 02 Oct 2014 14:46:04
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -53,7 +53,6 @@ namespace cufields
             //the number of threads is the zps (zero pad size). We can then find the coordinate of the
             //fourier space k-point
             const unsigned int kx=i/(ZPDIM[0]*K[0]*ZPDIM[1]*K[1]),ky=i%(ZPDIM[0]*K[0]*ZPDIM[1]*K[1])/(ZPDIM[2]*K[2]),kz=i%(ZPDIM[2]*K[2]);
-            printf("Check\t%d\t%d\t%d\t%d\n",i,kx,ky,kz);
             for(unsigned int s1 = 0 ; s1 < NMS ; s1++)
             {
                 for(unsigned int s2 = 0 ; s2 < NMS ; s2++)
@@ -79,9 +78,6 @@ namespace cufields
                             unsigned int sfari=(((s2*3+beta)*ZPDIM[0]*K[0]+kx)*ZPDIM[1]*K[1]+ky)*ZPDIM[2]*K[2]+kz;
                             CHk[hfari].x += (CNk[Nari].x*CSk[sfari].x - CNk[Nari].y*CSk[sfari].y);
                             CHk[hfari].y += (CNk[Nari].x*CSk[sfari].y + CNk[Nari].y*CSk[sfari].x);
-                            //printf("INTMAT\t%f\t%f\n",CNk[Nari].x,CNk[Nari].y);
-                            printf("SPINS\t%f\t%f\n",CSk[sfari].x,CSk[sfari].y);
-            //                printf("K's\t%d\t%d\t%d\t%d\n",i,kx,ky,kz);
                         }
                     }
                 }
@@ -118,7 +114,6 @@ namespace cufields
         }
     }
 
-                //printf("%d\t%d\t%d\n",(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm,0,0);
     __global__ void CCopyFields(int N,int zpN,float *CH,cufftComplex *CHr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;

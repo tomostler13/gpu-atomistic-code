@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 14:11:22
+// Last-modified: 02 Oct 2014 16:07:04
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -32,10 +32,6 @@
 namespace cullg
 {
 
-    void initGPU()
-    {
-        CUDA_CALL(cudaDeviceReset());
-    }
     void llgGPU(unsigned int& t)
     {
         if(t==0)
@@ -56,7 +52,7 @@ namespace cullg
         //copy the fields from the zero padded array to the demag field array
         cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,CHr,Ckx,Cky,Ckz,Cspec);
         //FOR DEBUGGING THE DIPOLAR FIELD/
-        float temp1[3*geom::nspins];
+        /*float temp1[3*geom::nspins];
         CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
@@ -65,6 +61,7 @@ namespace cullg
 
         }
         exit(0);
+        */
 
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
@@ -105,9 +102,9 @@ namespace cullg
 
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**CUDA details***" << std::endl;
-        FIXOUT(config::Info,"Resetting device:" << std::flush);
-        CUDA_CALL(cudaDeviceReset());
-        SUCCESS(config::Info);
+//        FIXOUT(config::Info,"Resetting device:" << std::flush);
+//        CUDA_CALL(cudaDeviceReset());
+//        SUCCESS(config::Info);
 
         //the rank of the fourier transform
         nrank=3;
