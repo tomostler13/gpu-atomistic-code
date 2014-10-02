@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 02 Oct 2014 09:38:10
+// Last-modified: 02 Oct 2014 10:21:07
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -34,9 +34,9 @@ namespace cullg
     //device pointers for Fourier space calculations
     extern  cufftComplex *CNk;
     extern  cufftComplex *CSk;
-    extern  cufftReal *CSr;
+    extern  cufftComplex *CSr;
     extern  cufftComplex *CHk;
-    extern  cufftReal *CHr;
+    extern  cufftComplex *CHr;
 
     //device pointers
     extern  double *Cspin;
@@ -48,7 +48,7 @@ namespace cullg
     extern  double *Clambda;
     extern  double *Cllgpf;
     //cufft plans
-    extern cufftHandle SPr2c,FPc2r;
+    extern cufftHandle SPc2c,FPc2c;
     //device pointers
     void allocate_memory_on_card();
     void setup_fourier_transform();

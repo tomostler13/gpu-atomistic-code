@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 09:51:32
+// Last-modified: 02 Oct 2014 10:25:30
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -52,7 +52,7 @@ namespace cufields
         {
             //the number of threads is the zps (zero pad size). We can then find the coordinate of the
             //fourier space k-point
-            const unsigned int kx=i/(ZPDIM[0]*ZPDIM[1]),ky=i%(ZPDIM[0]*ZPDIM[1])/ZPDIM[2],kz=i%CPLXDIM;
+            const unsigned int kx=i/(ZPDIM[0]*ZPDIM[1]),ky=i%(ZPDIM[0]*ZPDIM[1])/ZPDIM[2],kz=i%ZPDIM[2];
             for(unsigned int s1 = 0 ; s1 < NMS ; s1++)
             {
                 for(unsigned int s2 = 0 ; s2 < NMS ; s2++)
@@ -87,7 +87,7 @@ namespace cufields
 
     //This needs to be done with a seperate kernel because the size (N)
     //of the zero padded spin arrays is bigger than the number of spins
-    __global__ void CCopySpin(int N,double *Cspin,cufftReal *CSr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
+    __global__ void CCopySpin(int N,double *Cspin,cufftComplex *CSr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -106,13 +106,15 @@ namespace cufields
             for(unsigned int lj = 0 ; lj < 3 ; lj++)
             {
 
-                CSr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm]=float(Cspin[3*i+lj]);
+                CSr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm].x=float(Cspin[3*i+lj]);
+                //This can probably be removed
+                CSr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm].y=0.0;
             }
         }
     }
 
                 //printf("%d\t%d\t%d\n",(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm,0,0);
-    __global__ void CCopyFields(int N,int zpN,float *CH,cufftReal *CHr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
+    __global__ void CCopyFields(int N,int zpN,float *CH,cufftComplex *CHr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -130,18 +132,20 @@ namespace cufields
             //loop over the 3 spin coordinates (j)
             for(unsigned int lj = 0 ; lj < 3 ; lj++)
             {
-                CH[3*i+lj]=(CHr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm])/static_cast<float>(zpN);
+                CH[3*i+lj]=(CHr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm].x)/static_cast<float>(zpN);
             }
         }
     }
     //Cuda Set to Zero 5D Real Space Arrays
-    __global__ void CZero5DRSArrays(int N,cufftReal *CHr,cufftReal *CSr)
+    __global__ void CZero5DRSArrays(int N,cufftComplex *CHr,cufftComplex *CSr)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
-            CHr[i]=0.0;
-            CSr[i]=0.0;
+            CHr[i].x=0.0;
+            CHr[i].y=0.0;
+            CSr[i].x=0.0;
+            CSr[i].y=0.0;
         }
     }
     //Cuda Set to Zero 5D Fourier Space Arrays

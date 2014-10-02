@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 02 Oct 2014 09:38:22
+// Last-modified: 02 Oct 2014 10:20:42
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -50,9 +50,9 @@ namespace cullg
     //device pointers for Fourier space calculations
     cufftComplex *CNk=NULL;
     cufftComplex *CSk=NULL;
-    cufftReal *CSr=NULL;
+    cufftComplex *CSr=NULL;
     cufftComplex *CHk=NULL;
-    cufftReal *CHr=NULL;
+    cufftComplex *CHr=NULL;
     //unsigned int the kx, ky and kz positions of the spins. The point is that you can use these arrays to
     //lookup which element of the array the the spin data should be copied to.
     unsigned int *Ckx=NULL,*Cky=NULL,*Ckz=NULL,*Cspec=NULL;
@@ -62,6 +62,6 @@ namespace cullg
     float *CH=NULL,*Crand=NULL;
     double *Clambda=NULL,*Csigma=NULL,*Cfn=NULL,*Cllgpf=NULL;
     //cufft plans
-    cufftHandle FPc2r,SPr2c;
+    cufftHandle FPc2c,SPc2c;
 
 }

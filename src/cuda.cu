@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 09:48:23
+// Last-modified: 02 Oct 2014 10:42:10
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -41,7 +41,7 @@ namespace cullg
         if(t==0)
         {
             cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr);
-            cufields::CZero5DFSArrays<<<ksarzpblockspergrid,threadsperblock>>>(geom::czps*3*geom::ucm.GetNMS(),CHk,CSk);
+            cufields::CZero5DFSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHk,CSk);
         }
 
 
@@ -50,7 +50,7 @@ namespace cullg
         //forward transform
         spins_forward();
         //perform convolution
-        cufields::CFConv<<<czpblockspergrid,threadsperblock>>>(geom::czps,geom::ucm.GetNMS(),CNk,CHk,CSk);
+        cufields::CFConv<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::ucm.GetNMS(),CNk,CHk,CSk);
         //transform the fields back
         fields_back();
         //copy the fields from the zero padded array to the demag field array

@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 02 Oct 2014 10:02:06
+// Last-modified: 02 Oct 2014 10:50:31
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -45,7 +45,7 @@ namespace cullg
         int istride=1;
         int ostride=1;
         int idist=geom::zps;
-        int odist=geom::czps;
+        int odist=geom::zps;
         config::openLogFile();
         config::printline(config::Log);
         FIXOUT(config::Log,"Parameters entering into CUFFT plan of the spin arrays (forward)" << std::endl);
@@ -58,13 +58,13 @@ namespace cullg
         FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
         FIXOUT(config::Log,"ostride = " << ostride << std::endl);
         FIXOUT(config::Log,"odist = " << odist << std::endl);
-        FIXOUT(config::Log,"Direction (sign) = " << "FFTW_FORWARD" << std::endl);
-        if(cufftPlanMany(&SPr2c,3,n,inembed,istride,idist,onembed,ostride,odist,CUFFT_R2C,geom::ucm.GetNMS()*3)!=CUFFT_SUCCESS)
+        FIXOUT(config::Log,"Direction (sign) = " << "CUFFTW_FORWARD" << std::endl);
+        if(cufftPlanMany(&SPc2c,3,n,inembed,istride,idist,onembed,ostride,odist,CUFFT_C2C,geom::ucm.GetNMS()*3)!=CUFFT_SUCCESS)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
         }
-        if(cufftPlanMany(&FPc2r,3,n,onembed,ostride,odist,inembed,istride,idist,CUFFT_C2R,geom::ucm.GetNMS()*3)!=CUFFT_SUCCESS)
+        if(cufftPlanMany(&FPc2c,3,n,onembed,ostride,odist,inembed,istride,idist,CUFFT_C2C,geom::ucm.GetNMS()*3)!=CUFFT_SUCCESS)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
@@ -89,14 +89,13 @@ namespace cullg
                         {
                             for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
                             {
-                                for(unsigned int k = 0 ; k < geom::cplxdim ; k++)
+                                for(unsigned int k = 0 ; k < geom::zpdim[1]*geom::Nk[2] ; k++)
                                 {
                                     for(unsigned int l = 0 ; l < 2 ; l++)
                                     {
                                         tempNkab(s1,s2,alpha,beta,i,j,k)[l]=static_cast<float>(intmat::Nkab(s1,s2,alpha,beta,i,j,k)[l]);
                                     }
 
-                                    std::cout << tempNkab(s1,s2,alpha,beta,i,j,k)[0] << "\t" << tempNkab(s1,s2,alpha,beta,i,j,k)[1] << std::endl;
                                 }
                             }
                         }
@@ -104,7 +103,6 @@ namespace cullg
                 }
             }
         }
-        std::cin.get();
 
         //copy the FT'd interaction matrix to the card
         CUDA_CALL(cudaMemcpy(CNk,tempNkab.ptr(),geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zpdim[0]*geom::zpdim[1]*geom::zpdim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2]*sizeof(cufftComplex),cudaMemcpyHostToDevice));
@@ -139,12 +137,12 @@ namespace cullg
     }
     void spins_forward()
     {
-        CUFFT_CALL(cufftExecR2C(SPr2c,CSr,CSk));
+        CUFFT_CALL(cufftExecC2C(SPc2c,CSr,CSk,CUFFT_FORWARD));
     }
 
     void fields_back()
     {
-        CUFFT_CALL(cufftExecC2R(FPc2r,CHk,CHr));
+        CUFFT_CALL(cufftExecC2C(FPc2c,CHk,CHr,CUFFT_INVERSE));
     }
 
     void allocate_memory_on_card()
@@ -152,10 +150,10 @@ namespace cullg
         //all of the GPU memory allocations should happen here.
         //--------------------------------------------------------------------------------
         CUDA_CALL(cudaMalloc((void**)&CNk,geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CSk,geom::ucm.GetNMS()*3*geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CSr,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftReal)));
-        CUDA_CALL(cudaMalloc((void**)&CHk,geom::ucm.GetNMS()*3*geom::czps*sizeof(cufftComplex)));
-        CUDA_CALL(cudaMalloc((void**)&CHr,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftReal)));
+        CUDA_CALL(cudaMalloc((void**)&CSk,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CSr,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CHk,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftComplex)));
+        CUDA_CALL(cudaMalloc((void**)&CHr,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftComplex)));
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Crand,3*geom::nspins*sizeof(float)));
