@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 27 Sep 2014 17:04:01
+// Last-modified: 02 Oct 2014 13:45:20
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -131,7 +131,7 @@ namespace exch
                             for(unsigned int j = 0 ; j < 3 ; j++)
                             {
                                 exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
-                                kvec(s1,s2,i,j)=int(exchvec(s1,s2,i,j)*geom::Nk[j]);
+                                kvec(s1,s2,i,j)=static_cast<int>(exchvec(s1,s2,i,j)*geom::Nk[j]+0.5);
                             }
                             FIXOUTVEC(config::Info,"Vectors:",exchvec(s1,s2,i,0),exchvec(s1,s2,i,1),exchvec(s1,s2,i,2));
                             FIXOUTVEC(config::Info,"On K-mesh:",kvec(s1,s2,i,0),kvec(s1,s2,i,1),kvec(s1,s2,i,2));

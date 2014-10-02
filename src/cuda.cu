@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 10:42:10
+// Last-modified: 02 Oct 2014 14:11:22
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -46,7 +46,7 @@ namespace cullg
 
 
         //copy the spin data to the zero padded arrays
-        cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cspec);
+        cufields::CCopySpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cspec);
         //forward transform
         spins_forward();
         //perform convolution

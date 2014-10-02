@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 10:25:30
+// Last-modified: 02 Oct 2014 14:43:40
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -52,13 +52,16 @@ namespace cufields
         {
             //the number of threads is the zps (zero pad size). We can then find the coordinate of the
             //fourier space k-point
-            const unsigned int kx=i/(ZPDIM[0]*ZPDIM[1]),ky=i%(ZPDIM[0]*ZPDIM[1])/ZPDIM[2],kz=i%ZPDIM[2];
+            const unsigned int kx=i/(ZPDIM[0]*K[0]*ZPDIM[1]*K[1]),ky=i%(ZPDIM[0]*K[0]*ZPDIM[1]*K[1])/(ZPDIM[2]*K[2]),kz=i%(ZPDIM[2]*K[2]);
+            printf("Check\t%d\t%d\t%d\t%d\n",i,kx,ky,kz);
             for(unsigned int s1 = 0 ; s1 < NMS ; s1++)
             {
                 for(unsigned int s2 = 0 ; s2 < NMS ; s2++)
                 {
                     for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                     {
+
+                        unsigned int hfari=(((s1*3+alpha)*ZPDIM[0]*K[0]+kx)*ZPDIM[1]*K[1]+ky)*ZPDIM[2]*K[2]+kz;
                         for(unsigned int beta = 0 ; beta < 3 ; beta++)
                         {
                             //calculate the interaction matrix array element
@@ -67,16 +70,18 @@ namespace cufields
                             //dim0 = NMS, dim1 = NMS, dim2 = 3, dim3 = 3,
                             //dim4 = ZPDIM[0], dim5 = ZPDIM[1], dim6 = ZPDIM[2]
 
-                            unsigned int Nari=(((((s1*NMS+s2)*3+alpha)*3+beta)*ZPDIM[0]+kx)*ZPDIM[1]+ky)*ZPDIM[2]+kz;
+                            unsigned int Nari=(((((s1*NMS+s2)*3+alpha)*3+beta)*ZPDIM[0]*K[0]+kx)*ZPDIM[1]*K[1]+ky)*ZPDIM[2]*K[2]+kz;
 
                             //Calculate the field and spin array element (5D lookup)
                             //(((i*dim1+j)*dim2+k)*dim3+l)*dim4+m
                             //dim0 = NMS , dim1 = 3
                             //dim2 = ZPDIM[0], dim3 = ZPDIM[1], dim4 = ZPDIM[2]
-                            unsigned int sfari=(((s1*3+alpha)*ZPDIM[0]+kx)*ZPDIM[1]+ky)*ZPDIM[2]+kz;
-                            CHk[sfari].x = (CNk[Nari].x*CSk[sfari].x - CNk[Nari].y*CSk[sfari].y);
-                            CHk[sfari].y = (CNk[Nari].x*CSk[sfari].y + CNk[Nari].y*CSk[sfari].x);
-                            printf("%f\t%f\n",CNk[Nari].x,CNk[Nari].y);
+                            unsigned int sfari=(((s2*3+beta)*ZPDIM[0]*K[0]+kx)*ZPDIM[1]*K[1]+ky)*ZPDIM[2]*K[2]+kz;
+                            CHk[hfari].x += (CNk[Nari].x*CSk[sfari].x - CNk[Nari].y*CSk[sfari].y);
+                            CHk[hfari].y += (CNk[Nari].x*CSk[sfari].y + CNk[Nari].y*CSk[sfari].x);
+                            //printf("INTMAT\t%f\t%f\n",CNk[Nari].x,CNk[Nari].y);
+                            printf("SPINS\t%f\t%f\n",CSk[sfari].x,CSk[sfari].y);
+            //                printf("K's\t%d\t%d\t%d\t%d\n",i,kx,ky,kz);
                         }
                     }
                 }
