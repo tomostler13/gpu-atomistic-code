@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 02 Oct 2014 15:58:07
+// Last-modified: 02 Oct 2014 16:36:52
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -69,48 +69,82 @@ void sim::MvT(int argc,char *argv[])
     {
         ofs << "#Temperature\tMean" << std::endl;
     }
-    util::RunningStat MS;
+    util::RunningStat MS[geom::ucm.GetNMS()];
+    std::ofstream magout("mag.dat");
+    if(!magout.is_open())
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Cannot open mag.dat file");
+    }
+    magout << "#The magnetization is output into indices for each temperature and depending on the output method" << std::endl;
     //temperature loop
     for(double T = lT ; T < uT ; T+=dT)
     {
-        double modm=0.0;
+        double modm[geom::ucm.GetNMS()],oldmean[geom::ucm.GetNMS()];
+        bool convTF[geom::ucm.GetNMS()];
         config::printline(config::Info);
         FIXOUT(config::Info,"Converging temperature:" << T << std::endl);
         llg::T=T;
-        MS.Clear();
-        double oldmean=0.0;
-        bool convTF=false;
-        for(unsigned int t = 0 ; t < eminrts ; t++)
+        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
         {
-            llg::integrate(t);
+            MS[i].Clear();
+            modm[i]=0.0;
+            oldmean[i]=0.0;
+            convTF[i]=false;
         }
-        for(unsigned int t = 0 ; t < mrts ; t++)
+        for(unsigned int t = 0 ; t < eminrts ; t++)
         {
             llg::integrate(t);
             if(t%spins::update==0)
             {
-                const double mx = util::reduceCPU(spins::Sx,geom::nspins)/double(geom::nspins);
-                const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
-                const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
-                modm=sqrt(mx*mx+my*my+mz*mz);
+                util::calc_mag();
+                util::output_mag(magout,t);
+            }
+        }
+        //have all the magnetization converged?
+        bool allconv=false;
+        for(unsigned int t = eminrts ; t < eminrts+mrts ; t++)
+        {
+            llg::integrate(t);
+            if(t%spins::update==0)
+            {
+                util::calc_mag();
+                util::output_mag(magout,t);
+
                 if(t>int(10e-12/llg::dt))
                 {
-                    MS.Push(modm);
-                    config::Info.width(15);config::Info << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS.Mean()-oldmean) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Variance() << " [ " << convvar << " ]|" << std::endl;
-                    if(((fabs(MS.Mean()-oldmean)) < convmean) && (MS.Variance()<convvar) && t > int(75e-12/llg::dt))
+
+                    unsigned int counter=0;
+                    for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
                     {
-                        convTF=true;
+                        MS[i].Push(modm[i]);
+                        config::Info.width(15);config::Info << "| Species " << i << " mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS[i].Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS[i].Mean()-oldmean[i]) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS[i].Variance() << " [ " << convvar << " ]|" << std::endl;
+                        if(((fabs(MS[i].Mean()-oldmean[i])) < convmean) && (MS[i].Variance()<convvar))
+                        {
+                            convTF[i]=true;
+                            counter++;
+                        }
+                        oldmean[i]=MS[i].Mean();
+                    }
+                    if(counter==geom::ucm.GetNMS())
+                    {
+                        allconv=true;
                         break;
                     }
-                    oldmean=MS.Mean();
+
                 }
 
             }
         }
-        ofs << T << "\t" << modm << std::endl;
+        ofs << T;
+        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+        {
+            ofs << "\t" << modm[i] << std::endl;
+        }
+        ofs << std::endl;
 
-
-        FIXOUT(config::Info,"Converged?" << config::isTF(convTF) << std::endl);
+        FIXOUT(config::Info,"Converged?" << config::isTF(allconv) << std::endl);
+        magout << std::endl << std::endl;
     }
     ofs.close();
     if(ofs.is_open())
@@ -118,8 +152,4 @@ void sim::MvT(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errWarning("Could not close file for outputting magnetization data.");
     }
-
-
-
-
 }

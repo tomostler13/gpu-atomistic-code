@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Sep 2014 14:07:15
+// Last-modified: 02 Oct 2014 18:13:24
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -66,7 +66,7 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="quick")
     {
 
-        llg::T=1e-27;
+        llg::T=15.0;
         int counter=0;
         for(unsigned int t = 0 ; t < 5000000 ; t++)
         {

@@ -1,9 +1,10 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 27 Sep 2014 15:02:25
+// Last-modified: 02 Oct 2014 16:33:49
 // Contains useful functions and classes
 #include "../inc/util.h"
+#include "../inc/llg.h"
 #include "../inc/arrays.h"
 #include "../inc/fields.h"
 #include "../inc/spins.h"
@@ -216,6 +217,29 @@ namespace util
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("The method for calculating the magnetization is not recognised.");
+        }
+    }
+    void output_mag(std::ofstream& ofs,unsigned int t)
+    {
+        //This section of code outputs the code in a method consistent
+        //with the method specified by spins::mag_calc_method.
+        //If you want to introduce a new method of outputting the method
+        //that is not the same as calculating the magnetization or if you
+        //want to output in two ways then a new control variable should be
+        //defined and read in somewhere.
+        //
+        //
+        // List of arguements and what they do
+        //
+        // 0 - output the sublattice resolved magnetization
+        if(spins::mag_calc_method==0)
+        {
+            ofs << static_cast<double>(t)*llg::dt << "\t";
+            for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
+            {
+                ofs << spins::mag(s,0) << "\t" << spins::mag(s,1) << "\t" << spins::mag(s,2) << "\t";
+            }
+            ofs << std::endl;
         }
     }
 

@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 26 Sep 2014 13:58:13
+// Last-modified: 02 Oct 2014 17:18:21
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -60,7 +60,7 @@ namespace llg
 
         config::printline(config::Info);
         //Output the prefactor to the LLG for each species to the output file
-        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+        for(unsigned int i = 0 ; i < geom::ucm.NumAtomsUnitCell() ; i++)
         {
             std::stringstream sstr,sstr1;
             sstr << "Sigma prefactor for unit cell atom " << i << ":";
@@ -102,7 +102,7 @@ namespace llg
         {
             unsigned int aiuc=geom::lu(i,4);;
             geom::llgpf[i]=geom::ucm.Getllgpf(aiuc);
-            geom::sigma[i]=geom::ucm.Getllgpf(aiuc);
+            geom::sigma[i]=geom::ucm.GetSigma(aiuc);
         }
         SUCCESS(config::Info);
 

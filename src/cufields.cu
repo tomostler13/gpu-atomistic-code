@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 14:46:04
+// Last-modified: 02 Oct 2014 18:12:20
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -137,7 +137,7 @@ namespace cufields
         }
     }
     //Cuda Set to Zero 5D Real Space Arrays
-    __global__ void CZero5DRSArrays(int N,cufftComplex *CHr,cufftComplex *CSr)
+    __global__ void CZero5DRSArrays(int N,cufftComplex *CHr,cufftComplex *CSr,cufftComplex *CHk,cufftComplex *CSk)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -146,9 +146,13 @@ namespace cufields
             CHr[i].y=0.0;
             CSr[i].x=0.0;
             CSr[i].y=0.0;
+            CHk[i].x=0.0;
+            CHk[i].y=0.0;
+            CSk[i].x=0.0;
+            CSk[i].y=0.0;
         }
     }
-    //Cuda Set to Zero 5D Fourier Space Arrays
+    /*//Cuda Set to Zero 5D Fourier Space Arrays
     __global__ void CZero5DFSArrays(int N,cufftComplex *CHk,cufftComplex *CSk)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
@@ -159,5 +163,5 @@ namespace cufields
             CSk[i].x=0.0;
             CSk[i].y=0.0;
         }
-    }
+    }*/
 }

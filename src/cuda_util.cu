@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 02 Oct 2014 10:50:31
+// Last-modified: 02 Oct 2014 17:00:53
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -169,6 +169,10 @@ namespace cullg
         //--------------------------------------------------------------------------------
         //this section sorts out the copying of the data from the CPU to the card
         //--------------------------------------------------------------------------------
+        //copy the sigma prefactor
+        CUDA_CALL(cudaMemcpy(Csigma,geom::sigma.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(Clambda,geom::lambda.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(Cllgpf,geom::llgpf.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         //declare some arrays for doing copying to card
         //Nspins float array, 3*Nspins float array.
         float *nsfa=new float[geom::nspins];

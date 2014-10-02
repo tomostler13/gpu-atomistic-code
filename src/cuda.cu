@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 16:07:04
+// Last-modified: 02 Oct 2014 18:13:00
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -34,11 +34,10 @@ namespace cullg
 
     void llgGPU(unsigned int& t)
     {
-        if(t==0)
-        {
-            cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr);
-            cufields::CZero5DFSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHk,CSk);
-        }
+//        if(t==0)
+//        {
+            cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr,CHk,CSk);
+//        }
 
 
         //copy the spin data to the zero padded arrays
@@ -102,9 +101,9 @@ namespace cullg
 
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**CUDA details***" << std::endl;
-//        FIXOUT(config::Info,"Resetting device:" << std::flush);
-//        CUDA_CALL(cudaDeviceReset());
-//        SUCCESS(config::Info);
+        FIXOUT(config::Info,"Resetting device:" << std::flush);
+        CUDA_CALL(cudaDeviceReset());
+        SUCCESS(config::Info);
 
         //the rank of the fourier transform
         nrank=3;

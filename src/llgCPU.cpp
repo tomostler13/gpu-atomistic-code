@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 02 Oct 2014 10:31:01
+// Last-modified: 02 Oct 2014 17:59:41
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -54,7 +54,7 @@ namespace llgCPU
         //calculate the 2 spin fields (dipolar, exchange)
         fields::ftdip();
         //FOR DEBUGGING THE FIELD
-        if(t==0)
+        /*if(t==0)
         {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
