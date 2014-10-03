@@ -1,5 +1,6 @@
 OutputFile = "opf.dat";
 seed = 1359107107;
+interaction_method="DIA";
 system:
 {
     //number of unit cells

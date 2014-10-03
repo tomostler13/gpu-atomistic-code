@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 02 Oct 2014 10:40:56
+// Last-modified: 03 Oct 2014 10:12:18
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>

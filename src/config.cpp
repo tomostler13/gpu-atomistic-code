@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 27 Sep 2014 16:23:46
+// Last-modified: 03 Oct 2014 10:16:03
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -79,6 +79,30 @@ namespace config
 
         libconfig::Setting &setting = cfg.lookup("system");
         setting.lookupValue("include_dipole",inc_dip);
+        setting.lookupValue("interaction_method",intmeth);
+        //So that we are not comparing strings all over the place
+        //we assign a method to an integer. This also ensures we have
+        //written the correct string
+        if(intmeth=="fft")
+        {
+            intm=0;
+        }
+        else if(intmeth=="DIA")
+        {
+            intm=1;
+        }
+        else if(intmeth=="CSR")
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("CSR Coming soon");
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("interaction_method not recognized, please select either fft, DIA or CSR");
+        }
+
+        FIXOUT(config::Info,"Exchange/dipole-dipole field calculation method:" << intmeth << std::endl);
         assert(seed>0);
         lcf=true;
     }

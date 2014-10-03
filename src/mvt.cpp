@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 03 Oct 2014 09:52:14
+// Last-modified: 03 Oct 2014 10:11:45
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -140,7 +140,7 @@ void sim::MvT(int argc,char *argv[])
         ofs << T;
         for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
         {
-            ofs << "\t" << modm[i] << std::endl;
+            ofs << "\t" << modm[i] << std::flush;
         }
         ofs << std::endl;
 
