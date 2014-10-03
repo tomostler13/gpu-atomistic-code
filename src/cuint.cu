@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 17:18:42
+// Last-modified: 03 Oct 2014 10:54:40
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -47,6 +47,7 @@ namespace cuint
             const double llgpf=Cllgpf[i];
             const double lambda=Clambda[i];
             const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
+
             double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
             const double s[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
 

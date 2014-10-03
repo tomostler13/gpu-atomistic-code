@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 18:13:00
+// Last-modified: 03 Oct 2014 13:07:50
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -36,6 +36,7 @@ namespace cullg
     {
 //        if(t==0)
 //        {
+//std::cout << rsarzpblockspergrid << "\t" << geom::zps*3*geom::ucm.GetNMS() << std::endl;std::cin.get();
             cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr,CHk,CSk);
 //        }
 
@@ -65,6 +66,7 @@ namespace cullg
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
         cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda);
+        //exit(0);
         cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cspec);
         //forward transform
         spins_forward();

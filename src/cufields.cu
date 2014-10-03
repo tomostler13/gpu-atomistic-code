@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 18:12:20
+// Last-modified: 03 Oct 2014 13:43:57
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -53,6 +53,8 @@ namespace cufields
             //the number of threads is the zps (zero pad size). We can then find the coordinate of the
             //fourier space k-point
             const unsigned int kx=i/(ZPDIM[0]*K[0]*ZPDIM[1]*K[1]),ky=i%(ZPDIM[0]*K[0]*ZPDIM[1]*K[1])/(ZPDIM[2]*K[2]),kz=i%(ZPDIM[2]*K[2]);
+
+            //printf("%d\t%d\t%d\n",kx,ky,kz);
             for(unsigned int s1 = 0 ; s1 < NMS ; s1++)
             {
                 for(unsigned int s2 = 0 ; s2 < NMS ; s2++)
@@ -78,6 +80,7 @@ namespace cufields
                             unsigned int sfari=(((s2*3+beta)*ZPDIM[0]*K[0]+kx)*ZPDIM[1]*K[1]+ky)*ZPDIM[2]*K[2]+kz;
                             CHk[hfari].x += (CNk[Nari].x*CSk[sfari].x - CNk[Nari].y*CSk[sfari].y);
                             CHk[hfari].y += (CNk[Nari].x*CSk[sfari].y + CNk[Nari].y*CSk[sfari].x);
+//                            printf("%f\t%f\t%f\t%f\n",CNk[Nari].x,CNk[Nari].y,CSk[sfari].x,CSk[sfari].y);
                         }
                     }
                 }
@@ -91,6 +94,7 @@ namespace cufields
     __global__ void CCopySpin(int N,double *Cspin,cufftComplex *CSr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
+
         if(i<N)
         {
             //For a 5D array lookup we need i,j,k,m,n
@@ -106,10 +110,10 @@ namespace cufields
             //loop over the 3 spin coordinates (j)
             for(unsigned int lj = 0 ; lj < 3 ; lj++)
             {
-
-                CSr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm].x=float(Cspin[3*i+lj]);
+                unsigned int arlu=(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm;
+                CSr[arlu].x=static_cast<float>(Cspin[3*i+lj]);
                 //This can probably be removed
-                CSr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm].y=0.0;
+                CSr[arlu].y=0.0;
             }
         }
     }
@@ -132,7 +136,10 @@ namespace cufields
             //loop over the 3 spin coordinates (j)
             for(unsigned int lj = 0 ; lj < 3 ; lj++)
             {
-                CH[3*i+lj]=(CHr[(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm].x)/static_cast<float>(zpN);
+                unsigned int arluv=(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm;
+                CH[3*i+lj]=(CHr[arluv].x)/static_cast<float>(zpN);
+
+                //printf("%d\t%f\n",arluv,CH[3*i+lj]);
             }
         }
     }
