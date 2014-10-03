@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 02 Oct 2014 16:36:52
+// Last-modified: 03 Oct 2014 09:52:14
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -117,6 +117,7 @@ void sim::MvT(int argc,char *argv[])
                     unsigned int counter=0;
                     for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
                     {
+                        modm[i]=sqrt(spins::mag(i,0)*spins::mag(i,0)+spins::mag(i,1)*spins::mag(i,1)+spins::mag(i,2)*spins::mag(i,2));
                         MS[i].Push(modm[i]);
                         config::Info.width(15);config::Info << "| Species " << i << " mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS[i].Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS[i].Mean()-oldmean[i]) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS[i].Variance() << " [ " << convvar << " ]|" << std::endl;
                         if(((fabs(MS[i].Mean()-oldmean[i])) < convmean) && (MS[i].Variance()<convvar))
