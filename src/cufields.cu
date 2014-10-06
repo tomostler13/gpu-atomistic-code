@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 03 Oct 2014 13:43:57
+// Last-modified: 03 Oct 2014 16:24:19
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -20,23 +20,15 @@
 #include "../inc/llg.h"
 namespace cufields
 {
-    //This stores the interaction matrix dimensions for the lookup and the number
-    //of species
-    __constant__ unsigned int IMDIMS[7]={0,0,3,3,0,0,0},NUMSPEC=0;
+    //constant memory declarations
     //The number of k-points and the zero pad size
-    __constant__ unsigned int K[3]={0,0,0},ZPDIM[3]={0,0,0},CPLXDIM=0;
-    //Reduced timestep
-    __constant__ double Crdt;
+    __constant__ unsigned int K[3]={0,0,0},ZPDIM[3]={0,0,0};
 
     void copyConstData()
     {
         FIXOUT(config::Info,"Copying const data with cufields scope to card:" << std::flush);
-        cudaMemcpyToSymbol(*(&Crdt),&llg::rdt,sizeof(double));
         cudaMemcpyToSymbol(K,geom::Nk.ptr(),3*sizeof(unsigned int));
         cudaMemcpyToSymbol(ZPDIM,&geom::zpdim,3*sizeof(unsigned int));
-        unsigned int nms=geom::ucm.GetNMS();
-        cudaMemcpyToSymbol(*(&NUMSPEC),&nms,sizeof(unsigned int));
-        cudaMemcpyToSymbol(*(&CPLXDIM),&geom::cplxdim,sizeof(unsigned int));
         config::Info << "Done" << std::endl;
     }
     //perform the convolution in Fourier space
@@ -52,9 +44,8 @@ namespace cufields
         {
             //the number of threads is the zps (zero pad size). We can then find the coordinate of the
             //fourier space k-point
-            const unsigned int kx=i/(ZPDIM[0]*K[0]*ZPDIM[1]*K[1]),ky=i%(ZPDIM[0]*K[0]*ZPDIM[1]*K[1])/(ZPDIM[2]*K[2]),kz=i%(ZPDIM[2]*K[2]);
+            const unsigned int kx=i/(ZPDIM[1]*K[1]*ZPDIM[2]*K[2]),ky=i%(ZPDIM[1]*K[1]*ZPDIM[2]*K[2])/(ZPDIM[2]*K[2]),kz=i%(ZPDIM[2]*K[2]);
 
-            //printf("%d\t%d\t%d\n",kx,ky,kz);
             for(unsigned int s1 = 0 ; s1 < NMS ; s1++)
             {
                 for(unsigned int s2 = 0 ; s2 < NMS ; s2++)
@@ -80,7 +71,6 @@ namespace cufields
                             unsigned int sfari=(((s2*3+beta)*ZPDIM[0]*K[0]+kx)*ZPDIM[1]*K[1]+ky)*ZPDIM[2]*K[2]+kz;
                             CHk[hfari].x += (CNk[Nari].x*CSk[sfari].x - CNk[Nari].y*CSk[sfari].y);
                             CHk[hfari].y += (CNk[Nari].x*CSk[sfari].y + CNk[Nari].y*CSk[sfari].x);
-//                            printf("%f\t%f\t%f\t%f\n",CNk[Nari].x,CNk[Nari].y,CSk[sfari].x,CSk[sfari].y);
                         }
                     }
                 }
@@ -112,8 +102,6 @@ namespace cufields
             {
                 unsigned int arlu=(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm;
                 CSr[arlu].x=static_cast<float>(Cspin[3*i+lj]);
-                //This can probably be removed
-                CSr[arlu].y=0.0;
             }
         }
     }
@@ -138,8 +126,6 @@ namespace cufields
             {
                 unsigned int arluv=(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm;
                 CH[3*i+lj]=(CHr[arluv].x)/static_cast<float>(zpN);
-
-                //printf("%d\t%f\n",arluv,CH[3*i+lj]);
             }
         }
     }
@@ -159,16 +145,4 @@ namespace cufields
             CSk[i].y=0.0;
         }
     }
-    /*//Cuda Set to Zero 5D Fourier Space Arrays
-    __global__ void CZero5DFSArrays(int N,cufftComplex *CHk,cufftComplex *CSk)
-    {
-        const int i = blockDim.x*blockIdx.x + threadIdx.x;
-        if(i<N)
-        {
-            CHk[i].x=0.0;
-            CHk[i].y=0.0;
-            CSk[i].x=0.0;
-            CSk[i].y=0.0;
-        }
-    }*/
 }

@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 03 Oct 2014 14:43:49
+// Last-modified: 03 Oct 2014 16:28:51
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -17,6 +17,7 @@
 #include "../inc/cufields.h"
 #include "../inc/cuint.h"
 #include "../inc/llg.h"
+#include "../inc/anis.h"
 //Cuda headers
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -64,10 +65,30 @@ namespace cullg
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
         }
+        else
+        {
+            FIXOUT(config::Log,"CUFFT returned success");
+        }
+        config::printline(config::Log);
+        FIXOUT(config::Log,"Parameters entering into CUFFT plan of the field arrays (inverse)" << std::endl);
+        FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
+        FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
+        FIXOUT(config::Log,"How many (FFT's) = " << geom::ucm.GetNMS()*3 << std::endl);
+        FIXOUTVEC(config::Log,"inembed = ",onembed[0],onembed[1],onembed[2]);
+        FIXOUT(config::Log,"istride = " << ostride << std::endl);
+        FIXOUT(config::Log,"idist = " << odist << std::endl);
+        FIXOUTVEC(config::Log,"onembed = ",inembed[0],inembed[1],inembed[2]);
+        FIXOUT(config::Log,"ostride = " << istride << std::endl);
+        FIXOUT(config::Log,"odist = " << idist << std::endl);
+        FIXOUT(config::Log,"Direction (sign) = " << "CUFFTW_INVERSE" << std::endl);
         if(cufftPlanMany(&FPc2c,3,n,onembed,ostride,odist,inembed,istride,idist,CUFFT_C2C,geom::ucm.GetNMS()*3)!=CUFFT_SUCCESS)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
+        }
+        else
+        {
+            FIXOUT(config::Log,"CUFFT returned success");
         }
 
 
@@ -105,8 +126,8 @@ namespace cullg
         }
 
         //copy the FT'd interaction matrix to the card
-        CUDA_CALL(cudaMemcpy(CNk,tempNkab.ptr(),geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zpdim[0]*geom::zpdim[1]*geom::zpdim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2]*sizeof(fftwf_complex),cudaMemcpyHostToDevice));
-//        intmat::Nkab.clear();
+        CUDA_CALL(cudaMemcpy(CNk,tempNkab.ptr(),geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zpdim[0]*geom::zpdim[1]*geom::zpdim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2]*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+        intmat::Nkab.clear();
         //clear the floating point holding arrays as well
         tempNkab.clear();
         check_cuda_errors(__FILE__,__LINE__);
@@ -137,162 +158,12 @@ namespace cullg
     }
     void spins_forward()
     {
-        Array5D<fftwf_complex> temp,temp1;
-        temp.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        temp.IFill(0);
-        temp1.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        temp1.IFill(0);
-        CUDA_CALL(cudaMemcpy(temp.ptr(),CSr,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftComplex),cudaMemcpyDeviceToHost));
-        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
-        {
-            for(unsigned int j = 0 ; j < 3 ; j++)
-            {
-                for(unsigned int k = 0 ; k < geom::zpdim[0]*geom::Nk[0] ; k++)
-                {
-                    for(unsigned int l = 0 ; l < geom::zpdim[1]*geom::Nk[1] ; l++)
-                    {
-                        for(unsigned int m = 0 ; m < geom::zpdim[2]*geom::Nk[2] ; m++)
-                        {
-                            //std::cout << "rs-spins on CPU:\t" << temp(i,j,k,l,m)[0] << "\t" << temp(i,j,k,l,m)[1] << std::endl;
 
-                        }
-                    }
-                }
-            }
-        }
-        int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
-        int *inembed=n;
-        int *onembed=n;
-        int istride=1;
-        int ostride=1;
-        int odist=geom::zps;
-        int idist=geom::zps;
-        fftwf_plan plan=fftwf_plan_many_dft(3,n,geom::ucm.GetNMS()*3,temp.ptr(),inembed,istride,idist,temp.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
-        fftwf_execute(plan);
         CUFFT_CALL(cufftExecC2C(SPc2c,CSr,CSk,CUFFT_FORWARD));
-        CUDA_CALL(cudaMemcpy(temp1.ptr(),CSk,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftComplex),cudaMemcpyDeviceToHost));
-        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
-        {
-            for(unsigned int j = 0 ; j < 3 ; j++)
-            {
-                for(unsigned int k = 0 ; k < geom::zpdim[0]*geom::Nk[0] ; k++)
-                {
-                    for(unsigned int l = 0 ; l < geom::zpdim[1]*geom::Nk[1] ; l++)
-                    {
-                        for(unsigned int m = 0 ; m < geom::zpdim[2]*geom::Nk[2] ; m++)
-                        {
-                            if(fabs(temp(i,j,k,l,m)[0]-temp1(i,j,k,l,m)[0])>1e-4 || fabs(temp(i,j,k,l,m)[1]-temp1(i,j,k,l,m)[1])>1e-4)
-                            {
-                            //std::cout << "diff on CPU:\t" << temp(i,j,k,l,m)[0]-temp1(i,j,k,l,m)[0] << "\t" << temp(i,j,k,l,m)[1]-temp1(i,j,k,l,m)[1] << std::endl;
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-        Array7D<fftwf_complex> temp2;
-        temp2.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        CUDA_CALL(cudaMemcpy(temp2.ptr(),CNk,geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zps*sizeof(cufftComplex),cudaMemcpyDeviceToHost));
-        temp.IFill(0);
-        register unsigned int i = 0,j = 0, k = 0, s1 = 0, s2=0, alpha=0, beta=0;
-        for(i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
-        {
-            for(j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
-            {
-                for(k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
-                {
-                    for(s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
-                    {
-                        for(s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
-                        {
-                            for(alpha = 0 ; alpha < 3 ; alpha++)
-                            {
-                                for(beta = 0 ; beta < 3 ; beta++)
-                                {
-                                    temp(s1,alpha,i,j,k)[0]+=(temp2(s1,s2,alpha,beta,i,j,k)[0]*temp1(s2,beta,i,j,k)[0]-temp2(s1,s2,alpha,beta,i,j,k)[1]*temp1(s2,beta,i,j,k)[1]);
-                                    temp(s1,alpha,i,j,k)[1]+=(temp2(s1,s2,alpha,beta,i,j,k)[0]*temp1(s2,beta,i,j,k)[1]+temp2(s1,s2,alpha,beta,i,j,k)[1]*temp1(s2,beta,i,j,k)[0]);
-                                    if(fabs(temp2(s1,s2,alpha,beta,i,j,k)[0]-intmat::Nkab(s1,s2,alpha,beta,i,j,k)[0])>0.1 || fabs(temp2(s1,s2,alpha,beta,i,j,k)[1]-intmat::Nkab(s1,s2,alpha,beta,i,j,k)[1])>0.1)
-                                    {
-                                    std::cout << "GPU/CPU diff\t" << temp2(s1,s2,alpha,beta,i,j,k)[0]-intmat::Nkab(s1,s2,alpha,beta,i,j,k)[0] << "\t" << temp2(s1,s2,alpha,beta,i,j,k)[1]-intmat::Nkab(s1,s2,alpha,beta,i,j,k)[1] <<std::endl;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-        for(i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
-        {
-            for(j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
-            {
-                for(k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
-                {
-                    for(s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
-                    {
-                        for(s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
-                        {
-                            for(alpha = 0 ; alpha < 3 ; alpha++)
-                            {
-                                for(beta = 0 ; beta < 3 ; beta++)
-                                {
-                                    std::cout << temp(s1,alpha,i,j,k)[0] << "\t" << temp(s1,alpha,i,j,k)[1] << std::endl;
-                                }
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-        fftwf_plan plan1=fftwf_plan_many_dft(3,n,geom::ucm.GetNMS()*3,temp.ptr(),inembed,istride,idist,temp.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_PATIENT);
-        fftwf_execute(plan1);
-        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
-        {
-            for(unsigned int j = 0 ; j < 3 ; j++)
-            {
-                for(unsigned int k = 0 ; k < geom::zpdim[0]*geom::Nk[0] ; k++)
-                {
-                    for(unsigned int l = 0 ; l < geom::zpdim[1]*geom::Nk[1] ; l++)
-                    {
-                        for(unsigned int m = 0 ; m < geom::zpdim[2]*geom::Nk[2] ; m++)
-                        {
-                            std::cout << "k-fields on CPU:\t" << temp(i,j,k,l,m)[0] << "\t" << temp(i,j,k,l,m)[1] << std::endl;
-
-                        }
-                    }
-                }
-            }
-        }
-
-
     }
 
     void fields_back()
     {
-        Array5D<fftwf_complex> temp;
-        temp.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        temp.IFill(0);
-        CUDA_CALL(cudaMemcpy(temp.ptr(),CHk,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftComplex),cudaMemcpyDeviceToHost));
-        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
-        {
-            for(unsigned int j = 0 ; j < 3 ; j++)
-            {
-                for(unsigned int k = 0 ; k < geom::zpdim[0]*geom::Nk[0] ; k++)
-                {
-                    for(unsigned int l = 0 ; l < geom::zpdim[1]*geom::Nk[1] ; l++)
-                    {
-                        for(unsigned int m = 0 ; m < geom::zpdim[2]*geom::Nk[2] ; m++)
-                        {
-                            std::cout << "k-fields on CPU:\t" << temp(i,j,k,l,m)[0] << "\t" << temp(i,j,k,l,m)[1] << std::endl;
-
-                        }
-                    }
-                }
-            }
-        }
         CUFFT_CALL(cufftExecC2C(FPc2c,CHk,CHr,CUFFT_INVERSE));
     }
 
@@ -308,11 +179,13 @@ namespace cullg
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Crand,3*geom::nspins*sizeof(float)));
+        CUDA_CALL(cudaMalloc((void**)&Ck1udir,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&CH,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Cfn,3*geom::nspins*sizeof(double)));
-        CUDA_CALL(cudaMalloc((void**)&Clambda,3*geom::nspins*sizeof(double)));
-        CUDA_CALL(cudaMalloc((void**)&Csigma,3*geom::nspins*sizeof(double)));
-        CUDA_CALL(cudaMalloc((void**)&Cllgpf,3*geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&Clambda,geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&Csigma,geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&Cllgpf,geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&Ck1u,geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Ckx,geom::nspins*sizeof(unsigned int)));
         CUDA_CALL(cudaMalloc((void**)&Cky,geom::nspins*sizeof(unsigned int)));
         CUDA_CALL(cudaMalloc((void**)&Ckz,geom::nspins*sizeof(unsigned int)));
@@ -324,6 +197,7 @@ namespace cullg
         CUDA_CALL(cudaMemcpy(Csigma,geom::sigma.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         CUDA_CALL(cudaMemcpy(Clambda,geom::lambda.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         CUDA_CALL(cudaMemcpy(Cllgpf,geom::llgpf.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(Ck1u,anis::k1u.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         //declare some arrays for doing copying to card
         //Nspins float array, 3*Nspins float array.
         float *nsfa=new float[geom::nspins];
@@ -331,6 +205,15 @@ namespace cullg
         //Nspins double array, 3*Nspins double array
         double *nsda=new double[geom::nspins];
         double *tnsda=new double[3*geom::nspins];
+        //copy the first order uniaxial anisotropy direction
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            for(unsigned int coord = 0 ; coord < 3 ; coord++)
+            {
+                tnsda[3*i+coord]=anis::k1udir(i,coord);
+            }
+        }
+        CUDA_CALL(cudaMemcpy(Ck1udir,tnsda,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
         //Nspins int array, 3*Nspins int array
         int *nsia=new int[geom::nspins];
         //copy the location of the spins in real space to the device

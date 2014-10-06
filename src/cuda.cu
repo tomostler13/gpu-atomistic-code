@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 03 Oct 2014 13:07:50
+// Last-modified: 03 Oct 2014 16:26:26
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -34,11 +34,7 @@ namespace cullg
 
     void llgGPU(unsigned int& t)
     {
-//        if(t==0)
-//        {
-//std::cout << rsarzpblockspergrid << "\t" << geom::zps*3*geom::ucm.GetNMS() << std::endl;std::cin.get();
-            cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr,CHk,CSk);
-//        }
+        cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr,CHk,CSk);
 
 
         //copy the spin data to the zero padded arrays
@@ -65,19 +61,18 @@ namespace cullg
 
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
-        cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda);
-        //exit(0);
+        cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
         cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cspec);
         //forward transform
         spins_forward();
         //perform convolution
-        cufields::CFConv<<<czpblockspergrid,threadsperblock>>>(geom::czps,geom::ucm.GetNMS(),CNk,CHk,CSk);
+        cufields::CFConv<<<zpblockspergrid,threadsperblock>>>(geom::czps,geom::ucm.GetNMS(),CNk,CHk,CSk);
         //transform the fields back
         fields_back();
         //copy the fields from the zero padded array to the demag field array
         cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,CHr,Ckx,Cky,Ckz,Cspec);
 
-        cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda);
+        cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
         if(t%spins::update==0)
         {
             //copy spin arrays back to CPU
@@ -108,7 +103,6 @@ namespace cullg
         SUCCESS(config::Info);
 
         //the rank of the fourier transform
-        nrank=3;
         try
         {
             config::cfg.readFile(argv[1]);
@@ -159,18 +153,13 @@ namespace cullg
         FIXOUT(config::Info,"Number of threads per block:" << threadsperblock << std::endl);
         blockspergrid=(geom::nspins+threadsperblock-1)/threadsperblock;
         zpblockspergrid=(geom::zps+threadsperblock-1)/threadsperblock;
-        czpblockspergrid=(geom::czps+threadsperblock-1)/threadsperblock;
         //This is the number of block per grid for addressing the elements of the real space
         //spin and field arrays (dimensions: NUMSPEC x 3 x ZPDIM[0] x ZPDIM[1] x ZPDIM[2]
         rsarzpblockspergrid=(geom::zps*3*geom::ucm.GetNMS()+threadsperblock-1)/threadsperblock;
         //Same as the rsarzpblockspergrid but with the ZPDIM[2] dimension now replaced with the (ZPDIM[2]+1)/2
-        //for the c2r/r2c transforms
-        ksarzpblockspergrid=(geom::czps*3*geom::ucm.GetNMS()+threadsperblock-1)/threadsperblock;
         FIXOUT(config::Info,"Blocks per grid:" << blockspergrid << std::endl);
         FIXOUT(config::Info,"Blocks per grid for zero pad workspace:" << zpblockspergrid << std::endl);
-        FIXOUT(config::Info,"Blocks per grid for complex zero pad workspace:" << czpblockspergrid << std::endl);
-        FIXOUT(config::Info,"Blocks per grid for addressing each real space 5D array such as CSr:" << rsarzpblockspergrid << std::endl);
-        FIXOUT(config::Info,"Blocks per grid for addressing each Fourier space 5D array such as CSk:" << ksarzpblockspergrid << std::endl);
+        FIXOUT(config::Info,"Blocks per grid for addressing each 5D array:" << rsarzpblockspergrid << std::endl);
         FIXOUT(config::Info,"Device maximum threads per block:" << deviceProp.maxThreadsPerBlock << std::endl);
         FIXOUT(config::Info,"Device registers per block:" << deviceProp.regsPerBlock << std::endl);
         FIXOUT(config::Info,"Device total const memory:" << deviceProp.totalConstMem << " (bytes)" << std::endl);

@@ -1,7 +1,7 @@
 // File: array.h
 // Author: Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 02 Oct 2014 17:17:26
+// Last-modified: 03 Oct 2014 16:40:54
 #ifndef __UNITCELL_H__
 #define __UNITCELL_H__
 #include "../inc/arrays.h"
@@ -95,7 +95,6 @@ class unitCellMembers
         }
         inline void SetSublattice(unsigned int s,unsigned int t)
         {
-            assert(s<nms);//if the sublattice number is greater than the number of sublattices that should be there then there is something wrong
             if(s>nms)
             {
                 error::errPreamble(__FILE__,__LINE__);
