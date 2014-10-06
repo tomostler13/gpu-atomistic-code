@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 02 Oct 2014 17:18:42
+// Last-modified: 03 Oct 2014 16:30:18
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -37,7 +37,7 @@ namespace cuint
         cudaMemcpyToSymbol(*(&Crdt),&llg::rdt,sizeof(double));
         config::Info << "Done" << std::endl;
     }
-    __global__ void CHeun1(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,double *Csigma,double *Cllgpf,double *Clambda)
+    __global__ void CHeun1(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,double *Csigma,double *Cllgpf,double *Clambda,double *Ck1u,double *Ck1udir)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -47,8 +47,18 @@ namespace cuint
             const double llgpf=Cllgpf[i];
             const double lambda=Clambda[i];
             const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
+
             double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
+
             const double s[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
+            //calculate the field arising from the first order uniaxial anisotropy
+            const double k1udir[3]={Ck1udir[3*i],Ck1udir[3*i+1],Ck1udir[3*i+2]};
+            const double k1u=Ck1u[i];
+            const double sdn = s[0]*k1udir[0] + s[1]*k1udir[1] + s[2]*k1udir[2];
+
+            h[0]+=(k1u*sdn*k1udir[0]);
+            h[1]+=(k1u*sdn*k1udir[1]);
+            h[2]+=(k1u*sdn*k1udir[2]);
 
 
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
@@ -74,7 +84,7 @@ namespace cuint
         }
     }
 
-    __global__ void CHeun2(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,double *Csigma,double *Cllgpf,double *Clambda)
+    __global__ void CHeun2(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,double *Csigma,double *Cllgpf,double *Clambda,double *Ck1u,double *Ck1udir)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -85,7 +95,16 @@ namespace cuint
             const double lambda=Clambda[i];
             const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
             double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
+
             const double s[3]={Cespin[3*i],Cespin[3*i+1],Cespin[3*i+2]};
+            //calculate the field arising from the first order uniaxial anisotropy
+            const double k1udir[3]={Ck1udir[3*i],Ck1udir[3*i+1],Ck1udir[3*i+2]};
+            const double k1u=Ck1u[i];
+            const double sdn = s[0]*k1udir[0] + s[1]*k1udir[1] + s[2]*k1udir[2];
+
+            h[0]+=(k1u*sdn*k1udir[0]);
+            h[1]+=(k1u*sdn*k1udir[1]);
+            h[2]+=(k1u*sdn*k1udir[2]);
             double ps[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};

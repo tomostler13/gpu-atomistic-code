@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 02 Oct 2014 10:20:42
+// Last-modified: 03 Oct 2014 16:14:21
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -60,7 +60,7 @@ namespace cullg
     //device pointers
     double *Cspin=NULL,*Cespin=NULL;
     float *CH=NULL,*Crand=NULL;
-    double *Clambda=NULL,*Csigma=NULL,*Cfn=NULL,*Cllgpf=NULL;
+    double *Clambda=NULL,*Csigma=NULL,*Cfn=NULL,*Cllgpf=NULL,*Ck1u=NULL,*Ck1udir=NULL;;
     //cufft plans
     cufftHandle FPc2c,SPc2c;
 

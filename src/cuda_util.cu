@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 02 Oct 2014 17:00:53
+// Last-modified: 03 Oct 2014 16:28:51
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -17,6 +17,7 @@
 #include "../inc/cufields.h"
 #include "../inc/cuint.h"
 #include "../inc/llg.h"
+#include "../inc/anis.h"
 //Cuda headers
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -64,10 +65,30 @@ namespace cullg
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
         }
+        else
+        {
+            FIXOUT(config::Log,"CUFFT returned success");
+        }
+        config::printline(config::Log);
+        FIXOUT(config::Log,"Parameters entering into CUFFT plan of the field arrays (inverse)" << std::endl);
+        FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
+        FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
+        FIXOUT(config::Log,"How many (FFT's) = " << geom::ucm.GetNMS()*3 << std::endl);
+        FIXOUTVEC(config::Log,"inembed = ",onembed[0],onembed[1],onembed[2]);
+        FIXOUT(config::Log,"istride = " << ostride << std::endl);
+        FIXOUT(config::Log,"idist = " << odist << std::endl);
+        FIXOUTVEC(config::Log,"onembed = ",inembed[0],inembed[1],inembed[2]);
+        FIXOUT(config::Log,"ostride = " << istride << std::endl);
+        FIXOUT(config::Log,"odist = " << idist << std::endl);
+        FIXOUT(config::Log,"Direction (sign) = " << "CUFFTW_INVERSE" << std::endl);
         if(cufftPlanMany(&FPc2c,3,n,onembed,ostride,odist,inembed,istride,idist,CUFFT_C2C,geom::ucm.GetNMS()*3)!=CUFFT_SUCCESS)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUFFT 3D plan creation failed");
+        }
+        else
+        {
+            FIXOUT(config::Log,"CUFFT returned success");
         }
 
 
@@ -137,6 +158,7 @@ namespace cullg
     }
     void spins_forward()
     {
+
         CUFFT_CALL(cufftExecC2C(SPc2c,CSr,CSk,CUFFT_FORWARD));
     }
 
@@ -157,11 +179,13 @@ namespace cullg
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Crand,3*geom::nspins*sizeof(float)));
+        CUDA_CALL(cudaMalloc((void**)&Ck1udir,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&CH,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Cfn,3*geom::nspins*sizeof(double)));
-        CUDA_CALL(cudaMalloc((void**)&Clambda,3*geom::nspins*sizeof(double)));
-        CUDA_CALL(cudaMalloc((void**)&Csigma,3*geom::nspins*sizeof(double)));
-        CUDA_CALL(cudaMalloc((void**)&Cllgpf,3*geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&Clambda,geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&Csigma,geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&Cllgpf,geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&Ck1u,geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Ckx,geom::nspins*sizeof(unsigned int)));
         CUDA_CALL(cudaMalloc((void**)&Cky,geom::nspins*sizeof(unsigned int)));
         CUDA_CALL(cudaMalloc((void**)&Ckz,geom::nspins*sizeof(unsigned int)));
@@ -173,6 +197,7 @@ namespace cullg
         CUDA_CALL(cudaMemcpy(Csigma,geom::sigma.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         CUDA_CALL(cudaMemcpy(Clambda,geom::lambda.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         CUDA_CALL(cudaMemcpy(Cllgpf,geom::llgpf.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(Ck1u,anis::k1u.ptr(),geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         //declare some arrays for doing copying to card
         //Nspins float array, 3*Nspins float array.
         float *nsfa=new float[geom::nspins];
@@ -180,6 +205,15 @@ namespace cullg
         //Nspins double array, 3*Nspins double array
         double *nsda=new double[geom::nspins];
         double *tnsda=new double[3*geom::nspins];
+        //copy the first order uniaxial anisotropy direction
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            for(unsigned int coord = 0 ; coord < 3 ; coord++)
+            {
+                tnsda[3*i+coord]=anis::k1udir(i,coord);
+            }
+        }
+        CUDA_CALL(cudaMemcpy(Ck1udir,tnsda,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
         //Nspins int array, 3*Nspins int array
         int *nsia=new int[geom::nspins];
         //copy the location of the spins in real space to the device
