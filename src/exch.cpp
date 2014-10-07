@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 07 Oct 2014 10:28:19
+// Last-modified: 07 Oct 2014 11:17:23
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -9,6 +9,7 @@
 #include "../inc/exch.h"
 #include "../inc/intmat.h"
 #include "../inc/llg.h"
+#include "../inc/matrix_conv.h"
 #include <iostream>
 #include <fstream>
 #include <libconfig.h++>
@@ -21,7 +22,8 @@
 
 namespace exch
 {
-    unsigned int max_shells=0;
+    unsigned int max_shells=0,diagnumdiag=0,offdiagnumdiag=0;
+    Array<int> diagoffset,offdiagoffset;
     Array3D<unsigned int> numint;
     Array2D<unsigned int> shell_list;
     Array4D<double> exchvec;
@@ -282,7 +284,8 @@ namespace exch
                         error::errPreamble(__FILE__,__LINE__);
                         error::errWarning("Could not close J.dat for writing interaction matrix.");
                     }
-
+                    //call the routine to convert the JMat to a sparse matrix format
+                    matconv::dia_offsets(diagoffset,JMat,diagnumdiag,geom::nspins);
                 }
                 else if(config::exchm==0)//add the exchange to the interaction matrix
                 {
