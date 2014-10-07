@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 07 Oct 2014 11:17:23
+// Last-modified: 07 Oct 2014 13:15:51
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -19,11 +19,11 @@
 #include <sstream>
 #define FIXOUT(a,b) a.width(75);a << std::left << b;
 #define FIXOUTVEC(a,b,c,d,e) FIXOUT(a,b << "[   ");a.width(5);a << std::left << c << " , ";a.width(5);a << std::left << d << " , ";a.width(5);a << std::left << e << "   ]" << std::endl;
-
 namespace exch
 {
     unsigned int max_shells=0,diagnumdiag=0,offdiagnumdiag=0;
     Array<int> diagoffset,offdiagoffset;
+    Array<double> data;
     Array3D<unsigned int> numint;
     Array2D<unsigned int> shell_list;
     Array4D<double> exchvec;
@@ -225,7 +225,7 @@ namespace exch
                                                 wc[0]=rc[0]*pow(-1,a+1);
                                                 wc[1]=rc[1]*pow(-1,b+1);
                                                 wc[2]=rc[2]*pow(-1,c+1);
-                                                unsigned int lookupvec[3]={wc[0]+mypos[0],wc[1]+mypos[1],wc[2]+mypos[2]};
+                                                int lookupvec[3]={wc[0]+mypos[0],wc[1]+mypos[1],wc[2]+mypos[2]};
                                                 unsigned int check_lookup=0;
                                                 for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
                                                 {
@@ -285,7 +285,18 @@ namespace exch
                         error::errWarning("Could not close J.dat for writing interaction matrix.");
                     }
                     //call the routine to convert the JMat to a sparse matrix format
-                    matconv::dia_offsets(diagoffset,JMat,diagnumdiag,geom::nspins);
+                    //matconv::dia_offsets(diagoffset,JMat,diagnumdiag,geom::nspins);
+                    matconv::conv_intmat_to_dia(diagoffset,JMat,diagnumdiag,geom::nspins,data);
+                    FIXOUT(config::Info,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
+                    config::openLogFile();
+                    config::printline(config::Log);
+                    FIXOUT(config::Log,"Outputting offset for diagonal part of interaction matrix:" << std::endl);
+                    config::Log << " [ ";
+                    for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
+                    {
+                        config::Log << diagoffset[i] << ",";
+                    }
+                    config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
                 }
                 else if(config::exchm==0)//add the exchange to the interaction matrix
                 {

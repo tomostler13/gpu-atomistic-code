@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 06 Oct 2014 12:15:05
+// Last-modified: 07 Oct 2014 11:27:06
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -69,7 +69,7 @@ void sim::MvT(int argc,char *argv[])
     {
         ofs << "#Temperature\tMean" << std::endl;
     }
-    util::RunningStat MS[geom::ucm.GetNMS()];
+    util::RunningStat *MS=new util::RunningStat[geom::ucm.GetNMS()];
     std::ofstream magout("mag.dat");
     if(!magout.is_open())
     {
