@@ -38,7 +38,8 @@ obj/llgCPU.o \
 obj/maths.o \
 obj/sim.o \
 obj/mvt.o \
-obj/suscep.o
+obj/suscep.o \
+obj/matrix_conv.o
 
 SWITCHOBJ= \
 obj/main.o \
