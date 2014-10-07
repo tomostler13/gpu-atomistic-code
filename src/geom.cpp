@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 01 Oct 2014 18:47:31
+// Last-modified: 06 Oct 2014 19:21:43
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -169,8 +169,8 @@ namespace geom
                     for(unsigned int t = 0 ; t < ucm.NumAtomsUnitCell() ; t++)
                     {
                         double ri[3]={0,0,0};
-                        coords(i*Nk[0],j*Nk[1],k*Nk[2],0)=atom_counter;
-                        coords(i*Nk[0],j*Nk[1],k*Nk[2],1)=ucm.GetSublattice(t);
+                        coords(i*Nk[0]+ucm.GetCoord(t,0),j*Nk[1]+ucm.GetCoord(t,1),k*Nk[2]+ucm.GetCoord(t,2),0)=atom_counter;
+                        coords(i*Nk[0]+ucm.GetCoord(t,0),j*Nk[1]+ucm.GetCoord(t,1),k*Nk[2]+ucm.GetCoord(t,2),1)=ucm.GetSublattice(t);
                         lu(atom_counter,0)=i*Nk[0]+ucm.GetCoord(t,0);
                         lu(atom_counter,1)=j*Nk[1]+ucm.GetCoord(t,1);
                         lu(atom_counter,2)=k*Nk[2]+ucm.GetCoord(t,2);

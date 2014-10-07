@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 02 Oct 2014 13:45:20
+// Last-modified: 07 Oct 2014 10:28:19
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -27,6 +27,7 @@ namespace exch
     Array4D<double> exchvec;
     Array4D<unsigned int> kvec;
     Array5D<double> J;
+    Array4D<double> JMat;
     std::string enerType;
     void initExch(int argc,char *argv[])
     {
@@ -93,13 +94,14 @@ namespace exch
         numint.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells);
         exchvec.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3);
         kvec.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3);
-        J.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3,3);
         shell_list.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS());
         numint.IFill(0);exchvec.IFill(0);kvec.IFill(0);J.IFill(0);shell_list.IFill(0);
         if(geom::nspins>1)//then really we don't want any exchange anyway.
         {
             if(method=="permute")
             {
+                //first read the exchange constants
+                J.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3,3);
                 for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
                 {
                     for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
@@ -175,50 +177,42 @@ namespace exch
                         }
                     }
                 }
-                //check if we have a single layer of atoms in any dimension
-                bool checkmonolayer[3]={false,false,false};
-                for(unsigned int xyz = 0 ; xyz < 3; xyz++)
+                //then add the exchange constants to the matrix or to the interaction matrix
+                if(config::exchm>0)//We calculate the exchange via a matrix multiplication
                 {
-                    if(geom::dim[xyz]*geom::Nk[xyz] < 2)
+                    std::ofstream opJ("J.dat");
+                    if(!opJ.is_open())
                     {
-                        checkmonolayer[xyz]=true;
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("Could not open file J.dat for writing the 2D interaction matrix to.");
                     }
-                }
-                FIXOUTVEC(config::Info,"Monolayer check:",config::isTF(checkmonolayer[0]),config::isTF(checkmonolayer[1]),config::isTF(checkmonolayer[2]));
-
-                //we are going to write the exchange information to the log file. Make sure it if open.
-                config::openLogFile();
-                for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
-                {
-                    config::Log << "Exchange parameters acting on species " << s1 << std::endl;
-                    for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
+                    JMat.resize(geom::nspins,geom::nspins,3,3);
+                    JMat.IFill(0);
+                    //loop over the spins and find the neighbours
+                    for(unsigned int i = 0 ; i < geom::nspins ; i++)
                     {
-                        config::Log << "Interaction with species " << s2 << std::endl;
+                        //what is my species (or sublattice)
+                        unsigned sl=geom::sublattice(i);
+                        //store atom i's position
+                        int mypos[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                        std::cout << "Atom " << i << " is species " << sl << " located at " << mypos[0] << "," << mypos[1] << "," << mypos[2] << std::endl;
+
                         Array3D<unsigned int> check;
-                        check.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+                        check.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
                         check.IFill(0);
-                        //This section of code takes the kvec interactions and
-                        //adds the appropriate Jij to the appropriate interaction matrix
-                        for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
+
+                        //this is a loop over the species.
+                        for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
                         {
-                            config::Log << "Shell " << shell_list(s1,s2) << " of " << numint(s1,s2,i) << std::endl;
-                            unsigned int counter=0;
-                            int lc[3]={0,0,0};
-                            lc[0]=kvec(s1,s2,i,0);
-                            lc[1]=kvec(s1,s2,i,1);
-                            lc[2]=kvec(s1,s2,i,2);
-                            for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
+                            for(unsigned int shell = 0 ; shell < shell_list(sl,s1) ; shell++)
                             {
-                                //reference array
-                                int rc[3]={lc[wrap%3],lc[(1+wrap)%3],lc[(2+wrap)%3]};
-                                //work array
-                                int wc[3]={rc[0],rc[1],rc[2]};
-                                if((abs(wc[0]>0) && checkmonolayer[0]==true) || (abs(wc[1]>0) && checkmonolayer[1]==true) || (abs(wc[2]>0) && checkmonolayer[2]==true) )
+                                unsigned int lookup[3]={kvec(sl,s1,shell,0),kvec(sl,s1,shell,1),kvec(sl,s1,shell,2)};
+                                std::cout << "The lookup vector to species " << s1 << " in shell " << shell  << " is " << lookup[0] << "," << lookup[1] << "," << lookup[2] << ", permuting vectors..." << std::endl;
+                                for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
                                 {
-                                    //then do nothing, we don't want to add anything in this direction
-                                }
-                                else
-                                {
+                                    //reference array
+                                    int rc[3]={lookup[wrap%3],lookup[(1+wrap)%3],lookup[(2+wrap)%3]};
+                                    int wc[3]={rc[0],rc[1],rc[2]};
                                     //change the signs of each element
                                     for(unsigned int a = 0 ; a < 2 ; a++)
                                     {
@@ -229,73 +223,192 @@ namespace exch
                                                 wc[0]=rc[0]*pow(-1,a+1);
                                                 wc[1]=rc[1]*pow(-1,b+1);
                                                 wc[2]=rc[2]*pow(-1,c+1);
-                                                //This array is purely for outputting the exchange information to the log file
-                                                int owc[3]={wc[0],wc[1],wc[2]};
-                                                //check the boundaries for each component
+                                                unsigned int lookupvec[3]={wc[0]+mypos[0],wc[1]+mypos[1],wc[2]+mypos[2]};
+                                                unsigned int check_lookup=0;
                                                 for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
                                                 {
-                                                    if(wc[xyz]<0)
+                                                    if(lookupvec[xyz]<0 && config::pbc[xyz]==true)
                                                     {
-                                                        wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
+                                                        lookupvec[xyz]=geom::dim[xyz]*geom::Nk[xyz]+lookupvec[xyz];
+                                                        check_lookup++;
                                                     }
-                                                }//end of xyz loop
-                                                if(check(wc[0],wc[1],wc[2])==0)
-                                                {
-                                                    config::Log << "Interaction Vector:  [" << owc[0] << "," << owc[1] << "," << owc[2] << "]\t -> [" << wc[0] << "," << wc[1] << "," << wc[2] << "]" << std::endl;
-                                                    //loop over the elements of the interaction tensor
-                                                    for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                                                    else if(lookupvec[xyz]>=geom::dim[xyz]*geom::Nk[xyz] && config::pbc[xyz]==true)
                                                     {
-                                                        for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                                        lookupvec[xyz]=lookupvec[xyz]-geom::dim[xyz]*geom::Nk[xyz];
+                                                        check_lookup++;
+                                                    }
+                                                    else if(lookupvec[xyz]>=0 && lookupvec[xyz]<geom::dim[xyz]*geom::Nk[xyz])
+                                                    {
+                                                        check_lookup++;
+                                                    }
+                                                }
+
+                                                //if check_lookup==3 then the lookup for the atom exists
+                                                if(check_lookup==3)//then we are array safe (i.e. should not seg fault) to look up the atom
+                                                {
+                                                    //find the species of the neighbouring atom
+                                                    unsigned int spec=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],1);
+                                                    //check if we have assigned a J value to this interaction vector previously
+                                                    //we also need to check that we are looking at the right species
+                                                    if(check(lookupvec[0],lookupvec[1],lookupvec[2])==0 && spec==s1)
+                                                    {
+                                                        unsigned int neigh=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],0);
+                                                        //in this case we have not looked it up before
+
+                                                        std::cout << lookupvec[0] << "\t" << lookupvec[1] << "\t" << lookupvec[2] << std::endl;
+                                                        for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                                                         {
-                                                            intmat::Nrab(s1,s2,alpha,beta,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,alpha,beta)/(geom::ucm.GetMuBase(s1)*llg::muB));
-                                                        }//end of beta loop
-                                                    }//end of alpha loop
+                                                            for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                                            {
+                                                                JMat(i,neigh,alpha,beta)=J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(spec)*llg::muB);
+                                                            }
+                                                        }
+                                                        opJ << i << "\t" << neigh << std::endl;
+                                                        check(lookupvec[0],lookupvec[1],lookupvec[2])=1;//this should mean that we no longer look for a neighbour here to avoid double addition of exchange
+                                                    }
+                                                }
 
-                                                    config::Log << "[ " << J(s1,s2,i,0,0) << " , " << J(s1,s2,i,0,1) << " , " << J(s1,s2,i,0,2) << " ]" << std::endl;
-                                                    config::Log << "[ " << J(s1,s2,i,1,0) << " , " << J(s1,s2,i,1,1) << " , " << J(s1,s2,i,1,2) << " ]\t (Joules)" << std::endl;
-                                                    config::Log << "[ " << J(s1,s2,i,2,0) << " , " << J(s1,s2,i,2,1) << " , " << J(s1,s2,i,2,2) << " ]" << std::endl;
-                                                    config::Log << std::endl;
-                                                    config::Log << "[ " << J(s1,s2,i,0,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,0,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,0,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
-                                                    config::Log << "[ " << J(s1,s2,i,1,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,1,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,1,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]\t (Tesla)" << std::endl;
-                                                    config::Log << "[ " << J(s1,s2,i,2,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,2,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,2,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
-                                                    config::Log << std::endl;
-                                                    check(wc[0],wc[1],wc[2])=1;
-                                                    counter++;
+                                            }
+                                        }
+                                    }
 
-                                                }//end of check if statement
-                                            }//end of c loop
-                                        }//end of b loop
-                                    }//end of a loop
-                                }//end of monolayer if statement
-                            }//end of wrap loop
-                            if(counter!=numint(s1,s2,i))
-                            {
-                                error::errPreamble(__FILE__,__LINE__);
-                                std::stringstream sstr;
-                                sstr << "The number of interactions between species " << s1 << " and " << s2 << " in shell " << shell_list(s1,s2) << " should be " << numint(s1,s2,i) << ", instead the number counted was " << counter;
-                                std::string str=sstr.str();
-                                error::errMessage(str.c_str());
-                            }//end of counter check if statement
-                            counter=0;
-                            config::printline(config::Log);
-                        }//end of shell list loop
-                    }//end of s2 loop
-                }//end of s1 loop
-/*                for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
-                {
-                    for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
-                    {
-                        for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
-                        {
-                            std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(0,0,2,2,i,j,k)[0] << std::endl;
-                            std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(0,1,2,2,i,j,k)[0] << std::endl;
-                            std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(1,0,2,2,i,j,k)[0] << std::endl;
-                            std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(1,1,2,2,i,j,k)[0] << std::endl;
-                            std::cin.get();
+                                }
+                            }
                         }
                     }
+                    opJ.close();
+                    if(opJ.is_open())
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errWarning("Could not close J.dat for writing interaction matrix.");
+                    }
+
                 }
-                */
+                else if(config::exchm==0)//add the exchange to the interaction matrix
+                {
+
+                    //check if we have a single layer of atoms in any dimension
+                    bool checkmonolayer[3]={false,false,false};
+                    for(unsigned int xyz = 0 ; xyz < 3; xyz++)
+                    {
+                        if(geom::dim[xyz]*geom::Nk[xyz] < 2)
+                        {
+                            checkmonolayer[xyz]=true;
+                        }
+                    }
+                    FIXOUTVEC(config::Info,"Monolayer check:",config::isTF(checkmonolayer[0]),config::isTF(checkmonolayer[1]),config::isTF(checkmonolayer[2]));
+
+                    //we are going to write the exchange information to the log file. Make sure it if open.
+                    config::openLogFile();
+                    for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
+                    {
+                        config::Log << "Exchange parameters acting on species " << s1 << std::endl;
+                        for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
+                        {
+                            config::Log << "Interaction with species " << s2 << std::endl;
+                            Array3D<unsigned int> check;
+                            check.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+                            check.IFill(0);
+                            //This section of code takes the kvec interactions and
+                            //adds the appropriate Jij to the appropriate interaction matrix
+                            for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
+                            {
+                                config::Log << "Shell " << shell_list(s1,s2) << " of " << numint(s1,s2,i) << std::endl;
+                                unsigned int counter=0;
+                                int lc[3]={0,0,0};
+                                lc[0]=kvec(s1,s2,i,0);
+                                lc[1]=kvec(s1,s2,i,1);
+                                lc[2]=kvec(s1,s2,i,2);
+                                for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
+                                {
+                                    //reference array
+                                    int rc[3]={lc[wrap%3],lc[(1+wrap)%3],lc[(2+wrap)%3]};
+                                    //work array
+                                    int wc[3]={rc[0],rc[1],rc[2]};
+                                    if((abs(wc[0]>0) && checkmonolayer[0]==true) || (abs(wc[1]>0) && checkmonolayer[1]==true) || (abs(wc[2]>0) && checkmonolayer[2]==true) )
+                                    {
+                                        //then do nothing, we don't want to add anything in this direction
+                                    }
+                                    else
+                                    {
+                                        //change the signs of each element
+                                        for(unsigned int a = 0 ; a < 2 ; a++)
+                                        {
+                                            for(unsigned int b = 0 ; b < 2 ; b++)
+                                            {
+                                                for(unsigned int c = 0 ; c < 2 ; c++)
+                                                {
+                                                    wc[0]=rc[0]*pow(-1,a+1);
+                                                    wc[1]=rc[1]*pow(-1,b+1);
+                                                    wc[2]=rc[2]*pow(-1,c+1);
+                                                    //This array is purely for outputting the exchange information to the log file
+                                                    int owc[3]={wc[0],wc[1],wc[2]};
+                                                    //check the boundaries for each component
+                                                    for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                                                    {
+                                                        if(wc[xyz]<0)
+                                                        {
+                                                            wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
+                                                        }
+                                                    }//end of xyz loop
+                                                    if(check(wc[0],wc[1],wc[2])==0)
+                                                    {
+                                                        config::Log << "Interaction Vector:  [" << owc[0] << "," << owc[1] << "," << owc[2] << "]\t -> [" << wc[0] << "," << wc[1] << "," << wc[2] << "]" << std::endl;
+                                                        //loop over the elements of the interaction tensor
+                                                        for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                                                        {
+                                                            for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                                            {
+                                                                intmat::Nrab(s1,s2,alpha,beta,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,alpha,beta)/(geom::ucm.GetMuBase(s1)*llg::muB));
+                                                            }//end of beta loop
+                                                        }//end of alpha loop
+
+                                                        config::Log << "[ " << J(s1,s2,i,0,0) << " , " << J(s1,s2,i,0,1) << " , " << J(s1,s2,i,0,2) << " ]" << std::endl;
+                                                        config::Log << "[ " << J(s1,s2,i,1,0) << " , " << J(s1,s2,i,1,1) << " , " << J(s1,s2,i,1,2) << " ]\t (Joules)" << std::endl;
+                                                        config::Log << "[ " << J(s1,s2,i,2,0) << " , " << J(s1,s2,i,2,1) << " , " << J(s1,s2,i,2,2) << " ]" << std::endl;
+                                                        config::Log << std::endl;
+                                                        config::Log << "[ " << J(s1,s2,i,0,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,0,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,0,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
+                                                        config::Log << "[ " << J(s1,s2,i,1,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,1,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,1,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]\t (Tesla)" << std::endl;
+                                                        config::Log << "[ " << J(s1,s2,i,2,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,2,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s2,i,2,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
+                                                        config::Log << std::endl;
+                                                        check(wc[0],wc[1],wc[2])=1;
+                                                        counter++;
+
+                                                    }//end of check if statement
+                                                }//end of c loop
+                                            }//end of b loop
+                                        }//end of a loop
+                                    }//end of monolayer if statement
+                                }//end of wrap loop
+                                if(counter!=numint(s1,s2,i))
+                                {
+                                    error::errPreamble(__FILE__,__LINE__);
+                                    std::stringstream sstr;
+                                    sstr << "The number of interactions between species " << s1 << " and " << s2 << " in shell " << shell_list(s1,s2) << " should be " << numint(s1,s2,i) << ", instead the number counted was " << counter;
+                                    std::string str=sstr.str();
+                                    error::errMessage(str.c_str());
+                                }//end of counter check if statement
+                                counter=0;
+                                config::printline(config::Log);
+                            }//end of shell list loop
+                        }//end of s2 loop
+                    }//end of s1 loop
+                    /*                for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+                                      {
+                                      for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+                                      {
+                                      for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
+                                      {
+                                      std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(0,0,2,2,i,j,k)[0] << std::endl;
+                                      std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(0,1,2,2,i,j,k)[0] << std::endl;
+                                      std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(1,0,2,2,i,j,k)[0] << std::endl;
+                                      std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(1,1,2,2,i,j,k)[0] << std::endl;
+                                      std::cin.get();
+                                      }
+                                      }
+                                      }
+                     */
+                }
 
             }//end of if(method=="permute") statement
             else if(method=="direct")

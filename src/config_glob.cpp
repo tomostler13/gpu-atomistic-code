@@ -1,6 +1,6 @@
 // File: config_glob.cpp
 // Author:Tom Ostler
-// Last-modified: 03 Oct 2014 10:10:27
+// Last-modified: 07 Oct 2014 10:40:19
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -20,10 +20,11 @@
 namespace config
 {
     libconfig::Config cfg;
-    bool lcf=false;
-    bool inc_dip=false;
+    bool lcf=false,offdiag=false;
+    bool inc_dip=false,pbc[3]={false,false,false};
     unsigned int seed=0;
-    std::string intmeth;
-    unsigned int intm=0;
+    std::string exchmeth,dipmeth;
+    unsigned int exchm=0,dipm=0;
+    unsigned int dfu=0;
     std::ofstream Info,Log;
 }

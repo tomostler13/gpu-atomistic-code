@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 03 Oct 2014 10:16:03
+// Last-modified: 07 Oct 2014 10:43:11
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -14,8 +14,8 @@
 #include "../inc/random.h"
 #include "../inc/util.h"
 #include "../inc/config.h"
+#include "../inc/defines.h"
 #include <cassert>
-#define FIXOUT(a,b) a.width(75);a << std::left << b;
 namespace config
 {
     void initConfig(int argc,char *argv[])
@@ -79,19 +79,27 @@ namespace config
 
         libconfig::Setting &setting = cfg.lookup("system");
         setting.lookupValue("include_dipole",inc_dip);
-        setting.lookupValue("interaction_method",intmeth);
+        setting.lookupValue("Exchange_method",exchmeth);
+        std::cout << "Excnage  method read as\t" << exchmeth << std::endl;
+        setting.lookupValue("Dipole_method",dipmeth);
+        //read whether we want PBC's or not
+        for(unsigned int i = 0 ; i < 3 ; i++)
+        {
+            pbc[i]=setting["Periodic_Boundaries"][i];
+        }
+        FIXOUTVEC(config::Info,"Periodic boundary conditions",isTF(pbc[0]),isTF(pbc[1]),isTF(pbc[2]));
         //So that we are not comparing strings all over the place
         //we assign a method to an integer. This also ensures we have
         //written the correct string
-        if(intmeth=="fft")
+        if(exchmeth=="fft")
         {
-            intm=0;
+            exchm=0;
         }
-        else if(intmeth=="DIA")
+        else if(exchmeth=="DIA")
         {
-            intm=1;
+            exchm=1;
         }
-        else if(intmeth=="CSR")
+        else if(exchmeth=="CSR")
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CSR Coming soon");
@@ -99,10 +107,41 @@ namespace config
         else
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("interaction_method not recognized, please select either fft, DIA or CSR");
+            error::errMessage("Exchange interaction method (Exchange_method) not recognized, please select either fft, DIA or CSR");
         }
-
-        FIXOUT(config::Info,"Exchange/dipole-dipole field calculation method:" << intmeth << std::endl);
+        if(dipmeth=="fft")
+        {
+            dipm=0;
+        }
+        else if(dipmeth=="DIA")
+        {
+            dipm=1;
+        }
+        else if(dipmeth=="CSR")
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("CSR Coming soon");
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Dipole interaction method (Dipole_method) not recognized, please select either fft, DIA or CSR");
+        }
+        //check if you are using a sparse matrix multiplication (somewhere)
+        //if so we have the option of not calculating the off-diagonals
+        if((dipm+exchm)>0)
+        {
+            setting.lookupValue("Off_Diagonals",offdiag);
+            FIXOUT(config::Info,"Include off-diagonals in sparse matrix multiplication:" << config::isTF(offdiag) << std::endl);
+        }
+        //if we are using the fft at the moment we cannot have PBC's
+        if((dipm==0 || exchm==0) && (pbc[0]==true || pbc[1]==true || pbc[2]))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("You cannot currently use the fft method for calculating exchange or dipole-dipole fields and have periodic boundary conditions.\nIf you want to use PBC's then select a matrix multiplication method.");
+        }
+        FIXOUT(config::Info,"Exchange field calculation method:" << exchmeth << std::endl);
+        FIXOUT(config::Info,"Dipole-dipole field calculation method:" << dipmeth << std::endl);
         assert(seed>0);
         lcf=true;
     }
