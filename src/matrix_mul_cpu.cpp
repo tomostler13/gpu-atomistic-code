@@ -1,7 +1,7 @@
 //File matrix_mul_cpu.cpp
 // Author: Tom Ostler
 // Created: 08 Oct 2014
-// Last-modified: 08 Oct 2014 12:08:04
+// Last-modified: 08 Oct 2014 14:27:25
 #include "../inc/arrays.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -16,9 +16,9 @@ namespace matmul
         //loop over nspins
         for(int i = 0 ; i < static_cast<int>(N) ; i++)
         {
-            Hx[i]=0;
-            Hy[i]=0;
-            Hz[i]=0;
+//            Hx[i]=0;
+//            Hy[i]=0;
+//            Hz[i]=0;
             double sumx=0.0,sumy=0.0,sumz=0.0;
             for(int n = 0 ; n < num_diags ; n++)
             {

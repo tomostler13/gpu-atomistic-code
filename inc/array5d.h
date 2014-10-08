@@ -1,6 +1,6 @@
 // File: array5d.h
 // Author:Joe Barker
-// Last-modified: 03 Oct 2014 13:58:45
+// Last-modified: 08 Oct 2014 13:56:10
 #ifndef __ARRAY5D_H__
 #define __ARRAY5D_H__
 
@@ -40,7 +40,10 @@ class Array5D
       dim4 = 0;
       data.clear();
     }
-
+    inline int size()
+    {
+        return(dim0*dim1*dim2*dim3*dim4);
+    }
     inline void resize(const size_type d0, const size_type d1, const size_type d2, const size_type d3, const size_type d4) {
       dim0 = d0; dim1 = d1; dim2 = d2; dim3 = d3; dim4 = d4;
       data.resize(d0*d1*d2*d3*d4);
@@ -127,7 +130,10 @@ class Array5D<fftw_complex>
       fftw_free(data);
       data = NULL;
     }
-
+    inline int size()
+    {
+        return(dim0*dim1*dim2*dim3*dim4);
+    }
     inline void resize(const size_type d0, const size_type d1, const size_type d2, const size_type d3, const size_type d4) {
       dim0 = d0; dim1 = d1; dim2 = d2; dim3 = d3; dim4 = d4;
       if(data != NULL){
@@ -217,7 +223,10 @@ class Array5D<fftwf_complex>
       fftw_free(data);
       data = NULL;
     }
-
+    inline int size()
+    {
+        return(dim0*dim1*dim2*dim3*dim4);
+    }
     inline void resize(const size_type d0, const size_type d1, const size_type d2, const size_type d3, const size_type d4) {
       dim0 = d0; dim1 = d1; dim2 = d2; dim3 = d3; dim4 = d4;
       if(data != NULL){

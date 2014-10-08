@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 08 Oct 2014 13:02:34
+// Last-modified: 08 Oct 2014 14:27:59
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -54,10 +54,24 @@ namespace llgCPU
     void llgCPU(unsigned int t)
     {
         //calculate the 2 spin fields (dipolar, exchange)
-        if(config::exchm==0 || config::dipm==0)
+        if(config::exchm==0)
         {
             fields::ftdip();
         }
+        else if(config::dipm==0 && config::inc_dip==true)
+        {
+            fields::dipftdip();
+        }
+        //FOR DEBUGGING THE FIELD
+        if(t==0)
+        {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx(i) << "\t" << fields::Hy(i) << "\t" << fields::Hz(i) << std::endl;
+        }
+        exit(0);
+        }
+        //exit(0);*/
         //then we call the DIA SpMV multiplication
         if(config::exchm==1)
         {

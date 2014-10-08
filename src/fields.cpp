@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 08 Oct 2014 13:01:07
+// Last-modified: 08 Oct 2014 14:26:17
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -24,11 +24,12 @@ namespace fields
 {
     Array5D<fftw_complex> Hk;
     Array5D<fftw_complex> Hr;
+    Array4D<fftw_complex> dipHr,dipHk;
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz;
     fftw_plan HP;
     void initFields(int argc,char *argv[])
     {
-        if(config::dipm==0 || config::exchm==0)
+        if(config::exchm==0)
         {
             Hk.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
             Hr.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
@@ -59,6 +60,38 @@ namespace fields
             FIXOUT(config::Log,"Direction (sign) = " << "FFTW_BACKWARD" << std::endl);
             FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
             HP = fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*3,Hk.ptr(),inembed,istride,idist,Hr.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_ESTIMATE);
+        }
+        else if(config::dipm==0 && config::inc_dip==true)
+        {
+            dipHk.resize(3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
+            dipHr.resize(3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
+            //plan the transforms as in-place as we do not need to use the fft arrays
+            //as we copy the data back to the normal field arrayl
+            int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
+            int *inembed=n;
+            int *onembed=n;
+            int istride=1;
+            int ostride=1;
+            int odist=geom::zps;
+            int idist=geom::zps;
+
+            config::openLogFile();
+            config::printline(config::Log);
+            FIXOUT(config::Log,"Parameters entering into FFTW plan of fields matrix (back transform)" << std::endl);
+            FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
+            FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
+            FIXOUT(config::Log,"How many (FFT's) = " << 3 << std::endl);
+            FIXOUT(config::Log,"Pointer of reciprocal space fields (dipHk):" << dipHk.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],inembed[2]);
+            FIXOUT(config::Log,"istride = " << istride << std::endl);
+            FIXOUT(config::Log,"idist = " << idist << std::endl);
+            FIXOUT(config::Log,"Pointer of real space fields (dipHr):" << dipHr.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
+            FIXOUT(config::Log,"ostride = " << ostride << std::endl);
+            FIXOUT(config::Log,"odist = " << odist << std::endl);
+            FIXOUT(config::Log,"Direction (sign) = " << "FFTW_BACKWARD" << std::endl);
+            FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
+            HP = fftw_plan_many_dft(3,n,3,dipHk.ptr(),inembed,istride,idist,dipHr.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_PATIENT);
         }
 //        std::cout << "Resizing field arrays to
         Hx.resize(geom::nspins);
@@ -145,5 +178,31 @@ namespace fields
         spins::eFFTForward();
         util::cpuConvFourier();
         fields::FFTBack();
+    }
+    void dipFFTBack()
+    {
+        fftw_execute(HP);
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            Hx[i]=dipHr(0,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
+            Hy[i]=dipHr(1,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
+            Hz[i]=dipHr(2,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
+            //std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
+            //std::cin.get();
+        }
+    }
+    //fourier transform method for calculating dipolar field
+    void dipftdip()
+    {
+        spins::dipFFTForward();
+        util::dipcpuConvFourier();
+        fields::dipFFTBack();
+    }
+    void dipeftdip()
+    {
+        spins::dipeFFTForward();
+        util::dipcpuConvFourier();
+        fields::dipFFTBack();
     }
 }

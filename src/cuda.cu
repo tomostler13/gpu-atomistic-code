@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 03 Oct 2014 16:26:26
+// Last-modified: 08 Oct 2014 13:38:48
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -34,19 +34,29 @@ namespace cullg
 
     void llgGPU(unsigned int& t)
     {
-        cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr,CHk,CSk);
+        //in this case we are using the interaction matrix for both the exchange and the
+        //dipole-dipole field so we might aswell update both at once
+        if(config::summ==0)
+        {
+
+            cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr,CHk,CSk);
 
 
-        //copy the spin data to the zero padded arrays
-        cufields::CCopySpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cspec);
-        //forward transform
-        spins_forward();
-        //perform convolution
-        cufields::CFConv<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::ucm.GetNMS(),CNk,CHk,CSk);
-        //transform the fields back
-        fields_back();
-        //copy the fields from the zero padded array to the demag field array
-        cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,CHr,Ckx,Cky,Ckz,Cspec);
+            //copy the spin data to the zero padded arrays
+            cufields::CCopySpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cspec);
+            //forward transform
+            spins_forward();
+            //perform convolution
+            cufields::CFConv<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::ucm.GetNMS(),CNk,CHk,CSk);
+            //transform the fields back
+            fields_back();
+            //copy the fields from the zero padded array to the demag field array
+            cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,CHr,Ckx,Cky,Ckz,Cspec);
+        }
+        else if(config::dipm==0 && config::inc_dip==true)
+        {
+            
+        }
         //FOR DEBUGGING THE DIPOLAR FIELD/
         /*float temp1[3*geom::nspins];
         CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));

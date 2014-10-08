@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 08 Oct 2014 08:16:00
+// Last-modified: 08 Oct 2014 13:28:19
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -118,9 +118,10 @@ namespace config
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Dipole interaction method (Dipole_method) not recognized, please select either fft or brute force");
         }
+        summ=dipm+exchm;
         //check if you are using a sparse matrix multiplication (somewhere)
         //if so we have the option of not calculating the off-diagonals
-        if((dipm+exchm)>0)
+        if(summ>0)
         {
             setting.lookupValue("Off_Diagonals",offdiag);
             FIXOUT(config::Info,"Include off-diagonals in sparse matrix multiplication:" << config::isTF(offdiag) << std::endl);

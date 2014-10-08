@@ -3,7 +3,7 @@ seed = 1359107107;
 system:
 {
     //number of unit cells
-    dim = [ 1 , 1 , 1 ];
+    dim = [ 10 , 10 , 1 ];
     //The unit cell file. This file gives all of the information
     //on the locations of the magnetic system
     unitcellfile="sc.test";
@@ -12,8 +12,8 @@ system:
     //lattice constants
     abc = [ 300e-12 , 300e-12 , 300e-12 ];
     //do we include the dipole-dipole calculation?
-    include_dipole = FALSE;
-    Exchange_method="fft";
+    include_dipole = TRUE;
+    Exchange_method="DIA";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.

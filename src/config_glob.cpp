@@ -1,6 +1,6 @@
 // File: config_glob.cpp
 // Author:Tom Ostler
-// Last-modified: 07 Oct 2014 10:40:19
+// Last-modified: 08 Oct 2014 13:27:41
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -24,7 +24,7 @@ namespace config
     bool inc_dip=false,pbc[3]={false,false,false};
     unsigned int seed=0;
     std::string exchmeth,dipmeth;
-    unsigned int exchm=0,dipm=0;
+    unsigned int exchm=0,dipm=0,summ=0;
     unsigned int dfu=0;
     std::ofstream Info,Log;
 }

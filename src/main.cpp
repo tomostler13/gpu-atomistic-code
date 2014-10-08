@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Oct 2014 12:10:55
+// Last-modified: 08 Oct 2014 14:31:56
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -31,20 +31,35 @@ int main(int argc,char *argv[])
     config::initConfig(argc,argv);
     //Initialize the lattice
     geom::initGeom(argc,argv);
-    //initialize the interaction matrices
-    intmat::initIntmat(argc,argv);
-    if(config::inc_dip && config::dipm==0)
+    if(config::exchm==0)
     {
-        //add the dipolar fields
-        intmat::fillIntmat();
+        //initialize the interaction matrices
+        intmat::initIntmat(argc,argv);
+
+        if(config::inc_dip==true && config::dipm==0)
+        {
+            //add the dipolar fields
+            intmat::fillIntmat();
+        }
+    }
+    else if(config::inc_dip==true && config::dipm==0)
+    {
+        intmat::initDipIntmat(argc,argv);
+        // in this case the interaction matrix does
+        // not need to be species dependent
+        intmat::fillDipIntmat();
     }
     //Read in the exchange matrix
-    exch::initExch(argc,argv);
+    //exch::initExch(argc,argv);
 
     //Now we have all of the terms in our interaction matrix, fourier transform the result
-    if(config::dipm==0 || config::exchm==0)
+    if(config::dipm==0 && config::exchm==0)
     {
         intmat::fftIntmat();
+    }
+    else if(config::dipm==0 && config::inc_dip==true)
+    {
+        intmat::fftDipIntmat();
     }
     //Initialise the field arrays
     fields::initFields(argc,argv);

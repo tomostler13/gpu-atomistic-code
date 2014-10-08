@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Oct 2014 12:57:44
+// Last-modified: 08 Oct 2014 14:44:15
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -62,6 +62,34 @@ namespace util
 
                         }
                     }
+
+                }
+            }
+        }
+    }
+    void dipcpuConvFourier()
+    {
+        fields::dipHk.IFill(0);
+
+        //perform convolution in fourier space
+        register unsigned int i = 0,j = 0, k = 0, s1 = 0, s2=0, alpha=0, beta=0;
+        for(i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+        {
+            for(j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+            {
+                for(k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
+                {
+                    for(alpha = 0 ; alpha < 3 ; alpha++)
+                    {
+                        for(beta = 0 ; beta < 3 ; beta++)
+                        {
+                            fields::dipHk(alpha,i,j,k)[0]+=(intmat::dipNkab(alpha,beta,i,j,k)[0]*spins::dipSk(beta,i,j,k)[0]-intmat::dipNkab(alpha,beta,i,j,k)[1]*spins::dipSk(beta,i,j,k)[1]);
+                            fields::dipHk(alpha,i,j,k)[1]+=(intmat::dipNkab(alpha,beta,i,j,k)[0]*spins::dipSk(beta,i,j,k)[1]+intmat::dipNkab(alpha,beta,i,j,k)[1]*spins::dipSk(beta,i,j,k)[0]);
+        //                    std::cout << fields::dipHk(alpha,i,j,k)[0] << "\t" << intmat::dipNkab(alpha,beta,i,j,k)[0] << "\t" << intmat::dipNkab(alpha,beta,i,j,k)[1] << "\t" << spins::dipSk(beta,i,j,k)[0] << "\t" << spins::dipSk(beta,i,j,k)[1] << std::endl;
+        //                    std::cin.get();
+                        }
+                    }
+
 
                 }
             }

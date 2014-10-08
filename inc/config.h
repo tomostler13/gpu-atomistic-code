@@ -1,6 +1,6 @@
 // File: config.h
 // Author:Tom Ostler
-// Last-modified: 07 Oct 2014 10:40:07
+// Last-modified: 08 Oct 2014 13:27:49
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -21,7 +21,7 @@ namespace config
     //include dipolar fields?
     extern bool inc_dip,pbc[];
     extern std::string exchmeth,dipmeth;
-    extern unsigned int exchm,dipm;
+    extern unsigned int exchm,dipm,summ;
     extern std::ofstream Info,Log;
     void initConfig(int argc,char *argv[]);
     void printline(std::ofstream&);
