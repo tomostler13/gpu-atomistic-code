@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 27 Sep 2014 15:12:13
+// Last-modified: 08 Oct 2014 09:11:11
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -33,10 +33,6 @@ namespace spins
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Spin details***" << std::endl;
         FIXOUT(config::Info,"Resizing arrays and initializing spin directions:" << std::flush);
-        Sk.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Sr.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Sr.IFill(0);
-        Sk.IFill(0);
         mag.resize(geom::ucm.GetNMS(),3);
         mag.IFill(0);
         Sx.resize(geom::nspins);
@@ -45,6 +41,8 @@ namespace spins
         Sx.IFill(geom::nspins);
         Sy.IFill(geom::nspins);
         Sz.IFill(geom::nspins);
+
+        SUCCESS(config::Info);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             //get which atom in the unit cell spin i is
@@ -53,37 +51,44 @@ namespace spins
             Sy[i]=geom::ucm.GetInitS(aiuc,1);
             Sz[i]=geom::ucm.GetInitS(aiuc,2);
         }
-        SUCCESS(config::Info);
 
-        FIXOUT(config::Info,"Method for calculating the magnetization:" << mag_calc_method << " (see notes in src/util.cpp, function -> calc_mag)" << std::endl);
-        FIXOUT(config::Info,"Planning forward and transform of spin map:" << std::flush);
-        int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
-        int *inembed=n;
-        int *onembed=n;
-        int istride=1;
-        int ostride=1;
-        int odist=geom::zps;
-        int idist=geom::zps;
+        if(config::dipm==0 || config::exchm==0)
+        {
+            Sk.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+            Sr.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+            Sr.IFill(0);
+            Sk.IFill(0);
 
-        config::openLogFile();
-        config::printline(config::Log);
-        FIXOUT(config::Log,"Parameters entering into FFTW plan of spins (forward transform)" << std::endl);
-        FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
-        FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
-        FIXOUT(config::Log,"How many (FFT's) = " << geom::ucm.GetNMS()*3 << std::endl);
-        FIXOUT(config::Log,"Pointer of real space fields (Sr):" << Sr.ptr() << std::endl);
-        FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],inembed[2]);
-        FIXOUT(config::Log,"istride = " << istride << std::endl);
-        FIXOUT(config::Log,"idist = " << idist << std::endl);
-        FIXOUT(config::Log,"Pointer of reciprocal space fields (Sk):" << Sk.ptr() << std::endl);
-        FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
-        FIXOUT(config::Log,"ostride = " << ostride << std::endl);
-        FIXOUT(config::Log,"odist = " << odist << std::endl);
-        FIXOUT(config::Log,"Direction (sign) " << FFTW_FORWARD << std::endl);
-        FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
-        SP = fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*3,Sr.ptr(),inembed,istride,idist,Sk.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
-        //forward transform of spin arrays
-        SUCCESS(config::Info);
+            FIXOUT(config::Info,"Method for calculating the magnetization:" << mag_calc_method << " (see notes in src/util.cpp, function -> calc_mag)" << std::endl);
+            FIXOUT(config::Info,"Planning forward and transform of spin map:" << std::flush);
+            int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
+            int *inembed=n;
+            int *onembed=n;
+            int istride=1;
+            int ostride=1;
+            int odist=geom::zps;
+            int idist=geom::zps;
+
+            config::openLogFile();
+            config::printline(config::Log);
+            FIXOUT(config::Log,"Parameters entering into FFTW plan of spins (forward transform)" << std::endl);
+            FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
+            FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
+            FIXOUT(config::Log,"How many (FFT's) = " << geom::ucm.GetNMS()*3 << std::endl);
+            FIXOUT(config::Log,"Pointer of real space fields (Sr):" << Sr.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],inembed[2]);
+            FIXOUT(config::Log,"istride = " << istride << std::endl);
+            FIXOUT(config::Log,"idist = " << idist << std::endl);
+            FIXOUT(config::Log,"Pointer of reciprocal space fields (Sk):" << Sk.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
+            FIXOUT(config::Log,"ostride = " << ostride << std::endl);
+            FIXOUT(config::Log,"odist = " << odist << std::endl);
+            FIXOUT(config::Log,"Direction (sign) " << FFTW_FORWARD << std::endl);
+            FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
+            SP = fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*3,Sr.ptr(),inembed,istride,idist,Sk.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
+            //forward transform of spin arrays
+            SUCCESS(config::Info);
+        }
 
     }
     void FFTForward()

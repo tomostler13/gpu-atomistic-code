@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 02 Oct 2014 18:13:24
+// Last-modified: 08 Oct 2014 09:08:03
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -33,7 +33,7 @@ int main(int argc,char *argv[])
     geom::initGeom(argc,argv);
     //initialize the interaction matrices
     intmat::initIntmat(argc,argv);
-    if(config::inc_dip)
+    if(config::inc_dip && config::dipm==0)
     {
         //add the dipolar fields
         intmat::fillIntmat();
@@ -42,7 +42,10 @@ int main(int argc,char *argv[])
     exch::initExch(argc,argv);
 
     //Now we have all of the terms in our interaction matrix, fourier transform the result
-    intmat::fftIntmat();
+    if(config::dipm==0 || config::exchm==0)
+    {
+        intmat::fftIntmat();
+    }
     //Initialise the field arrays
     fields::initFields(argc,argv);
     //Initialise the spin arrays

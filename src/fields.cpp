@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 26 Sep 2014 16:22:24
+// Last-modified: 08 Oct 2014 09:09:32
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -28,38 +28,42 @@ namespace fields
     fftw_plan HP;
     void initFields(int argc,char *argv[])
     {
-        Hk.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
-        Hr.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
+        if(config::dipm==0 || config::exchm==0)
+        {
+            Hk.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
+            Hr.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
+            //plan the transforms as in-place as we do not need to use the fft arrays
+            //as we copy the data back to the normal field arrayl
+            int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
+            int *inembed=n;
+            int *onembed=n;
+            int istride=1;
+            int ostride=1;
+            int odist=geom::zps;
+            int idist=geom::zps;
+
+            config::openLogFile();
+            config::printline(config::Log);
+            FIXOUT(config::Log,"Parameters entering into FFTW plan of fields matrix (back transform)" << std::endl);
+            FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
+            FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
+            FIXOUT(config::Log,"How many (FFT's) = " << geom::ucm.GetNMS()*3 << std::endl);
+            FIXOUT(config::Log,"Pointer of reciprocal space fields (Hk):" << Hk.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],inembed[2]);
+            FIXOUT(config::Log,"istride = " << istride << std::endl);
+            FIXOUT(config::Log,"idist = " << idist << std::endl);
+            FIXOUT(config::Log,"Pointer of real space fields (Hr):" << Hr.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
+            FIXOUT(config::Log,"ostride = " << ostride << std::endl);
+            FIXOUT(config::Log,"odist = " << odist << std::endl);
+            FIXOUT(config::Log,"Direction (sign) = " << "FFTW_BACKWARD" << std::endl);
+            FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
+            HP = fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*3,Hk.ptr(),inembed,istride,idist,Hr.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_PATIENT);
+        }
         Hx.resize(geom::nspins);
         Hy.resize(geom::nspins);
         Hz.resize(geom::nspins);
-        //plan the transforms as in-place as we do not need to use the fft arrays
-        //as we copy the data back to the normal field arrayl
-        int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
-        int *inembed=n;
-        int *onembed=n;
-        int istride=1;
-        int ostride=1;
-        int odist=geom::zps;
-        int idist=geom::zps;
 
-        config::openLogFile();
-        config::printline(config::Log);
-        FIXOUT(config::Log,"Parameters entering into FFTW plan of fields matrix (back transform)" << std::endl);
-        FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
-        FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
-        FIXOUT(config::Log,"How many (FFT's) = " << geom::ucm.GetNMS()*3 << std::endl);
-        FIXOUT(config::Log,"Pointer of reciprocal space fields (Hk):" << Hk.ptr() << std::endl);
-        FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],inembed[2]);
-        FIXOUT(config::Log,"istride = " << istride << std::endl);
-        FIXOUT(config::Log,"idist = " << idist << std::endl);
-        FIXOUT(config::Log,"Pointer of real space fields (Hr):" << Hr.ptr() << std::endl);
-        FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
-        FIXOUT(config::Log,"ostride = " << ostride << std::endl);
-        FIXOUT(config::Log,"odist = " << odist << std::endl);
-        FIXOUT(config::Log,"Direction (sign) = " << "FFTW_BACKWARD" << std::endl);
-        FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
-        HP = fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*3,Hk.ptr(),inembed,istride,idist,Hr.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_PATIENT);
     }
 
     /*void bfdip()

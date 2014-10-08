@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 07 Oct 2014 10:43:11
+// Last-modified: 08 Oct 2014 08:16:00
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -113,19 +113,10 @@ namespace config
         {
             dipm=0;
         }
-        else if(dipmeth=="DIA")
-        {
-            dipm=1;
-        }
-        else if(dipmeth=="CSR")
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("CSR Coming soon");
-        }
         else
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Dipole interaction method (Dipole_method) not recognized, please select either fft, DIA or CSR");
+            error::errMessage("Dipole interaction method (Dipole_method) not recognized, please select either fft or brute force");
         }
         //check if you are using a sparse matrix multiplication (somewhere)
         //if so we have the option of not calculating the off-diagonals

@@ -1,7 +1,7 @@
 //File matrix_conv.cpp
 // Author: Tom Ostler
-// Created: 07 Jan 2014
-// Last-modified: 07 Oct 2014 13:40:49
+// Created: 07 Oct 2014
+// Last-modified: 08 Oct 2014 09:29:55
 // The routines within this file convert a 2D matrix to
 // a number of formats depending on the routine used. The
 // return structures depend on the storage format
@@ -23,7 +23,7 @@ namespace matconv
     // This function is overloaded. If the arguement list
     // contains only one offset array then we calculate that
     // for the diagonals of the exchange tensor.
-    void conv_intmat_to_dia(Array<int>& offset,Array4D<double>& JMat,unsigned int& num_diag,unsigned int& nN,Array<double>& data)
+    void conv_intmat_to_dia(Array<int>& offset,Array4D<double>& JMat,unsigned int& num_diag,unsigned int& nN,Array<double>& dataxx,Array<double>& datayy,Array<double>& datazz)
     {
         //for counting the number of non-zero diagonals
         unsigned int dia_count=0;
@@ -59,7 +59,7 @@ namespace matconv
             double abs_J=0.0;
             for(unsigned int j = 0 ; j < num_elem ; j++)
             {
-                abs_J+=fabs(JMat(iloop,jloop,0,0));
+                abs_J+=(fabs(JMat(iloop,jloop,0,0))+fabs(JMat(iloop,jloop,1,1))+fabs(JMat(iloop,jloop,2,2)));
                 iloop++;
                 jloop++;
             }
@@ -70,8 +70,10 @@ namespace matconv
         }
         //resize the offset array
         offset.resize(num_diag);
-        data.resize(num_diag*N);
-        data.IFill(0);
+        dataxx.resize(num_diag*N);
+        datayy.resize(num_diag*N);
+        datazz.resize(num_diag*N);
+        dataxx.IFill(0);datayy.IFill(0);datazz.IFill(0);
         offset.IFill(0);
         unsigned int nd=0;
         //loop over the diagonals again and set the value of the offset
@@ -106,7 +108,7 @@ namespace matconv
             for(unsigned int j = 0 ; j < num_elem ; j++)
             {
 
-                abs_J+=fabs(JMat(iloop,jloop,0,0));
+                abs_J+=(fabs(JMat(iloop,jloop,0,0))+fabs(JMat(iloop,jloop,1,1))+fabs(JMat(iloop,jloop,2,2)));
                 iloop++;
                 jloop++;
             }
@@ -118,11 +120,15 @@ namespace matconv
                 {
                     if(i<0)
                     {
-                        data[num_diag*nd+(num_zeros)+j]=JMat(iloop,jloop,0,0);
+                        dataxx[num_diag*nd+(num_zeros)+j]=JMat(iloop,jloop,0,0);
+                        datayy[num_diag*nd+(num_zeros)+j]=JMat(iloop,jloop,1,1);
+                        datazz[num_diag*nd+(num_zeros)+j]=JMat(iloop,jloop,2,2);
                     }
                     else
                     {
-                        data[num_diag*nd+j]=JMat(iloop,jloop,0,0);
+                        dataxx[num_diag*nd+j]=JMat(iloop,jloop,0,0);
+                        datayy[num_diag*nd+j]=JMat(iloop,jloop,1,1);
+                        datazz[num_diag*nd+j]=JMat(iloop,jloop,2,2);
                     }
                     iloop++;
                     jloop++;
@@ -144,6 +150,192 @@ namespace matconv
             std::cin.get();
         }*/
         if(nd!=num_diag)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("The number of diagonals upon checking was not consisten");
+        }
+    }
+    void conv_intmat_to_dia(Array<int>& diagoffset,Array<int>& offdiagoffset,Array4D<double>& JMat,unsigned int& num_diag,unsigned int& num_off_diag,unsigned int& nN,Array<double>& dataxx,Array<double>& dataxy,Array<double>& dataxz,Array<double>& datayx,Array<double>& datayy,Array<double>& datayz,Array<double>& datazx,Array<double>& datazy,Array<double>& datazz)
+    {
+        //for counting the number of non-zero diagonals
+        unsigned int dia_count=0;
+        int N=static_cast<int>(nN);
+        //set the number of diagonals to zero
+        num_diag=0,num_off_diag=0;
+        for(int i = -N+1 ; i < N ; i++)
+        {
+            //calculate the number of elements in the diagonal
+            int num_elem=0;
+            if(i<=0)
+            {
+                num_elem=i+static_cast<int>(N);
+            }
+            else
+            {
+                num_elem=static_cast<int>(N)-i;
+            }
+            unsigned int istart=0,jstart=0;
+            if(i<=0)
+            {
+                istart=-i;
+                jstart=0;
+            }
+            else
+            {
+                istart=0;
+                jstart=i;
+            }
+            int iloop=istart,jloop=jstart;
+
+            double abs_J=0.0;
+            double abs_offJ=0.0;
+            for(unsigned int j = 0 ; j < num_elem ; j++)
+            {
+                abs_J+=fabs(JMat(iloop,jloop,0,0))+fabs(JMat(iloop,jloop,1,1))+fabs(JMat(iloop,jloop,2,2));
+                abs_offJ+=fabs(JMat(iloop,jloop,0,1))+fabs(JMat(iloop,jloop,0,2))+fabs(JMat(iloop,jloop,1,0))+fabs(JMat(iloop,jloop,1,2))+fabs(JMat(iloop,jloop,2,0))+fabs(JMat(iloop,jloop,2,1));
+                iloop++;
+                jloop++;
+            }
+            if(abs_J>1e-30)
+            {
+                num_diag++;
+            }
+            if(abs_offJ>1e-30)
+            {
+                num_off_diag++;
+            }
+        }
+        //resize the offset array
+        diagoffset.resize(num_diag);
+        offdiagoffset.resize(num_off_diag);
+        dataxx.resize(num_diag*N);
+        datayy.resize(num_diag*N);
+        datazz.resize(num_diag*N);
+        if(num_off_diag>0)
+        {
+            dataxy.resize(num_off_diag*N);
+            dataxz.resize(num_off_diag*N);
+            datayx.resize(num_off_diag*N);
+            datayz.resize(num_off_diag*N);
+            datazx.resize(num_off_diag*N);
+            datazy.resize(num_off_diag*N);
+            dataxy.IFill(0);dataxz.IFill(0);datayx.IFill(0);datayz.IFill(0);datazx.IFill(0);datazy.IFill(0);
+            dataxx.IFill(0);datayy.IFill(0);datazz.IFill(0);
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("You have specified that you want to include the off diagonal terms in the exchange matrix, however their values are zero.");
+        }
+        diagoffset.IFill(0);
+        offdiagoffset.IFill(0);
+        unsigned int nd=0,nod=0;
+        //loop over the diagonals again and set the value of the offset
+        for(int i = -N+1 ; i < N ; i++)
+        {
+            //calculate the number of elements in the diagonal
+            int num_elem=0,num_zeros=0;
+            if(i<=0)
+            {
+                num_elem=i+static_cast<int>(N);
+            }
+            else
+            {
+                num_elem=static_cast<int>(N)-i;
+            }
+            num_zeros=N-num_elem;
+            unsigned int istart=0,jstart=0;
+            if(i<=0)
+            {
+                istart=-i;
+                jstart=0;
+            }
+            else
+            {
+                istart=0;
+                jstart=i;
+            }
+            int iloop=istart,jloop=jstart;
+
+
+            double abs_J=0.0;
+            double abs_offJ=0.0;
+            for(unsigned int j = 0 ; j < num_elem ; j++)
+            {
+
+                abs_J+=fabs(JMat(iloop,jloop,0,0))+fabs(JMat(iloop,jloop,1,1))+fabs(JMat(iloop,jloop,2,2));
+                abs_offJ+=fabs(JMat(iloop,jloop,0,1))+fabs(JMat(iloop,jloop,0,2))+fabs(JMat(iloop,jloop,1,0))+fabs(JMat(iloop,jloop,1,2))+fabs(JMat(iloop,jloop,2,0))+fabs(JMat(iloop,jloop,2,1));
+                iloop++;
+                jloop++;
+            }
+            if(abs_J>1e-30)
+            {
+                iloop=istart;
+                jloop=jstart;
+                for(unsigned int j = 0 ; j < num_elem ; j++)
+                {
+                    if(i<0)
+                    {
+                        dataxx[num_diag*nd+(num_zeros)+j]=JMat(iloop,jloop,0,0);
+                        datayy[num_diag*nd+(num_zeros)+j]=JMat(iloop,jloop,1,1);
+                        datazz[num_diag*nd+(num_zeros)+j]=JMat(iloop,jloop,2,2);
+                    }
+                    else
+                    {
+                        dataxx[num_diag*nd+j]=JMat(iloop,jloop,0,0);
+                        datayy[num_diag*nd+j]=JMat(iloop,jloop,1,1);
+                        datazz[num_diag*nd+j]=JMat(iloop,jloop,2,2);
+                    }
+                    iloop++;
+                    jloop++;
+                }
+                diagoffset[nd]=i;
+                nd++;
+            }
+            if(abs_offJ>1e-30)
+            {
+                iloop=istart;
+                jloop=jstart;
+                for(unsigned int j = 0 ; j < num_elem ; j++)
+                {
+                    if(i<0)
+                    {
+                        dataxy[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,0,1);
+                        dataxz[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,0,2);
+                        datayx[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,1,0);
+                        datayz[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,1,2);
+                        datazx[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,2,0);
+                        datazy[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,2,1);
+                    }
+                    else
+                    {
+                        dataxy[num_diag*nod+j]=JMat(iloop,jloop,0,1);
+                        dataxz[num_diag*nod+j]=JMat(iloop,jloop,0,2);
+                        datayx[num_diag*nod+j]=JMat(iloop,jloop,1,0);
+                        datayz[num_diag*nod+j]=JMat(iloop,jloop,1,2);
+                        datazx[num_diag*nod+j]=JMat(iloop,jloop,2,0);
+                        datazy[num_diag*nod+j]=JMat(iloop,jloop,2,1);
+                    }
+                    iloop++;
+                    jloop++;
+                }
+                offdiagoffset[nod]=i;
+                nod++;
+            }
+        }
+        //for debugging the data array
+        /*
+        for(unsigned int i = 0 ; i < num_diag ; i++)
+        {
+            int os=offset[i];
+            std::cout << "Offset " << i << " is " << os << std::endl;
+            for(unsigned int j = 0 ; j < N ; j++)
+            {
+                std::cout << j << "\t" << data[i*num_diag+j] << std::endl;
+            }
+            std::cin.get();
+        }*/
+        if(nd!=num_diag || nod!=num_off_diag)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("The number of diagonals upon checking was not consisten");

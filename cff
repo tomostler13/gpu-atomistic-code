@@ -3,7 +3,7 @@ seed = 1359107107;
 system:
 {
     //number of unit cells
-    dim = [ 10 , 10 , 10 ];
+    dim = [ 1 , 1 , 1 ];
     //The unit cell file. This file gives all of the information
     //on the locations of the magnetic system
     unitcellfile="sc.test";
@@ -17,8 +17,8 @@ system:
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
-    //If not then they are ignored
-    Off_Diagonals=FALSE;
+    //If not then they are ignored.
+    Off_Diagonals=TRUE;
     //Do you want to output the unit cell info to the log file?
     log_unit_cell = TRUE;
     Periodic_Boundaries = [ FALSE , FALSE , FALSE ];

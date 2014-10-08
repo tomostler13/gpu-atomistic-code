@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 07 Oct 2014 13:15:51
+// Last-modified: 07 Oct 2014 16:45:53
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -23,7 +23,7 @@ namespace exch
 {
     unsigned int max_shells=0,diagnumdiag=0,offdiagnumdiag=0;
     Array<int> diagoffset,offdiagoffset;
-    Array<double> data;
+    Array<double> dataxx,datayy,datazz,dataxz,dataxy,datayx,datayz,datazx,datazy;
     Array3D<unsigned int> numint;
     Array2D<unsigned int> shell_list;
     Array4D<double> exchvec;
@@ -209,7 +209,6 @@ namespace exch
                             for(unsigned int shell = 0 ; shell < shell_list(sl,s1) ; shell++)
                             {
                                 unsigned int lookup[3]={kvec(sl,s1,shell,0),kvec(sl,s1,shell,1),kvec(sl,s1,shell,2)};
-                                std::cout << "The lookup vector to species " << s1 << " in shell " << shell  << " is " << lookup[0] << "," << lookup[1] << "," << lookup[2] << ", permuting vectors..." << std::endl;
                                 for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
                                 {
                                     //reference array
@@ -257,7 +256,6 @@ namespace exch
                                                         unsigned int neigh=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],0);
                                                         //in this case we have not looked it up before
 
-                                                        std::cout << lookupvec[0] << "\t" << lookupvec[1] << "\t" << lookupvec[2] << std::endl;
                                                         for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                                                         {
                                                             for(unsigned int beta = 0 ; beta < 3 ; beta++)
@@ -284,19 +282,46 @@ namespace exch
                         error::errPreamble(__FILE__,__LINE__);
                         error::errWarning("Could not close J.dat for writing interaction matrix.");
                     }
-                    //call the routine to convert the JMat to a sparse matrix format
-                    //matconv::dia_offsets(diagoffset,JMat,diagnumdiag,geom::nspins);
-                    matconv::conv_intmat_to_dia(diagoffset,JMat,diagnumdiag,geom::nspins,data);
-                    FIXOUT(config::Info,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
-                    config::openLogFile();
-                    config::printline(config::Log);
-                    FIXOUT(config::Log,"Outputting offset for diagonal part of interaction matrix:" << std::endl);
-                    config::Log << " [ ";
-                    for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
+                    if(config::offdiag==false && config::exchm==1)
                     {
-                        config::Log << diagoffset[i] << ",";
+                        //call the routine to convert the JMat to a sparse matrix format (but without including the off-diagonals)
+                        matconv::conv_intmat_to_dia(diagoffset,JMat,diagnumdiag,geom::nspins,dataxx,datayy,datazz);
+                        FIXOUT(config::Info,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
+                        config::openLogFile();
+                        config::printline(config::Log);
+                        FIXOUT(config::Log,"Outputting offset for diagonal part of interaction matrix:" << std::endl);
+                        config::Log << " [ ";
+                        for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
+                        {
+                            config::Log << diagoffset[i] << ",";
+                        }
+                        config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
                     }
-                    config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
+                    else if(config::offdiag && config::exchm==1)
+                    {
+                        matconv::conv_intmat_to_dia(diagoffset,offdiagoffset,JMat,diagnumdiag,offdiagnumdiag,geom::nspins,dataxx,dataxy,dataxz,datayx,datayy,datayz,datazx,datazy,datazz);
+                        FIXOUT(config::Log,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
+                        config::openLogFile();
+                        config::printline(config::Log);
+                        FIXOUT(config::Log,"Outputting offset for diagonal part of interaction matrix:" << std::endl);
+                        config::Log << " [ ";
+                        for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
+                        {
+                            config::Log << diagoffset[i] << ",";
+                        }
+                        config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
+                        FIXOUT(config::Log,"Total number of non-zero diagonals for the anti-symmetric part of the exchange tensor:" << offdiagnumdiag << std::endl);
+                        config::printline(config::Log);
+                        FIXOUT(config::Log,"Outputting offset for off-diagonal (antisym) part of interaction matrix:" << std::endl);
+                        config::Log << " [ ";
+                        for(unsigned int i = 0 ; i < offdiagnumdiag-1 ; i++)
+                        {
+                            config::Log << offdiagoffset[i] << ",";
+                        }
+                        config::Log << offdiagoffset[offdiagnumdiag-1] << " ] " << std::endl;
+                    }
+
+
                 }
                 else if(config::exchm==0)//add the exchange to the interaction matrix
                 {

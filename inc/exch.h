@@ -1,14 +1,14 @@
 // File: exch.h
 // Author:Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 07 Oct 2014 13:15:20
+// Last-modified: 07 Oct 2014 14:11:28
 #ifndef _EXCH_H_
 #define _EXCH_H_
 #include "../inc/arrays.h"
 namespace exch
 {
     extern Array<int> diagoffset,offdiagoffset;
-    extern Array<double> data;
+    extern Array<double> dataxx,dataxy,dataxz,datayx,datayy,datayz,datazx,datazy,datazz;
     extern Array3D<unsigned int> numint;
     extern Array4D<double> exchvec;
     extern Array4D<unsigned int> kvec;
