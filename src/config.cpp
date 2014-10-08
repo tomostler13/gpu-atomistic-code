@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 08 Oct 2014 13:28:19
+// Last-modified: 08 Oct 2014 16:26:32
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -80,7 +80,6 @@ namespace config
         libconfig::Setting &setting = cfg.lookup("system");
         setting.lookupValue("include_dipole",inc_dip);
         setting.lookupValue("Exchange_method",exchmeth);
-        std::cout << "Excnage  method read as\t" << exchmeth << std::endl;
         setting.lookupValue("Dipole_method",dipmeth);
         //read whether we want PBC's or not
         for(unsigned int i = 0 ; i < 3 ; i++)

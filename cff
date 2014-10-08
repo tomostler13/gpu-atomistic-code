@@ -3,7 +3,7 @@ seed = 1359107107;
 system:
 {
     //number of unit cells
-    dim = [ 10 , 10 , 1 ];
+    dim = [ 10 , 10 , 13 ];
     //The unit cell file. This file gives all of the information
     //on the locations of the magnetic system
     unitcellfile="sc.test";
@@ -39,7 +39,7 @@ llg:
 {
     dt = 0.25e-15;
     applied = [ 0.0 , 0.0 , 0.0 ];
-    update=1;
+    update=10;
     MagnetizationCalculationMethod=0;
 };
 cuda:

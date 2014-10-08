@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 08 Oct 2014 11:59:26
+// Last-modified: 08 Oct 2014 16:19:07
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -395,14 +395,26 @@ namespace exch
                                                     if(check(wc[0],wc[1],wc[2])==0)
                                                     {
                                                         config::Log << "Interaction Vector:  [" << owc[0] << "," << owc[1] << "," << owc[2] << "]\t -> [" << wc[0] << "," << wc[1] << "," << wc[2] << "]" << std::endl;
-                                                        //loop over the elements of the interaction tensor
+                                                        //add the diagonal components (alpha=beta)
                                                         for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                                                         {
-                                                            for(unsigned int beta = 0 ; beta < 3 ; beta++)
-                                                            {
-                                                                intmat::Nrab(s1,s2,alpha,beta,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,alpha,beta)/(geom::ucm.GetMuBase(s1)*llg::muB));
-                                                            }//end of beta loop
-                                                        }//end of alpha loop
+                                                            intmat::Nrab(s1,s2,alpha,alpha,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,alpha,alpha)/(geom::ucm.GetMuBase(s1)*llg::muB));
+                                                        }
+                                                        //do the DM (off-diagonals by hand)
+                                                        //The format of the file that is read in is in Jxx. We want in our interaction
+                                                        //matrix the DM vectors.
+                                                        // Nxy = 1/2(Jyx-Jxy)
+                                                        intmat::Nrab(s1,s2,0,1,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,1,0)-J(s1,s2,i,0,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                        // Nxz = 1/2(Jxz-Jzx)
+                                                        intmat::Nrab(s1,s2,0,2,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,0,2)-J(s1,s2,i,2,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                        // Nyx = 1/2(Jxy-Jyx)
+                                                        intmat::Nrab(s1,s2,1,0,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,0,1)-J(s1,s2,i,1,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                        // Nyz = 1/2(Jzy-Jyz)
+                                                        intmat::Nrab(s1,s2,1,2,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,2,1)-J(s1,s2,i,1,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                        // Nzx = 1/2(Jzx - Jxz)
+                                                        intmat::Nrab(s1,s2,2,0,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,2,0)-J(s1,s2,i,0,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                        // Nzy = 1/2(Jyz-Jzy)
+                                                        intmat::Nrab(s1,s2,2,1,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,1,2)-J(s1,s2,i,2,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
 
                                                         config::Log << "[ " << J(s1,s2,i,0,0) << " , " << J(s1,s2,i,0,1) << " , " << J(s1,s2,i,0,2) << " ]" << std::endl;
                                                         config::Log << "[ " << J(s1,s2,i,1,0) << " , " << J(s1,s2,i,1,1) << " , " << J(s1,s2,i,1,2) << " ]\t (Joules)" << std::endl;

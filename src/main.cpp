@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Oct 2014 14:31:56
+// Last-modified: 08 Oct 2014 16:44:04
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -86,7 +86,7 @@ int main(int argc,char *argv[])
 
         llg::T=15.0;
         int counter=0;
-        for(unsigned int t = 0 ; t < 5000000 ; t++)
+        for(unsigned int t = 0 ; t < 1000 ; t++)
         {
             if(t%spins::update==0)
             {

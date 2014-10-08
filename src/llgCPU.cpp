@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 08 Oct 2014 14:27:59
+// Last-modified: 08 Oct 2014 16:42:33
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -60,10 +60,13 @@ namespace llgCPU
         }
         else if(config::dipm==0 && config::inc_dip==true)
         {
-            fields::dipftdip();
+            if(t%spins::update==0)
+            {
+                fields::dipftdip();
+            }
         }
         //FOR DEBUGGING THE FIELD
-        if(t==0)
+        /*if(t==0)
         {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
@@ -76,6 +79,10 @@ namespace llgCPU
         if(config::exchm==1)
         {
             matmul::spmv_dia_diag(geom::nspins,exch::diagnumdiag,exch::diagoffset,exch::dataxx,exch::datayy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
+            if(config::offdiag==true)
+            {
+                matmul::spmv_dia_offdiag(geom::nspins,exch::offdiagnumdiag,exch::offdiagoffset,exch::dataxy,exch::dataxz,exch::datayx,exch::datayz,exch::datazx,exch::datazy,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
+            }
         }
         //FOR DEBUGGING THE FIELD
         /*if(t==0)
@@ -91,9 +98,9 @@ namespace llgCPU
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
 
-            fields::Hthx[i]=0.0;//sqrtT*geom::sigma[i]*Random::normal();
-            fields::Hthy[i]=0.0;//sqrtT*geom::sigma[i]*Random::normal();
-            fields::Hthz[i]=0.0;//sqrtT*geom::sigma[i]*Random::normal();
+            fields::Hthx[i]=sqrtT*geom::sigma[i]*Random::normal();
+            fields::Hthy[i]=sqrtT*geom::sigma[i]*Random::normal();
+            fields::Hthz[i]=sqrtT*geom::sigma[i]*Random::normal();
 
         }
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -128,16 +135,26 @@ namespace llgCPU
             spins::eSy[i]/=mods;
             spins::eSz[i]/=mods;
         }
+
         //perform the calculation of the 2 spin fields using the euler spin arrays
-        if(config::exchm==0 || config::dipm==0)
+        if(config::exchm==0)
         {
             fields::eftdip();
         }
+/*        else if(config::dipm==0 && config::inc_dip==true)
+        {
+            fields::dipeftdip();
+        }*/
         //then we call the DIA SpMV multiplication
         if(config::exchm==1)
         {
             matmul::spmv_dia_diag(geom::nspins,exch::diagnumdiag,exch::diagoffset,exch::dataxx,exch::datayy,exch::datazz,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
+            if(config::offdiag==true)
+            {
+                matmul::spmv_dia_offdiag(geom::nspins,exch::offdiagnumdiag,exch::offdiagoffset,exch::dataxy,exch::dataxz,exch::datayx,exch::datayz,exch::datazx,exch::datazy,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
+            }
         }
+
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
