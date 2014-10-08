@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 08 Oct 2014 09:31:41
+// Last-modified: 08 Oct 2014 13:02:34
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <string>
 #include "../inc/arrays.h"
+#include "../inc/exch.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
 #include "../inc/geom.h"
@@ -21,6 +22,7 @@
 #include "../inc/llg.h"
 #include "../inc/random.h"
 #include "../inc/anis.h"
+#include "../inc/matrix_mul_cpu.h"
 namespace llgCPU
 {
     Array<double> fnx;
@@ -59,8 +61,8 @@ namespace llgCPU
         //then we call the DIA SpMV multiplication
         if(config::exchm==1)
         {
+            matmul::spmv_dia_diag(geom::nspins,exch::diagnumdiag,exch::diagoffset,exch::dataxx,exch::datayy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
         }
-
         //FOR DEBUGGING THE FIELD
         /*if(t==0)
         {
@@ -75,9 +77,9 @@ namespace llgCPU
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
 
-            fields::Hthx[i]=sqrtT*geom::sigma[i]*Random::normal();
-            fields::Hthy[i]=sqrtT*geom::sigma[i]*Random::normal();
-            fields::Hthz[i]=sqrtT*geom::sigma[i]*Random::normal();
+            fields::Hthx[i]=0.0;//sqrtT*geom::sigma[i]*Random::normal();
+            fields::Hthy[i]=0.0;//sqrtT*geom::sigma[i]*Random::normal();
+            fields::Hthz[i]=0.0;//sqrtT*geom::sigma[i]*Random::normal();
 
         }
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -113,7 +115,15 @@ namespace llgCPU
             spins::eSz[i]/=mods;
         }
         //perform the calculation of the 2 spin fields using the euler spin arrays
-        fields::eftdip();
+        if(config::exchm==0 || config::dipm==0)
+        {
+            fields::eftdip();
+        }
+        //then we call the DIA SpMV multiplication
+        if(config::exchm==1)
+        {
+            matmul::spmv_dia_diag(geom::nspins,exch::diagnumdiag,exch::diagoffset,exch::dataxx,exch::datayy,exch::datazz,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
+        }
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};

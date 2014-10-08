@@ -1,6 +1,6 @@
 # Compilers
 SHELL:=/bin/bash
-GCC=g++  -DCOMP='"GNU C++ Compiler $(shell g++ --version | head -n 1 | cut -b 5-)"' -DHOSTNAME='"$(shell hostname)"'
+GCC=g++ -g  -DCOMP='"GNU C++ Compiler $(shell g++ --version | head -n 1 | cut -b 5-)"' -DHOSTNAME='"$(shell hostname)"'
 NVCC=nvcc  -DCOMP='"NVIDIA C++ Compiler $(shell nvcc --version | tail -n 2 | head -n 1)"' -DHOSTNAME='"$(shell hostname)"'
 GITINFO=-DGIT_SHA1='"$(shell git rev-parse HEAD)"' -DGITDIRTY='"$(shell git status -s | grep -v ? | wc -l)"'
 export LANG=C
@@ -39,7 +39,8 @@ obj/maths.o \
 obj/sim.o \
 obj/mvt.o \
 obj/suscep.o \
-obj/matrix_conv.o
+obj/matrix_conv.o \
+obj/matrix_mul_cpu.o
 
 SWITCHOBJ= \
 obj/main.o \

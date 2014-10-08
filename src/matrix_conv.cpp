@@ -1,7 +1,7 @@
 //File matrix_conv.cpp
 // Author: Tom Ostler
 // Created: 07 Oct 2014
-// Last-modified: 08 Oct 2014 09:29:55
+// Last-modified: 08 Oct 2014 11:50:15
 // The routines within this file convert a 2D matrix to
 // a number of formats depending on the routine used. The
 // return structures depend on the storage format
@@ -29,7 +29,6 @@ namespace matconv
         unsigned int dia_count=0;
         int N=static_cast<int>(nN);
         //set the number of diagonals to zero
-        std::cout << "N=" << N << std::endl;
         num_diag=0;
         for(int i = -N+1 ; i < N ; i++)
         {
@@ -79,7 +78,7 @@ namespace matconv
         //loop over the diagonals again and set the value of the offset
         for(int i = -N+1 ; i < N ; i++)
         {
-            //calculate the number of elements in the diagonal
+            //calculate the number of elements in the diagonal (that are not zero by default)
             int num_elem=0,num_zeros=0;
             if(i<=0)
             {
@@ -89,6 +88,7 @@ namespace matconv
             {
                 num_elem=static_cast<int>(N)-i;
             }
+            //so num_elem+num_zeroes = N
             num_zeros=N-num_elem;
             unsigned int istart=0,jstart=0;
             if(i<=0)
@@ -112,23 +112,24 @@ namespace matconv
                 iloop++;
                 jloop++;
             }
+            //if there was a single element in that diagonal that was greater than zero
             if(abs_J>1e-30)
             {
                 iloop=istart;
                 jloop=jstart;
-                for(unsigned int j = 0 ; j < num_elem ; j++)
+                for(int j = 0 ; j < num_elem ; j++)
                 {
                     if(i<0)
                     {
-                        dataxx[num_diag*nd+(num_zeros)+j]=JMat(iloop,jloop,0,0);
-                        datayy[num_diag*nd+(num_zeros)+j]=JMat(iloop,jloop,1,1);
-                        datazz[num_diag*nd+(num_zeros)+j]=JMat(iloop,jloop,2,2);
+                        dataxx[N*nd+num_zeros+j]=JMat(iloop,jloop,0,0);
+                        datayy[N*nd+num_zeros+j]=JMat(iloop,jloop,1,1);
+                        datazz[N*nd+num_zeros+j]=JMat(iloop,jloop,2,2);
                     }
                     else
                     {
-                        dataxx[num_diag*nd+j]=JMat(iloop,jloop,0,0);
-                        datayy[num_diag*nd+j]=JMat(iloop,jloop,1,1);
-                        datazz[num_diag*nd+j]=JMat(iloop,jloop,2,2);
+                        dataxx[N*nd+j]=JMat(iloop,jloop,0,0);
+                        datayy[N*nd+j]=JMat(iloop,jloop,1,1);
+                        datazz[N*nd+j]=JMat(iloop,jloop,2,2);
                     }
                     iloop++;
                     jloop++;
@@ -138,17 +139,17 @@ namespace matconv
             }
         }
         //for debugging the data array
-        /*
-        for(unsigned int i = 0 ; i < num_diag ; i++)
+/*        for(int i = 0 ; i < num_diag ; i++)
         {
             int os=offset[i];
             std::cout << "Offset " << i << " is " << os << std::endl;
-            for(unsigned int j = 0 ; j < N ; j++)
+            for(int j = 0 ; j < N ; j++)
             {
-                std::cout << j << "\t" << data[i*num_diag+j] << std::endl;
+                std::cout << j << "\t" << i*num_diag+j << "\t" << datazz[i*num_diag+j] << std::endl;
             }
             std::cin.get();
         }*/
+
         if(nd!=num_diag)
         {
             error::errPreamble(__FILE__,__LINE__);
@@ -300,21 +301,21 @@ namespace matconv
                 {
                     if(i<0)
                     {
-                        dataxy[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,0,1);
-                        dataxz[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,0,2);
-                        datayx[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,1,0);
-                        datayz[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,1,2);
-                        datazx[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,2,0);
-                        datazy[num_diag*nod+(num_zeros)+j]=JMat(iloop,jloop,2,1);
+                        dataxy[N*nod+(num_zeros)+j]=JMat(iloop,jloop,0,1);
+                        dataxz[N*nod+(num_zeros)+j]=JMat(iloop,jloop,0,2);
+                        datayx[N*nod+(num_zeros)+j]=JMat(iloop,jloop,1,0);
+                        datayz[N*nod+(num_zeros)+j]=JMat(iloop,jloop,1,2);
+                        datazx[N*nod+(num_zeros)+j]=JMat(iloop,jloop,2,0);
+                        datazy[N*nod+(num_zeros)+j]=JMat(iloop,jloop,2,1);
                     }
                     else
                     {
-                        dataxy[num_diag*nod+j]=JMat(iloop,jloop,0,1);
-                        dataxz[num_diag*nod+j]=JMat(iloop,jloop,0,2);
-                        datayx[num_diag*nod+j]=JMat(iloop,jloop,1,0);
-                        datayz[num_diag*nod+j]=JMat(iloop,jloop,1,2);
-                        datazx[num_diag*nod+j]=JMat(iloop,jloop,2,0);
-                        datazy[num_diag*nod+j]=JMat(iloop,jloop,2,1);
+                        dataxy[N*nod+j]=JMat(iloop,jloop,0,1);
+                        dataxz[N*nod+j]=JMat(iloop,jloop,0,2);
+                        datayx[N*nod+j]=JMat(iloop,jloop,1,0);
+                        datayz[N*nod+j]=JMat(iloop,jloop,1,2);
+                        datazx[N*nod+j]=JMat(iloop,jloop,2,0);
+                        datazy[N*nod+j]=JMat(iloop,jloop,2,1);
                     }
                     iloop++;
                     jloop++;

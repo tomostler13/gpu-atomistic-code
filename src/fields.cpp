@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 08 Oct 2014 09:09:32
+// Last-modified: 08 Oct 2014 13:01:07
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -58,8 +58,9 @@ namespace fields
             FIXOUT(config::Log,"odist = " << odist << std::endl);
             FIXOUT(config::Log,"Direction (sign) = " << "FFTW_BACKWARD" << std::endl);
             FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
-            HP = fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*3,Hk.ptr(),inembed,istride,idist,Hr.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_PATIENT);
+            HP = fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*3,Hk.ptr(),inembed,istride,idist,Hr.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_ESTIMATE);
         }
+//        std::cout << "Resizing field arrays to
         Hx.resize(geom::nspins);
         Hy.resize(geom::nspins);
         Hz.resize(geom::nspins);

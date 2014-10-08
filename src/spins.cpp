@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 08 Oct 2014 09:11:11
+// Last-modified: 08 Oct 2014 13:00:56
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -85,7 +85,7 @@ namespace spins
             FIXOUT(config::Log,"odist = " << odist << std::endl);
             FIXOUT(config::Log,"Direction (sign) " << FFTW_FORWARD << std::endl);
             FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
-            SP = fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*3,Sr.ptr(),inembed,istride,idist,Sk.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
+            SP = fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*3,Sr.ptr(),inembed,istride,idist,Sk.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_ESTIMATE);
             //forward transform of spin arrays
             SUCCESS(config::Info);
         }

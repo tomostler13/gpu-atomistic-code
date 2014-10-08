@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Oct 2014 09:08:03
+// Last-modified: 08 Oct 2014 12:10:55
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -73,7 +73,6 @@ int main(int argc,char *argv[])
         int counter=0;
         for(unsigned int t = 0 ; t < 5000000 ; t++)
         {
-            llg::integrate(t);
             if(t%spins::update==0)
             {
                 if(counter%10==0)
@@ -89,6 +88,8 @@ int main(int argc,char *argv[])
                 }
                 std::cout << std::endl;
             }
+
+            llg::integrate(t);
         }
     }
     return(0);

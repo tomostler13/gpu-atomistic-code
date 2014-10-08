@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 07 Oct 2014 16:45:53
+// Last-modified: 08 Oct 2014 11:59:26
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -195,9 +195,11 @@ namespace exch
                     {
                         //what is my species (or sublattice)
                         unsigned sl=geom::sublattice(i);
+                        //find my atom number in the unit cell so that
+                        //we can lookup the moment from the unit cell info
+                        unsigned int aiuc=geom::lu(i,4);
                         //store atom i's position
                         int mypos[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-                        std::cout << "Atom " << i << " is species " << sl << " located at " << mypos[0] << "," << mypos[1] << "," << mypos[2] << std::endl;
 
                         Array3D<unsigned int> check;
                         check.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
@@ -260,10 +262,10 @@ namespace exch
                                                         {
                                                             for(unsigned int beta = 0 ; beta < 3 ; beta++)
                                                             {
-                                                                JMat(i,neigh,alpha,beta)=J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(spec)*llg::muB);
+                                                                JMat(i,neigh,alpha,beta)=J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(aiuc)*llg::muB);
                                                             }
                                                         }
-                                                        opJ << i << "\t" << neigh << std::endl;
+                                                        opJ << i << "\t" << neigh << "\t" << JMat(i,neigh,0,0) << std::endl;
                                                         check(lookupvec[0],lookupvec[1],lookupvec[2])=1;//this should mean that we no longer look for a neighbour here to avoid double addition of exchange
                                                     }
                                                 }
