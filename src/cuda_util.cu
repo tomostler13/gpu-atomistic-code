@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 09 Oct 2014 13:02:24
+// Last-modified: 09 Oct 2014 14:18:32
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -48,131 +48,135 @@ namespace cullg
         int ostride=1;
         int idist=geom::zps;
         int odist=geom::zps;
-        config::openLogFile();
-        config::printline(config::Log);
-        FIXOUT(config::Log,"Parameters entering into CUFFT plan of the spin arrays (forward)" << std::endl);
-        FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
-        FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
-        int howmany=0;
-        if(config::exchm==0)
+        if(config::exchm==0 || (config::dipm==0 && config::inc_dip==true))
         {
-            howmany=geom::ucm.GetNMS()*3;
-        }
-        else if(config::exchm>0 && config::dipm==0 && config::inc_dip)
-        {
-            howmany=3;
-        }
-        FIXOUT(config::Log,"How many (FFT's) = " << howmany << std::endl);
-        FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],inembed[2]);
-        FIXOUT(config::Log,"istride = " << istride << std::endl);
-        FIXOUT(config::Log,"idist = " << idist << std::endl);
-        FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
-        FIXOUT(config::Log,"ostride = " << ostride << std::endl);
-        FIXOUT(config::Log,"odist = " << odist << std::endl);
-        FIXOUT(config::Log,"Direction (sign) = " << "CUFFT_FORWARD" << std::endl);
-        if(cufftPlanMany(&SPc2c,3,n,inembed,istride,idist,onembed,ostride,odist,CUFFT_C2C,howmany)!=CUFFT_SUCCESS)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("CUFFT 3D plan creation failed");
-        }
-        else
-        {
-            FIXOUT(config::Log,"CUFFT returned success");
-        }
-        config::printline(config::Log);
-        FIXOUT(config::Log,"Parameters entering into CUFFT plan of the field arrays (inverse)" << std::endl);
-        FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
-        FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
-        FIXOUT(config::Log,"How many (FFT's) = " << howmany << std::endl);
-        FIXOUTVEC(config::Log,"inembed = ",onembed[0],onembed[1],onembed[2]);
-        FIXOUT(config::Log,"istride = " << ostride << std::endl);
-        FIXOUT(config::Log,"idist = " << odist << std::endl);
-        FIXOUTVEC(config::Log,"onembed = ",inembed[0],inembed[1],inembed[2]);
-        FIXOUT(config::Log,"ostride = " << istride << std::endl);
-        FIXOUT(config::Log,"odist = " << idist << std::endl);
-        FIXOUT(config::Log,"Direction (sign) = " << "CUFFT_INVERSE" << std::endl);
-        if(cufftPlanMany(&FPc2c,3,n,onembed,ostride,odist,inembed,istride,idist,CUFFT_C2C,howmany)!=CUFFT_SUCCESS)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("CUFFT 3D plan creation failed");
-        }
-        else
-        {
-            FIXOUT(config::Log,"CUFFT returned success");
-        }
 
-        //At this point we can copy the interaction matrix from the CPU
-        //as there is no need to do the determination of the interaction
-        //matrix on the card.
-        //declare a holder on the heap
-        if(config::exchm==0)
-        {
-            Array7D<fftwf_complex> tempNkab;
-            tempNkab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-            for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
+            config::openLogFile();
+            config::printline(config::Log);
+            FIXOUT(config::Log,"Parameters entering into CUFFT plan of the spin arrays (forward)" << std::endl);
+            FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
+            FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
+            int howmany=0;
+            if(config::exchm==0)
             {
-                for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
-                {
-                    for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
-                    {
-                        for(unsigned int beta = 0 ; beta < 3 ; beta++)
-                        {
-                            for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
-                            {
-                                for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
-                                {
-                                    for(unsigned int k = 0 ; k < geom::zpdim[1]*geom::Nk[2] ; k++)
-                                    {
-                                        for(unsigned int l = 0 ; l < 2 ; l++)
-                                        {
-                                            tempNkab(s1,s2,alpha,beta,i,j,k)[l]=static_cast<float>(intmat::Nkab(s1,s2,alpha,beta,i,j,k)[l]);
-                                        }
+                howmany=geom::ucm.GetNMS()*3;
+            }
+            else if(config::exchm>0 && config::dipm==0 && config::inc_dip)
+            {
+                howmany=3;
+            }
+            FIXOUT(config::Log,"How many (FFT's) = " << howmany << std::endl);
+            FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],inembed[2]);
+            FIXOUT(config::Log,"istride = " << istride << std::endl);
+            FIXOUT(config::Log,"idist = " << idist << std::endl);
+            FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
+            FIXOUT(config::Log,"ostride = " << ostride << std::endl);
+            FIXOUT(config::Log,"odist = " << odist << std::endl);
+            FIXOUT(config::Log,"Direction (sign) = " << "CUFFT_FORWARD" << std::endl);
+            if(cufftPlanMany(&SPc2c,3,n,inembed,istride,idist,onembed,ostride,odist,CUFFT_C2C,howmany)!=CUFFT_SUCCESS)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("CUFFT 3D plan creation failed");
+            }
+            else
+            {
+                FIXOUT(config::Log,"CUFFT returned success");
+            }
+            config::printline(config::Log);
+            FIXOUT(config::Log,"Parameters entering into CUFFT plan of the field arrays (inverse)" << std::endl);
+            FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
+            FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
+            FIXOUT(config::Log,"How many (FFT's) = " << howmany << std::endl);
+            FIXOUTVEC(config::Log,"inembed = ",onembed[0],onembed[1],onembed[2]);
+            FIXOUT(config::Log,"istride = " << ostride << std::endl);
+            FIXOUT(config::Log,"idist = " << odist << std::endl);
+            FIXOUTVEC(config::Log,"onembed = ",inembed[0],inembed[1],inembed[2]);
+            FIXOUT(config::Log,"ostride = " << istride << std::endl);
+            FIXOUT(config::Log,"odist = " << idist << std::endl);
+            FIXOUT(config::Log,"Direction (sign) = " << "CUFFT_INVERSE" << std::endl);
+            if(cufftPlanMany(&FPc2c,3,n,onembed,ostride,odist,inembed,istride,idist,CUFFT_C2C,howmany)!=CUFFT_SUCCESS)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("CUFFT 3D plan creation failed");
+            }
+            else
+            {
+                FIXOUT(config::Log,"CUFFT returned success");
+            }
 
+            //At this point we can copy the interaction matrix from the CPU
+            //as there is no need to do the determination of the interaction
+            //matrix on the card.
+            //declare a holder on the heap
+            if(config::exchm==0)
+            {
+                Array7D<fftwf_complex> tempNkab;
+                tempNkab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+                for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
+                {
+                    for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
+                    {
+                        for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                        {
+                            for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                            {
+                                for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+                                {
+                                    for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+                                    {
+                                        for(unsigned int k = 0 ; k < geom::zpdim[1]*geom::Nk[2] ; k++)
+                                        {
+                                            for(unsigned int l = 0 ; l < 2 ; l++)
+                                            {
+                                                tempNkab(s1,s2,alpha,beta,i,j,k)[l]=static_cast<float>(intmat::Nkab(s1,s2,alpha,beta,i,j,k)[l]);
+                                            }
+
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
-            //copy the FT'd interaction matrix to the card
-            CUDA_CALL(cudaMemcpy(CNk,tempNkab.ptr(),geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zpdim[0]*geom::zpdim[1]*geom::zpdim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2]*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-            intmat::Nkab.clear();
-            //clear the floating point holding arrays as well
-            tempNkab.clear();
-            check_cuda_errors(__FILE__,__LINE__);
+                //copy the FT'd interaction matrix to the card
+                CUDA_CALL(cudaMemcpy(CNk,tempNkab.ptr(),geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3*geom::zpdim[0]*geom::zpdim[1]*geom::zpdim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2]*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+                intmat::Nkab.clear();
+                //clear the floating point holding arrays as well
+                tempNkab.clear();
+                check_cuda_errors(__FILE__,__LINE__);
 
-        }
-        else if(config::exchm>0 && config::dipm==0 && config::inc_dip==true)
-        {
-            Array5D<fftwf_complex> tempNkab;
-            tempNkab.resize(3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-            for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+            }
+            else if(config::exchm>0 && config::dipm==0 && config::inc_dip==true)
             {
-                for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                Array5D<fftwf_complex> tempNkab;
+                tempNkab.resize(3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+                for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                 {
-                    for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+                    for(unsigned int beta = 0 ; beta < 3 ; beta++)
                     {
-                        for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+                        for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
                         {
-                            for(unsigned int k = 0 ; k < geom::zpdim[1]*geom::Nk[2] ; k++)
+                            for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
                             {
-                                for(unsigned int l = 0 ; l < 2 ; l++)
+                                for(unsigned int k = 0 ; k < geom::zpdim[1]*geom::Nk[2] ; k++)
                                 {
-                                    tempNkab(alpha,beta,i,j,k)[l]=static_cast<float>(intmat::dipNkab(alpha,beta,i,j,k)[l]);
+                                    for(unsigned int l = 0 ; l < 2 ; l++)
+                                    {
+                                        tempNkab(alpha,beta,i,j,k)[l]=static_cast<float>(intmat::dipNkab(alpha,beta,i,j,k)[l]);
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            //copy the FT'd interaction matrix to the card
-            CUDA_CALL(cudaMemcpy(CNk,tempNkab.ptr(),3*3*geom::zpdim[0]*geom::zpdim[1]*geom::zpdim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2]*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-            intmat::dipNkab.clear();
-            //clear the floating point holding arrays as well
-            tempNkab.clear();
-            check_cuda_errors(__FILE__,__LINE__);
+                //copy the FT'd interaction matrix to the card
+                CUDA_CALL(cudaMemcpy(CNk,tempNkab.ptr(),3*3*geom::zpdim[0]*geom::zpdim[1]*geom::zpdim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2]*sizeof(cufftComplex),cudaMemcpyHostToDevice));
+                intmat::dipNkab.clear();
+                //clear the floating point holding arrays as well
+                tempNkab.clear();
+                check_cuda_errors(__FILE__,__LINE__);
 
+            }
         }
 
     }
@@ -236,16 +240,18 @@ namespace cullg
             CUDA_CALL(cudaMalloc((void**)&CHr,geom::ucm.GetNMS()*3*geom::zps*sizeof(cufftComplex)));
             CUDA_CALL(cudaMalloc((void**)&Cspec,geom::nspins*sizeof(unsigned int)));
         }
-        else if(config::exchm>0 && config::dipm==0 && config::inc_dip==true)
+        else if(config::exchm>0)
         {
-            CUDA_CALL(cudaMalloc((void**)&CNk,3*3*geom::zps*sizeof(cufftComplex)));
-            CUDA_CALL(cudaMalloc((void**)&CSk,3*geom::zps*sizeof(cufftComplex)));
-            CUDA_CALL(cudaMalloc((void**)&CSr,3*geom::zps*sizeof(cufftComplex)));
-            CUDA_CALL(cudaMalloc((void**)&CHk,3*geom::zps*sizeof(cufftComplex)));
-            CUDA_CALL(cudaMalloc((void**)&CHr,3*geom::zps*sizeof(cufftComplex)));
+            if(config::inc_dip==true && config::dipm==0)
+            {
+                CUDA_CALL(cudaMalloc((void**)&CNk,3*3*geom::zps*sizeof(cufftComplex)));
+                CUDA_CALL(cudaMalloc((void**)&CSk,3*geom::zps*sizeof(cufftComplex)));
+                CUDA_CALL(cudaMalloc((void**)&CSr,3*geom::zps*sizeof(cufftComplex)));
+                CUDA_CALL(cudaMalloc((void**)&CHk,3*geom::zps*sizeof(cufftComplex)));
+                CUDA_CALL(cudaMalloc((void**)&CHr,3*geom::zps*sizeof(cufftComplex)));
+                CUDA_CALL(cudaMalloc((void**)&Cmagmom,geom::nspins*sizeof(float)));
+            }
 
-            CUDA_CALL(cudaMalloc((void**)&CHDemag,3*geom::nspins*sizeof(float)));
-            CUDA_CALL(cudaMalloc((void**)&Cmagmom,geom::nspins*sizeof(float)));
             if(config::exchm==1)//DIA
             {
                 CUDA_CALL(cudaMalloc((void**)&Cdiagoffset,exch::diagoffset.size()*sizeof(int)));
@@ -311,6 +317,8 @@ namespace cullg
                 }
             }
         }
+
+        CUDA_CALL(cudaMalloc((void**)&CHDemag,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Crand,3*geom::nspins*sizeof(float)));
@@ -373,6 +381,7 @@ namespace cullg
         CUDA_CALL(cudaMemcpy(Cspin,tnsda,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         //zero the field array
         for(unsigned int i = 0 ; i < 3*geom::nspins ; i++){tnsfa[i]=0.0;}CUDA_CALL(cudaMemcpy(CH,tnsfa,3*geom::nspins*sizeof(float),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CHDemag,tnsfa,3*geom::nspins*sizeof(float),cudaMemcpyHostToDevice));
 
         if(config::exchm==0)
         {

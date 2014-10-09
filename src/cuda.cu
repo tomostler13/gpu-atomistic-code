@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 09 Oct 2014 13:03:46
+// Last-modified: 09 Oct 2014 14:15:20
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -77,8 +77,21 @@ namespace cullg
             }
 
         }
+        else if(config::exchm>0 && config::inc_dip==false)
+        {
+            if(config::exchm==1)//DIA
+            {
+        check_cuda_errors(__FILE__,__LINE__);
+                cufields::CSpVM_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
+        check_cuda_errors(__FILE__,__LINE__);
+                if(config::offdiag)
+                {
+
+                }
+            }
+        }
         //FOR DEBUGGING THE DIPOLAR FIELD/
-        float temp1[3*geom::nspins];
+        /*float temp1[3*geom::nspins];
         CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
@@ -87,20 +100,52 @@ namespace cullg
 
         }
         exit(0);
-        
-
+        */
+        check_cuda_errors(__FILE__,__LINE__);
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
         cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
-        cufields::CCopySpin<<<zpblockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cspec);
-        //forward transform
-        spins_forward();
-        //perform convolution
-        cufields::CFConv<<<zpblockspergrid,threadsperblock>>>(geom::czps,geom::ucm.GetNMS(),CNk,CHk,CSk);
-        //transform the fields back
-        fields_back();
-        //copy the fields from the zero padded array to the demag field array
-        cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,CHr,Ckx,Cky,Ckz,Cspec);
+        //in this case we are using the interaction matrix for both the exchange and the
+        //dipole-dipole field so we might aswell update both at once
+        if(config::exchm==0)
+        {
+//            cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr,CHk,CSk);
+            //copy the spin data to the zero padded arrays
+            cufields::CCopySpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cespin,CSr,Ckx,Cky,Ckz,Cspec);
+            //forward transform
+            spins_forward();
+            //perform convolution
+            cufields::CFConv<<<zpblockspergrid,threadsperblock>>>(geom::zps,geom::ucm.GetNMS(),CNk,CHk,CSk);
+            //transform the fields back
+            fields_back();
+            //copy the fields from the zero padded array to the demag field array
+            cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,CHr,Ckx,Cky,Ckz,Cspec);
+        }
+        else if(config::exchm>0 && config::dipm==0 && config::inc_dip==true)
+        {
+            //we don't want to update the dipole field here
+            if(config::exchm==1)//DIA
+            {
+                cufields::CSpVM_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
+                if(config::offdiag)
+                {
+
+                }
+            }
+
+        }
+        else if(config::exchm>0 && config::inc_dip==false)
+        {
+            if(config::exchm==1)//DIA
+            {
+                cufields::CSpVM_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
+                if(config::offdiag)
+                {
+
+                }
+            }
+        }
+//        std::cin.get();
 
         cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
         if(t%spins::update==0)
@@ -189,7 +234,7 @@ namespace cullg
         {
             rsarzpblockspergrid=(geom::zps*3*geom::ucm.GetNMS()+threadsperblock-1)/threadsperblock;
         }
-        else if(config::exchm>0 &&config::dipm==0 && config::inc_dip==true)
+        else if(config::exchm>0)
         {
             rsarzpblockspergrid=(geom::zps*3+threadsperblock-1)/threadsperblock;
         }

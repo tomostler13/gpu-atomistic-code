@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Oct 2014 13:19:06
+// Last-modified: 09 Oct 2014 13:28:01
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -110,7 +110,7 @@ int main(int argc,char *argv[])
             llg::integrate(t);
         }
         time_t nowe=time(0);
-        char *dtimee=ctime(&now);
+        char *dtimee=ctime(&nowe);
         std::cout << "#End time:\t" << dtimee << std::endl;
     }
     return(0);

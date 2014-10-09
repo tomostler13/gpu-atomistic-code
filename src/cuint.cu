@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 03 Oct 2014 16:30:18
+// Last-modified: 09 Oct 2014 14:19:33
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -121,7 +121,10 @@ namespace cuint
             for(unsigned int j = 0 ; j < 3 ; j++)
             {
                 Cspin[3*i+j]=ps[j]*nf;
+                CH[3*i+j]=0.0;
             }
+            //zero the CH array here
+
 
         }
     }
