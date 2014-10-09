@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 08 Oct 2014 16:42:33
+// Last-modified: 09 Oct 2014 13:05:31
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -85,7 +85,7 @@ namespace llgCPU
             }
         }
         //FOR DEBUGGING THE FIELD
-        /*if(t==0)
+        if(t==0)
         {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {

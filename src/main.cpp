@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Oct 2014 16:44:04
+// Last-modified: 09 Oct 2014 13:13:53
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -50,7 +50,7 @@ int main(int argc,char *argv[])
         intmat::fillDipIntmat();
     }
     //Read in the exchange matrix
-    //exch::initExch(argc,argv);
+    exch::initExch(argc,argv);
 
     //Now we have all of the terms in our interaction matrix, fourier transform the result
     if(config::dipm==0 && config::exchm==0)
@@ -84,9 +84,15 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="quick")
     {
 
-        llg::T=15.0;
+        llg::T=1e-27;
         int counter=0;
-        for(unsigned int t = 0 ; t < 1000 ; t++)
+        time_t t = time(0);   // get time now
+        struct tm * now = localtime( & t );
+        std::cout << (now->tm_year + 1900) << '-'
+            << (now->tm_mon + 1) << '-'
+            <<  now->tm_mday
+            << std::endl;
+        for(unsigned int t = 0 ; t < 10000 ; t++)
         {
             if(t%spins::update==0)
             {

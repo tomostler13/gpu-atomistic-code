@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 03 Oct 2014 16:26:59
+// Last-modified: 09 Oct 2014 10:55:05
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -28,9 +28,14 @@ namespace cullg
     extern unsigned int *Ckx,*Cky,*Ckz,*Cspec;
     //device pointers for Fourier space calculations
     extern  cufftComplex *CNk,*CSk,*CSr,*CHk,*CHr;
+    //offsets for the DIA sparse matrix multiplication
+    extern int *Cdiagoffset,*Coffdiagoffset;
+    //exchange tensor in DIA format
+    extern float *Cdxx,*Cdyy,*Cdzz;
+    extern float *Cdxy,*Cdxz,*Cdyx,*Cdyz,*Cdzx,*Cdzy;
 
     //device pointers
-    extern  float *Crand,*CH;
+    extern  float *Crand,*CH,*CHDemag,*Cmagmom;
     extern  double *Cfn,*Csigma,*Clambda,*Cllgpf,*Cspin,*Cespin,*Ck1u,*Ck1udir;
     //cufft plans
     extern cufftHandle SPc2c,FPc2c;

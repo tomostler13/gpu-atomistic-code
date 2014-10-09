@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 08 Oct 2014 13:38:48
+// Last-modified: 09 Oct 2014 13:03:46
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -36,12 +36,9 @@ namespace cullg
     {
         //in this case we are using the interaction matrix for both the exchange and the
         //dipole-dipole field so we might aswell update both at once
-        if(config::summ==0)
+        if(config::exchm==0)
         {
-
             cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr,CHk,CSk);
-
-
             //copy the spin data to the zero padded arrays
             cufields::CCopySpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cspec);
             //forward transform
@@ -53,12 +50,35 @@ namespace cullg
             //copy the fields from the zero padded array to the demag field array
             cufields::CCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CH,CHr,Ckx,Cky,Ckz,Cspec);
         }
-        else if(config::dipm==0 && config::inc_dip==true)
+        else if(config::exchm>0 && config::dipm==0 && config::inc_dip==true)
         {
-            
+            //calculate the demag field once per spins::update steps and store in CHDemag. This way when we do the
+            //matrix multiplication we just add the exchange field to the demag part.
+            if(t%spins::update==0)
+            {
+                cufields::CZero4DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3,CHr,CSr,CHk,CSk);
+                //copy the spin data to the zero padded arrays
+                cufields::CdipCopySpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cmagmom);
+                //copy the fields from the zero padded array to the demag field array
+                cufields::CdipCopyFields<<<zpblockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CHDemag,CHr,Ckx,Cky,Ckz);
+                //forward transform
+                spins_forward();
+                cufields::CdipFConv<<<zpblockspergrid,threadsperblock>>>(geom::zps,CNk,CHk,CSk);
+                fields_back();
+                cufields::CdipCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CHDemag,CHr,Ckx,Cky,Ckz);
+            }
+            if(config::exchm==1)//DIA
+            {
+                cufields::CSpVM_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
+                if(config::offdiag)
+                {
+
+                }
+            }
+
         }
         //FOR DEBUGGING THE DIPOLAR FIELD/
-        /*float temp1[3*geom::nspins];
+        float temp1[3*geom::nspins];
         CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
@@ -67,7 +87,7 @@ namespace cullg
 
         }
         exit(0);
-        */
+        
 
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
@@ -165,7 +185,14 @@ namespace cullg
         zpblockspergrid=(geom::zps+threadsperblock-1)/threadsperblock;
         //This is the number of block per grid for addressing the elements of the real space
         //spin and field arrays (dimensions: NUMSPEC x 3 x ZPDIM[0] x ZPDIM[1] x ZPDIM[2]
-        rsarzpblockspergrid=(geom::zps*3*geom::ucm.GetNMS()+threadsperblock-1)/threadsperblock;
+        if(config::exchm==0)
+        {
+            rsarzpblockspergrid=(geom::zps*3*geom::ucm.GetNMS()+threadsperblock-1)/threadsperblock;
+        }
+        else if(config::exchm>0 &&config::dipm==0 && config::inc_dip==true)
+        {
+            rsarzpblockspergrid=(geom::zps*3+threadsperblock-1)/threadsperblock;
+        }
         //Same as the rsarzpblockspergrid but with the ZPDIM[2] dimension now replaced with the (ZPDIM[2]+1)/2
         FIXOUT(config::Info,"Blocks per grid:" << blockspergrid << std::endl);
         FIXOUT(config::Info,"Blocks per grid for zero pad workspace:" << zpblockspergrid << std::endl);

@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 08 Oct 2014 16:19:07
+// Last-modified: 09 Oct 2014 12:36:11
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -327,7 +327,6 @@ namespace exch
                 }
                 else if(config::exchm==0)//add the exchange to the interaction matrix
                 {
-
                     //check if we have a single layer of atoms in any dimension
                     bool checkmonolayer[3]={false,false,false};
                     for(unsigned int xyz = 0 ; xyz < 3; xyz++)
