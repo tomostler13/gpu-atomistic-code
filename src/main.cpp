@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Oct 2014 13:13:53
+// Last-modified: 09 Oct 2014 13:19:06
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -86,12 +86,9 @@ int main(int argc,char *argv[])
 
         llg::T=1e-27;
         int counter=0;
-        time_t t = time(0);   // get time now
-        struct tm * now = localtime( & t );
-        std::cout << (now->tm_year + 1900) << '-'
-            << (now->tm_mon + 1) << '-'
-            <<  now->tm_mday
-            << std::endl;
+        time_t now = time(0);
+        char *dtime=ctime(&now);
+        std::cout << "#Start time:\t" << dtime << std::endl;
         for(unsigned int t = 0 ; t < 10000 ; t++)
         {
             if(t%spins::update==0)
@@ -112,6 +109,9 @@ int main(int argc,char *argv[])
 
             llg::integrate(t);
         }
+        time_t nowe=time(0);
+        char *dtimee=ctime(&now);
+        std::cout << "#End time:\t" << dtimee << std::endl;
     }
     return(0);
 }
