@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 09 Oct 2014 12:36:11
+// Last-modified: 09 Oct 2014 17:09:35
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -23,6 +23,7 @@ namespace exch
 {
     unsigned int max_shells=0,diagnumdiag=0,offdiagnumdiag=0;
     Array<int> diagoffset,offdiagoffset;
+    Array<unsigned int> xadj,adjncy;
     Array<double> dataxx,datayy,datazz,dataxz,dataxy,datayx,datayz,datazx,datazy;
     Array3D<unsigned int> numint;
     Array2D<unsigned int> shell_list;
@@ -190,9 +191,24 @@ namespace exch
                     }
                     JMat.resize(geom::nspins,geom::nspins,3,3);
                     JMat.IFill(0);
+                    //temporary arrays in format to store the adjncy as we don't know
+                    //how big it is before hand
+                    std::vector<unsigned int> tadjncy;
+                    std::vector< std::vector< std::vector< double > > > tdata;
+                    tdata.resize(3);
+                    tdata[0].resize(3);
+                    tdata[1].resize(3);
+                    tdata[2].resize(3);
+                    unsigned int adjcount=0;
+                    xadj.resize(geom::nspins+1);
+                    xadj.IFill(0);
+                    xadj[0]=0;
+                    unsigned int xadj_counter=0,adjncy_counter=0;
+
                     //loop over the spins and find the neighbours
                     for(unsigned int i = 0 ; i < geom::nspins ; i++)
                     {
+                        xadj[xadj_counter]=adjncy_counter;
                         //what is my species (or sublattice)
                         unsigned sl=geom::sublattice(i);
                         //find my atom number in the unit cell so that
@@ -258,11 +274,21 @@ namespace exch
                                                         unsigned int neigh=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],0);
                                                         //in this case we have not looked it up before
 
+
+
+                                                        //This is the adjncy (neighbour lookup) in the CSR format
+                                                        tadjncy.push_back(neigh);
+                                                        //std::cout << tadjncy[adjncy_counter] << std::endl;
+                                                        //std::cin.get();
+                                                        tadjncy[adjncy_counter]=neigh;
+                                                        adjncy_counter++;
                                                         for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                                                         {
                                                             for(unsigned int beta = 0 ; beta < 3 ; beta++)
                                                             {
+                                                                tdata[alpha][beta].push_back(J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(aiuc)*llg::muB));
                                                                 JMat(i,neigh,alpha,beta)=J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(aiuc)*llg::muB);
+
                                                             }
                                                         }
                                                         opJ << i << "\t" << neigh << "\t" << JMat(i,neigh,0,0) << std::endl;
@@ -277,27 +303,60 @@ namespace exch
                                 }
                             }
                         }
+
+                        xadj_counter++;
                     }
+                    xadj[geom::nspins]=adjncy_counter;
+
                     opJ.close();
                     if(opJ.is_open())
                     {
                         error::errPreamble(__FILE__,__LINE__);
                         error::errWarning("Could not close J.dat for writing interaction matrix.");
                     }
-                    if(config::offdiag==false && config::exchm==1)
+                    if(config::offdiag==false)
                     {
-                        //call the routine to convert the JMat to a sparse matrix format (but without including the off-diagonals)
-                        matconv::conv_intmat_to_dia(diagoffset,JMat,diagnumdiag,geom::nspins,dataxx,datayy,datazz);
-                        FIXOUT(config::Info,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
-                        config::openLogFile();
-                        config::printline(config::Log);
-                        FIXOUT(config::Log,"Outputting offset for diagonal part of interaction matrix:" << std::endl);
-                        config::Log << " [ ";
-                        for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
+                        if(config::exchm==1)
                         {
-                            config::Log << diagoffset[i] << ",";
+                            //call the routine to convert the JMat to a sparse matrix format (but without including the off-diagonals)
+                            matconv::conv_intmat_to_dia(diagoffset,JMat,diagnumdiag,geom::nspins,dataxx,datayy,datazz);
+                            FIXOUT(config::Info,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
+                            config::openLogFile();
+                            config::printline(config::Log);
+                            FIXOUT(config::Log,"Outputting offset for diagonal part of interaction matrix:" << std::endl);
+                            config::Log << " [ ";
+                            for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
+                            {
+                                config::Log << diagoffset[i] << ",";
+                            }
+                            config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
                         }
-                        config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
+                        else if(config::exchm==2)
+                        {
+                            adjncy.resize(adjncy_counter);
+                            dataxx.resize(adjncy_counter);
+                            datayy.resize(adjncy_counter);
+                            datazz.resize(adjncy_counter);
+                            for(unsigned int i = 0 ; i < adjncy_counter ; i++)
+                            {
+                                adjncy[i]=tadjncy[i];
+                                dataxx[i]=tdata[0][0][i];
+                                datayy[i]=tdata[1][1][i];
+                                datazz[i]=tdata[2][2][i];
+                            }
+                            FIXOUT(config::Info,"Size of xadj (CSR offsets):\t" << xadj.size() << std::endl);
+                            FIXOUT(config::Info,"Size of adjncy (CSR list):\t" << adjncy.size() << std::endl);
+                            //For debugging the CSR neighbour list
+                            /*for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                            {
+                                std::cout << "Atom " << i << " has neighbours" << std::endl;
+                                for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
+                                {
+                                    std::cout << adjncy[j] << "\t" << dataxx[j] << "\t" << std::flush;
+                                }
+                                std::cout << std::endl;
+                            }*/
+                        }
                     }
                     else if(config::offdiag && config::exchm==1)
                     {

@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 08 Oct 2014 16:26:32
+// Last-modified: 09 Oct 2014 16:49:07
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -100,8 +100,7 @@ namespace config
         }
         else if(exchmeth=="CSR")
         {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("CSR Coming soon");
+            exchm=2;
         }
         else
         {
