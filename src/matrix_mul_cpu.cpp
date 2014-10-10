@@ -1,7 +1,7 @@
 //File matrix_mul_cpu.cpp
 // Author: Tom Ostler
 // Created: 08 Oct 2014
-// Last-modified: 08 Oct 2014 16:24:12
+// Last-modified: 10 Oct 2014 10:54:29
 #include "../inc/arrays.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -19,16 +19,19 @@ namespace matmul
 //            Hx[i]=0;
 //            Hy[i]=0;
 //            Hz[i]=0;
+std::cout << "spin i = " << i <<std::endl;
             double sumx=0.0,sumy=0.0,sumz=0.0;
             for(int n = 0 ; n < num_diags ; n++)
             {
                 int j=i+offset[n];
                 //int arlu=i*num_diags+n;
                 int arlu=N*n+i;
+
                 double valx=dataxx[arlu],valy=datayy[arlu],valz=datazz[arlu];
                 if(j >= 0 && j < N)
                 {
 
+                    std::cout << "neighbour " << j << "\t" << datazz[arlu] << std::endl;
                     sumx+=(valx*Sx[j]);
                     sumy+=(valy*Sy[j]);
                     sumz+=(valz*Sz[j]);

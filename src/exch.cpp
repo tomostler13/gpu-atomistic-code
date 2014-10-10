@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 09 Oct 2014 17:09:35
+// Last-modified: 10 Oct 2014 10:55:25
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -22,15 +22,15 @@
 namespace exch
 {
     unsigned int max_shells=0,diagnumdiag=0,offdiagnumdiag=0;
-    Array<int> diagoffset,offdiagoffset;
-    Array<unsigned int> xadj,adjncy;
+    Array<int> diagoffset,offdiagoffset;//for DIA neighbour list
+    Array<int> checkdiag;
+    Array<unsigned int> xadj,adjncy;//for CSR neighbour list
     Array<double> dataxx,datayy,datazz,dataxz,dataxy,datayx,datayz,datazx,datazy;
     Array3D<unsigned int> numint;
     Array2D<unsigned int> shell_list;
     Array4D<double> exchvec;
     Array4D<unsigned int> kvec;
     Array5D<double> J;
-    Array4D<double> JMat;
     std::string enerType;
     void initExch(int argc,char *argv[])
     {
@@ -180,6 +180,8 @@ namespace exch
                         }
                     }
                 }
+                checkdiag.resize((geom::nspins*2)-1);
+                checkdiag.IFill(0);
                 //then add the exchange constants to the matrix or to the interaction matrix
                 if(config::exchm>0)//We calculate the exchange via a matrix multiplication
                 {
@@ -189,8 +191,6 @@ namespace exch
                         error::errPreamble(__FILE__,__LINE__);
                         error::errMessage("Could not open file J.dat for writing the 2D interaction matrix to.");
                     }
-                    JMat.resize(geom::nspins,geom::nspins,3,3);
-                    JMat.IFill(0);
                     //temporary arrays in format to store the adjncy as we don't know
                     //how big it is before hand
                     std::vector<unsigned int> tadjncy;
@@ -282,16 +282,32 @@ namespace exch
                                                         //std::cin.get();
                                                         tadjncy[adjncy_counter]=neigh;
                                                         adjncy_counter++;
+                                                        //determine the diagonal
+                                                        if(i>neigh)//then we are on the lower diagonal
+                                                        {
+                                                            int tmp=i,count=0;
+                                                            while(neigh!=tmp){tmp--;count++;}
+                                                            checkdiag(geom::nspins-count)++;
+                                                        }
+                                                        else if(i==neigh)
+                                                        {
+                                                            checkdiag[geom::nspins]++;
+                                                        }
+                                                        else if(i<neigh)
+                                                        {
+                                                            int tmp=neigh,count=0;
+                                                            while(tmp!=i){tmp--;count++;}
+                                                            checkdiag[geom::nspins+count]++;
+                                                        }
                                                         for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                                                         {
                                                             for(unsigned int beta = 0 ; beta < 3 ; beta++)
                                                             {
                                                                 tdata[alpha][beta].push_back(J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(aiuc)*llg::muB));
-                                                                JMat(i,neigh,alpha,beta)=J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(aiuc)*llg::muB);
 
                                                             }
                                                         }
-                                                        opJ << i << "\t" << neigh << "\t" << JMat(i,neigh,0,0) << std::endl;
+                                                        opJ << i << "\t" << neigh << "\t" << tdata[0][0][adjncy_counter-1] << std::endl;
                                                         check(lookupvec[0],lookupvec[1],lookupvec[2])=1;//this should mean that we no longer look for a neighbour here to avoid double addition of exchange
                                                     }
                                                 }
@@ -303,9 +319,15 @@ namespace exch
                                 }
                             }
                         }
-
                         xadj_counter++;
                     }
+                    int diagcount=0;
+                    for(unsigned int i = 0 ; i < 2*geom::nspins-1 ; i++)
+                    {
+                        if(checkdiag[i]>0){diagcount++;}
+                    }
+                    diagnumdiag=diagcount;
+                    //std::cout <<"Number of diagonals detected\t" << diagcount << std::endl;
                     xadj[geom::nspins]=adjncy_counter;
 
                     opJ.close();
@@ -316,10 +338,39 @@ namespace exch
                     }
                     if(config::offdiag==false)
                     {
-                        if(config::exchm==1)
+                        adjncy.resize(adjncy_counter);
+                        dataxx.resize(adjncy_counter);
+                        datayy.resize(adjncy_counter);
+                        datazz.resize(adjncy_counter);
+                        for(unsigned int i = 0 ; i < adjncy_counter ; i++)
                         {
-                            //call the routine to convert the JMat to a sparse matrix format (but without including the off-diagonals)
-                            matconv::conv_intmat_to_dia(diagoffset,JMat,diagnumdiag,geom::nspins,dataxx,datayy,datazz);
+                            adjncy[i]=tadjncy[i];
+                            dataxx[i]=tdata[0][0][i];
+                            datayy[i]=tdata[1][1][i];
+                            datazz[i]=tdata[2][2][i];
+                        }
+                        //clear the temporary arrays to free up memory
+                        tdata.clear();
+                        tadjncy.clear();
+                        FIXOUT(config::Info,"Size of xadj (CSR offsets):\t" << xadj.size() << std::endl);
+                        FIXOUT(config::Info,"Size of adjncy (CSR list):\t" << adjncy.size() << std::endl);
+                        //For debugging the CSR neighbour list
+                        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                        {
+                            std::cout << "Atom " << i << " has neighbours" << std::endl;
+                            for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
+                            {
+                                std::cout << adjncy[j] << "\t" << dataxx[j] << "\t" << std::flush;
+                            }
+                            std::cout << std::endl;
+                        }
+                        std::cin.get();
+
+                        if(config::exchm==1)
+                        {//then convert CSR to DIA
+
+                            //call the routine to convert the CSR to a DIA sparse matrix format
+                            matconv::csr_to_dia_diag(geom::nspins,xadj,adjncy,diagoffset,diagnumdiag,checkdiag,dataxx,datayy,datazz);
                             FIXOUT(config::Info,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
                             config::openLogFile();
                             config::printline(config::Log);
@@ -330,37 +381,24 @@ namespace exch
                                 config::Log << diagoffset[i] << ",";
                             }
                             config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
-                        }
-                        else if(config::exchm==2)
+                        //for debugging the data array
+                        /*for(int i = 0 ; i < diagnumdiag ; i++)
                         {
-                            adjncy.resize(adjncy_counter);
-                            dataxx.resize(adjncy_counter);
-                            datayy.resize(adjncy_counter);
-                            datazz.resize(adjncy_counter);
-                            for(unsigned int i = 0 ; i < adjncy_counter ; i++)
+                            int os=diagoffset[i];
+                            std::cout << "Offset " << i << " is " << os << std::endl;
+                            for(int j = 0 ; j < geom::nspins ; j++)
                             {
-                                adjncy[i]=tadjncy[i];
-                                dataxx[i]=tdata[0][0][i];
-                                datayy[i]=tdata[1][1][i];
-                                datazz[i]=tdata[2][2][i];
+                                std::cout << j << "\t" << i*geom::nspins+j << "\t" << datazz[i*geom::nspins+j] << std::endl;
                             }
-                            FIXOUT(config::Info,"Size of xadj (CSR offsets):\t" << xadj.size() << std::endl);
-                            FIXOUT(config::Info,"Size of adjncy (CSR list):\t" << adjncy.size() << std::endl);
-                            //For debugging the CSR neighbour list
-                            /*for(unsigned int i = 0 ; i < geom::nspins ; i++)
-                            {
-                                std::cout << "Atom " << i << " has neighbours" << std::endl;
-                                for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
-                                {
-                                    std::cout << adjncy[j] << "\t" << dataxx[j] << "\t" << std::flush;
-                                }
-                                std::cout << std::endl;
-                            }*/
+                            std::cin.get();
+                        }*/
+                    }
+
                         }
                     }
                     else if(config::offdiag && config::exchm==1)
                     {
-                        matconv::conv_intmat_to_dia(diagoffset,offdiagoffset,JMat,diagnumdiag,offdiagnumdiag,geom::nspins,dataxx,dataxy,dataxz,datayx,datayy,datayz,datazx,datazy,datazz);
+//                        matconv::conv_intmat_to_dia(diagoffset,offdiagoffset,JMat,diagnumdiag,offdiagnumdiag,geom::nspins,dataxx,dataxy,dataxz,datayx,datayy,datayz,datazx,datazy,datazz);
                         FIXOUT(config::Log,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
                         config::openLogFile();
                         config::printline(config::Log);
@@ -380,7 +418,6 @@ namespace exch
                             config::Log << offdiagoffset[i] << ",";
                         }
                         config::Log << offdiagoffset[offdiagnumdiag-1] << " ] " << std::endl;
-                    }
 
 
                 }
