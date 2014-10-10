@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 10 Oct 2014 14:56:51
+// Last-modified: 10 Oct 2014 16:10:58
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -93,7 +93,7 @@ namespace llgCPU
             }
         }
         //FOR DEBUGGING THE FIELD
-        if(t==0)
+        /*if(t==0)
         {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
@@ -115,7 +115,8 @@ namespace llgCPU
         {
 
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i],fields::Hz[i]+fields::Hthx[i]+llg::applied[2]};
+            //Adding the demag here should be zero (see fields.cpp) if config::inc_dip==false
+            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i]+fields::HDemagx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i]+fields::HDemagy[i],fields::Hz[i]+fields::Hthx[i]+llg::applied[2]+fields::HDemagz[i]};
             //--------------------------------------------------------
             //calculate the first order uniaxial anisotropy component
             //direction of the axis
@@ -160,6 +161,14 @@ namespace llgCPU
             if(config::offdiag==true)
             {
                 matmul::spmv_dia_offdiag(geom::nspins,exch::offdiagnumdiag,exch::offdiagoffset,exch::dataxy,exch::dataxz,exch::datayx,exch::datayz,exch::datazx,exch::datazy,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
+            }
+        }
+        else if(config::exchm==2)
+        {
+            matmul::spmv_csr_diag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::datayy,exch::datazz,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
+            if(config::offdiag==true)
+            {
+                matmul::spmv_csr_offdiag();
             }
         }
 

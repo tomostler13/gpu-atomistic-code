@@ -1,7 +1,7 @@
 //File matrix_mul_cpu.cpp
 // Author: Tom Ostler
 // Created: 08 Oct 2014
-// Last-modified: 10 Oct 2014 14:57:12
+// Last-modified: 10 Oct 2014 16:08:18
 #include "../inc/arrays.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -16,10 +16,9 @@ namespace matmul
         //loop over nspins
         for(int i = 0 ; i < static_cast<int>(N) ; i++)
         {
-//            Hx[i]=0;
-//            Hy[i]=0;
-//            Hz[i]=0;
-std::cout << "spin i = " << i <<std::endl;
+            Hx[i]=0;
+            Hy[i]=0;
+            Hz[i]=0;
             double sumx=0.0,sumy=0.0,sumz=0.0;
             for(int n = 0 ; n < num_diags ; n++)
             {
@@ -31,7 +30,6 @@ std::cout << "spin i = " << i <<std::endl;
                 if(j >= 0 && j < N)
                 {
 
-                    std::cout << "neighbour " << j << "\t" << datazz[arlu] << std::endl;
                     sumx+=(valx*Sx[j]);
                     sumy+=(valy*Sy[j]);
                     sumz+=(valz*Sz[j]);
@@ -80,13 +78,17 @@ std::cout << "spin i = " << i <<std::endl;
     {
         for(unsigned int i = 0 ; i < N ; i++)
         {
+            Hx[i]=0;
+            Hy[i]=0;
+            Hz[i]=0;
             double sumx=0.0,sumy=0.0,sumz=0.0;
             for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
             {
                 unsigned int neigh=adjncy[j];
-                sumx+=dataxx[j]*Sx[j];
-                sumy+=datayy[j]*Sy[j];
-                sumz+=datazz[j]*Sz[j];
+                //std::cout << j << "\t";
+                sumx+=dataxx[j]*Sx[neigh];
+                sumy+=datayy[j]*Sy[neigh];
+                sumz+=datazz[j]*Sz[neigh];
             }
             Hx[i]+=sumx;
             Hy[i]+=sumy;

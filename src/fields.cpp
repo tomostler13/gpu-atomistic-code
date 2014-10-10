@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 08 Oct 2014 14:26:17
+// Last-modified: 10 Oct 2014 16:07:35
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -25,7 +25,7 @@ namespace fields
     Array5D<fftw_complex> Hk;
     Array5D<fftw_complex> Hr;
     Array4D<fftw_complex> dipHr,dipHk;
-    Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz;
+    Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz,HDemagx,HDemagy,HDemagz;
     fftw_plan HP;
     void initFields(int argc,char *argv[])
     {
@@ -93,10 +93,17 @@ namespace fields
             FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
             HP = fftw_plan_many_dft(3,n,3,dipHk.ptr(),inembed,istride,idist,dipHr.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_PATIENT);
         }
+
 //        std::cout << "Resizing field arrays to
         Hx.resize(geom::nspins);
         Hy.resize(geom::nspins);
         Hz.resize(geom::nspins);
+        HDemagx.resize(geom::nspins);
+        HDemagy.resize(geom::nspins);
+        HDemagz.resize(geom::nspins);
+        HDemagx.IFill(0);
+        HDemagy.IFill(0);
+        HDemagz.IFill(0);
 
     }
 
@@ -185,9 +192,9 @@ namespace fields
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-            Hx[i]=dipHr(0,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
-            Hy[i]=dipHr(1,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
-            Hz[i]=dipHr(2,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
+            HDemagx[i]=dipHr(0,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
+            HDemagy[i]=dipHr(1,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
+            HDemagz[i]=dipHr(2,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
             //std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
             //std::cin.get();
         }

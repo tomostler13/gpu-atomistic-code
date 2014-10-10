@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 10 Oct 2014 15:48:56
+// Last-modified: 10 Oct 2014 15:58:19
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -10,6 +10,7 @@
 #include "../inc/intmat.h"
 #include "../inc/llg.h"
 #include "../inc/matrix_conv.h"
+#include "../inc/defines.h"
 #include <iostream>
 #include <fstream>
 #include <libconfig.h++>
@@ -17,8 +18,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <sstream>
-#define FIXOUT(a,b) a.width(75);a << std::left << b;
-#define FIXOUTVEC(a,b,c,d,e) FIXOUT(a,b << "[   ");a.width(5);a << std::left << c << " , ";a.width(5);a << std::left << d << " , ";a.width(5);a << std::left << e << "   ]" << std::endl;
 namespace exch
 {
     unsigned int max_shells=0,diagnumdiag=0,offdiagnumdiag=0;
@@ -355,7 +354,7 @@ namespace exch
                         FIXOUT(config::Info,"Size of xadj (CSR offsets):\t" << xadj.size() << std::endl);
                         FIXOUT(config::Info,"Size of adjncy (CSR list):\t" << adjncy.size() << std::endl);
                         //For debugging the CSR neighbour list
-                        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                        /*for(unsigned int i = 0 ; i < geom::nspins ; i++)
                         {
                             std::cout << "Atom " << i << " has neighbours" << std::endl;
                             for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
@@ -364,13 +363,15 @@ namespace exch
                             }
                             std::cout << std::endl;
                         }
-                        std::cin.get();
+                        std::cin.get();*/
 
                         if(config::exchm==1)
                         {//then convert CSR to DIA
 
                             //call the routine to convert the CSR to a DIA sparse matrix format
+                            FIXOUT(config::Info,"Converting CSR to DIA (exchange tensor diagonals):" << std::flush);
                             matconv::csr_to_dia_diag(geom::nspins,xadj,adjncy,diagoffset,diagnumdiag,checkdiag,dataxx,datayy,datazz);
+                            SUCCESS(config::Info);
                             FIXOUT(config::Info,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
                             config::openLogFile();
                             config::printline(config::Log);
@@ -400,7 +401,9 @@ namespace exch
                             {
                                 offdiagoffset[i]=diagoffset[i];
                             }
+                            FIXOUT(config::Info,"Converting CSR to DIA (exchange tensor diagonals):" << std::flush);
                             matconv::csr_to_dia_offdiag(geom::nspins,xadj,adjncy,offdiagoffset,diagnumdiag,checkdiag,dataxy,dataxz,datayx,datayz,datazx,datazy);
+                            SUCCESS(config::Info);
                             FIXOUT(config::Log,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
                             config::openLogFile();
                             config::printline(config::Log);
