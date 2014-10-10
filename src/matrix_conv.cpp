@@ -1,7 +1,7 @@
 //File matrix_conv.cpp
 // Author: Tom Ostler
 // Created: 07 Oct 2014
-// Last-modified: 10 Oct 2014 10:56:29
+// Last-modified: 10 Oct 2014 15:48:32
 // The routines within this file convert a 2D matrix to
 // a number of formats depending on the routine used. The
 // return structures depend on the storage format
@@ -137,12 +137,129 @@ namespace matconv
         tdataxx.clear();
         tdatayy.clear();
         tdatazz.clear();
-        //we no longer need xadj and adjncy
-        xadj.clear();
-        adjncy.clear();
-        checkdiag.clear();
 
+    }
+    void csr_to_dia_offdiag(unsigned int& N,Array<unsigned int>& xadj,Array<unsigned int>& adjncy,
+            Array<int>& offset,unsigned int numdiag,
+            Array<int>& checkdiag,
+            Array<double>& dataxy,
+            Array<double>& dataxz,
+            Array<double>& datayx,
+            Array<double>& datayz,
+            Array<double>& datazx,
+            Array<double>& datazy
+            )
+    {
+        //temporary arrays to store the dia format data before
+        //resizing and copying back to the original arrays
+        Array<double> tdataxy,tdataxz,tdatayx,tdatayz,tdatazx,tdatazy;
+        tdataxy.resize(numdiag*N);
+        tdataxz.resize(numdiag*N);
+        tdatayx.resize(numdiag*N);
+        tdatayz.resize(numdiag*N);
+        tdatazx.resize(numdiag*N);
+        tdatazy.resize(numdiag*N);
+        //initialise to zero
+        for(unsigned int i = 0 ; i < numdiag*N ; i++)
+        {
+            tdataxy[i]=0;
+            tdataxz[i]=0;
+            tdatayx[i]=0;
+            tdatayz[i]=0;
+            tdatazx[i]=0;
+            tdatazy[i]=0;
+        }
+        //loop over the diagonals
+        for(unsigned int i = 0 ; i < numdiag ; i++)
+        {
+            int diag = offset[i];
+            int num_elem=0,num_zeros=0;
+            if(diag<=0)
+            {
+                num_elem=diag+static_cast<int>(N);
+            }
+            else
+            {
+                num_elem=static_cast<int>(N)-diag;
+            }
+            //so num_elem+num_zeroes = N
+            num_zeros=N-num_elem;
+            unsigned int istart=0,jstart=0;
+            if(diag<=0)
+            {
+                istart=-diag;
+                jstart=0;
+            }
+            else
+            {
+                istart=0;
+                jstart=diag;
+            }
 
+            int iloop=istart,jloop=jstart;
+            for(unsigned int j = 0 ; j < num_elem ; j++)
+            {
+                //starting value of CSR to lookup
+                unsigned int start=xadj[iloop],end=xadj[iloop+1];
+                for(unsigned int k = start ; k < end ; k++)
+                {
+                    //now need to determine if k is on our diagonal
+                    if(adjncy[k]==jloop)
+                    {
+                        //then we have found a neighbour that is on our diagonal
+                        if(diag<0)
+                        {
+                            tdataxy[i*N+num_zeros+j]=dataxy[k];
+                            tdataxz[i*N+num_zeros+j]=dataxz[k];
+                            tdatayx[i*N+num_zeros+j]=datayx[k];
+                            tdatayz[i*N+num_zeros+j]=datayz[k];
+                            tdatazx[i*N+num_zeros+j]=datazx[k];
+                            tdatazy[i*N+num_zeros+j]=datazy[k];
+                        }
+                        else
+                        {
+                            tdataxy[i*N+j]=dataxy[k];
+                            tdataxz[i*N+j]=dataxz[k];
+                            tdatayx[i*N+j]=datayx[k];
+                            tdatayz[i*N+j]=datayz[k];
+                            tdatazx[i*N+j]=datazx[k];
+                            tdatazy[i*N+j]=datazy[k];
+                        }
+                    }
+                }
+
+                iloop++;
+                jloop++;
+            }
+        }
+        //we no longer want the data in dataxx, datayy and datazz (well
+        //we want the DIA data in there). We are going to do these in pairs
+        //incase we malloc too much memory
+        dataxy.resize(numdiag*N);
+        dataxz.resize(numdiag*N);
+        for(unsigned int i = 0 ; i < numdiag*N ; i++)
+        {
+            dataxy[i]=tdataxy[i];
+            dataxz[i]=tdataxz[i];
+        }
+        tdataxy.clear();tdataxz.clear();
+        datayx.resize(numdiag*N);
+        datayz.resize(numdiag*N);
+        for(unsigned int i = 0 ; i < numdiag*N ; i++)
+        {
+            datayx[i]=tdatayx[i];
+            datayz[i]=tdatayz[i];
+        }
+        tdatayx.clear();
+        tdatayz.clear();
+        datazx.resize(numdiag*N);
+        datazy.resize(numdiag*N);
+        for(unsigned int i = 0 ; i < numdiag*N ; i++)
+        {
+            datazx[i]=tdatazx[i];
+            datazy[i]=tdatazy[i];
+        }
+        tdatazx.clear();tdatazy.clear();
     }
 
     // This calculate the diagonal offsets for the DIA format

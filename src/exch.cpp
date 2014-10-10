@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 10 Oct 2014 14:56:17
+// Last-modified: 10 Oct 2014 15:48:56
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -381,45 +381,55 @@ namespace exch
                                 config::Log << diagoffset[i] << ",";
                             }
                             config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
-                        //for debugging the data array
-                        /*for(int i = 0 ; i < diagnumdiag ; i++)
+                            //for debugging the data array
+                            /*for(int i = 0 ; i < diagnumdiag ; i++)
+                              {
+                              int os=diagoffset[i];
+                              std::cout << "Offset " << i << " is " << os << std::endl;
+                              for(int j = 0 ; j < geom::nspins ; j++)
+                              {
+                              std::cout << j << "\t" << i*geom::nspins+j << "\t" << datazz[i*geom::nspins+j] << std::endl;
+                              }
+                              std::cin.get();
+                              }*/
+                        }
+                        if(config::offdiag && config::exchm==1)
                         {
-                            int os=diagoffset[i];
-                            std::cout << "Offset " << i << " is " << os << std::endl;
-                            for(int j = 0 ; j < geom::nspins ; j++)
+                            offdiagoffset.resize(diagoffset.size());
+                            for(unsigned int i = 0 ; i < offdiagoffset.size() ; i++)
                             {
-                                std::cout << j << "\t" << i*geom::nspins+j << "\t" << datazz[i*geom::nspins+j] << std::endl;
+                                offdiagoffset[i]=diagoffset[i];
                             }
-                            std::cin.get();
-                        }*/
-                    }
+                            matconv::csr_to_dia_offdiag(geom::nspins,xadj,adjncy,offdiagoffset,diagnumdiag,checkdiag,dataxy,dataxz,datayx,datayz,datazx,datazy);
+                            FIXOUT(config::Log,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
+                            config::openLogFile();
+                            config::printline(config::Log);
+                            FIXOUT(config::Log,"Outputting offset for diagonal part of interaction matrix:" << std::endl);
+                            config::Log << " [ ";
+                            for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
+                            {
+                                config::Log << diagoffset[i] << ",";
+                            }
+                            config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
+                            FIXOUT(config::Log,"Total number of non-zero diagonals for the anti-symmetric part of the exchange tensor:" << offdiagnumdiag << std::endl);
+                            config::printline(config::Log);
+                            FIXOUT(config::Log,"Outputting offset for off-diagonal (antisym) part of interaction matrix:" << std::endl);
+                            config::Log << " [ ";
+                            for(unsigned int i = 0 ; i < offdiagnumdiag-1 ; i++)
+                            {
+                                config::Log << offdiagoffset[i] << ",";
+                            }
+                            config::Log << offdiagoffset[offdiagnumdiag-1] << " ] " << std::endl;
+
 
                         }
-                    }
-                    else if(config::offdiag && config::exchm==1)
-                    {
-//                        matconv::conv_intmat_to_dia(diagoffset,offdiagoffset,JMat,diagnumdiag,offdiagnumdiag,geom::nspins,dataxx,dataxy,dataxz,datayx,datayy,datayz,datazx,datazy,datazz);
-                        FIXOUT(config::Log,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
-                        config::openLogFile();
-                        config::printline(config::Log);
-                        FIXOUT(config::Log,"Outputting offset for diagonal part of interaction matrix:" << std::endl);
-                        config::Log << " [ ";
-                        for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
+                        if(config::exchm!=2)//then we are not using CSR
                         {
-                            config::Log << diagoffset[i] << ",";
+                            xadj.clear();
+                            adjncy.clear();
+                            checkdiag.clear();
                         }
-                        config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
-                        FIXOUT(config::Log,"Total number of non-zero diagonals for the anti-symmetric part of the exchange tensor:" << offdiagnumdiag << std::endl);
-                        config::printline(config::Log);
-                        FIXOUT(config::Log,"Outputting offset for off-diagonal (antisym) part of interaction matrix:" << std::endl);
-                        config::Log << " [ ";
-                        for(unsigned int i = 0 ; i < offdiagnumdiag-1 ; i++)
-                        {
-                            config::Log << offdiagoffset[i] << ",";
-                        }
-                        config::Log << offdiagoffset[offdiagnumdiag-1] << " ] " << std::endl;
-
-
+                    }
                 }
                 else if(config::exchm==0)//add the exchange to the interaction matrix
                 {
