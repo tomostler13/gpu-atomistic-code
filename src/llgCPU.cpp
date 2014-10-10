@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 09 Oct 2014 13:05:31
+// Last-modified: 10 Oct 2014 14:56:51
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -82,6 +82,14 @@ namespace llgCPU
             if(config::offdiag==true)
             {
                 matmul::spmv_dia_offdiag(geom::nspins,exch::offdiagnumdiag,exch::offdiagoffset,exch::dataxy,exch::dataxz,exch::datayx,exch::datayz,exch::datazx,exch::datazy,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
+            }
+        }
+        else if(config::exchm==2)
+        {
+            matmul::spmv_csr_diag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::datayy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
+            if(config::offdiag==true)
+            {
+                matmul::spmv_csr_offdiag();
             }
         }
         //FOR DEBUGGING THE FIELD

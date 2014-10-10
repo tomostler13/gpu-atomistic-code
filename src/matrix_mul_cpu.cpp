@@ -1,7 +1,7 @@
 //File matrix_mul_cpu.cpp
 // Author: Tom Ostler
 // Created: 08 Oct 2014
-// Last-modified: 10 Oct 2014 10:54:29
+// Last-modified: 10 Oct 2014 14:57:12
 #include "../inc/arrays.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -75,4 +75,29 @@ std::cout << "spin i = " << i <<std::endl;
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("The anti-symmetric exchange is not currently coded for use with the DIA sparse matrix multiplication method.");
     }
+
+    void spmv_csr_diag(unsigned int N,Array<unsigned int>& xadj,Array<unsigned int>& adjncy,Array<double>& dataxx,Array<double>& datayy,Array<double>& datazz,Array<double>& Sx,Array<double>& Sy,Array<double>& Sz,Array<double>& Hx,Array<double>& Hy,Array<double>& Hz )
+    {
+        for(unsigned int i = 0 ; i < N ; i++)
+        {
+            double sumx=0.0,sumy=0.0,sumz=0.0;
+            for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
+            {
+                unsigned int neigh=adjncy[j];
+                sumx+=dataxx[j]*Sx[j];
+                sumy+=datayy[j]*Sy[j];
+                sumz+=datazz[j]*Sz[j];
+            }
+            Hx[i]+=sumx;
+            Hy[i]+=sumy;
+            Hz[i]+=sumz;
+        }
+    }
+
+    void spmv_csr_offdiag()
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("The anti-symmetric exchange is not currently coded for use with the CSR sparse matrix multiplication method.");
+    }
+
 }

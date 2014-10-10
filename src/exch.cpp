@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 10 Oct 2014 10:55:25
+// Last-modified: 10 Oct 2014 14:56:17
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -24,7 +24,7 @@ namespace exch
     unsigned int max_shells=0,diagnumdiag=0,offdiagnumdiag=0;
     Array<int> diagoffset,offdiagoffset;//for DIA neighbour list
     Array<int> checkdiag;
-    Array<unsigned int> xadj,adjncy;//for CSR neighbour list
+    Array<unsigned int> xadj,adjncy,offdiagxadj,offdiagadjncy;//for CSR neighbour list
     Array<double> dataxx,datayy,datazz,dataxz,dataxy,datayx,datayz,datazx,datazy;
     Array3D<unsigned int> numint;
     Array2D<unsigned int> shell_list;
