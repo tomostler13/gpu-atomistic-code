@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 09 Oct 2014 10:55:05
+// Last-modified: 10 Oct 2014 16:55:45
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -25,7 +25,7 @@ namespace cullg
     //rank of the FFT
     extern int nrank;
     //lookup for the x,y and z locations (on k-mesh) of the spins
-    extern unsigned int *Ckx,*Cky,*Ckz,*Cspec;
+    extern unsigned int *Ckx,*Cky,*Ckz,*Cspec,*Cxadj,*Cadjncy;
     //device pointers for Fourier space calculations
     extern  cufftComplex *CNk,*CSk,*CSr,*CHk,*CHr;
     //offsets for the DIA sparse matrix multiplication

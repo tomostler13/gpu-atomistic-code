@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 09 Oct 2014 14:18:32
+// Last-modified: 10 Oct 2014 16:57:45
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -291,6 +291,69 @@ namespace cullg
                 {
                     CUDA_CALL(cudaMalloc((void**)&Coffdiagoffset,exch::offdiagoffset.size()*sizeof(int)));
                     CUDA_CALL(cudaMemcpy(Coffdiagoffset,exch::offdiagoffset.ptr(),exch::offdiagoffset.size()*sizeof(int),cudaMemcpyHostToDevice));
+                    if(!(exch::dataxy.size()==exch::dataxz.size()==exch::datayx.size()==exch::datayz.size()==exch::datazx.size()==exch::datazy.size()))
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("Size of the off diagonal exchange components (in DIA format) are not of the same length.");
+                    }
+                    CUDA_CALL(cudaMalloc((void**)&Cdxy,exch::dataxy.size()*sizeof(float)));
+                    CUDA_CALL(cudaMalloc((void**)&Cdxz,exch::dataxz.size()*sizeof(float)));
+                    CUDA_CALL(cudaMalloc((void**)&Cdyx,exch::datayx.size()*sizeof(float)));
+                    CUDA_CALL(cudaMalloc((void**)&Cdyz,exch::datayz.size()*sizeof(float)));
+                    CUDA_CALL(cudaMalloc((void**)&Cdzx,exch::datazx.size()*sizeof(float)));
+                    CUDA_CALL(cudaMalloc((void**)&Cdzy,exch::datazy.size()*sizeof(float)));
+                    float *otemp=new float[exch::dataxy.size()];for(unsigned int i = 0 ; i < exch::dataxy.size() ; i++){otemp[i]=static_cast<float>(exch::dataxy[i]);}
+                    CUDA_CALL(cudaMemcpy(Cdxy,otemp,exch::dataxy.size()*sizeof(float),cudaMemcpyHostToDevice));
+                    for(unsigned int i = 0 ; i < exch::dataxz.size() ; i++){otemp[i]=static_cast<float>(exch::dataxz[i]);}
+                    CUDA_CALL(cudaMemcpy(Cdxz,otemp,exch::dataxz.size()*sizeof(float),cudaMemcpyHostToDevice));
+                    for(unsigned int i = 0 ; i < exch::datayx.size() ; i++){otemp[i]=static_cast<float>(exch::datayx[i]);}
+                    CUDA_CALL(cudaMemcpy(Cdyx,otemp,exch::datayx.size()*sizeof(float),cudaMemcpyHostToDevice));
+                    for(unsigned int i = 0 ; i < exch::datayz.size() ; i++){otemp[i]=static_cast<float>(exch::datayz[i]);}
+                    CUDA_CALL(cudaMemcpy(Cdyz,otemp,exch::datayz.size()*sizeof(float),cudaMemcpyHostToDevice));
+                    for(unsigned int i = 0 ; i < exch::datazx.size() ; i++){otemp[i]=static_cast<float>(exch::datazx[i]);}
+                    CUDA_CALL(cudaMemcpy(Cdzx,otemp,exch::datazx.size()*sizeof(float),cudaMemcpyHostToDevice));
+                    for(unsigned int i = 0 ; i < exch::datazy.size() ; i++){otemp[i]=static_cast<float>(exch::datazy[i]);}
+                    CUDA_CALL(cudaMemcpy(Cdzy,otemp,exch::datazy.size()*sizeof(float),cudaMemcpyHostToDevice));
+                }
+            }
+            else if(config::exchm==2)//CSR
+            {
+                CUDA_CALL(cudaMalloc((void**)&Cxadj,exch::xadj.size()*sizeof(unsigned int)));
+                CUDA_CALL(cudaMalloc((void**)&Cadjncy,exch::adjncy.size()*sizeof(unsigned int)));
+                CUDA_CALL(cudaMemcpy(Cxadj,exch::xadj.ptr(),exch::xadj.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
+                CUDA_CALL(cudaMemcpy(Cadjncy,exch::adjncy.ptr(),exch::adjncy.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
+                CUDA_CALL(cudaMalloc((void**)&Cdxx,exch::dataxx.size()*sizeof(float)));
+                CUDA_CALL(cudaMalloc((void**)&Cdyy,exch::datayy.size()*sizeof(float)));
+                CUDA_CALL(cudaMalloc((void**)&Cdzz,exch::datazz.size()*sizeof(float)));
+                //dataxx, datayy and datazz should all be the same size
+                float *temp=new float[exch::dataxx.size()];
+                for(unsigned int i = 0 ; i < exch::dataxx.size() ; i++)
+                {
+                    temp[i]=static_cast<float>(exch::dataxx[i]);
+                }
+                CUDA_CALL(cudaMemcpy(Cdxx,temp,exch::dataxx.size()*sizeof(float),cudaMemcpyHostToDevice));
+                if(exch::dataxx.size()!=exch::datayy.size())
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Something has gone wrong, the length of the diagonal (xx,yy and zz) components of the exchange\ntensor in the CSR format (exch::dataxx etc) should be the same. Here xx and yy not equal.");
+                }
+                for(unsigned int i = 0 ; i < exch::dataxx.size() ; i++)
+                {
+                    temp[i]=static_cast<float>(exch::datayy[i]);
+                }
+                CUDA_CALL(cudaMemcpy(Cdyy,temp,exch::datayy.size()*sizeof(float),cudaMemcpyHostToDevice));
+                if(exch::dataxx.size()!=exch::datazz.size())
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Something has gone wrong, the length of the diagonal (xx,yy and zz) components of the exchange\ntensor in the CSR format (exch::dataxx etc) should be the same. Here xx and yy not equal.");
+                }
+                for(unsigned int i = 0 ; i < exch::dataxx.size() ; i++)
+                {
+                    temp[i]=static_cast<float>(exch::datayy[i]);
+                }
+                CUDA_CALL(cudaMemcpy(Cdzz,temp,exch::datazz.size()*sizeof(float),cudaMemcpyHostToDevice));
+                if(config::offdiag==true)
+                {
                     if(!(exch::dataxy.size()==exch::dataxz.size()==exch::datayx.size()==exch::datayz.size()==exch::datazx.size()==exch::datazy.size()))
                     {
                         error::errPreamble(__FILE__,__LINE__);

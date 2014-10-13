@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 09 Oct 2014 14:29:15
+// Last-modified: 10 Oct 2014 16:58:02
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -42,7 +42,7 @@ namespace cufields
     // Efficient Spart Matrix-Vector Multiplication on CUDA
     // Nathan Bell and Michael Garland
     // http://www.nvidia.com/docs/IO/66889/nvr-2008-004.pdf
-    __global__ void CSpVM_DIA(int N,
+    __global__ void CSpMV_DIA(int N,
             int *offset,
             float *dataxx,float *datayy,float *datazz,
             double *Cspin,
@@ -69,6 +69,34 @@ namespace cufields
             CH[3*row]=CHDemag[3*row]+dot[0];
             CH[3*row+1]=CHDemag[3*row+1]+dot[1];
             CH[3*row+2]=CHDemag[3*row+2]+dot[2];
+
+        }
+    }
+    // perform the CSR matrix multiplication.
+    __global__ void CSpMV_CSR(unsigned int N,
+            unsigned int *xadj,unsigned int *adjncy,
+            float *dataxx,float *datayy,float *datazz,
+            double *Cspin,
+            float *CHDemag,float *CH)
+    {
+        const int i = blockDim.x*blockIdx.x + threadIdx.x;
+        //num_rows=N as we are ALWAYS dealing with a num_rows=num_cols
+        if(i < N)
+        {
+            //contains sum over neighbours
+            float dot[3]={0,0,0};
+            for(int n = xadj[i] ; n < xadj[i+1] ; n++)
+            {
+                unsigned int neigh=adjncy[n];
+                float val[3] = {dataxx[n],datayy[n],datazz[n]};
+                for(unsigned int co = 0 ; co < 3 ; co++)
+                {
+                    dot[co]+=(val[co]*Cspin[3*neigh+co]);
+                }
+            }
+            CH[3*i]=CHDemag[3*i]+dot[0];
+            CH[3*i+1]=CHDemag[3*i+1]+dot[1];
+            CH[3*i+2]=CHDemag[3*i+2]+dot[2];
 
         }
     }
