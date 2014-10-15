@@ -3,7 +3,7 @@ seed = 1359107107;
 system:
 {
     //number of unit cells
-    dim = [ 10 , 10 , 13 ];
+    dim = [ 23 , 23 , 23 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
@@ -13,8 +13,8 @@ system:
     //lattice constants
     abc = [ 300e-12 , 300e-12 , 300e-12 ];
     //do we include the dipole-dipole calculation?
-    include_dipole = TRUE;
-    Exchange_method="CSR";
+    include_dipole = FALSE;
+    Exchange_method="DIA";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
@@ -40,7 +40,7 @@ llg:
 {
     dt = 0.25e-15;
     applied = [ 0.0 , 0.0 , 0.0 ];
-    update=1;
+    update=100;
     MagnetizationCalculationMethod=0;
 };
 cuda:
@@ -49,17 +49,17 @@ cuda:
 };
 sim:
 {
-//    sim_type = "MvT";
-    sim_type = "quick";
+    sim_type = "MvT";
+//    sim_type = "quick";
 };
 mvt:
 {
-    lower_temp = 10.0;
-    upper_temp = 700.0;
+    lower_temp = 25.0;
+    upper_temp = 750.0;
     temp_step = 25.0;
     mean_tolerance = 0.0001;
     variance_tolerance = 0.00025;
-    MaxRunTime = 10e-12;
+    MaxRunTime = 45e-12;
     MinRunTime = 1e-12;
     MvTFile = "MvT.dat";
 };

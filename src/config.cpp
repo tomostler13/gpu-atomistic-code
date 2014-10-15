@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 09 Oct 2014 16:49:07
+// Last-modified: 15 Oct 2014 09:40:17
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -56,7 +56,7 @@ namespace config
         }
         else
         {
-			Info.width(45);Info << std::right << "*" << "**Build details***" << std::endl;
+			Info.width(45);Info << std::right << "*" << "**Binary/localhost details***" << std::endl;
             Info.width(75);Info << std::left << "Opened output file (this file): " << iffstr << std::endl;
         }
         Info.width(75);Info << std::left << "Run Date/time:" << dtime << std::flush;
@@ -75,6 +75,8 @@ namespace config
 		FIXOUT(Info,"Compiled on machine:" << HOSTNAME << std::endl);
         char c[] = "hostname";
         FIXOUT(Info,"Localhost:" << util::exec(c) << std::endl);
+        printline(Info);
+        Info.width(45);Info << std::right << "*" << "**Simulation details***" << std::endl;
         FIXOUT(Info,"Seed:" << seed << std::endl);
 
         libconfig::Setting &setting = cfg.lookup("system");
