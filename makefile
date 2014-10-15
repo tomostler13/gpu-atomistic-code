@@ -6,14 +6,14 @@ GITINFO=-DGIT_SHA1='"$(shell git rev-parse HEAD)"' -DGITDIRTY='"$(shell git stat
 export LANG=C
 export LC_ALL=C
 # LIBS
-DEFS=-DDEBUG
+DEFS=-DNDEBUG
 CUDEFS=-DCUDA
 LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ -llapack -lblas# -lconfig++
 STATIC_LINK=
 CPULIBS= -fopenmp -lpthread
 CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft
 STATIC_LINK=/home/tao500/opt/levmar-2.6/liblevmar.a /usr/local/lib/libconfig++.a
-OPT_LEVEL=-O0
+OPT_LEVEL=-O3
 GCC_FLAGS= $(OPT_LEVEL) -I/home/tao500/opt/levmar-2.6/
 #NVCC_FLAGS= -g $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 
 #NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_13,code=sm_13 -gencode=arch=compute_13,code=compute_13 -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_30,code=compute_30
