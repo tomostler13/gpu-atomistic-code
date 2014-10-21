@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 15 Oct 2014 09:40:17
+// Last-modified: 16 Oct 2014 20:04:28
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -127,7 +127,7 @@ namespace config
             FIXOUT(config::Info,"Include off-diagonals in sparse matrix multiplication:" << config::isTF(offdiag) << std::endl);
         }
         //if we are using the fft at the moment we cannot have PBC's
-        if((dipm==0 || exchm==0) && (pbc[0]==true || pbc[1]==true || pbc[2]))
+        if((exchm==0) && (pbc[0]==true || pbc[1]==true || pbc[2]))
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("You cannot currently use the fft method for calculating exchange or dipole-dipole fields and have periodic boundary conditions.\nIf you want to use PBC's then select a matrix multiplication method.");
