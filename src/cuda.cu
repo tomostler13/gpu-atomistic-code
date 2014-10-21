@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 10 Oct 2014 16:56:09
+// Last-modified: 21 Oct 2014 17:27:13
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -221,7 +221,7 @@ namespace cullg
         }
         libconfig::Setting &setting = config::cfg.lookup("cuda");
         config::Info << std::noshowpos;
-        FIXOUT(config::Info,"NVCC Compiler:" << COMP << std::endl);
+        //FIXOUT(config::Info,"NVCC Compiler:" << COMP << std::endl);
         int device_count=0;
         int device=0;
         //---------------------------------------------------------------
