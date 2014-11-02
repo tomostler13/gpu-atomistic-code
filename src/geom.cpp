@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 06 Oct 2014 19:21:43
+// Last-modified: 02 Nov 2014 19:53:32
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
