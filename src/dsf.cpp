@@ -1,12 +1,13 @@
 // File: dsf.cpp
 // Author:Tom Ostler
 // Created: 2 Nov 2014
-// Last-modified: 02 Nov 2014 10:59:13
+// Last-modified: 02 Nov 2014 16:03:45
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
 #include "../inc/util.h"
 #include "../inc/arrays.h"
+#include "../inc/dsf.h"
 #include "../inc/unitcell.h"
 #include <sstream>
 #include <cstdlib>
@@ -23,6 +24,8 @@
 //own control features in the config file dsf:
 namespace dsf
 {
-    void
-
+    void initDSF(int argc,char *argv[])
+    {
+        readDSFParam(argc,char *argv[]);
+    }
 }

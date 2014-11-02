@@ -3,7 +3,7 @@ seed = 1359107107;
 system:
 {
     //number of unit cells
-    dim = [ 23 , 23 , 23 ];
+    dim = [ 2 , 2 , 2 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
@@ -35,6 +35,11 @@ exchange:
     //- extfile (read from an external file)
     exchinput="extfile";
     exchfile="exch.sc";
+};
+dsf:
+{
+    Calculate=TRUE;
+    InputFile="dsf.in";
 };
 llg:
 {

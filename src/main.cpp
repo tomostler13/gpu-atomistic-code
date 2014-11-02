@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Oct 2014 13:28:01
+// Last-modified: 02 Nov 2014 15:41:17
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -23,6 +23,7 @@
 #include "../inc/util.h"
 #include "../inc/sim.h"
 #include "../inc/llg.h"
+#include "../inc/dsf.h"
 #ifdef CUDA
 #include "../inc/cuda.h"
 #endif
@@ -65,6 +66,8 @@ int main(int argc,char *argv[])
     fields::initFields(argc,argv);
     //Initialise the spin arrays
     spins::initSpins(argc,argv);
+    //Initialise the Dynamic structure factor calculation
+    dsf::initDSF(argc,argv);
     sim::initSim(argc,argv);
     llg::initLLG(argc,argv);
 #ifdef CUDA
