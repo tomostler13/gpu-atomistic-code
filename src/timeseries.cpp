@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 03 Nov 2014 14:36:45
+// Last-modified: 03 Nov 2014 14:44:58
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -102,6 +102,7 @@ void sim::timeseries(int argc,char *argv[])
     for(unsigned int i = 0 ; i < halfsamp ; i++)
     {
         int negfreq=-static_cast<int>(i)+num_samples;
-        std::cout << i << "\t" << Cqt(i)[0]*Cqt(i)[0]+Cqt(i)[1]*Cqt(i)[1] << "\t" << Cqt(negfreq)[0]*Cqt(negfreq)[0]+Cqt(negfreq)[1]*Cqt(negfreq)[1] << std::endl;
+        double freq=(static_cast<double>(i)*2.0*M_PI)/(static_cast<double>(dsf::dsfupdate*spins::update*num_samples)*llg::dt);
+        std::cout << i << "\t" << freq << "\t" << Cqt(i)[0]*Cqt(i)[0]+Cqt(i)[1]*Cqt(i)[1] << "\t" << Cqt(negfreq)[0]*Cqt(negfreq)[0]+Cqt(negfreq)[1]*Cqt(negfreq)[1] << std::endl;
     }
 }
