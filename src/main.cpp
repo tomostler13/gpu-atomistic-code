@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 02 Nov 2014 15:41:17
+// Last-modified: 03 Nov 2014 11:51:44
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -66,10 +66,11 @@ int main(int argc,char *argv[])
     fields::initFields(argc,argv);
     //Initialise the spin arrays
     spins::initSpins(argc,argv);
-    //Initialise the Dynamic structure factor calculation
-    dsf::initDSF(argc,argv);
     sim::initSim(argc,argv);
     llg::initLLG(argc,argv);
+    //Initialise the Dynamic structure factor calculation
+    dsf::initDSF(argc,argv);
+
 #ifdef CUDA
     cullg::cuinit(argc,argv);
 #else
@@ -83,6 +84,10 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="suscep")
     {
         //        sim::suscep(argc,argv);
+    }
+    else if(sim::sim_type=="timeseries")
+    {
+        sim::timeseries(argc,argv);
     }
     else if(sim::sim_type=="quick")
     {
