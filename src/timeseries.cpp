@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 03 Nov 2014 14:09:05
+// Last-modified: 03 Nov 2014 14:36:45
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -56,6 +56,15 @@ void sim::timeseries(int argc,char *argv[])
             util::calc_mag();
             util::output_mag(magout,t);
         }
+        llg::integrate(t);
+    }
+    for(unsigned int t = dsf::ets ; t < (dsf::rts+dsf::ets) ; t++)
+    {
+        if(t%spins::update==0)
+        {
+            util::calc_mag();
+            util::output_mag(magout,t);
+        }
         if(t%(spins::update*dsf::dsfupdate)==0)
         {
             //zero the 3d spin array
@@ -72,12 +81,15 @@ void sim::timeseries(int argc,char *argv[])
             //execute the fftw
             fftw_execute(ftspins);
             //find the complex conjugate of the k-vectors we care about
-            double cc[2]={s3d(0,0,6)[0],-s3d(0,0,6)[1]};
+            double cc[2]={s3d(0,0,11)[0],-s3d(0,0,11)[1]};
             //multiply the correlation function by it's cc and store
-            double z_time_cz[2]={s3d(0,0,6)[0]*cc[0]-s3d(0,0,6)[1]*cc[1],s3d(0,0,6)[0]*cc[1]+s3d(0,0,6)[1]*cc[0]};
-
-            Cqt(sample_counter)[0]=z_time_cz[0];
-            Cqt(sample_counter)[1]=z_time_cz[1];
+            double z_time_cz[2]={s3d(0,0,11)[0]*cc[0]-s3d(0,0,11)[1]*cc[1],s3d(0,0,11)[0]*cc[1]+s3d(0,0,11)[1]*cc[0]};
+            if(sample_counter<num_samples)
+            {
+                Cqt(sample_counter)[0]=z_time_cz[0];
+                Cqt(sample_counter)[1]=z_time_cz[1];
+            }
+            sample_counter++;
 
         }
         llg::integrate(t);

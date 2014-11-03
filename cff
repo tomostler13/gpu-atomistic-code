@@ -45,7 +45,7 @@ llg:
 {
     dt = 0.25e-15;
     applied = [ 0.0 , 0.0 , 0.0 ];
-    update=100;
+    update=25;
     MagnetizationCalculationMethod=0;
 };
 cuda:

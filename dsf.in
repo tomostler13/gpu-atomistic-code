@@ -1,6 +1,5 @@
 dsf:
 {
-    SampleTime=1e-12;
     QuantizationAxis = [ 1.0 , 0.0 , 1.0 ];
     NumberOfSymmetryDirections=1;
     SymmetryDirection0 = [ 0 , 0 , 1 ];
@@ -9,5 +8,5 @@ dsf:
     Update = 1;
     Temperature=1.0;
     EquilibrationTime=10e-12;
-    RunTime=200e-12;
+    RunTime=30e-12;
 };
