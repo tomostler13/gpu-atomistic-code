@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 04 Nov 2014 17:13:39
+// Last-modified: 04 Nov 2014 20:37:25
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -28,7 +28,10 @@ void sim::timeseries(int argc,char *argv[])
     //at the moment all of the information for the timeseries (to calculate the dsf)
     //is pre read in the files dsf.cpp dsf_glob.cpp. Eventually I would like to
     //integrate the DSF so that it can be run as part of any simulation.
+
+    //set the simulation temperature
     llg::T=dsf::T;
+    //open the magnetization file and do some error handling
     std::ofstream magout("mag.dat");
     if(!magout.is_open())
     {
@@ -45,14 +48,25 @@ void sim::timeseries(int argc,char *argv[])
     fftw_set_timelimit(60);
     ftspins=fftw_plan_dft_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],s3d.ptr(),s3d.ptr(),FFTW_FORWARD,FFTW_PATIENT);
     SUCCESS(config::Info);
+
+
+
+    //calculate the total number of samples
     num_samples=dsf::rts/(spins::update*dsf::dsfupdate);
     FIXOUT(config::Info,"Number of time samples:" << num_samples << std::endl);
-    Array2D<fftw_complex> Cqt;
-    Cqt.resize(dsf::nk,num_samples);
+    std::ofstream kvout("kvec.dat"),kvinfo("kvecinfo.dat");
+    if(!kvout.is_open())
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not open file for outputting PSD for a k-vector.");
+    }
+    if(!kvinfo.is_open())
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not open file for outputting information on S(q,t).");
+    }
 
 
-
-    unsigned int sample_counter=0;
     for(unsigned int t = 0 ; t < dsf::ets ; t++)
     {
         if(t%spins::update==0)
@@ -62,54 +76,32 @@ void sim::timeseries(int argc,char *argv[])
         }
         llg::integrate(t);
     }
-    std::ofstream
+
+    unsigned int sample_counter=0;
+
+
+    //output the sampling information
+    kvinfo << "#datafile\t" << "kvec.dat" << std::endl;
+    kvinfo << "#numsamples\t" << num_samples << std::endl;
+    kvinfo << "#samplestime\t" << static_cast<double>(dsf::dsfupdate*spins::update)*llg::dt << std::endl;
+    kvinfo << "#dim\t" << geom::dim[0] << "\t" << geom::dim[1] << "\t" << geom::dim[2] << std::endl;
+    kvinfo << "#kpointdim\t" << geom::dim[0]*geom::Nk[0] << "\t" << geom::dim[1]*geom::Nk[1] << "\t" << geom::dim[2]*geom::Nk[2] << std::endl;
+    kvinfo << "#NumberKPoints\t" << dsf::nk << std::endl;
+
+    Array2D<unsigned int> kplu;
+    kplu.resize(dsf::nk,3);
     for(unsigned int k = 0 ; k < dsf::nk ; k++)
     {
         int kvec[3]={dsf::kpoints(k,0),dsf::kpoints(k,1),dsf::kpoints(k,2)};
-        std::stringstream sstr;
-        sstr << "kx" << kvec[0] << "ky" << kvec[1] << "kz" << kvec[2] << ".dat";
-        std::string str=sstr.str();
-        std::ofstream kvout;
-        kvout.open(str.c_str());
-        bool fopen=false;
-        if(!kvout.is_open())
+        for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
         {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errWarning("Could not open file for outputting PSD for a k-vector. Redirecting to cout");
-        }
-        else
-        {
-            fopen=true;
-        }
-        //output the sampling information
-        kvout << "#numsamples\t" << num_samples << std::endl;
-        kvout << "#samplestime\t" << static_cast<double>(dsf::dsfupdate*spins::update)*llg::dt << std::endl;
-        kvout << "#kvec\t" << kvec[0] << "\t" << kvec[1] << "\t" << kvec[2] << std::endl;
-        kvout << "#dim\t" << geom::dim[0] << "\t" << geom::dim[1] << "\t" << geom::dim[2] << std::endl;
-        kvout << "#kpointdim\t" << geom::dim[0]*geom::Nk[0] << "\t" << geom::dim[1]*geom::Nk[1] << "\t" << geom::dim[2]*geom::Nk[2] << std::endl;
-            int negq=-static_cast<int>(i)+num_samples;
-            double freq=(static_cast<double>(i)*2.0*M_PI)/(static_cast<double>(dsf::dsfupdate*spins::update*num_samples)*llg::dt);
-            //calculate the bits of the one-sided PSD
-            const double Hq = Cqt(k,i)[0]*Cqt(k,i)[0] + Cqt(k,i)[1]*Cqt(k,i)[1];
-            const double Hmq = Cqt(k,negq)[0]*Cqt(k,negq)[0] + Cqt(k,negq)[1]*Cqt(k,negq)[1];
-            if(fopen)
+            if(kvec[xyz]<0)
             {
-                kvout << i << "\t" << freq << "\t" << Hq+Hmq << std::endl;
-            }
-            else//try to redirect cout
-            {
-                std::cout << i << "\t" << freq << "\t" << Hq+Hmq << std::endl;
+                kplu(k,xyz)=kvec[xyz]+geom::dim[xyz]*geom::Nk[xyz];
             }
         }
-        if(kvout.is_open())
-        {
-            kvout.close();
-            if(kvout.is_open())
-            {
-                error::errPreamble(__FILE__,__LINE__);
-                error::errWarning("Could not close k-vector file.");
-            }
-        }
+        kvinfo << "#kvector " << k << " = " << kvec[0] << "\t" << kvec[1] << "\t" << kvec[2] << std::endl;;
+    }
 
     for(unsigned int t = dsf::ets ; t < (dsf::rts+dsf::ets) ; t++)
     {
@@ -120,39 +112,57 @@ void sim::timeseries(int argc,char *argv[])
         }
         if(t%(spins::update*dsf::dsfupdate)==0)
         {
-            //zero the 3d spin array
-            s3d.IFill(0);
-            //copy spin to 3D arrays and apply unitary transforms
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
-            {
-                unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-                //get the magnetic species number
-                unsigned int ms=geom::lu(i,3);
-                s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*dsf::uo(ms,0);
-                s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*dsf::uo(ms,1);
-            }
-            fftw_execute(ftspins);
-            //loop over the k-points that we are interested in
-            for(unsigned int i = 0 ; i < dsf::nk ; i++)
-            {
-                int kvec[3]={dsf::kpoints(i,0),dsf::kpoints(i,1),dsf::kpoints(i,2)};
-                int relkvec[3]={0,0,0};
-                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
-                {
-                    if(kvec[xyz]<0)
-                    {
-                        relkvec[xyz]=kvec[xyz]+geom::dim[xyz]*geom::Nk[xyz];
-                    }
-                }
+
                 if(sample_counter<num_samples)
                 {
-                    Cqt(i,sample_counter)[0]=s3d(relkvec[0],relkvec[1],relkvec[2])[0];
-                    Cqt(i,sample_counter)[1]=s3d(relkvec[0],relkvec[1],relkvec[2])[1];
+                    //zero the 3d spin array
+                    s3d.IFill(0);
+                    //copy spin to 3D arrays and apply unitary transforms
+                    for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                    {
+                        unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                        //get the magnetic species number
+                        unsigned int ms=geom::lu(i,3);
+                        s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*dsf::uo(ms,0);
+                        s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*dsf::uo(ms,1);
+                    }
+                    fftw_execute(ftspins);
+                    //output the time for completeness
+                    kvout << static_cast<double>(t-dsf::ets)*llg::dt << "\t";
+                    //loop over the k-points that we are interested in
+                    for(unsigned int i = 0 ; i < dsf::nk ; i++)
+                    {
+                        kvout << s3d(kplu(i,0),kplu(i,1),kplu(i,2))[0] << "\t" << s3d(kplu(i,0),kplu(i,1),kplu(i,2))[1] << "\t";
+                    }
+                    kvout << std::endl;
                 }
-            }
-            sample_counter++;
+                sample_counter++;
 
         }
         llg::integrate(t);
     }
+    if(sample_counter!=num_samples)
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errWarning("The number of samples counted (not output) is not the same as num_samples that was calculated before hand.");
+    }
+    if(kvout.is_open())
+    {
+        kvout.close();
+        if(kvout.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close k-vector file.");
+        }
+    }
+    if(kvinfo.is_open())
+    {
+        kvinfo.close();
+        if(kvinfo.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close k-vector info file.");
+        }
+    }
+
 }

@@ -6,7 +6,7 @@ dsf:
     Update = 1;
     Temperature=1.0;
     EquilibrationTime=10e-12;
-    RunTime=500e-12;
+    RunTime=20e-12;
 
     NumberKPoints=8;
     KPoint0 = [ 0 , 0 , 0 ];
