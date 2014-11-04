@@ -8,12 +8,12 @@ exchange_0_0:
     Num_Shells = 1;
     //Units of energy
     units = "joules";
-    Shell1Vec = [ 0.5 , 0.0 , 0.0 ];
+    Shell1Vec = [ 1.0 , 0.0 , 0.0 ];
     NumInt1 = 6;
     //Exchange Tensor First number is shell and second is row of tensor
-    J1_1 = [ 2.835e-21 , 0.000 , 0.000 ];
-    J1_2 = [ 0.000 , 2.835e-21 , 0.000 ];
-    J1_3 = [ 0.000 , 0.000 , 2.835e-21 ];
+    J1_1 = [ 10e-21 , 0.000 , 0.000 ];
+    J1_2 = [ 0.000 , 10e-21 , 0.000 ];
+    J1_3 = [ 0.000 , 0.000 , 10e-21 ];
 };
 exchange_0_1:
 {

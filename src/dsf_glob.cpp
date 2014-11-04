@@ -1,7 +1,7 @@
 // File: dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 2 Nov 2014
-// Last-modified: 03 Nov 2014 11:32:10
+// Last-modified: 04 Nov 2014 16:54:00
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -23,12 +23,12 @@ namespace dsf
 {
     //calculate the dsf?
     bool cdsf=false;
-    //The number of symmetry directions we are
-    //interested int
-    unsigned int nsd=0;
+    //The number of K-points we are
+    //interested in
+    unsigned int nk=0;
     //Ry and Rz are 3D rotation matrices and uo is the unitary operation
     Array2D<double> Ry,Rz,uo;
-    Array2D<unsigned int> symdir;
+    Array2D<unsigned int> kpoints;
     Array<double> qa;
     //dsfupdate=the sample timesteps in units of llg::update.
     //ets = equilibration time
@@ -135,26 +135,26 @@ namespace dsf
         FIXOUTVEC(config::Info,"",Rz(2,0),Rz(2,1),Rz(2,2));
         config::printline(config::Info);
 
-        errstatus=nsetting.lookupValue("NumberOfSymmetryDirections",nsd);
+        errstatus=nsetting.lookupValue("NumberKPoints",nk);
         if(errstatus==false)
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not read the number of symmetry directions (dsf:nsd)");
+            error::errMessage("Could not read the number of K-points (dsf:NumberKPoints (integer))");
         }
-        FIXOUT(config::Info,"Number of symmetry directions:" << nsd << std::endl);
-        symdir.resize(nsd,3);
-        for(unsigned int i = 0 ; i < nsd ; i++)
+        FIXOUT(config::Info,"Number of K-points:" << nk << std::endl);
+        kpoints.resize(nk,3);
+        for(unsigned int i = 0 ; i < nk ; i++)
         {
             std::stringstream sstr;
-            sstr << "SymmetryDirection" << i;
+            sstr << "KPoint" << i;
             std::string str=sstr.str();
             for(unsigned int j = 0 ; j < 3 ; j++)
             {
-                symdir(i,j)=nsetting[str.c_str()][j];
+                kpoints(i,j)=nsetting[str.c_str()][j];
             }
-            std::stringstream sstr1;sstr1 << "Symmetry direction " << i;
+            std::stringstream sstr1;sstr1 << "K-point " << i;
             str=sstr1.str();
-            FIXOUTVEC(config::Info,str,symdir(i,0),symdir(i,1),symdir(i,2));
+            FIXOUTVEC(config::Info,str,kpoints(i,0),kpoints(i,1),kpoints(i,2));
         }
         uo.resize(geom::ucm.GetNMS(),3);
         for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)

@@ -1,12 +1,20 @@
 dsf:
 {
     QuantizationAxis = [ 1.0 , 0.0 , 1.0 ];
-    NumberOfSymmetryDirections=1;
-    SymmetryDirection0 = [ 0 , 0 , 1 ];
     UnitaryOperator0 = [ 1.0 , 1.0 , 1.0 ];
     UnitaryOperator1 = [ -1.0 , 1.0 , -1.0 ];
     Update = 1;
     Temperature=1.0;
     EquilibrationTime=10e-12;
-    RunTime=30e-12;
+    RunTime=500e-12;
+
+    NumberKPoints=8;
+    KPoint0 = [ 0 , 0 , 0 ];
+    KPoint1 = [ 0 , 0 , 1 ];
+    KPoint2 = [ 0 , 0 , 2 ];
+    KPoint3 = [ 0 , 0 , 3 ];
+    KPoint4 = [ 0 , 0 , 4 ];
+    KPoint5 = [ 0 , 0 , 5 ];
+    KPoint6 = [ 0 , 0 , 6 ];
+    KPoint7 = [ 0 , 0 , 7 ];
 };

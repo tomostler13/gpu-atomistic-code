@@ -1,7 +1,7 @@
 // File: dsf.cpp
 // Author:Tom Ostler
 // Created: 2 Nov 2014
-// Last-modified: 03 Nov 2014 11:15:31
+// Last-modified: 04 Nov 2014 12:49:17
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -28,5 +28,4 @@ namespace dsf
     {
         readDSFParam(argc,argv);
     }
-
 }

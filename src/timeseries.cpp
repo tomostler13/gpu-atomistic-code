@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 03 Nov 2014 14:44:58
+// Last-modified: 04 Nov 2014 14:07:50
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -36,6 +36,7 @@ void sim::timeseries(int argc,char *argv[])
         error::errMessage("Could not open file mag.dat");
     }
     FIXOUT(config::Info,"Planning FFT for spin map:" << std::flush);
+    //This array stores the spin map in real space
     Array3D<fftw_complex> s3d;
     s3d.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
     s3d.IFill(0);
@@ -45,9 +46,22 @@ void sim::timeseries(int argc,char *argv[])
     ftspins=fftw_plan_dft_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],s3d.ptr(),s3d.ptr(),FFTW_FORWARD,FFTW_PATIENT);
     SUCCESS(config::Info);
     num_samples=dsf::rts/(spins::update*dsf::dsfupdate);
-    FIXOUT(config::Info,"Number of samples:" << num_samples << std::endl);
-    Array<fftw_complex> Cqt;
-    Cqt.resize(num_samples);
+    FIXOUT(config::Info,"Number of time samples:" << num_samples << std::endl);
+    Array2D<fftw_complex> Cqt;
+    Cqt.resize(dsf::nk,num_samples);
+
+
+    FIXOUT(config::Info,"Planning the time-series analysis:" << std::flush);
+    //At the end we want to perform the FFT in time
+    fftw_plan fttime;
+    int rank=1;
+    int n[1]={num_samples};
+    int istride=1,ostride=1;
+    int *inembed=n,*onembed=n;
+    int idist=num_samples,odist=num_samples;
+    fttime=fftw_plan_many_dft(rank,n,dsf::nk,Cqt.ptr(),inembed,istride,idist,Cqt.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_ESTIMATE);
+    SUCCESS(config::Info);
+
     unsigned int sample_counter=0;
     for(unsigned int t = 0 ; t < dsf::ets ; t++)
     {
@@ -78,31 +92,76 @@ void sim::timeseries(int argc,char *argv[])
                 s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*dsf::uo(ms,0);
                 s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*dsf::uo(ms,1);
             }
-            //execute the fftw
             fftw_execute(ftspins);
-            //find the complex conjugate of the k-vectors we care about
-            double cc[2]={s3d(0,0,11)[0],-s3d(0,0,11)[1]};
-            //multiply the correlation function by it's cc and store
-            double z_time_cz[2]={s3d(0,0,11)[0]*cc[0]-s3d(0,0,11)[1]*cc[1],s3d(0,0,11)[0]*cc[1]+s3d(0,0,11)[1]*cc[0]};
-            if(sample_counter<num_samples)
+            //loop over the k-points that we are interested in
+            for(unsigned int i = 0 ; i < dsf::nk ; i++)
             {
-                Cqt(sample_counter)[0]=z_time_cz[0];
-                Cqt(sample_counter)[1]=z_time_cz[1];
+                int kvec[3]={dsf::kpoints(i,0),dsf::kpoints(i,1),dsf::kpoints(i,2)};
+                int relkvec[3]={0,0,0};
+                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                {
+                    if(kvec[xyz]<0)
+                    {
+                        relkvec[xyz]=kvec[xyz]+geom::dim[xyz]*geom::Nk[xyz];
+                    }
+                }
+                if(sample_counter<num_samples)
+                {
+                    Cqt(i,sample_counter)[0]=s3d(relkvec[0],relkvec[1],relkvec[2])[0];
+                    Cqt(i,sample_counter)[1]=s3d(relkvec[0],relkvec[1],relkvec[2])[1];
+                }
             }
             sample_counter++;
 
         }
         llg::integrate(t);
     }
-    //At the end we want to perform the FFT in time
-    fftw_plan fttime;
-    fttime=fftw_plan_dft_1d(num_samples,Cqt.ptr(),Cqt.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
+    FIXOUT(config::Info,"Executing the time-series:" << std::flush);
     fftw_execute(fttime);
+    SUCCESS(config::Info);
     unsigned int halfsamp=num_samples/2;
-    for(unsigned int i = 0 ; i < halfsamp ; i++)
+    for(unsigned int k = 0 ; k < dsf::nk ; k++)
     {
-        int negfreq=-static_cast<int>(i)+num_samples;
-        double freq=(static_cast<double>(i)*2.0*M_PI)/(static_cast<double>(dsf::dsfupdate*spins::update*num_samples)*llg::dt);
-        std::cout << i << "\t" << freq << "\t" << Cqt(i)[0]*Cqt(i)[0]+Cqt(i)[1]*Cqt(i)[1] << "\t" << Cqt(negfreq)[0]*Cqt(negfreq)[0]+Cqt(negfreq)[1]*Cqt(negfreq)[1] << std::endl;
+        int kvec[3]={dsf::kpoints(k,0),dsf::kpoints(k,1),dsf::kpoints(k,2)};
+        std::stringstream sstr;
+        sstr << "k_vec/kx" << kvec[0] << "ky" << kvec[1] << "kz" << kvec[2] << ".dat";
+        std::string str=sstr.str();
+        std::ofstream kvout;
+        kvout.open(str.c_str());
+        bool fopen=false;
+        if(!kvout.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not open file for outputting PSD for a k-vector. Redirecting to cout");
+        }
+        else
+        {
+            fopen=true;
+        }
+        for(unsigned int i = 0 ; i < halfsamp ; i++)
+        {
+            int negq=-static_cast<int>(i)+num_samples;
+            double freq=(static_cast<double>(i)*2.0*M_PI)/(static_cast<double>(dsf::dsfupdate*spins::update*num_samples)*llg::dt);
+            //calculate the bits of the one-sided PSD
+            const double Hq = Cqt(k,i)[0]*Cqt(k,i)[0] + Cqt(k,i)[1]*Cqt(k,i)[1];
+            const double Hmq = Cqt(k,negq)[0]*Cqt(k,negq)[0] + Cqt(k,negq)[1]*Cqt(k,negq)[1];
+            if(fopen)
+            {
+                kvout << i << "\t" << freq << "\t" << Hq+Hmq << std::endl;
+            }
+            else//try to redirect cout
+            {
+                std::cout << i << "\t" << freq << "\t" << Hq+Hmq << std::endl;
+            }
+        }
+        if(kvout.is_open())
+        {
+            kvout.close();
+            if(kvout.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not close k-vector file.");
+            }
+        }
     }
 }
