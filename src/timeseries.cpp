@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 04 Nov 2014 14:07:50
+// Last-modified: 04 Nov 2014 17:13:39
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -51,16 +51,6 @@ void sim::timeseries(int argc,char *argv[])
     Cqt.resize(dsf::nk,num_samples);
 
 
-    FIXOUT(config::Info,"Planning the time-series analysis:" << std::flush);
-    //At the end we want to perform the FFT in time
-    fftw_plan fttime;
-    int rank=1;
-    int n[1]={num_samples};
-    int istride=1,ostride=1;
-    int *inembed=n,*onembed=n;
-    int idist=num_samples,odist=num_samples;
-    fttime=fftw_plan_many_dft(rank,n,dsf::nk,Cqt.ptr(),inembed,istride,idist,Cqt.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_ESTIMATE);
-    SUCCESS(config::Info);
 
     unsigned int sample_counter=0;
     for(unsigned int t = 0 ; t < dsf::ets ; t++)
@@ -72,6 +62,55 @@ void sim::timeseries(int argc,char *argv[])
         }
         llg::integrate(t);
     }
+    std::ofstream
+    for(unsigned int k = 0 ; k < dsf::nk ; k++)
+    {
+        int kvec[3]={dsf::kpoints(k,0),dsf::kpoints(k,1),dsf::kpoints(k,2)};
+        std::stringstream sstr;
+        sstr << "kx" << kvec[0] << "ky" << kvec[1] << "kz" << kvec[2] << ".dat";
+        std::string str=sstr.str();
+        std::ofstream kvout;
+        kvout.open(str.c_str());
+        bool fopen=false;
+        if(!kvout.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not open file for outputting PSD for a k-vector. Redirecting to cout");
+        }
+        else
+        {
+            fopen=true;
+        }
+        //output the sampling information
+        kvout << "#numsamples\t" << num_samples << std::endl;
+        kvout << "#samplestime\t" << static_cast<double>(dsf::dsfupdate*spins::update)*llg::dt << std::endl;
+        kvout << "#kvec\t" << kvec[0] << "\t" << kvec[1] << "\t" << kvec[2] << std::endl;
+        kvout << "#dim\t" << geom::dim[0] << "\t" << geom::dim[1] << "\t" << geom::dim[2] << std::endl;
+        kvout << "#kpointdim\t" << geom::dim[0]*geom::Nk[0] << "\t" << geom::dim[1]*geom::Nk[1] << "\t" << geom::dim[2]*geom::Nk[2] << std::endl;
+            int negq=-static_cast<int>(i)+num_samples;
+            double freq=(static_cast<double>(i)*2.0*M_PI)/(static_cast<double>(dsf::dsfupdate*spins::update*num_samples)*llg::dt);
+            //calculate the bits of the one-sided PSD
+            const double Hq = Cqt(k,i)[0]*Cqt(k,i)[0] + Cqt(k,i)[1]*Cqt(k,i)[1];
+            const double Hmq = Cqt(k,negq)[0]*Cqt(k,negq)[0] + Cqt(k,negq)[1]*Cqt(k,negq)[1];
+            if(fopen)
+            {
+                kvout << i << "\t" << freq << "\t" << Hq+Hmq << std::endl;
+            }
+            else//try to redirect cout
+            {
+                std::cout << i << "\t" << freq << "\t" << Hq+Hmq << std::endl;
+            }
+        }
+        if(kvout.is_open())
+        {
+            kvout.close();
+            if(kvout.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not close k-vector file.");
+            }
+        }
+
     for(unsigned int t = dsf::ets ; t < (dsf::rts+dsf::ets) ; t++)
     {
         if(t%spins::update==0)
@@ -115,53 +154,5 @@ void sim::timeseries(int argc,char *argv[])
 
         }
         llg::integrate(t);
-    }
-    FIXOUT(config::Info,"Executing the time-series:" << std::flush);
-    fftw_execute(fttime);
-    SUCCESS(config::Info);
-    unsigned int halfsamp=num_samples/2;
-    for(unsigned int k = 0 ; k < dsf::nk ; k++)
-    {
-        int kvec[3]={dsf::kpoints(k,0),dsf::kpoints(k,1),dsf::kpoints(k,2)};
-        std::stringstream sstr;
-        sstr << "k_vec/kx" << kvec[0] << "ky" << kvec[1] << "kz" << kvec[2] << ".dat";
-        std::string str=sstr.str();
-        std::ofstream kvout;
-        kvout.open(str.c_str());
-        bool fopen=false;
-        if(!kvout.is_open())
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errWarning("Could not open file for outputting PSD for a k-vector. Redirecting to cout");
-        }
-        else
-        {
-            fopen=true;
-        }
-        for(unsigned int i = 0 ; i < halfsamp ; i++)
-        {
-            int negq=-static_cast<int>(i)+num_samples;
-            double freq=(static_cast<double>(i)*2.0*M_PI)/(static_cast<double>(dsf::dsfupdate*spins::update*num_samples)*llg::dt);
-            //calculate the bits of the one-sided PSD
-            const double Hq = Cqt(k,i)[0]*Cqt(k,i)[0] + Cqt(k,i)[1]*Cqt(k,i)[1];
-            const double Hmq = Cqt(k,negq)[0]*Cqt(k,negq)[0] + Cqt(k,negq)[1]*Cqt(k,negq)[1];
-            if(fopen)
-            {
-                kvout << i << "\t" << freq << "\t" << Hq+Hmq << std::endl;
-            }
-            else//try to redirect cout
-            {
-                std::cout << i << "\t" << freq << "\t" << Hq+Hmq << std::endl;
-            }
-        }
-        if(kvout.is_open())
-        {
-            kvout.close();
-            if(kvout.is_open())
-            {
-                error::errPreamble(__FILE__,__LINE__);
-                error::errWarning("Could not close k-vector file.");
-            }
-        }
     }
 }
