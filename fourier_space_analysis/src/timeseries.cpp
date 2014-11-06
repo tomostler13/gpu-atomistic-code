@@ -231,11 +231,34 @@ int main(int argc,char *argv[])
         FIXOUT(Info,"Applying 1D Gaussian filter:" << std::flush);
         gaussianiir1d(ores,res,num_samples/2,pixelwidth,10);
         SUCCESS(Info);
+        FIXOUT(Info,"Finding max value of both smoothed and raw data:" << std::endl);
+        double maxraw=0.0;
+        double maxsmooth=0.0;
+        unsigned int maxrawindex=0;
+        unsigned int maxsmoothindex=0;
+        for(unsigned int w = 0 ; w < num_samples/2 ; w++)
+        {
+            if(res(w)>maxsmooth)
+            {
+                maxsmooth=res(w);
+                maxsmoothindex=w;
+            }
+            if(ores(w)>maxraw)
+            {
+                maxraw=ores(w);
+                maxrawindex=w;
+            }
+        }
+        SUCCESS(Info);
+        FIXOUT(Info,"The maximum value of the raw data is:" << maxraw << std::endl);
+        FIXOUT(Info,"This occurs at frequency: " << (static_cast<double>(maxrawindex)*2.0*M_PI)/(static_cast<double>(num_samples)*dt) << " [rad/s]"  << std::endl);
+        FIXOUT(Info,"The maximum value of the smoothed data is:" << maxsmooth << std::endl);
+        FIXOUT(Info,"This occurs at frequency: " << (static_cast<double>(maxsmoothindex)*2.0*M_PI)/(static_cast<double>(num_samples)*dt) << " [rad/s]" << std::endl);
         for(unsigned int w = 0 ; w < num_samples/2 ; w++)
         {
             double freq=(static_cast<double>(w)*2.0*M_PI)/(static_cast<double>(num_samples)*dt);
 //calculate the bits of the one-sided PSD
-            dataout << freq << "\t" << ores(w) << "\t" << res(w) << std::endl;
+            dataout << freq << "\t" << ores(w) << "\t" << res(w) << "\t" << ores(w)/maxraw << "\t" << res(w)/maxsmooth << std::endl;
         }
         dataout.close();
         if(dataout.is_open())
