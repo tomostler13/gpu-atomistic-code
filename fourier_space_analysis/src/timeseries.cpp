@@ -7,6 +7,8 @@
 #include "../../inc/array.h"
 #include "../../inc/array2d.h"
 #include "../../inc/defines.h"
+//function prototype for Gaussian smoothing
+void gaussianiir1d(Array<double>&,Array<double>&, unsigned int, double,unsigned int);
 //This code is designed to work with the atomistic spin
 //dynamics code and post-process the fourier components S(\vec{q},t)
 //for a number of the vectors of q. The atomistic spin dynamics code
@@ -28,12 +30,13 @@ int main(int argc,char *argv[])
     //0 - no window
     //1 - generalized hamming
     unsigned int windowi=0;
-    if(argc<2)
+    if(argc<3)
     {
-        std::cerr << "Error: You must give a file as an arguement." << std::endl;
+        std::cerr << "Error: You must give a file and the width in Hz as paramters." << std::endl;
         exit(0);
     }
     std::string infofile=argv[1];
+    double width=atof(argv[2]);
     std::ofstream Info;
     Info.open("info.dat");
     if(!Info.is_open())
@@ -41,7 +44,7 @@ int main(int argc,char *argv[])
         std::cerr << "Error: Could not open the information (output) file." << std::endl;
         exit(0);
     }
-    if(argc < 3)
+    if(argc < 4)
     {
         FIXOUT(Info,"You have chosen no time window" << std::endl);
     }
@@ -49,14 +52,14 @@ int main(int argc,char *argv[])
     {
         FIXOUT(Info,"You have chosen the window:" << window << std::endl);
     }
-    if(argc > 3)
+    if(argc > 4)
     {
 
-        window=argv[2];
+        window=argv[3];
         if(window=="hamm")
         {
             windowi=1;
-            if(argc > 3 && argc < 5)
+            if(argc > 4 && argc < 6)
             {
                 std::cerr << "You have specified a windowing function the use of a generalized hamming window without providing alpha and beta" << std::endl;
                 std::cerr << "Usage: ./timeseries <file> <window> <params>" << std::endl;
@@ -64,8 +67,8 @@ int main(int argc,char *argv[])
             }
             else
             {
-                hammalpha=atof(argv[2]);
-                hammbeta=atof(argv[3]);
+                hammalpha=atof(argv[3]);
+                hammbeta=atof(argv[4]);
                 FIXOUT(Info,"Hamm alpha:" << hammalpha << std::endl);
                 FIXOUT(Info,"Hamm beta:" << hammbeta << std::endl);
             }
@@ -107,6 +110,9 @@ int main(int argc,char *argv[])
     infoin >> dump;
     infoin >> nk;
     FIXOUT(Info,"Number of k points sampled:" << nk << std::endl);
+
+    const double normsize=static_cast<double>(kdim[0]*kdim[1]*kdim[2]*num_samples);
+    FIXOUT(Info,"Normalization constant" << normsize << std::endl);
     Array2D<int> kvecs;
     kvecs.resize(nk,3);
     for(unsigned int i = 0 ; i < nk ; i++)
@@ -135,6 +141,19 @@ int main(int argc,char *argv[])
         std::cerr << "Error: you are trying to use a window that has not been implemented yet" << std::endl;
     }
 
+    //need to convert the width to number of pixels (samples)
+    //one pixel corresponds to 2*pi/(num_samples*dt)
+    //so one pixel in Hz is 1/(num_samples*dt)
+    unsigned int pixelwidth=static_cast<unsigned int>(width*static_cast<double>(num_samples)*dt+0.5);
+
+    FIXOUT(Info,"The desired width of the gaussian blur is:" << width << " [Hz]" << std::endl);
+    FIXOUT(Info,"The number of pixels corresponding to our width is:" << pixelwidth << std::endl);
+    if(pixelwidth<1)
+    {
+        std::cerr << "Error: the pixel width for the Gaussian smoothing cannot be less than 1." << std::endl;
+        exit(0);
+    }
+    FIXOUT(Info,"The actual smoothing width (due to rounding) is:" << static_cast<double>(pixelwidth)*static_cast<double>(num_samples)*dt << std::endl);
     //loop over the number of k-vectors that we want to perform the time series for
     for(unsigned int i = 0 ; i < nk ; i++)
     {
@@ -171,6 +190,13 @@ int main(int argc,char *argv[])
         FIXOUTVEC(Info,"Executing fourier transform for k-vector:",kvecs(i,0),kvecs(i,1),kvecs(i,2));
         fftw_execute(fttime);
         SUCCESS(Info);
+        FIXOUT(Info,"Normalizing data:" << std::flush);
+        for(unsigned int t = 0 ; t < num_samples ; t++)
+        {
+            Sq(t)[0]/=normsize;
+            Sq(t)[1]/=normsize;
+        }
+        SUCCESS(Info);
         //output data
         std::stringstream sstr;
         sstr << "kx" << kvecs(i,0) << "ky" << kvecs(i,1) << "kz" << kvecs(i,2) << ".dat";
@@ -188,16 +214,29 @@ int main(int argc,char *argv[])
             std::cerr << "Error: Could not open data file (" << str << ") for writing PSD" << std::endl;
             exit(0);
         }
+        Array<double> res,ores;
+        res.resize(num_samples/2);
+        ores.resize(num_samples/2);
+        res.IFill(0);
+        ores.IFill(0);
         for(unsigned int w = 0 ; w < num_samples/2 ; w++)
         {
             int negq=-static_cast<int>(w)+num_samples;
-            double freq=(static_cast<double>(w)*2.0*M_PI)/(static_cast<double>(num_samples)*dt);
-//calculate the bits of the one-sided PSD
+            //calculate the bits of the one-sided PSD
             const double Hq = Sq(w)[0]*Sq(w)[0] + Sq(w)[1]*Sq(w)[1];
             const double Hmq = Sq(negq)[0]*Sq(negq)[0] + Sq(negq)[1]*Sq(negq)[1];
-            dataout << freq << "\t" << Hq << "\t" << Hmq << std::endl;
+            res(w)=Hq+Hmq;
+            ores(w)=res(w);
         }
-
+        FIXOUT(Info,"Applying 1D Gaussian filter:" << std::flush);
+        gaussianiir1d(ores,res,num_samples/2,pixelwidth,10);
+        SUCCESS(Info);
+        for(unsigned int w = 0 ; w < num_samples/2 ; w++)
+        {
+            double freq=(static_cast<double>(w)*2.0*M_PI)/(static_cast<double>(num_samples)*dt);
+//calculate the bits of the one-sided PSD
+            dataout << freq << "\t" << ores(w) << "\t" << res(w) << std::endl;
+        }
         dataout.close();
         if(dataout.is_open())
         {
@@ -208,4 +247,47 @@ int main(int argc,char *argv[])
     SUCCESS(Info);
     return(0);
 }
+/*
+ * Reference:
+ * Alvarez, Mazorra, "Signal and Image Restoration using Shock Filters and
+ * Anisotropic Diffusion," SIAM J. on Numerical Analysis, vol. 31, no. 2,
+ * pp. 590-605, 1994.
+*/
+void gaussianiir1d(Array<double>& indata,Array<double>& data, unsigned int length, double sigma,unsigned int numsteps)
+{
+    double lambda, dnu;
+    double nu, boundaryscale, postscale;
+    long i;
+    int step;
+    if(!data.ptr() || length < 1 || sigma <= 0 || numsteps < 0)
+        return;
+    lambda = (sigma*sigma)/(2.0*numsteps);
+    dnu = (1.0 + 2.0*lambda - sqrt(1.0 + 4.0*lambda))/(2.0*lambda);
+    nu = (double)dnu;
+    boundaryscale = (double)(1.0/(1.0 - dnu));
+    postscale = (double)(pow(dnu/lambda,numsteps));
+    //copy to indata to preserve the original data (we are not finished with it)
+    for(unsigned int i = 0 ; i < length ; i++)
+    {
+        data[i]=indata[i];
+    }
+    for(step = 0; step < numsteps; step++)
+    {
+        data[0] *= boundaryscale;
 
+        /* Filter rightwards (causal) */
+        for(i = 1; i < length; i++)
+            data[i] += nu * data[i - 1];
+
+        data[i = length - 1] *= boundaryscale;
+
+        /* Filter leftwards (anti-causal) */
+        for(; i > 0; i--)
+            data[i - 1] += nu*data[i];
+    }
+
+    for(i = 0; i < length; i++)
+        data[i] *= postscale;
+
+    return;
+}
