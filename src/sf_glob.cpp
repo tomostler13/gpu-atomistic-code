@@ -1,14 +1,15 @@
-// File: dsf_glob.cpp
+// File: sf_glob.cpp
+// Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 2 Nov 2014
-// Last-modified: 04 Nov 2014 16:54:00
+// Last-modified: 06 Nov 2014 12:01:47
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
 #include "../inc/util.h"
 #include "../inc/arrays.h"
-#include "../inc/dsf.h"
+#include "../inc/sf.h"
 #include "../inc/unitcell.h"
 #include <sstream>
 #include <cstdlib>
@@ -18,11 +19,11 @@
 #define FIXOUT(a,b) a.width(75);a << std::left << b;
 #define FIXOUTVEC(a,b,c,d,e) FIXOUT(a,b << "[   ");a.width(5);a << std::left << c << " , ";a.width(5);a << std::left << d << " , ";a.width(5);a << std::left << e << "   ]" << std::endl;
 
-//Reads the parameters and sets up parts of the DSF calculation
-namespace dsf
+//Reads the parameters and sets up parts of the SF calculation
+namespace sf
 {
-    //calculate the dsf?
-    bool cdsf=false;
+    //calculate the sf?
+    bool csf=false;
     //The number of K-points we are
     //interested in
     unsigned int nk=0;
@@ -30,12 +31,10 @@ namespace dsf
     Array2D<double> Ry,Rz,uo;
     Array2D<unsigned int> kpoints;
     Array<double> qa;
-    //dsfupdate=the sample timesteps in units of llg::update.
-    //ets = equilibration time
-    //rts = run timesteps
-    unsigned int dsfupdate=0,ets=0,rts=0;
-    double et=0.0,rt=0.0,T=0.0;
-    void readDSFParam(int argc,char *argv[])
+    //sfupdate=the sample timesteps in units of llg::update.
+    unsigned int sfupdate=0;
+
+    void readSFParam(int argc,char *argv[])
     {
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Dynamic structure factor details***" << std::endl;
@@ -55,37 +54,37 @@ namespace dsf
             exit(EXIT_FAILURE);
         }
         bool errstatus=false;
-        std::string dsffile;
-        libconfig::Setting &setting = config::cfg.lookup("dsf");
-        errstatus=setting.lookupValue("Calculate",cdsf);
+        std::string sffile;
+        libconfig::Setting &setting = config::cfg.lookup("sf");
+        errstatus=setting.lookupValue("Calculate",csf);
         //do some error handling
         if(errstatus==false)
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not read whether DSF calculation is selected.");
+            error::errMessage("Could not read whether SF calculation is selected.");
         }
         else
         {
-            FIXOUT(config::Info,"Outputting DSF?:" << config::isTF(cdsf) << std::endl);
-            if(cdsf==false)
+            FIXOUT(config::Info,"Outputting SF?:" << config::isTF(csf) << std::endl);
+            if(csf==false)
             {
                 //we do not need to any more processing of the dsf information
                 return;
             }
-            errstatus=setting.lookupValue("InputFile",dsffile);
+            errstatus=setting.lookupValue("InputFile",sffile);
             if(errstatus==false)
             {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("You specified the use of the DSF calculation, however you have to speficy an input file (dsf:InputFile) in the config file.");
+                error::errMessage("You specified the use of the SF calculation, however you have to speficy an input file (sf:InputFile) in the config file.");
             }
             else
             {
-                FIXOUT(config::Info,"DSF input file:" << dsffile << std::endl);
+                FIXOUT(config::Info,"SF input file:" << sffile << std::endl);
             }
         }
         try
         {
-            config::cfg.readFile(dsffile.c_str());
+            config::cfg.readFile(sffile.c_str());
         }
         catch(const libconfig::FileIOException &fioex)
         {
@@ -98,7 +97,7 @@ namespace dsf
             std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
             exit(EXIT_FAILURE);
         }
-        libconfig::Setting &nsetting = config::cfg.lookup("dsf");
+        libconfig::Setting &nsetting = config::cfg.lookup("sf");
         //if we have not exited or returned by this point we need to read the input file
         //First read the (predicted) quantization axis
         qa.resize(3);
@@ -139,7 +138,7 @@ namespace dsf
         if(errstatus==false)
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not read the number of K-points (dsf:NumberKPoints (integer))");
+            error::errMessage("Could not read the number of K-points (sf:NumberKPoints (integer))");
         }
         FIXOUT(config::Info,"Number of K-points:" << nk << std::endl);
         kpoints.resize(nk,3);
@@ -198,39 +197,15 @@ namespace dsf
             str=sstr2.str();
             FIXOUT(config::Info,"" << str << std::endl);
         }
-        errstatus=nsetting.lookupValue("Update",dsfupdate);
+        errstatus=nsetting.lookupValue("Update",sfupdate);
         if(errstatus==false)
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not read the sample time (dsf:update) from the dsf config file.");
+            error::errMessage("Could not read the sample time (sf:update) from the sf config file.");
         }
         else
         {
-            FIXOUT(config::Info,"Sample timesteps (in units of spins:update):" << dsfupdate << std::endl);
-        }
-        errstatus=nsetting.lookupValue("EquilibrationTime",et);
-        if(errstatus)
-        {
-            FIXOUT(config::Info,"Equilibration time:" << et << " [s]" << std::endl);
-            ets=static_cast<unsigned int>((et/llg::dt)+0.5);
-            FIXOUT(config::Info,"Number of equilibration timesteps:" << ets << std::endl);
-        }
-        errstatus=nsetting.lookupValue("RunTime",rt);
-        if(errstatus)
-        {
-            FIXOUT(config::Info,"Run time:" << rt << " [s]" << std::endl);
-            rts=static_cast<unsigned int>((rt/llg::dt)+0.5);
-            FIXOUT(config::Info,"Number of timesteps for run:" << rts << std::endl);
-        }
-        errstatus=nsetting.lookupValue("Temperature",T);
-        if(errstatus)
-        {
-            FIXOUT(config::Info,"Temperature:" << T << " [K]" << std::endl);
-        }
-        else
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not read temperature for dsf (dsf:Temperature (double))");
+            FIXOUT(config::Info,"Sample timesteps (in units of spins:update):" << sfupdate << std::endl);
         }
     }
 }

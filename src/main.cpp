@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 03 Nov 2014 11:51:44
+// Last-modified: 06 Nov 2014 11:54:05
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -23,7 +23,7 @@
 #include "../inc/util.h"
 #include "../inc/sim.h"
 #include "../inc/llg.h"
-#include "../inc/dsf.h"
+#include "../inc/sf.h"
 #ifdef CUDA
 #include "../inc/cuda.h"
 #endif
@@ -69,7 +69,7 @@ int main(int argc,char *argv[])
     sim::initSim(argc,argv);
     llg::initLLG(argc,argv);
     //Initialise the Dynamic structure factor calculation
-    dsf::initDSF(argc,argv);
+    sf::initSF(argc,argv);
 
 #ifdef CUDA
     cullg::cuinit(argc,argv);

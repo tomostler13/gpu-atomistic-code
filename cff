@@ -3,7 +3,7 @@ seed = 1359107109;
 system:
 {
     //number of unit cells
-    dim = [ 64 , 64 , 64 ];
+    dim = [ 16 , 16 , 16 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
@@ -68,4 +68,10 @@ mvt:
     MaxRunTime = 45e-12;
     MinRunTime = 1e-12;
     MvTFile = "MvT.dat";
+};
+timeseries:
+{
+    EquilibrationTime = 10e-12;
+    RunTime = 10e-12;
+    Temperature = 1.0;
 };
