@@ -1,9 +1,9 @@
 OutputFile = "opf.dat";
-seed = 1359107107;
+seed = 1359107109;
 system:
 {
     //number of unit cells
-    dim = [ 16 , 16 , 16 ];
+    dim = [ 64 , 64 , 64 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
@@ -45,7 +45,7 @@ llg:
 {
     dt = 0.1e-15;
     applied = [ 0.0 , 0.0 , 1.0 ];
-    update=1;
+    update=10;
     MagnetizationCalculationMethod=0;
 };
 cuda:

@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 10 Oct 2014 15:58:19
+// Last-modified: 05 Nov 2014 20:08:04
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -31,6 +31,7 @@ namespace exch
     Array4D<unsigned int> kvec;
     Array5D<double> J;
     std::string enerType;
+    bool outputJ;
     void initExch(int argc,char *argv[])
     {
 
@@ -57,6 +58,8 @@ namespace exch
         setting.lookupValue("exchmethod",method);
         FIXOUT(config::Info,"Method to read in exchange:" << method << std::endl);
         setting.lookupValue("exchinput",readMethod);
+        setting.lookupValue("OutputExchange",outputJ);
+        FIXOUT(config::Info,"Output of exchange matrix (mostly for visualization how diagonal it is):" << config::isTF(outputJ) << std::endl);
         if(readMethod=="thisfile")
         {
             FIXOUT(config::Info,"Reading exchange interactions from:" << "config file" << std::endl);
@@ -185,10 +188,13 @@ namespace exch
                 if(config::exchm>0)//We calculate the exchange via a matrix multiplication
                 {
                     std::ofstream opJ("J.dat");
-                    if(!opJ.is_open())
+                    if(outputJ)
                     {
-                        error::errPreamble(__FILE__,__LINE__);
-                        error::errMessage("Could not open file J.dat for writing the 2D interaction matrix to.");
+                        if(!opJ.is_open())
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            error::errMessage("Could not open file J.dat for writing the 2D interaction matrix to.");
+                        }
                     }
                     //temporary arrays in format to store the adjncy as we don't know
                     //how big it is before hand
@@ -306,7 +312,10 @@ namespace exch
 
                                                             }
                                                         }
-                                                        opJ << i << "\t" << neigh << "\t" << tdata[0][0][adjncy_counter-1] << std::endl;
+                                                        if(outputJ)
+                                                        {
+                                                            opJ << i << "\t" << neigh << "\t" << tdata[0][0][adjncy_counter-1] << std::endl;
+                                                        }
                                                         check(lookupvec[0],lookupvec[1],lookupvec[2])=1;//this should mean that we no longer look for a neighbour here to avoid double addition of exchange
                                                     }
                                                 }
@@ -328,12 +337,14 @@ namespace exch
                     diagnumdiag=diagcount;
                     //std::cout <<"Number of diagonals detected\t" << diagcount << std::endl;
                     xadj[geom::nspins]=adjncy_counter;
-
-                    opJ.close();
-                    if(opJ.is_open())
+                    if(outputJ)
                     {
-                        error::errPreamble(__FILE__,__LINE__);
-                        error::errWarning("Could not close J.dat for writing interaction matrix.");
+                        opJ.close();
+                        if(opJ.is_open())
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            error::errWarning("Could not close J.dat for writing interaction matrix.");
+                        }
                     }
                     if(config::offdiag==false)
                     {

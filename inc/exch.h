@@ -1,7 +1,7 @@
 // File: exch.h
 // Author:Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 10 Oct 2014 14:56:35
+// Last-modified: 05 Nov 2014 20:05:33
 #ifndef _EXCH_H_
 #define _EXCH_H_
 #include "../inc/arrays.h"
@@ -15,6 +15,7 @@ namespace exch
     extern Array4D<unsigned int> kvec;
     extern Array5D<double> J;
     extern unsigned int num_shells,diagnumdiag,offdiagnumdiag;
+    extern bool outputJ;
     void initExch(int argc,char *argv[]);
 }
 #endif /*_EXCH_H_*/

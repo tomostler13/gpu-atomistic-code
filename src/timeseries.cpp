@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 04 Nov 2014 20:37:25
+// Last-modified: 05 Nov 2014 10:33:05
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -92,15 +92,20 @@ void sim::timeseries(int argc,char *argv[])
     kplu.resize(dsf::nk,3);
     for(unsigned int k = 0 ; k < dsf::nk ; k++)
     {
-        int kvec[3]={dsf::kpoints(k,0),dsf::kpoints(k,1),dsf::kpoints(k,2)};
+        int kvec[3]={static_cast<int>(dsf::kpoints(k,0)),static_cast<int>(dsf::kpoints(k,1)),static_cast<int>(dsf::kpoints(k,2))};
         for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
         {
             if(kvec[xyz]<0)
             {
                 kplu(k,xyz)=kvec[xyz]+geom::dim[xyz]*geom::Nk[xyz];
             }
+            else
+            {
+                kplu(k,xyz)=kvec[xyz];
+            }
         }
         kvinfo << "#kvector " << k << " = " << kvec[0] << "\t" << kvec[1] << "\t" << kvec[2] << std::endl;;
+        kvinfo << "#lookupkvector " << k << " = " << kplu(k,0) << "\t" << kplu(k,1) << "\t" << kplu(k,2) << std::endl;
     }
 
     for(unsigned int t = dsf::ets ; t < (dsf::rts+dsf::ets) ; t++)

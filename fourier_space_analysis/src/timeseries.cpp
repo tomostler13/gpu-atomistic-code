@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
+#include <sstream>
 #include "../../inc/array.h"
 #include "../../inc/array2d.h"
 #include "../../inc/defines.h"
@@ -19,8 +20,14 @@
 //The second filename is taken from the info file (1).
 int main(int argc,char *argv[])
 {
+    double idump;
+    double hammalpha=0.0,hammbeta=0.0;
     std::string dump;
-    std::string idump;
+    std::string window;
+    //this tells us which window we are using
+    //0 - no window
+    //1 - generalized hamming
+    unsigned int windowi=0;
     if(argc<2)
     {
         std::cerr << "Error: You must give a file as an arguement." << std::endl;
@@ -33,6 +40,40 @@ int main(int argc,char *argv[])
     {
         std::cerr << "Error: Could not open the information (output) file." << std::endl;
         exit(0);
+    }
+    if(argc < 3)
+    {
+        FIXOUT(Info,"You have chosen no time window" << std::endl);
+    }
+    else
+    {
+        FIXOUT(Info,"You have chosen the window:" << window << std::endl);
+    }
+    if(argc > 3)
+    {
+
+        window=argv[2];
+        if(window=="hamm")
+        {
+            windowi=1;
+            if(argc > 3 && argc < 5)
+            {
+                std::cerr << "You have specified a windowing function the use of a generalized hamming window without providing alpha and beta" << std::endl;
+                std::cerr << "Usage: ./timeseries <file> <window> <params>" << std::endl;
+                std::cerr << "For a generalized Hamming window use, <window>=hamm, params = alpha beta." << std::endl;
+            }
+            else
+            {
+                hammalpha=atof(argv[2]);
+                hammbeta=atof(argv[3]);
+                FIXOUT(Info,"Hamm alpha:" << hammalpha << std::endl);
+                FIXOUT(Info,"Hamm beta:" << hammbeta << std::endl);
+            }
+        }
+        else
+        {
+            std::cerr << "Windowing technique not recognized" << std::endl;
+        }
     }
     FIXOUT(Info,"K-vec information file:" << infofile << std::endl);
     std::ifstream infoin;
@@ -72,13 +113,13 @@ int main(int argc,char *argv[])
     {
         infoin >> dump >> idump >> dump;
         infoin >> kvecs(i,0) >> kvecs(i,1) >> kvecs(i,2);
+        std::stringstream sstr;
+        sstr << "K-vector " << i << " of " << nk << ":";
+        std::string str=sstr.str();
+        FIXOUTVEC(Info,str,kvecs(i,0),kvecs(i,1),kvecs(i,2));
+        infoin >> dump >> idump >> dump >> idump >> idump >> idump;
     }
     Array<fftw_complex> Sq;
-    //need to read the file and set the variables here
-
-
-
-
     Sq.resize(num_samples);
     FIXOUT(Info,"Planning the time-series analysis:" << std::flush);
     //At the end we want to perform the FFT in time
@@ -87,16 +128,84 @@ int main(int argc,char *argv[])
     //worth plannig it well
     fftw_set_timelimit(60);
     fttime=fftw_plan_dft_1d(num_samples,Sq.ptr(),Sq.ptr(),FFTW_FORWARD,FFTW_PATIENT);
-    /*SUCCESS(config::Info);
-    FIXOUT(config::Info,"Executing the time-series:" << std::flush);
-    fftw_execute(fttime);
-    SUCCESS(config::Info);
-            int negq=-static_cast<int>(i)+num_samples;
-            double freq=(static_cast<double>(i)*2.0*M_PI)/(static_cast<double>(dsf::dsfupdate*spins::update*num_samples)*llg::dt);
+    SUCCESS(Info);
+
+    if(windowi>1)
+    {
+        std::cerr << "Error: you are trying to use a window that has not been implemented yet" << std::endl;
+    }
+
+    //loop over the number of k-vectors that we want to perform the time series for
+    for(unsigned int i = 0 ; i < nk ; i++)
+    {
+        std::ifstream datain(datfile.c_str());
+        if(!datain.is_open())
+        {
+            std::cerr << "Error: Could not open file for reading k-vector " << i << std::endl;
+            exit(0);
+        }
+        Sq.IFill(0);
+        for(unsigned int t = 0 ; t < num_samples ; t++)
+        {
+            //get rid of the time index
+            datain >> dump;
+            //loop over the colums and get rid of the ones we don't want
+            for(unsigned int c = 0 ; c < nk ; c++)
+            {
+                if(c==i)//then we want this column
+                {
+                    datain >> Sq(t)[0];
+                    datain >> Sq(t)[1];
+                    if(windowi==1)
+                    {
+                        Sq(t)[0]*=(hammalpha-hammbeta*cos(2.0*M_PI*static_cast<double>(t)/(static_cast<double>(num_samples)-1.0)));
+                        Sq(t)[1]*=(hammalpha-hammbeta*cos(2.0*M_PI*static_cast<double>(t)/(static_cast<double>(num_samples)-1.0)));
+                    }
+                }
+                else
+                {
+                    datain >> dump >> dump;
+                }
+            }
+        }
+        FIXOUTVEC(Info,"Executing fourier transform for k-vector:",kvecs(i,0),kvecs(i,1),kvecs(i,2));
+        fftw_execute(fttime);
+        SUCCESS(Info);
+        //output data
+        std::stringstream sstr;
+        sstr << "kx" << kvecs(i,0) << "ky" << kvecs(i,1) << "kz" << kvecs(i,2) << ".dat";
+        std::string str=sstr.str();
+        datain.close();
+        if(datain.is_open())
+        {
+            std::cerr << "Error: Could not close data file on loop " << i << std::endl;
+        }
+
+        FIXOUT(Info,"Outputting data to file:" << str << std::endl);
+        std::ofstream dataout(str.c_str());
+        if(!dataout.is_open())
+        {
+            std::cerr << "Error: Could not open data file (" << str << ") for writing PSD" << std::endl;
+            exit(0);
+        }
+        for(unsigned int w = 0 ; w < num_samples/2 ; w++)
+        {
+            int negq=-static_cast<int>(w)+num_samples;
+            double freq=(static_cast<double>(w)*2.0*M_PI)/(static_cast<double>(num_samples)*dt);
 //calculate the bits of the one-sided PSD
-            const double Hq = Cqt(k,i)[0]*Cqt(k,i)[0] + Cqt(k,i)[1]*Cqt(k,i)[1];
-            const double Hmq = Cqt(k,negq)[0]*Cqt(k,negq)[0] + Cqt(k,negq)[1]*Cqt(k,negq)[1];
-        */
+            const double Hq = Sq(w)[0]*Sq(w)[0] + Sq(w)[1]*Sq(w)[1];
+            const double Hmq = Sq(negq)[0]*Sq(negq)[0] + Sq(negq)[1]*Sq(negq)[1];
+            dataout << freq << "\t" << Hq << "\t" << Hmq << std::endl;
+        }
+
+        dataout.close();
+        if(dataout.is_open())
+        {
+            std::cerr << "Error: Could not close the output data file." << std::endl;
+            exit(0);
+        }
+    }
+    SUCCESS(Info);
     return(0);
 }
 
