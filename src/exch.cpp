@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 05 Nov 2014 20:08:04
+// Last-modified: 11 Nov 2014 10:41:27
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -187,9 +187,10 @@ namespace exch
                 //then add the exchange constants to the matrix or to the interaction matrix
                 if(config::exchm>0)//We calculate the exchange via a matrix multiplication
                 {
-                    std::ofstream opJ("J.dat");
+                    std::ofstream opJ;
                     if(outputJ)
                     {
+                        opJ.open("J.dat");
                         if(!opJ.is_open())
                         {
                             error::errPreamble(__FILE__,__LINE__);
