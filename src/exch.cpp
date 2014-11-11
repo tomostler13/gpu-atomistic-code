@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 11 Nov 2014 13:43:07
+// Last-modified: 11 Nov 2014 15:46:06
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -319,7 +319,7 @@ namespace exch
                                                         }
                                                         if(outputJ)
                                                         {
-                                                            opJ << i << "\t" << neigh << "\t" << tdata[0][0][adjncy_counter-1] << std::endl;
+                                                            opJ << i << "\t" << neigh << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << mypos[0] << "," << mypos[1] << "," << mypos[2] << " ] -> [ " << lookupvec[0] << "," << lookupvec[1] << "," << lookupvec[2] << " ]" << std::endl;
                                                         }
                                                         check(lookupvec[0],lookupvec[1],lookupvec[2])=1;//this should mean that we no longer look for a neighbour here to avoid double addition of exchange
                                                     }

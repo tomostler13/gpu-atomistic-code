@@ -41,8 +41,8 @@ obj/mvt.o \
 obj/suscep.o \
 obj/matrix_conv.o \
 obj/matrix_mul_cpu.o \
-obj/dsf.o \
-obj/dsf_glob.o \
+obj/sf.o \
+obj/sf_glob.o \
 obj/timeseries.o
 
 SWITCHOBJ= \

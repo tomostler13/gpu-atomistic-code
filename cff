@@ -3,18 +3,18 @@ seed = 1359107200;
 system:
 {
     //number of unit cells
-    dim = [ 2 , 2 , 1 ];
+    dim = [ 8 , 8 , 4 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="N_8";
+    unitcellfile="N_8.ucf";
     //Number of k-points in each direction
     Nk = [ 2 , 2 , 32 ];
     //lattice constants
     abc = [ 300e-12 , 300e-12 , 4800e-12 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
-    Exchange_method="DIA";
+    Exchange_method="CSR";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
@@ -22,7 +22,7 @@ system:
     Off_Diagonals = FALSE;
     //Do you want to output the unit cell info to the log file?
     log_unit_cell = TRUE;
-    Periodic_Boundaries = [ FALSE , FALSE , FALSE ];
+    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
 };
 exchange:
 {
@@ -62,6 +62,6 @@ sim:
 timeseries:
 {
     EquilibrationTime = 10e-12;
-    RunTime = 200e-12;
+    RunTime = 20e-12;
     Temperature = 1.0;
 };
