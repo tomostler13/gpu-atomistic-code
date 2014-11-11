@@ -1,20 +1,20 @@
 OutputFile = "opf.dat";
-seed = 1359107109;
+seed = 1359107200;
 system:
 {
     //number of unit cells
-    dim = [ 16 , 16 , 16 ];
+    dim = [ 1 , 1 , 1 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="sc.test";
+    unitcellfile="N_8";
     //Number of k-points in each direction
-    Nk = [ 1 , 1 , 1 ];
+    Nk = [ 2 , 2 , 32 ];
     //lattice constants
-    abc = [ 300e-12 , 300e-12 , 300e-12 ];
+    abc = [ 300e-12 , 300e-12 , 4800e-12 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
-    Exchange_method="DIA";
+    Exchange_method="CSR";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
@@ -22,7 +22,7 @@ system:
     Off_Diagonals = FALSE;
     //Do you want to output the unit cell info to the log file?
     log_unit_cell = TRUE;
-    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
+    Periodic_Boundaries = [ FALSE , FALSE , FALSE ];
 };
 exchange:
 {
@@ -30,21 +30,22 @@ exchange:
     //direct (by reading in all interactions directly)
     //permute (take a neighbour and calculate permutations)
     exchmethod="permute";
+    OutputExchange=TRUE;
     //How are we to read in the exchange
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
-    exchfile="exch.sc";
+    exchfile="exch.fcc";
 };
-dsf:
+sf:
 {
-    Calculate=TRUE;
-    InputFile="dsf.in";
+    Calculate=FALSE;
+    InputFile="sf.in";
 };
 llg:
 {
     dt = 0.1e-15;
-    applied = [ 0.0 , 0.0 , 1.0 ];
+    applied = [ 0.0 , 0.0 , 0.0 ];
     update=10;
     MagnetizationCalculationMethod=0;
 };
@@ -55,23 +56,12 @@ cuda:
 sim:
 {
 //    sim_type = "MvT";
-//    sim_type = "quick";
-    sim_type = "timeseries";
-};
-mvt:
-{
-    lower_temp = 25.0;
-    upper_temp = 750.0;
-    temp_step = 25.0;
-    mean_tolerance = 0.0001;
-    variance_tolerance = 0.00025;
-    MaxRunTime = 45e-12;
-    MinRunTime = 1e-12;
-    MvTFile = "MvT.dat";
+    sim_type = "quick";
+//    sim_type = "timeseries";
 };
 timeseries:
 {
     EquilibrationTime = 10e-12;
-    RunTime = 10e-12;
+    RunTime = 200e-12;
     Temperature = 1.0;
 };

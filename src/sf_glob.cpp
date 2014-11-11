@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 2 Nov 2014
-// Last-modified: 06 Nov 2014 12:01:47
+// Last-modified: 11 Nov 2014 13:28:31
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -37,7 +37,7 @@ namespace sf
     void readSFParam(int argc,char *argv[])
     {
         config::printline(config::Info);
-        config::Info.width(45);config::Info << std::right << "*" << "**Dynamic structure factor details***" << std::endl;
+        config::Info.width(45);config::Info << std::right << "*" << "**Structure factor details***" << std::endl;
         try
         {
             config::cfg.readFile(argv[1]);
