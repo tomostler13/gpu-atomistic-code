@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 06 Nov 2014 12:08:51
+// Last-modified: 11 Nov 2014 14:27:11
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -27,8 +27,13 @@ void sim::timeseries(int argc,char *argv[])
     //ets = equilibration time
     //rts = run timesteps
     unsigned int ets=0,rts=0;
+    if(sf::csf==false)
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("The flag sf:Calculate must be set for true so this simulation.");
+    }
     config::printline(config::Info);
-    config::Info.width(45);config::Info << std::right << "*" << "**Timeseriesdetails***" << std::endl;
+    config::Info.width(45);config::Info << std::right << "*" << "**Time series details***" << std::endl;
     //The k-vector information is read in the file sf.cpp and sf_glob.cpp
     try
     {
@@ -89,7 +94,6 @@ void sim::timeseries(int argc,char *argv[])
     fftw_set_timelimit(60);
     ftspins=fftw_plan_dft_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],s3d.ptr(),s3d.ptr(),FFTW_FORWARD,FFTW_PATIENT);
     SUCCESS(config::Info);
-
 
 
     //calculate the total number of samples
