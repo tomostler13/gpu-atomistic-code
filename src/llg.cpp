@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 02 Oct 2014 17:18:21
+// Last-modified: 03 Nov 2014 10:01:14
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -114,5 +114,6 @@ namespace llg
         #else
         llgCPU::llgCPU(t);
         #endif
+
     }
 }

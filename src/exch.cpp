@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 10 Oct 2014 15:58:19
+// Last-modified: 11 Nov 2014 15:46:06
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -25,12 +25,14 @@ namespace exch
     Array<int> checkdiag;
     Array<unsigned int> xadj,adjncy,offdiagxadj,offdiagadjncy;//for CSR neighbour list
     Array<double> dataxx,datayy,datazz,dataxz,dataxy,datayx,datayz,datazx,datazy;
+    //evs = exchange vec scale
+    Array<double> evs;
     Array3D<unsigned int> numint;
     Array2D<unsigned int> shell_list;
     Array4D<double> exchvec;
-    Array4D<unsigned int> kvec;
     Array5D<double> J;
     std::string enerType;
+    bool outputJ;
     void initExch(int argc,char *argv[])
     {
 
@@ -57,6 +59,8 @@ namespace exch
         setting.lookupValue("exchmethod",method);
         FIXOUT(config::Info,"Method to read in exchange:" << method << std::endl);
         setting.lookupValue("exchinput",readMethod);
+        setting.lookupValue("OutputExchange",outputJ);
+        FIXOUT(config::Info,"Output of exchange matrix (mostly for visualization how diagonal it is):" << config::isTF(outputJ) << std::endl);
         if(readMethod=="thisfile")
         {
             FIXOUT(config::Info,"Reading exchange interactions from:" << "config file" << std::endl);
@@ -93,11 +97,15 @@ namespace exch
         }
         libconfig::Setting &GlobExch = exchcfg.lookup("exchange");
         GlobExch.lookupValue("MaxShells",max_shells);
+        evs.resize(3);
+        evs[0]=GlobExch["Scale"][0];
+        evs[1]=GlobExch["Scale"][1];
+        evs[2]=GlobExch["Scale"][2];
+        FIXOUTVEC(config::Info,"Scaling factor for exchange vectors:",evs[0],evs[1],evs[2]);
         numint.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells);
         exchvec.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3);
-        kvec.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3);
         shell_list.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS());
-        numint.IFill(0);exchvec.IFill(0);kvec.IFill(0);J.IFill(0);shell_list.IFill(0);
+        numint.IFill(0);exchvec.IFill(0);J.IFill(0);shell_list.IFill(0);
         if(geom::nspins>1)//then really we don't want any exchange anyway.
         {
             if(method=="permute")
@@ -135,11 +143,8 @@ namespace exch
                             for(unsigned int j = 0 ; j < 3 ; j++)
                             {
                                 exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
-                                kvec(s1,s2,i,j)=static_cast<int>(exchvec(s1,s2,i,j)*geom::Nk[j]+0.5);
                             }
                             FIXOUTVEC(config::Info,"Vectors:",exchvec(s1,s2,i,0),exchvec(s1,s2,i,1),exchvec(s1,s2,i,2));
-                            FIXOUTVEC(config::Info,"On K-mesh:",kvec(s1,s2,i,0),kvec(s1,s2,i,1),kvec(s1,s2,i,2));
-                            FIXOUT(config::Info,"Distance in k-points:" << sqrt(static_cast<double>(kvec(s1,s2,i,0)*kvec(s1,s2,i,0)+kvec(s1,s2,i,1)*kvec(s1,s2,i,1)+kvec(s1,s2,i,2)*kvec(s1,s2,i,2))));
                             config::Info << std::endl;
                             for(unsigned int j = 0 ; j < 3 ; j++)
                             {
@@ -184,11 +189,15 @@ namespace exch
                 //then add the exchange constants to the matrix or to the interaction matrix
                 if(config::exchm>0)//We calculate the exchange via a matrix multiplication
                 {
-                    std::ofstream opJ("J.dat");
-                    if(!opJ.is_open())
+                    std::ofstream opJ;
+                    if(outputJ)
                     {
-                        error::errPreamble(__FILE__,__LINE__);
-                        error::errMessage("Could not open file J.dat for writing the 2D interaction matrix to.");
+                        opJ.open("J.dat");
+                        if(!opJ.is_open())
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            error::errMessage("Could not open file J.dat for writing the 2D interaction matrix to.");
+                        }
                     }
                     //temporary arrays in format to store the adjncy as we don't know
                     //how big it is before hand
@@ -225,7 +234,9 @@ namespace exch
                         {
                             for(unsigned int shell = 0 ; shell < shell_list(sl,s1) ; shell++)
                             {
-                                unsigned int lookup[3]={kvec(sl,s1,shell,0),kvec(sl,s1,shell,1),kvec(sl,s1,shell,2)};
+                                unsigned int lookup[3]={static_cast<unsigned int>(exchvec(sl,s1,shell,0)*evs[0]*static_cast<double>(geom::Nk[0])+0.5),
+                                                        static_cast<unsigned int>(exchvec(sl,s1,shell,1)*evs[1]*static_cast<double>(geom::Nk[1])+0.5),
+                                                        static_cast<unsigned int>(exchvec(sl,s1,shell,2)*evs[2]*static_cast<double>(geom::Nk[2])+0.5)};
                                 for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
                                 {
                                     //reference array
@@ -306,7 +317,10 @@ namespace exch
 
                                                             }
                                                         }
-                                                        opJ << i << "\t" << neigh << "\t" << tdata[0][0][adjncy_counter-1] << std::endl;
+                                                        if(outputJ)
+                                                        {
+                                                            opJ << i << "\t" << neigh << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << mypos[0] << "," << mypos[1] << "," << mypos[2] << " ] -> [ " << lookupvec[0] << "," << lookupvec[1] << "," << lookupvec[2] << " ]" << std::endl;
+                                                        }
                                                         check(lookupvec[0],lookupvec[1],lookupvec[2])=1;//this should mean that we no longer look for a neighbour here to avoid double addition of exchange
                                                     }
                                                 }
@@ -328,12 +342,14 @@ namespace exch
                     diagnumdiag=diagcount;
                     //std::cout <<"Number of diagonals detected\t" << diagcount << std::endl;
                     xadj[geom::nspins]=adjncy_counter;
-
-                    opJ.close();
-                    if(opJ.is_open())
+                    if(outputJ)
                     {
-                        error::errPreamble(__FILE__,__LINE__);
-                        error::errWarning("Could not close J.dat for writing interaction matrix.");
+                        opJ.close();
+                        if(opJ.is_open())
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            error::errWarning("Could not close J.dat for writing interaction matrix.");
+                        }
                     }
                     if(config::offdiag==false)
                     {
@@ -465,9 +481,9 @@ namespace exch
                                 config::Log << "Shell " << shell_list(s1,s2) << " of " << numint(s1,s2,i) << std::endl;
                                 unsigned int counter=0;
                                 int lc[3]={0,0,0};
-                                lc[0]=kvec(s1,s2,i,0);
-                                lc[1]=kvec(s1,s2,i,1);
-                                lc[2]=kvec(s1,s2,i,2);
+                                lc[0]=static_cast<unsigned int>(exchvec(s1,s2,i,0)*static_cast<double>(geom::Nk[0])*evs[0]+0.5);
+                                lc[1]=static_cast<unsigned int>(exchvec(s1,s2,i,1)*static_cast<double>(geom::Nk[1])*evs[1]+0.5);
+                                lc[2]=static_cast<unsigned int>(exchvec(s1,s2,i,2)*static_cast<double>(geom::Nk[2])*evs[2]+0.5);
                                 for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
                                 {
                                     //reference array

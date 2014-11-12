@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Oct 2014 13:28:01
+// Last-modified: 06 Nov 2014 11:54:05
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -23,6 +23,7 @@
 #include "../inc/util.h"
 #include "../inc/sim.h"
 #include "../inc/llg.h"
+#include "../inc/sf.h"
 #ifdef CUDA
 #include "../inc/cuda.h"
 #endif
@@ -67,6 +68,9 @@ int main(int argc,char *argv[])
     spins::initSpins(argc,argv);
     sim::initSim(argc,argv);
     llg::initLLG(argc,argv);
+    //Initialise the Dynamic structure factor calculation
+    sf::initSF(argc,argv);
+
 #ifdef CUDA
     cullg::cuinit(argc,argv);
 #else
@@ -80,6 +84,10 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="suscep")
     {
         //        sim::suscep(argc,argv);
+    }
+    else if(sim::sim_type=="timeseries")
+    {
+        sim::timeseries(argc,argv);
     }
     else if(sim::sim_type=="quick")
     {
