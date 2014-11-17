@@ -64,4 +64,5 @@ timeseries:
     EquilibrationTime = 10e-12;
     RunTime = 20e-12;
     Temperature = 1.0;
+    OutputIndividualTimeSeries = TRUE;
 };
