@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 17 Nov 2014 10:23:48
+// Last-modified: 17 Nov 2014 10:36:48
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -77,7 +77,7 @@ void sim::timeseries(int argc,char *argv[])
         error::errMessage("Could not read temperature for sf (sf:Temperature (double))");
     }
     bool oits=false;
-    errstatus=setting.lookupValue("OutputIndividialTimeSeries",oits);
+    errstatus=setting.lookupValue("OutputIndividualTimeSeries",oits);
     if(errstatus)
     {
         FIXOUT(config::Info,"Outputting individual time series for each magnetic species?:" << config::isTF(oits) << std::endl);
