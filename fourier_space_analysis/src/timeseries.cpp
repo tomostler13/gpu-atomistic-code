@@ -111,7 +111,7 @@ int main(int argc,char *argv[])
     infoin >> nk;
     FIXOUT(Info,"Number of k points sampled:" << nk << std::endl);
 
-    const double normsize=static_cast<double>(kdim[0]*kdim[1]*kdim[2]*num_samples);
+    const double normsize=static_cast<double>(kdim[0])*static_cast<double>(kdim[1])*static_cast<double>(kdim[2])*static_cast<double>(num_samples);
     FIXOUT(Info,"Normalization constant" << normsize << std::endl);
     Array2D<int> kvecs;
     kvecs.resize(nk,3);

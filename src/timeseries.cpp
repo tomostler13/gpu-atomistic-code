@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 17 Nov 2014 10:36:48
+// Last-modified: 17 Nov 2014 14:07:36
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -186,7 +186,15 @@ void sim::timeseries(int argc,char *argv[])
             sstr.str("");
             sstr << "kvec_spec_" << i << ".dat";
             str=sstr.str();
-
+            ikvout[i].open(str.c_str());
+            if(!ikvout[i].is_open())
+            {
+                sstr.str("");
+                sstr << "File kvec_spec_" << i << ".dat could not be opened.";
+                str=sstr.str();
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage(str);
+            }
             //output the sampling information
             ikvinfo[i]<< "#datafile\t" << str << std::endl;
             ikvinfo[i]<< "#numsamples\t" << num_samples << std::endl;
