@@ -5,8 +5,7 @@ export LANG=C
 export LC_ALL=C
 # LIBS
 DEFS=-DNDEBUG
-LIBS= -lfftw3 -lfftw3f -lm  -lstdc++
-STATIC_LINK=
+LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ -lconfig++
 CPULIBS=
 STATIC_LINK=
 OPT_LEVEL=-O3
@@ -14,7 +13,8 @@ GCC_FLAGS= $(OPT_LEVEL)
 
 # Objects
 OBJECTS= \
-obj/make_chess_board.o
+obj/make_chess_board.o \
+obj/error.o
 
 EXECUTABLE=gen_chess
 
