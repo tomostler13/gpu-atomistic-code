@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 24 Nov 2014 22:41:07
+// Last-modified: 24 Nov 2014 22:45:42
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -301,13 +301,24 @@ void sim::laser_heating(int argc,char *argv[])
     if(magout.is_open())
     {
         error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not close the magnetization file (mag.dat)");
+        error::errWarning("Could not close the magnetization file (mag.dat)");
     }
     ttmout.close();
     if(ttmout.is_open())
     {
         error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not close the ttm file (ttm.dat)");
+        error::errWarning("Could not close the ttm file (ttm.dat)");
+    }
+    kvinfo.close();
+    if(kvinfo.is_open())
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not close kvinfo.dat.");
+    }
+    if(kvout.is_open())
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not close kvec.dat.");
     }
 }
 
