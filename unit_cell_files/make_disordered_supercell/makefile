@@ -14,7 +14,8 @@ GCC_FLAGS= $(OPT_LEVEL)
 # Objects
 OBJECTS= \
 obj/make_chess_board.o \
-obj/error.o
+obj/error.o \
+obj/random.o
 
 EXECUTABLE=gen_chess
 
