@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 17 Nov 2014 14:07:36
+// Last-modified: 24 Nov 2014 12:23:59
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
