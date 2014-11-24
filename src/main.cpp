@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 06 Nov 2014 11:54:05
+// Last-modified: 24 Nov 2014 14:07:13
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -89,6 +89,10 @@ int main(int argc,char *argv[])
     {
         sim::timeseries(argc,argv);
     }
+    else if(sim::sim_type=="laserheating")
+    {
+        sim::laser_heating(argc,argv);
+    }
     else if(sim::sim_type=="quick")
     {
 
@@ -120,6 +124,11 @@ int main(int argc,char *argv[])
         time_t nowe=time(0);
         char *dtimee=ctime(&nowe);
         std::cout << "#End time:\t" << dtimee << std::endl;
+    }
+    else
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Simulation not recognised. Options are: \n-Mvt\n-suscep\n-timeseries\n-laserheating\n-quick");
     }
     return(0);
 }

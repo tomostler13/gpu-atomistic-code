@@ -3,7 +3,7 @@ seed = 1359107200;
 system:
 {
     //number of unit cells
-    dim = [ 8 , 8 , 4 ];
+    dim = [ 2 , 2 , 1 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
@@ -14,7 +14,7 @@ system:
     abc = [ 300e-12 , 300e-12 , 4800e-12 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
-    Exchange_method="CSR";
+    Exchange_method="DIA";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
@@ -30,7 +30,7 @@ exchange:
     //direct (by reading in all interactions directly)
     //permute (take a neighbour and calculate permutations)
     exchmethod="permute";
-    OutputExchange=TRUE;
+    OutputExchange=FALSE;
     //How are we to read in the exchange
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
@@ -57,12 +57,13 @@ sim:
 {
 //    sim_type = "MvT";
 //    sim_type = "quick";
-    sim_type = "timeseries";
+//    sim_type = "timeseries";
+    sim_type="laserheating";
 };
 timeseries:
 {
     EquilibrationTime = 10e-12;
-    RunTime = 20e-12;
+    RunTime = 250e-12;
     Temperature = 1.0;
     OutputIndividualTimeSeries = TRUE;
 };
@@ -70,7 +71,7 @@ laserheating:
 {
     Gamma_e = 2.25e2;
     Cl = 3.1e6;
-    Pump_time = 50e-15;
+    PumpTime = 50e-15;
     G_ep = 17.0e17;
     InitialTemperature=300.0;
     EquilibrationTime = 15e-12;
@@ -78,6 +79,7 @@ laserheating:
     MaxElectronTemperature = 1500.0;
     CoolingTime = 300000.0e-12;
     NumPulses = 1;
-    PulseDelays = [ 0.0 ];
+    PulseDelays = [ 150e-15 ];
     PulseScale = [ 1.0 ];
+    OutputStructureFactor = TRUE;
 };
