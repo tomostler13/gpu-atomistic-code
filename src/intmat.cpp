@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 26 Nov 2014 13:33:56
+// Last-modified: 26 Nov 2014 15:27:09
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -107,7 +107,7 @@ namespace intmat
             hNrab.IFill(0);
             hNkab.IFill(0);
             config::Info.width(45);config::Info << std::right << "*" << "**Interaction matrix details***" << std::endl;
-            FIXOUT(config::Info,"Setting up fftw of set of 2D interaction matrices (see log):" << std::endl);
+            FIXOUT(config::Info,"Setting up fftw of set of 2D interaction matrices (see log):" << std::flush);
             fftw_set_timelimit(60);
             int n[2]={geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
             int *inembed=n;
