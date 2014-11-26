@@ -43,7 +43,8 @@ obj/matrix_conv.o \
 obj/matrix_mul_cpu.o \
 obj/sf.o \
 obj/sf_glob.o \
-obj/timeseries.o
+obj/timeseries.o \
+obj/laser_heating.o
 
 SWITCHOBJ= \
 obj/main.o \

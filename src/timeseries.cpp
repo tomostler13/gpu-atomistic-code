@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 24 Nov 2014 12:23:59
+// Last-modified: 26 Nov 2014 09:43:11
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -127,7 +127,7 @@ void sim::timeseries(int argc,char *argv[])
     //calculate the total number of samples
     num_samples=rts/(spins::update*sf::sfupdate);
     FIXOUT(config::Info,"Number of time samples:" << num_samples << std::endl);
-    std::ofstream kvout("kvec.dat"),kvinfo("kvecinfo.dat"),ikvinfo[geom::ucm.GetNMS()],ikvout[geom::ucm.GetNMS()];
+    std::ofstream kvout("kvec.dat"),kvinfo("kvecinfo.dat");
     if(!kvout.is_open())
     {
         error::errPreamble(__FILE__,__LINE__);
@@ -165,9 +165,26 @@ void sim::timeseries(int argc,char *argv[])
         kvinfo << "#lookupkvector " << k << " = " << kplu(k,0) << "\t" << kplu(k,1) << "\t" << kplu(k,2) << std::endl;
     }
 
+
+    //we are declaring these on the heap because with clang 6.0 (at least)
+    //the declaration on the stack is not allowed. I didn't manage to work
+    //out why this is the case.
+    std::ofstream *ikvinfo,*ikvout;
+
     //if we are outputting each (magnetic) sublattice time series then we need to open geom::ucm.GetNMS() files
     if(oits)
     {
+        try
+        {
+            ikvinfo = new std::ofstream [geom::ucm.GetNMS()];
+            ikvout = new std::ofstream [geom::ucm.GetNMS()];
+        }
+        catch(...)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not create the array std::ofstream instances on the heap (one for each species).");
+        }
+
         for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
         {
             std::stringstream sstr;
@@ -364,6 +381,18 @@ void sim::timeseries(int argc,char *argv[])
                     error::errWarning(str);
                 }
             }
+        }
+        try
+        {
+            delete [] ikvinfo;
+            ikvinfo=NULL;
+            delete [] ikvout;
+            ikvout=NULL;
+        }
+        catch(...)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not delete at least one of the species dependent info or data k-vec files.");
         }
     }
 
