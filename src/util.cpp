@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Oct 2014 14:44:15
+// Last-modified: 26 Nov 2014 16:00:15
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -60,6 +60,32 @@ namespace util
                                 }
                             }
 
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+    void hcpuConvFourier()
+    {
+        fields::hHk.IFill(0);
+
+        //perform convolution in fourier space
+        register unsigned int i = 0,j = 0, k = 0, s1 = 0, s2=0, alpha=0, beta=0;
+        //convolute for each atomic plane
+        for(i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+        {
+            for(j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+            {
+                for(k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
+                {
+                    for(alpha = 0 ; alpha < 3 ; alpha++)
+                    {
+                        for(beta = 0 ; beta < 3 ; beta++)
+                        {
+                            fields::hHk(alpha,i,j,k)[0]+=(intmat::hNkab(alpha,beta,i,j,k)[0]*spins::hSk(beta,i,j,k)[0]-intmat::hNkab(alpha,beta,i,j,k)[1]*spins::hSk(beta,i,j,k)[1]);
+                            fields::hHk(alpha,i,j,k)[1]+=(intmat::hNkab(alpha,beta,i,j,k)[0]*spins::hSk(beta,i,j,k)[1]+intmat::hNkab(alpha,beta,i,j,k)[1]*spins::hSk(beta,i,j,k)[0]);
                         }
                     }
 

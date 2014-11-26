@@ -15,6 +15,7 @@ system:
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
     Exchange_method="hybrid";
+//    Exchange_method="CSR";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.

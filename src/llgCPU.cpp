@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 10 Oct 2014 16:10:58
+// Last-modified: 26 Nov 2014 16:05:50
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -54,7 +54,7 @@ namespace llgCPU
     void llgCPU(unsigned int t)
     {
         //calculate the 2 spin fields (dipolar, exchange)
-        if(config::exchm==0)
+        if(config::exchm==0 || config::exchm>98)
         {
             fields::ftdip();
         }
@@ -92,8 +92,16 @@ namespace llgCPU
                 matmul::spmv_csr_offdiag();
             }
         }
+        else if(config::exchm>98)
+        {
+            matmul::spmv_csr_diag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::datayy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
+            if(config::offdiag==true)
+            {
+                matmul::spmv_csr_offdiag();
+            }
+        }
         //FOR DEBUGGING THE FIELD
-        /*if(t==0)
+        if(t==0)
         {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {

@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 08 Oct 2014 14:25:49
+// Last-modified: 26 Nov 2014 16:00:32
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -81,6 +81,7 @@ namespace util
     };
     void inverse(double*, int);
     void cpuConvFourier();
+    void hcpuConvFourier();
     void dipcpuConvFourier();
     ////////////////////////////////////////////////////////////////////////////////
     //! Compute sum reduction on CPU
