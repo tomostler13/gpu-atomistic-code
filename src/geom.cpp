@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 02 Nov 2014 19:53:32
+// Last-modified: 26 Nov 2014 12:48:39
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -29,7 +29,7 @@ namespace geom
         //The unit cell file has a strict format
         //first line -  number of distinct atomic type
         //second line - number of magnetic atoms in unit cell
-        //sublattice - kx - ky - kz - mu - lambda - gamma - Element - sx - sy - sz
+        //sublattice - kx - ky - kz - mu - lambda - gamma - Element - sx - sy - sz - First order uniaxial anisotropy constant - n_x - n_y - n_z
 
         //calculate the number of spins
         nspins=dim[0]*dim[1]*dim[2]*ucm.NumAtomsUnitCell();

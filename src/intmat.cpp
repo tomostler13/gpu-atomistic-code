@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 08 Oct 2014 13:54:42
+// Last-modified: 26 Nov 2014 13:33:56
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -20,6 +20,9 @@ namespace intmat
     Array7D<fftw_complex> Nkab;
     Array7D<fftw_complex> Nrab;
     Array5D<fftw_complex> dipNkab,dipNrab;
+    //These are for the hybrid method. Each plane in these matrices
+    //stores the set of interaction matrices for the planes
+    Array5D<fftw_complex> hNkab,hNrab;
     Array<unsigned int> zpsn;
     fftw_plan ftP,dipftP;
 
@@ -46,54 +49,94 @@ namespace intmat
         //Second is the species (j) that species (i) is interacting with
         //Third and fourth elements are the elements of the tensor
         //fifth, sixth and seventh are the space (reciprocal space) elements
-        Nkab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        Nrab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
-        FIXOUT(config::Info,"The real space interaction matrix contains:" << Nrab.size() << " elements (double complex)" << std::endl);
-        FIXOUT(config::Info,"The reciprocal space interaction matrix contains:" << Nkab.size() << " elements (double complex)" << std::endl);
-        Nrab.IFill(0.0);
-        Nkab.IFill(0.0);
-        config::Info.width(45);config::Info << std::right << "*" << "**Interaction matrix details***" << std::endl;
-        FIXOUT(config::Info,"Setting up fftw of interaction matrix:" << std::endl);
-        //FOR DEBUGGING: TO LOOK AT THE REAL SPACE INTERACTION MATRIX
-        /*for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+        if(config::exchm<99)//the use the FFT for everything
         {
-            for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
-            {
-                for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
-                {
-                    std::cout << i << "\t" << j << "\t" << k << "\t" << Nrab(0,0,0,0,i,j,k)[0] << "\t"<< Nrab(0,0,1,1,i,j,k)[0] << "\t"<< Nrab(0,0,2,2,i,j,k)[0] << std::endl;
-                }
-            }
-        }
-        std::cin.get();*/
-        //set the time limit for optimizing the plan of the FFT to 60 seconds
-        fftw_set_timelimit(60);
-        int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
-        int *inembed=n;
-        int *onembed=n;
-        int istride=1;
-        int ostride=1;
-        int odist=geom::zps;
-        int idist=geom::zps;
+            Nkab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+            Nrab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+            FIXOUT(config::Info,"The real space interaction matrix contains:" << Nrab.size() << " elements (double complex)" << std::endl);
+            FIXOUT(config::Info,"The reciprocal space interaction matrix contains:" << Nkab.size() << " elements (double complex)" << std::endl);
+            Nrab.IFill(0.0);
+            Nkab.IFill(0.0);
+            config::Info.width(45);config::Info << std::right << "*" << "**Interaction matrix details***" << std::endl;
+            FIXOUT(config::Info,"Setting up fftw of interaction matrix:" << std::endl);
+            //FOR DEBUGGING: TO LOOK AT THE REAL SPACE INTERACTION MATRIX
+            /*for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+              {
+              for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+              {
+              for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
+              {
+              std::cout << i << "\t" << j << "\t" << k << "\t" << Nrab(0,0,0,0,i,j,k)[0] << "\t"<< Nrab(0,0,1,1,i,j,k)[0] << "\t"<< Nrab(0,0,2,2,i,j,k)[0] << std::endl;
+              }
+              }
+              }
+              std::cin.get();*/
+            //set the time limit for optimizing the plan of the FFT to 60 seconds
+            fftw_set_timelimit(60);
+            int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
+            int *inembed=n;
+            int *onembed=n;
+            int istride=1;
+            int ostride=1;
+            int odist=geom::zps;
+            int idist=geom::zps;
 
-        config::openLogFile();
-        config::printline(config::Log);
-        FIXOUT(config::Log,"Parameters entering into FFTW plan of interaction matrix" << std::endl);
-        FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
-        FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
-        FIXOUT(config::Log,"How many (FFT's) = " << geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3 << std::endl);
-        FIXOUT(config::Log,"Pointer of real space int mat (Nrab):" << Nrab.ptr() << std::endl);
-        FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],inembed[2]);
-        FIXOUT(config::Log,"istride = " << istride << std::endl);
-        FIXOUT(config::Log,"idist = " << idist << std::endl);
-        FIXOUT(config::Log,"Pointer of reciprocal space int mat (Nkab):" << Nkab.ptr() << std::endl);
-        FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
-        FIXOUT(config::Log,"ostride = " << ostride << std::endl);
-        FIXOUT(config::Log,"odist = " << odist << std::endl);
-        FIXOUT(config::Log,"Direction (sign) = " << "FFTW_FORWARD" << std::endl);
-        FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
-        int howmany=geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3;
-        ftP=fftw_plan_many_dft(3,n,howmany,Nrab.ptr(),inembed,istride,idist,Nkab.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
+            config::openLogFile();
+            config::printline(config::Log);
+            FIXOUT(config::Log,"Parameters entering into FFTW plan of interaction matrix" << std::endl);
+            FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],n[2]);
+            FIXOUT(config::Log,"rank (dimension of FFT) = " << 3 << std::endl);
+            FIXOUT(config::Log,"How many (FFT's) = " << geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3 << std::endl);
+            FIXOUT(config::Log,"Pointer of real space int mat (Nrab):" << Nrab.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],inembed[2]);
+            FIXOUT(config::Log,"istride = " << istride << std::endl);
+            FIXOUT(config::Log,"idist = " << idist << std::endl);
+            FIXOUT(config::Log,"Pointer of reciprocal space int mat (Nkab):" << Nkab.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],onembed[2]);
+            FIXOUT(config::Log,"ostride = " << ostride << std::endl);
+            FIXOUT(config::Log,"odist = " << odist << std::endl);
+            FIXOUT(config::Log,"Direction (sign) = " << "FFTW_FORWARD" << std::endl);
+            FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
+            int howmany=geom::ucm.GetNMS()*geom::ucm.GetNMS()*3*3;
+            ftP=fftw_plan_many_dft(3,n,howmany,Nrab.ptr(),inembed,istride,idist,Nkab.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
+        }
+        else//here we are using the hybrid scheme
+        {
+            hNrab.resize(3,3,geom::dim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+            hNkab.resize(3,3,geom::dim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+            hNrab.IFill(0);
+            hNkab.IFill(0);
+            config::Info.width(45);config::Info << std::right << "*" << "**Interaction matrix details***" << std::endl;
+            FIXOUT(config::Info,"Setting up fftw of set of 2D interaction matrices (see log):" << std::endl);
+            fftw_set_timelimit(60);
+            int n[2]={geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
+            int *inembed=n;
+            int *onembed=n;
+            int istride=1;
+            int ostride=1;
+            int odist=geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2];
+            int idist=odist;
+            config::openLogFile();
+            config::printline(config::Log);
+            FIXOUT(config::Log,"Parameters entering into FFTW plan of interaction matrix" << std::endl);
+            FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[0],n[1],0);
+            FIXOUT(config::Log,"rank (dimension of FFT) = " << 2 << std::endl);
+            FIXOUT(config::Log,"How many (FFT's) = " << geom::Nk[0]*geom::dim[0]*3*3 << std::endl);
+            FIXOUT(config::Log,"Pointer of real space int mat (hNrab):" << hNrab.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],0);
+            FIXOUT(config::Log,"istride = " << istride << std::endl);
+            FIXOUT(config::Log,"idist = " << idist << std::endl);
+            FIXOUT(config::Log,"Pointer of reciprocal space int mat (hNkab):" << hNkab.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],0);
+            FIXOUT(config::Log,"ostride = " << ostride << std::endl);
+            FIXOUT(config::Log,"odist = " << odist << std::endl);
+            FIXOUT(config::Log,"Direction (sign) = " << "FFTW_FORWARD" << std::endl);
+            FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
+            int howmany=geom::Nk[0]*geom::dim[1];
+            ftP=fftw_plan_many_dft(2,n,howmany,hNrab.ptr(),inembed,istride,idist,hNkab.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
+            SUCCESS(config::Info);
+
+        }
 
 
     }
@@ -328,7 +371,14 @@ namespace intmat
             }
         }
         std::cin.get();*/
-        Nrab.clear();
+        if(config::exchm<99)
+        {
+            Nrab.clear();
+        }
+        else
+        {
+            hNrab.clear();
+        }
         //destroy the plans
         fftw_destroy_plan(ftP);
         config::Info << "Done" << std::endl;

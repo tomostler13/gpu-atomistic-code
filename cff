@@ -14,7 +14,7 @@ system:
     abc = [ 300e-12 , 300e-12 , 4800e-12 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
-    Exchange_method="DIA";
+    Exchange_method="hybrid";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
