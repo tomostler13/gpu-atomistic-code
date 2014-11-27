@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 26 Nov 2014 15:27:09
+// Last-modified: 27 Nov 2014 11:09:06
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -132,7 +132,7 @@ namespace intmat
             FIXOUT(config::Log,"odist = " << odist << std::endl);
             FIXOUT(config::Log,"Direction (sign) = " << "FFTW_FORWARD" << std::endl);
             FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
-            int howmany=geom::Nk[0]*geom::dim[1];
+            int howmany=geom::Nk[0]*geom::dim[0]*3*3;
             ftP=fftw_plan_many_dft(2,n,howmany,hNrab.ptr(),inembed,istride,idist,hNkab.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
             SUCCESS(config::Info);
 
@@ -377,6 +377,17 @@ namespace intmat
         }
         else
         {
+            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            {
+                for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+                {
+                    for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
+                    {
+                        //std::cout << i << "\t" << j << "\t" << k << "\t" << hNkab(0,0,i,j,k)[0] << "\t"<< hNkab(1,1,i,j,k)[0] << "\t"<< hNkab(2,2,i,j,k)[0] << std::endl;
+                    }
+                }
+            }
+            //std::cin.get();
             hNrab.clear();
         }
         //destroy the plans
