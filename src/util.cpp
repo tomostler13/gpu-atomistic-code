@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Nov 2014 16:00:15
+// Last-modified: 27 Nov 2014 11:08:31
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -72,7 +72,7 @@ namespace util
         fields::hHk.IFill(0);
 
         //perform convolution in fourier space
-        register unsigned int i = 0,j = 0, k = 0, s1 = 0, s2=0, alpha=0, beta=0;
+        register unsigned int i = 0,j = 0, k = 0, alpha=0, beta=0;
         //convolute for each atomic plane
         for(i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
         {
@@ -86,6 +86,13 @@ namespace util
                         {
                             fields::hHk(alpha,i,j,k)[0]+=(intmat::hNkab(alpha,beta,i,j,k)[0]*spins::hSk(beta,i,j,k)[0]-intmat::hNkab(alpha,beta,i,j,k)[1]*spins::hSk(beta,i,j,k)[1]);
                             fields::hHk(alpha,i,j,k)[1]+=(intmat::hNkab(alpha,beta,i,j,k)[0]*spins::hSk(beta,i,j,k)[1]+intmat::hNkab(alpha,beta,i,j,k)[1]*spins::hSk(beta,i,j,k)[0]);
+                            /*if(alpha==beta)
+                            {
+                                std::cout << "spins\t" << spins::hSk(beta,i,j,k)[0] << "\t" << spins::hSk(beta,i,j,k)[1] << std::endl;
+                                std::cout << "IM\t" << intmat::hNkab(alpha,beta,i,j,k)[0] << "\t" << intmat::hNkab(alpha,beta,i,j,k)[1] << std::endl;
+
+                    std::cout << fields::hHk(alpha,i,j,k)[0] << std::endl;
+                            }*/
                         }
                     }
 

@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 29 Nov 2014 12:13:09
+// Last-modified: 29 Nov 2014 12:14:24
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -320,6 +320,7 @@ void sim::laser_heating(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errWarning("Could not close kvinfo.dat.");
     }
+    kvout.close();
     if(kvout.is_open())
     {
         error::errPreamble(__FILE__,__LINE__);

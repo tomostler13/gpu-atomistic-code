@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 26 Nov 2014 16:10:35
+// Last-modified: 27 Nov 2014 11:19:33
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -212,12 +212,13 @@ namespace fields
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-            Hx[i]=hHr(0,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
-            Hy[i]=hHr(1,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
-            Hz[i]=hHr(2,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zps));
+            Hx[i]=hHr(0,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2]));
+            Hy[i]=hHr(1,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2]));
+            Hz[i]=hHr(2,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2]));
             //std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
-            //std::cin.get();
         }
+        //std::cout << "*** end of fields after back transform and normalization ***" << std::endl;
+        //std::cin.get();
     }
     //fourier transform method for calculating dipolar field
     void ftdip()

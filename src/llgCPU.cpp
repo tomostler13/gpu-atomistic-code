@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 26 Nov 2014 16:05:50
+// Last-modified: 27 Nov 2014 11:49:45
 #include <iostream>
 #include <cstdlib>
 #include <fstream>

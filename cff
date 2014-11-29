@@ -11,11 +11,12 @@ system:
     //Number of k-points in each direction
     Nk = [ 2 , 2 , 2 ];
     //lattice constants
-    abc = [ 300e-12 , 300e-12 , 4800e-12 ];
+    abc = [ 300e-12 , 300e-12 , 300e-12 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
-    Exchange_method="hybrid";
+//    Exchange_method="hybrid";
 //    Exchange_method="CSR";
+    Exchange_method="fft";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
