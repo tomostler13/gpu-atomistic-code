@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 09 Oct 2014 14:19:33
+// Last-modified: 29 Nov 2014 11:01:38
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -49,6 +49,10 @@ namespace cuint
             const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 
             double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
+            /*if(i==0)
+            {
+                printf("%4.6f\t%4.6f\t%4.6f\n",h[0],h[1],h[2]);
+            }*/
 
             const double s[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
             //calculate the field arising from the first order uniaxial anisotropy

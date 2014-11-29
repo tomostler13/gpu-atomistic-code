@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 26 Nov 2014 12:45:57
+// Last-modified: 29 Nov 2014 10:44:06
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -137,7 +137,10 @@ namespace config
             error::errMessage("You cannot currently use the fft method for calculating exchange or dipole-dipole fields and have periodic boundary conditions.\nIf you want to use PBC's then select a matrix multiplication method.");
         }
         FIXOUT(config::Info,"Exchange field calculation method:" << exchmeth << std::endl);
-        FIXOUT(config::Info,"Dipole-dipole field calculation method:" << dipmeth << std::endl);
+        if(inc_dip)
+        {
+            FIXOUT(config::Info,"Dipole-dipole field calculation method:" << dipmeth << std::endl);
+        }
         assert(seed>0);
         lcf=true;
     }

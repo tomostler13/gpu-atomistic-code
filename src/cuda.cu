@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 10 Oct 2014 16:56:09
+// Last-modified: 29 Nov 2014 11:49:20
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -86,9 +86,11 @@ namespace cullg
         }
         else if(config::exchm>0 && config::inc_dip==false)
         {
+
             if(config::exchm==1)//DIA
             {
                 cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
+
                 if(config::offdiag)
                 {
 
@@ -102,17 +104,6 @@ namespace cullg
                 }
             }
         }
-        //FOR DEBUGGING THE DIPOLAR FIELD/
-        /*float temp1[3*geom::nspins];
-        CUDA_CALL(cudaMemcpy(temp1,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
-        for(unsigned int i = 0 ; i < geom::nspins ; i++)
-        {
-            int ijk[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-            std::cout << i << "\t" << ijk[0] << "\t" << ijk[1] << "\t" << ijk[2] << "\t" << temp1[3*i] << "\t" << temp1[3*i+1] << "\t" << temp1[3*i+2] << std::endl;
-
-        }
-        exit(0);
-        */
         check_cuda_errors(__FILE__,__LINE__);
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
@@ -171,7 +162,6 @@ namespace cullg
                 }
             }
         }
-//        std::cin.get();
 
         cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
         if(t%spins::update==0)

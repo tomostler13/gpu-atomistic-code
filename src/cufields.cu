@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 10 Oct 2014 16:58:02
+// Last-modified: 29 Nov 2014 11:40:48
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -58,18 +58,26 @@ namespace cufields
             {
                 int col = row + offset[n];
                 float val[3] = {dataxx[N*n + row],datayy[N*n + row],datazz[N*n + row]};
+//                printf("Data\t%4.5f\t%4.5f\t%4.5f\n",dataxx[N*n+row],datayy[N*n+row],datayy[N*n+row]);
                 if(col >= 0 && col < N)
                 {
+                        //printf("Spin\t%4.5f\t%4.5f\t%4.5f\n",col,Cspin[3*col],Cspin[3*col+1],Cspin[3*col+2]);
                     for(unsigned int co = 0 ; co < 3 ; co++)
                     {
                         dot[co]+=(val[co]*Cspin[3*col+co]);
                     }
+
+                        //printf("%4.5f\t%4.5f\t%4.5f\n",val[0],val[1],val[2]);
+                        //printf("Spin\t%4.5f\t%4.5f\t%4.5f\n",col,Cspin[3*col],Cspin[3*col+1],Cspin[3*col+2]);
                 }
             }
+//                printf("Spins\t%d\t%4.5f\t%4.5f\t%4.5f\n",col,Cspin[3*col],Cspin[3*col+1],Cspin[3*col+2]);
+//                printf("Fields\t%d\t%4.5f\t%4.5f\t%4.5f\n",row,dot[0],dot[1],dot[2]);
+
             CH[3*row]=CHDemag[3*row]+dot[0];
             CH[3*row+1]=CHDemag[3*row+1]+dot[1];
             CH[3*row+2]=CHDemag[3*row+2]+dot[2];
-
+            //printf("Fields\t%d\t%4.5f\t%4.5f\t%4.5f\n",row,CH[3*row],CH[3*row+1],CH[3*row+2]);
         }
     }
     // perform the CSR matrix multiplication.

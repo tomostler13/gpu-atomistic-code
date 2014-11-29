@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 24 Nov 2014 22:45:42
+// Last-modified: 29 Nov 2014 12:13:09
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -64,6 +64,11 @@ void sim::laser_heating(int argc,char *argv[])
     errstatus=setting.lookupValue("InitialTemperature",initT);
     if(errstatus)
     {
+        if(initT<1e-5)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Because the two temperature model has a 1/(Te*gamma_e) in it, if you set the value of the initial temperature to zero the temperature will blow up. Set the initial temperature (laserheating:InitialTemperature (double)) greater than 1e-5");
+        }
         FIXOUT(config::Info,"Initial Temperature:" << initT << " [K]" << std::endl);
     }
     else
@@ -262,13 +267,13 @@ void sim::laser_heating(int argc,char *argv[])
     for(unsigned int t = ets ; t < ets+rts ; t++)
     {
         unsigned int nt=t-ets;
-        CalcTe(pulse_scale,pulse_delays,static_cast<double>(t)*llg::dt,num_pulses,Pump_Time,T_el_max,Te,Tl,G_ep,Cl,gamma_e,llg::dt,initT,ct);
+        CalcTe(pulse_scale,pulse_delays,static_cast<double>(nt)*llg::dt,num_pulses,Pump_Time,T_el_max,Te,Tl,G_ep,Cl,gamma_e,llg::dt,initT,ct);
         llg::T=Te;
         if(t%spins::update==0)
         {
             util::calc_mag();
             util::output_mag(magout,t);
-            ttmout << static_cast<double>(t)*llg::dt << "\t" << initT << "\t" << initT << std::endl;
+            ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl << std::endl;
         }
         if(t%(spins::update*sf::sfupdate)==0)
         {
