@@ -282,7 +282,7 @@ void gaussianiir1d(Array<double>& indata,Array<double>& data, unsigned int lengt
     double nu, boundaryscale, postscale;
     long i;
     int step;
-    if(!data.ptr() || length < 1 || sigma <= 0 || numsteps < 0)
+    if(!data.ptr() || length < 1 || sigma <= 0)
         return;
     lambda = (sigma*sigma)/(2.0*numsteps);
     dnu = (1.0 + 2.0*lambda - sqrt(1.0 + 4.0*lambda))/(2.0*lambda);
