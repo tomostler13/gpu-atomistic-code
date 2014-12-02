@@ -3,18 +3,20 @@ seed = 1359107200;
 system:
 {
     //number of unit cells
-    dim = [ 8 , 8 , 4 ];
+    dim = [ 1 , 1 , 1 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="N_8.ucf";
+    unitcellfile="unit_cell_files/sc.8";
     //Number of k-points in each direction
-    Nk = [ 2 , 2 , 32 ];
+    Nk = [ 2 , 2 , 2 ];
     //lattice constants
-    abc = [ 300e-12 , 300e-12 , 4800e-12 ];
+    abc = [ 300e-12 , 300e-12 , 300e-12 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
-    Exchange_method="CSR";
+//    Exchange_method="hybrid";
+//    Exchange_method="CSR";
+    Exchange_method="fft";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
@@ -22,7 +24,7 @@ system:
     Off_Diagonals = FALSE;
     //Do you want to output the unit cell info to the log file?
     log_unit_cell = TRUE;
-    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
+    Periodic_Boundaries = [ FALSE , FALSE , FALSE ];
 };
 exchange:
 {
@@ -35,7 +37,7 @@ exchange:
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
-    exchfile="exch.fcc";
+    exchfile="exch.sc";
 };
 sf:
 {
@@ -57,12 +59,29 @@ sim:
 {
 //    sim_type = "MvT";
 //    sim_type = "quick";
-    sim_type = "timeseries";
+//    sim_type = "timeseries";
+    sim_type="laserheating";
 };
 timeseries:
 {
     EquilibrationTime = 10e-12;
-    RunTime = 20e-12;
+    RunTime = 250e-12;
     Temperature = 1.0;
     OutputIndividualTimeSeries = TRUE;
+};
+laserheating:
+{
+    Gamma_e = 2.25e2;
+    Cl = 3.1e6;
+    PumpTime = 50e-15;
+    G_ep = 17.0e17;
+    InitialTemperature=300.0;
+    EquilibrationTime = 15e-12;
+    RunTime = 30e-12;
+    MaxElectronTemperature = 1500.0;
+    CoolingTime = 300000.0e-12;
+    NumPulses = 1;
+    PulseDelays = [ 150e-15 ];
+    PulseScale = [ 1.0 ];
+    OutputStructureFactor = TRUE;
 };

@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 16 Oct 2014 20:04:28
+// Last-modified: 29 Nov 2014 10:44:06
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -104,6 +104,10 @@ namespace config
         {
             exchm=2;
         }
+        else if(exchmeth=="hybrid")
+        {
+            exchm=99;
+        }
         else
         {
             error::errPreamble(__FILE__,__LINE__);
@@ -127,13 +131,16 @@ namespace config
             FIXOUT(config::Info,"Include off-diagonals in sparse matrix multiplication:" << config::isTF(offdiag) << std::endl);
         }
         //if we are using the fft at the moment we cannot have PBC's
-        if((exchm==0) && (pbc[0]==true || pbc[1]==true || pbc[2]))
+        if((exchm==0 || exchm==99) && (pbc[0]==true || pbc[1]==true || pbc[2]))
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("You cannot currently use the fft method for calculating exchange or dipole-dipole fields and have periodic boundary conditions.\nIf you want to use PBC's then select a matrix multiplication method.");
         }
         FIXOUT(config::Info,"Exchange field calculation method:" << exchmeth << std::endl);
-        FIXOUT(config::Info,"Dipole-dipole field calculation method:" << dipmeth << std::endl);
+        if(inc_dip)
+        {
+            FIXOUT(config::Info,"Dipole-dipole field calculation method:" << dipmeth << std::endl);
+        }
         assert(seed>0);
         lcf=true;
     }

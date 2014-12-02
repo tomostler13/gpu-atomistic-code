@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 10 Oct 2014 16:57:45
+// Last-modified: 29 Nov 2014 11:12:04
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -441,7 +441,9 @@ namespace cullg
         util::copy3vecto1(geom::nspins,spins::Sx,spins::Sy,spins::Sz,tnsda);
         //copy spin data to single array
         //copy spin data to card
+        FIXOUT(config::Log,"Copying spin memory to device:" << std::flush);
         CUDA_CALL(cudaMemcpy(Cspin,tnsda,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+        SUCCESS(config::Log);
         //zero the field array
         for(unsigned int i = 0 ; i < 3*geom::nspins ; i++){tnsfa[i]=0.0;}CUDA_CALL(cudaMemcpy(CH,tnsfa,3*geom::nspins*sizeof(float),cudaMemcpyHostToDevice));
         CUDA_CALL(cudaMemcpy(CHDemag,tnsfa,3*geom::nspins*sizeof(float),cudaMemcpyHostToDevice));

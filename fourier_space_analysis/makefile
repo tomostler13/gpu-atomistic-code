@@ -13,19 +13,30 @@ OPT_LEVEL=-O3
 GCC_FLAGS= $(OPT_LEVEL)
 
 # Objects
-OBJECTS= \
+OBJECTSTS= \
 obj/timeseries.o
+OBJECTSSSF= \
+obj/analyse_structure_factor.o
 
-EXECUTABLE=timeseries
+EXECUTABLETS=timeseries
+EXECUTABLESSF=ssf
 
-all: $(OBJECTS) gcc
+all: $(OBJECTS) ts ssf
 
-# Serial Targets
-gcc: $(OBJECTS)
-	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTS) $(SWITCHOBJ) $(STATIC_LINK) -o $(EXECUTABLE) $(LIBS)
+# Time series targets
+ts: $(OBJECTSTS)
+	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTSTS) $(STATIC_LINK) -o $(EXECUTABLETS) $(LIBS)
 
 
-$(OBJECTS): obj/%.o: src/%.cpp
+$(OBJECTSTS): obj/%.o: src/%.cpp
+	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
+
+# Time series targets
+ssf: $(OBJECTSSSF)
+	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTSSSF) $(STATIC_LINK) -o $(EXECUTABLESSF) $(LIBS)
+
+
+$(OBJECTSSSF): obj/%.o: src/%.cpp
 	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
 
 clean:

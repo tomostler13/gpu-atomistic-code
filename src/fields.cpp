@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 10 Oct 2014 16:07:35
+// Last-modified: 27 Nov 2014 11:19:33
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -24,9 +24,10 @@ namespace fields
 {
     Array5D<fftw_complex> Hk;
     Array5D<fftw_complex> Hr;
+    Array4D<fftw_complex> hHr,hHk;
     Array4D<fftw_complex> dipHr,dipHk;
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz,HDemagx,HDemagy,HDemagz;
-    fftw_plan HP;
+    fftw_plan HP,dHP;
     void initFields(int argc,char *argv[])
     {
         if(config::exchm==0)
@@ -91,9 +92,41 @@ namespace fields
             FIXOUT(config::Log,"odist = " << odist << std::endl);
             FIXOUT(config::Log,"Direction (sign) = " << "FFTW_BACKWARD" << std::endl);
             FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
-            HP = fftw_plan_many_dft(3,n,3,dipHk.ptr(),inembed,istride,idist,dipHr.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_PATIENT);
+            dHP = fftw_plan_many_dft(3,n,3,dipHk.ptr(),inembed,istride,idist,dipHr.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_PATIENT);
         }
+        if(config::exchm>98)
+        {
+            hHk.resize(3,geom::dim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
+            hHr.resize(3,geom::dim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::Nk[2]*geom::zpdim[2]);
+            //plan the transforms as in-place as we do not need to use the fft arrays
+            //as we copy the data back to the normal field arrayl
+            int n[2]={geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
+            int *inembed=n;
+            int *onembed=n;
+            int istride=1;
+            int ostride=1;
+            int odist=geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2];
+            int idist=geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2];
 
+            config::openLogFile();
+            config::printline(config::Log);
+            FIXOUT(config::Log,"Parameters entering into FFTW plan of fields matrix (back transform)" << std::endl);
+            FIXOUTVEC(config::Log,"Dimensions of FFT = ",n[1],n[2],0);
+            FIXOUT(config::Log,"rank (dimension of FFT) = " << 2 << std::endl);
+            FIXOUT(config::Log,"How many (FFT's) = " << 3*geom::dim[0]*geom::Nk[0] << std::endl);
+            FIXOUT(config::Log,"Pointer of reciprocal space fields (Hk):" << hHk.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"inembed = ",inembed[0],inembed[1],0);
+            FIXOUT(config::Log,"istride = " << istride << std::endl);
+            FIXOUT(config::Log,"idist = " << idist << std::endl);
+            FIXOUT(config::Log,"Pointer of real space fields (hHr):" << hHr.ptr() << std::endl);
+            FIXOUTVEC(config::Log,"onembed = ",onembed[0],onembed[1],0);
+            FIXOUT(config::Log,"ostride = " << ostride << std::endl);
+            FIXOUT(config::Log,"odist = " << odist << std::endl);
+            FIXOUT(config::Log,"Direction (sign) = " << "FFTW_BACKWARD" << std::endl);
+            FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
+            HP = fftw_plan_many_dft(2,n,3*geom::dim[0]*geom::Nk[0],hHk.ptr(),inembed,istride,idist,hHr.ptr(),onembed,ostride,odist,FFTW_BACKWARD,FFTW_ESTIMATE);
+
+        }
 //        std::cout << "Resizing field arrays to
         Hx.resize(geom::nspins);
         Hy.resize(geom::nspins);
@@ -173,22 +206,56 @@ namespace fields
             //std::cin.get();
         }
     }
+    void hFFTBack()
+    {
+        fftw_execute(HP);
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            Hx[i]=hHr(0,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2]));
+            Hy[i]=hHr(1,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2]));
+            Hz[i]=hHr(2,lc[0],lc[1],lc[2])[0]/(static_cast<double>(geom::zpdim[1]*geom::Nk[1]*geom::zpdim[2]*geom::Nk[2]));
+            //std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
+        }
+        //std::cout << "*** end of fields after back transform and normalization ***" << std::endl;
+        //std::cin.get();
+    }
     //fourier transform method for calculating dipolar field
     void ftdip()
     {
-        spins::FFTForward();
-        util::cpuConvFourier();
-        fields::FFTBack();
+        if(config::exchm<98)
+        {
+            spins::FFTForward();
+            util::cpuConvFourier();
+            fields::FFTBack();
+
+        }
+        else
+        {
+            spins::hFFTForward();
+            util::hcpuConvFourier();
+            fields::hFFTBack();
+
+        }
     }
     void eftdip()
     {
-        spins::eFFTForward();
-        util::cpuConvFourier();
-        fields::FFTBack();
+        if(config::exchm<98)
+        {
+            spins::eFFTForward();
+            util::cpuConvFourier();
+            fields::FFTBack();
+        }
+        else
+        {
+            spins::heFFTForward();
+            util::hcpuConvFourier();
+            fields::hFFTBack();
+        }
     }
     void dipFFTBack()
     {
-        fftw_execute(HP);
+        fftw_execute(dHP);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             unsigned int lc[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};

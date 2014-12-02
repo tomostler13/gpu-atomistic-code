@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 11 Nov 2014 15:46:06
+// Last-modified: 27 Nov 2014 10:48:54
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -187,7 +187,7 @@ namespace exch
                 checkdiag.resize((geom::nspins*2)-1);
                 checkdiag.IFill(0);
                 //then add the exchange constants to the matrix or to the interaction matrix
-                if(config::exchm>0)//We calculate the exchange via a matrix multiplication
+                if(config::exchm>0)//We calculate the exchange via a matrix multiplication (or part of it at least)
                 {
                     std::ofstream opJ;
                     if(outputJ)
@@ -281,47 +281,50 @@ namespace exch
                                                     //we also need to check that we are looking at the right species
                                                     if(check(lookupvec[0],lookupvec[1],lookupvec[2])==0 && spec==s1)
                                                     {
-                                                        unsigned int neigh=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],0);
-                                                        //in this case we have not looked it up before
+                                                        if((config::exchm>98 && lookupvec[0]!=mypos[0]) || config::exchm<99)
+                                                        {
+                                                            unsigned int neigh=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],0);
+                                                            //in this case we have not looked it up before
 
 
 
-                                                        //This is the adjncy (neighbour lookup) in the CSR format
-                                                        tadjncy.push_back(neigh);
-                                                        //std::cout << tadjncy[adjncy_counter] << std::endl;
-                                                        //std::cin.get();
-                                                        tadjncy[adjncy_counter]=neigh;
-                                                        adjncy_counter++;
-                                                        //determine the diagonal
-                                                        if(i>neigh)//then we are on the lower diagonal
-                                                        {
-                                                            int tmp=i,count=0;
-                                                            while(neigh!=tmp){tmp--;count++;}
-                                                            checkdiag(geom::nspins-count)++;
-                                                        }
-                                                        else if(i==neigh)
-                                                        {
-                                                            checkdiag[geom::nspins]++;
-                                                        }
-                                                        else if(i<neigh)
-                                                        {
-                                                            int tmp=neigh,count=0;
-                                                            while(tmp!=i){tmp--;count++;}
-                                                            checkdiag[geom::nspins+count]++;
-                                                        }
-                                                        for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
-                                                        {
-                                                            for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                                            //This is the adjncy (neighbour lookup) in the CSR format
+                                                            tadjncy.push_back(neigh);
+                                                            //std::cout << tadjncy[adjncy_counter] << std::endl;
+                                                            //std::cin.get();
+                                                            tadjncy[adjncy_counter]=neigh;
+                                                            adjncy_counter++;
+                                                            //determine the diagonal
+                                                            if(i>neigh)//then we are on the lower diagonal
                                                             {
-                                                                tdata[alpha][beta].push_back(J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(aiuc)*llg::muB));
-
+                                                                int tmp=i,count=0;
+                                                                while(neigh!=tmp){tmp--;count++;}
+                                                                checkdiag(geom::nspins-count)++;
                                                             }
+                                                            else if(i==neigh)
+                                                            {
+                                                                checkdiag[geom::nspins]++;
+                                                            }
+                                                            else if(i<neigh)
+                                                            {
+                                                                int tmp=neigh,count=0;
+                                                                while(tmp!=i){tmp--;count++;}
+                                                                checkdiag[geom::nspins+count]++;
+                                                            }
+                                                            for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                                                            {
+                                                                for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                                                {
+                                                                    tdata[alpha][beta].push_back(J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(aiuc)*llg::muB));
+
+                                                                }
+                                                            }
+                                                            if(outputJ)
+                                                            {
+                                                                opJ << i << "\t" << neigh << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << mypos[0] << "," << mypos[1] << "," << mypos[2] << " ] -> [ " << lookupvec[0] << "," << lookupvec[1] << "," << lookupvec[2] << " ]" << std::endl;
+                                                            }
+                                                            check(lookupvec[0],lookupvec[1],lookupvec[2])=1;//this should mean that we no longer look for a neighbour here to avoid double addition of exchange
                                                         }
-                                                        if(outputJ)
-                                                        {
-                                                            opJ << i << "\t" << neigh << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << mypos[0] << "," << mypos[1] << "," << mypos[2] << " ] -> [ " << lookupvec[0] << "," << lookupvec[1] << "," << lookupvec[2] << " ]" << std::endl;
-                                                        }
-                                                        check(lookupvec[0],lookupvec[1],lookupvec[2])=1;//this should mean that we no longer look for a neighbour here to avoid double addition of exchange
                                                     }
                                                 }
 
@@ -410,6 +413,57 @@ namespace exch
                               std::cin.get();
                               }*/
                         }
+                        #ifdef CUDA
+                        if(config::exchm>98)
+                        {
+                            //call the routine to convert the CSR to a DIA sparse matrix format
+                            FIXOUT(config::Info,"Converting CSR to DIA (exchange tensor diagonals):" << std::flush);
+                            matconv::csr_to_dia_diag(geom::nspins,xadj,adjncy,diagoffset,diagnumdiag,checkdiag,dataxx,datayy,datazz);
+                            SUCCESS(config::Info);
+                            FIXOUT(config::Info,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
+                            config::openLogFile();
+                            config::printline(config::Log);
+                            FIXOUT(config::Log,"Outputting offset for diagonal part of interaction matrix:" << std::endl);
+                            config::Log << " [ ";
+                            for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
+                            {
+                                config::Log << diagoffset[i] << ",";
+                            }
+                            config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
+                        }
+                        if(config::offdiag && config::exchm>98)
+                        {
+                            offdiagoffset.resize(diagoffset.size());
+                            for(unsigned int i = 0 ; i < offdiagoffset.size() ; i++)
+                            {
+                                offdiagoffset[i]=diagoffset[i];
+                            }
+                            FIXOUT(config::Info,"Converting CSR to DIA (exchange tensor diagonals):" << std::flush);
+                            matconv::csr_to_dia_offdiag(geom::nspins,xadj,adjncy,offdiagoffset,diagnumdiag,checkdiag,dataxy,dataxz,datayx,datayz,datazx,datazy);
+                            SUCCESS(config::Info);
+                            FIXOUT(config::Log,"Total number of non-zero diagonals (size of offset array):" << diagnumdiag << std::endl);
+                            config::openLogFile();
+                            config::printline(config::Log);
+                            FIXOUT(config::Log,"Outputting offset for diagonal part of interaction matrix:" << std::endl);
+                            config::Log << " [ ";
+                            for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
+                            {
+                                config::Log << diagoffset[i] << ",";
+                            }
+                            config::Log << diagoffset[diagnumdiag-1] << " ] " << std::endl;
+                            FIXOUT(config::Log,"Total number of non-zero diagonals for the anti-symmetric part of the exchange tensor:" << offdiagnumdiag << std::endl);
+                            config::printline(config::Log);
+                            FIXOUT(config::Log,"Outputting offset for off-diagonal (antisym) part of interaction matrix:" << std::endl);
+                            config::Log << " [ ";
+                            for(unsigned int i = 0 ; i < offdiagnumdiag-1 ; i++)
+                            {
+                                config::Log << offdiagoffset[i] << ",";
+                            }
+                            config::Log << offdiagoffset[offdiagnumdiag-1] << " ] " << std::endl;
+
+
+                        }
+                        #endif /*CUDA*/
                         if(config::offdiag && config::exchm==1)
                         {
                             offdiagoffset.resize(diagoffset.size());
@@ -452,7 +506,7 @@ namespace exch
                 }
                 else if(config::exchm==0)//add the exchange to the interaction matrix
                 {
-                    //check if we have a single layer of atoms in any dimension
+//check if we have a single layer of atoms in any dimension
                     bool checkmonolayer[3]={false,false,false};
                     for(unsigned int xyz = 0 ; xyz < 3; xyz++)
                     {
@@ -585,9 +639,153 @@ namespace exch
                                       }
                                       }
                      */
+                    /*                for(unsigned int i = 0 ; i < geom::zpdim[0]*geom::Nk[0] ; i++)
+                                      {
+                                      for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+                                      {
+                                      for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
+                                      {
+                                      std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(0,0,2,2,i,j,k)[0] << std::endl;
+                                      std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(0,1,2,2,i,j,k)[0] << std::endl;
+                                      std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(1,0,2,2,i,j,k)[0] << std::endl;
+                                      std::cout << i << "\t" << j << "\t" << k << "\t" << intmat::Nrab(1,1,2,2,i,j,k)[0] << std::endl;
+                                      std::cin.get();
+                                      }
+                                      }
+                                      }
+                     */
                 }
 
-            }//end of if(method=="permute") statement
+
+                if(config::exchm>98)
+                {
+                    bool checkmonolayer[3]={false,false,false};
+                    for(unsigned int xyz = 0 ; xyz < 3; xyz++)
+                    {
+                        if(geom::dim[xyz]*geom::Nk[xyz] < 2)
+                        {
+                            checkmonolayer[xyz]=true;
+                        }
+                    }
+                    FIXOUTVEC(config::Info,"Monolayer check:",config::isTF(checkmonolayer[0]),config::isTF(checkmonolayer[1]),config::isTF(checkmonolayer[2]));
+
+                    //we are going to write the exchange information to the log file. Make sure it if open.
+                    config::openLogFile();
+                    Array2D<unsigned int> check;
+                    check.resize(geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+                    for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)//here geom::ucm.GetNMS() should be equal to the number of planes (dim[0]*Nk[0])
+                    {
+                        //for checking eqch plane we need to reset the check array
+                        check.IFill(0);
+                        //This section of code takes the kvec interactions and
+                        //adds the appropriate Jij to the appropriate interaction matrix
+                        for(unsigned int i = 0 ; i < shell_list(s1,s1) ; i++)
+                        {
+                            config::Log << "Shell " << shell_list(s1,s1) << " of " << numint(s1,s1,i) << std::endl;
+                            unsigned int counter=0;
+                            int lc[3]={0,0,0};
+                            int plane=s1;
+                            if(s1 > geom::dim[0]*geom::Nk[0])
+                            {
+                                error::errPreamble(__FILE__,__LINE__);
+                                error::errMessage("The number of species should be equal to the number of planes in the x-direcion to use the hybrid method.");
+                            }
+
+                            lc[0]=static_cast<unsigned int>(exchvec(s1,s1,i,0)*static_cast<double>(geom::Nk[0])*evs[0]+0.5);;
+                            lc[1]=static_cast<unsigned int>(exchvec(s1,s1,i,1)*static_cast<double>(geom::Nk[1])*evs[1]+0.5);
+                            lc[2]=static_cast<unsigned int>(exchvec(s1,s1,i,2)*static_cast<double>(geom::Nk[2])*evs[2]+0.5);
+                            for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
+                            {
+                                //reference array
+                                int rc[3]={lc[(0+wrap)%3],lc[(1+wrap)%3],lc[(2+wrap)%3]};
+
+                                //work array
+                                int wc[3]={rc[0],rc[1],rc[2]};
+
+                                if( (abs(wc[0]>0) && checkmonolayer[0]==true) || (abs(wc[1]>0) && checkmonolayer[1]==true) || (abs(wc[2]>0) && checkmonolayer[2]==true))
+                                {
+                                    //then do nothing, we don't want to add anything in this direction
+                                }
+                                else
+                                {
+
+                                    //change the signs of each element
+                                    for(unsigned int a = 0 ; a < 2 ; a++)
+                                    {
+                                        for(unsigned int b = 0 ; b < 2 ; b++)
+                                        {
+                                            for(unsigned int c = 0 ; c < 2 ; c++)
+                                            {
+                                                wc[0]=rc[0]*pow(-1,a+1);
+                                                wc[1]=rc[1]*pow(-1,b+1);
+                                                wc[2]=rc[2]*pow(-1,c+1);
+
+                                                //This array is purely for outputting the exchange information to the log file
+                                                int owc[3]={wc[0],wc[1],wc[2]};
+                                                //check the boundaries for each component
+                                                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                                                {
+                                                    if(wc[xyz]<0)
+                                                    {
+                                                        wc[xyz]=geom::zpdim[xyz]*geom::Nk[xyz]+wc[xyz];
+                                                    }
+                                                }//end of xyz loop
+                                                unsigned int sum=abs(wc[0])+abs(wc[1])+abs(wc[2]);
+                                                if(check(wc[1],wc[2])==0 && wc[0]==0 && sum>0)
+                                                {
+                                                    config::Log << "Plane " << plane << " Interaction Vector:  [" << owc[1] << "," << owc[2] << "]\t -> [" << wc[0] << "," << wc[1] << "," << wc[2] << "]" << std::endl;
+                                                    //add the diagonal components (alpha=beta)
+                                                    for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                                                    {
+                                                        intmat::hNrab(alpha,alpha,plane,wc[1],wc[2])[0]+=(J(s1,s1,i,alpha,alpha)/(geom::ucm.GetMuBase(s1)*llg::muB));
+//                                                        if(alpha==0)
+//                                                        {
+//                                                            std::cout << "Plane Interaction Vector:  [" << plane << "," << owc[1] << "," << owc[2] << "]\t -> [" << wc[0] << "," << wc[1] << "," << wc[2] << "]" << std::endl;
+//                                                            std::cout << "Adding to intmat:\t" << intmat::hNrab(alpha,alpha,plane,wc[1],wc[2])[0] << std::endl;
+//                                                        }
+                                                    }
+                                                    //do the DM (off-diagonals by hand)
+                                                    //The format of the file that is read in is in Jxx. We want in our interaction
+                                                    //matrix the DM vectors.
+                                                    // Nxy = 1/2(Jyx-Jxy)
+                                                    intmat::hNrab(0,1,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,1,0)-J(s1,s1,i,0,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                    // Nxz = 1/2(Jxz-Jzx)
+                                                    intmat::hNrab(0,2,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,0,2)-J(s1,s1,i,2,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                    // Nyx = 1/2(Jxy-Jyx)
+                                                    intmat::hNrab(1,0,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,0,1)-J(s1,s1,i,1,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                    // Nyz = 1/2(Jzy-Jyz)
+                                                    intmat::hNrab(1,2,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,2,1)-J(s1,s1,i,1,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                    // Nzx = 1/2(Jzx - Jxz)
+                                                    intmat::hNrab(2,0,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,2,0)-J(s1,s1,i,0,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                    // Nzy = 1/2(Jyz-Jzy)
+                                                    intmat::hNrab(2,1,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,1,2)-J(s1,s1,i,2,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+
+                                                    config::Log << "[ " << J(s1,s1,i,0,0) << " , " << J(s1,s1,i,0,1) << " , " << J(s1,s1,i,0,2) << " ]" << std::endl;
+                                                    config::Log << "[ " << J(s1,s1,i,1,0) << " , " << J(s1,s1,i,1,1) << " , " << J(s1,s1,i,1,2) << " ]\t (Joules)" << std::endl;
+                                                    config::Log << "[ " << J(s1,s1,i,2,0) << " , " << J(s1,s1,i,2,1) << " , " << J(s1,s1,i,2,2) << " ]" << std::endl;
+                                                    config::Log << std::endl;
+                                                    config::Log << "[ " << J(s1,s1,i,0,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s1,i,0,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s1,i,0,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
+                                                    config::Log << "[ " << J(s1,s1,i,1,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s1,i,1,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s1,i,1,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]\t (Tesla)" << std::endl;
+                                                    config::Log << "[ " << J(s1,s1,i,2,0)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s1,i,2,1)/(geom::ucm.GetMuBase(s1)*llg::muB) << " , " << J(s1,s1,i,2,2)/(geom::ucm.GetMuBase(s1)*llg::muB) << " ]" << std::endl;
+                                                    config::Log << std::endl;
+                                                    check(wc[1],wc[2])=1;
+                                                    counter++;
+
+                                                }//end of check if statement
+                                            }//end of c loop
+                                        }//end of b loop
+                                    }//end of a loop
+                                }//end of wrap loop
+                            }
+                                counter=0;
+                                config::printline(config::Log);
+                            }//end of shell list loop
+                        }//end of s1 loop
+
+
+                    }//end of else if(config::exchm>98)
+
+                }//end of if(method=="permute") statement
             else if(method=="direct")
             {
                 error::errPreamble(__FILE__,__LINE__);
