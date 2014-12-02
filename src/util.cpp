@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 27 Nov 2014 11:08:31
+// Last-modified: 02 Dec 2014 14:05:45
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -302,6 +302,26 @@ namespace util
                 ofs << spins::mag(s,0) << "\t" << spins::mag(s,1) << "\t" << spins::mag(s,2) << "\t";
             }
             ofs << std::endl;
+        }
+        else if(spins::mag_calc_method==1)//along x
+        {
+        }
+        else if(spins::mag_calc_method==2)//along y
+        {
+        }
+        else if(spins::mag_calc_method==3)//along z
+        {
+            Array2D<double> magz;
+            magz.resize(geom::nk[2]*geom::dim[2]);
+            magz.IFill(0);
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                //check which plane the spin belongs to
+                unsigned int klu=geom::lu(i,2);
+                magz(kplu,0)+=spins::Sx[i];
+                magz(kplu,1)+=spins::Sy[i];
+                magz(kplu,2)+=spins::Sz[i];
+            }
         }
     }
 
