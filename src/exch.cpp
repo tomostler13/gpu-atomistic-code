@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 27 Nov 2014 10:48:54
+// Last-modified: 02 Dec 2014 18:13:34
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -96,11 +96,13 @@ namespace exch
             error::errMessage("Method of reading exchange file not recognised.");
         }
         libconfig::Setting &GlobExch = exchcfg.lookup("exchange");
+        bool errstate=false;
         GlobExch.lookupValue("MaxShells",max_shells);
         evs.resize(3);
         evs[0]=GlobExch["Scale"][0];
         evs[1]=GlobExch["Scale"][1];
         evs[2]=GlobExch["Scale"][2];
+        std::cout << __FILE__ << "\t" << __LINE__ << std::endl;
         FIXOUTVEC(config::Info,"Scaling factor for exchange vectors:",evs[0],evs[1],evs[2]);
         numint.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells);
         exchvec.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3);

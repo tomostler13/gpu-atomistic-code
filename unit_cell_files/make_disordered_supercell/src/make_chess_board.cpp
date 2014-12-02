@@ -1,7 +1,7 @@
 // File: make_chess_board.cpp
 // Author:Tom Ostler
 // Created: 22 Nov 2014
-// Last-modified: 24 Nov 2014 10:36:10
+// Last-modified: 02 Dec 2014 16:50:06
 
 //The purpose of this section of code is to create a unit cell
 //file for use with the main program. The specific type of unit
@@ -292,7 +292,7 @@ int main(int argc,char *argv[])
                 //lookup which composition we want
                 unsigned int comp=((i+j+k)%nms);
 
-                std::cout << i << "\t" << j << "\t" << k << "\t" << comp << std::endl;
+                //std::cout << i << "\t" << j << "\t" << k << "\t" << comp << std::endl;
                 compmap << i << "\t" << j << "\t" << k;
                 //loop over each species after 0 (i.e. the second and third etc) until the desired percentage
                 for(unsigned int species = 1 ; species < nms ; species++)
@@ -393,6 +393,7 @@ int main(int argc,char *argv[])
             error::errWarning("Could not close spinmap file.");
         }
     }*/
+    }
     ucf.close();
     if(ucf.is_open())
     {
