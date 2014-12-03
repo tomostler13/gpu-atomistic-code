@@ -1,5 +1,6 @@
 system:
 {
+<<<<<<< HEAD
     seed=123456;
     dim = [ 10 , 10 , 30 ];
     globdim = [ 20 , 20 , 1 ];
