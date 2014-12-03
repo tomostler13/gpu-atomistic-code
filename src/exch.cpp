@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 03 Dec 2014 14:52:53
+// Last-modified: 03 Dec 2014 18:08:07
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -998,9 +998,9 @@ namespace exch
             }
             else if(rem)//then the interaction matrix has already been calculated and we just have to read it
             {
-                if(config::exchm==0)
+                if(config::exchm==2)
                 {
-                    std::ifstream ipem("csr_exch_mag.dat");
+                    std::ifstream ipem("csr_exch_mat.dat");
                     if(!ipem.is_open())
                     {
                         error::errPreamble(__FILE__,__LINE__);
