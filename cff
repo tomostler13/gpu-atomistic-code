@@ -38,6 +38,8 @@ exchange:
     //- extfile (read from an external file)
     exchinput="extfile";
     exchfile="exch.sc";
+    OutputExchangeMatrix=TRUE;
+    ReadExchangeMatrix=FALSE;
 };
 sf:
 {

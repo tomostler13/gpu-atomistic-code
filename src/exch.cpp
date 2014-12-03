@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 27 Nov 2014 10:48:54
+// Last-modified: 03 Dec 2014 14:11:26
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -32,7 +32,7 @@ namespace exch
     Array4D<double> exchvec;
     Array5D<double> J;
     std::string enerType;
-    bool outputJ;
+    bool outputJ,oem=false,rem=false;
     void initExch(int argc,char *argv[])
     {
 
@@ -60,6 +60,15 @@ namespace exch
         FIXOUT(config::Info,"Method to read in exchange:" << method << std::endl);
         setting.lookupValue("exchinput",readMethod);
         setting.lookupValue("OutputExchange",outputJ);
+        setting.lookupValue("OutputExchangeMatrix",oem);
+        setting.lookupValue("ReadExchangeMatrix",rem);
+        if(oem && rem)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("There is no point in reading and writing the exchange matrix because if you are reading it in you already have it and it would remain unchanged.");
+        }
+        FIXOUT(config::Info,"Output the exchange matrix in the current format:" << config::isTF(oem) << std::endl);
+        FIXOUT(config::Info,"Read the exchange matrix:" << config::isTF(rem) << std::endl);
         FIXOUT(config::Info,"Output of exchange matrix (mostly for visualization how diagonal it is):" << config::isTF(outputJ) << std::endl);
         if(readMethod=="thisfile")
         {
@@ -106,7 +115,7 @@ namespace exch
         exchvec.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3);
         shell_list.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS());
         numint.IFill(0);exchvec.IFill(0);J.IFill(0);shell_list.IFill(0);
-        if(geom::nspins>1)//then really we don't want any exchange anyway.
+        if(geom::nspins>1)//if not then really we don't want any exchange anyway.
         {
             if(method=="permute")
             {
@@ -412,6 +421,37 @@ namespace exch
                               }
                               std::cin.get();
                               }*/
+                            if(oem)
+                            {
+                                std::ofstream opem("dia_exch_mat.dat");
+                                if(!opem.is_open())
+                                {
+                                    error::errPreamble(__FILE__,__LINE__);
+                                    error::errMessage("Could not open file for outputting dia exchange matrix.");
+                                }
+                                opem << geom::nspins << std::endl;
+                                opem << diagnumdiag <<< std::endl;
+                                for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
+                                {
+                                    opem << diagoffset[i] << "\t";
+                                }
+                                opem << diagoffset[diagnumdiag-1];
+                                for(unsigned int i = 0 ; i < diagnumdiag ; i++)
+                                {
+                                    for(unsigned int j = 0 ; j < geom::nspins ; j++)
+                                    {
+                                        opem << dataxx[i*geom::nspins+j] << "\t" << datayy[i*geom::nspins+j] << "\t" << datazz[i*geom::nspins+j] << "\t";
+                                    }
+                                }
+                                opem.close();
+                                if(opem.is_open())
+                                {
+                                    error::errPreamble(__FILE__,__LINE__);
+                                    error::errWarning("Could not close the file for outputting the DIA exchange matrix.");
+                                }
+
+                            }
+
                         }
                         #ifdef CUDA
                         if(config::exchm>98)
