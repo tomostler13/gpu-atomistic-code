@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 03 Dec 2014 14:11:26
+// Last-modified: 03 Dec 2014 14:52:53
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -117,7 +117,7 @@ namespace exch
         numint.IFill(0);exchvec.IFill(0);J.IFill(0);shell_list.IFill(0);
         if(geom::nspins>1)//if not then really we don't want any exchange anyway.
         {
-            if(method=="permute")
+            if(method=="permute" && rem==false)
             {
                 //first read the exchange constants
                 J.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3,3);
@@ -244,8 +244,8 @@ namespace exch
                             for(unsigned int shell = 0 ; shell < shell_list(sl,s1) ; shell++)
                             {
                                 unsigned int lookup[3]={static_cast<unsigned int>(exchvec(sl,s1,shell,0)*evs[0]*static_cast<double>(geom::Nk[0])+0.5),
-                                                        static_cast<unsigned int>(exchvec(sl,s1,shell,1)*evs[1]*static_cast<double>(geom::Nk[1])+0.5),
-                                                        static_cast<unsigned int>(exchvec(sl,s1,shell,2)*evs[2]*static_cast<double>(geom::Nk[2])+0.5)};
+                                    static_cast<unsigned int>(exchvec(sl,s1,shell,1)*evs[1]*static_cast<double>(geom::Nk[1])+0.5),
+                                    static_cast<unsigned int>(exchvec(sl,s1,shell,2)*evs[2]*static_cast<double>(geom::Nk[2])+0.5)};
                                 for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
                                 {
                                     //reference array
@@ -381,17 +381,50 @@ namespace exch
                         tadjncy.clear();
                         FIXOUT(config::Info,"Size of xadj (CSR offsets):\t" << xadj.size() << std::endl);
                         FIXOUT(config::Info,"Size of adjncy (CSR list):\t" << adjncy.size() << std::endl);
+                        if(config::exchm==2)
+                        {
+                            if(oem)
+                            {
+                                std::ofstream opem("csr_exch_mat.dat");
+                                if(!opem.is_open())
+                                {
+                                    error::errPreamble(__FILE__,__LINE__);
+                                    error::errMessage("Could not open file for outputting dia exchange matrix.");
+                                }
+                                opem << geom::nspins << std::endl;
+                                opem << adjncy.size() << std::endl;
+                                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                                {
+                                    opem << xadj[i] << "\t";
+                                }
+                                opem << xadj[geom::nspins] << std::endl;
+                                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                                {
+                                    for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
+                                    {
+                                        opem << adjncy[j] << "\t" << dataxx[j] << "\t" << datayy[j] << "\t" << datazz[j] << "\t";
+                                    }
+                                }
+                                opem.close();
+                                if(opem.is_open())
+                                {
+                                    error::errPreamble(__FILE__,__LINE__);
+                                    error::errWarning("Could not close the file for outputting the CSR exchange matrix.");
+                                }
+
+                            }
+                        }
                         //For debugging the CSR neighbour list
                         /*for(unsigned int i = 0 ; i < geom::nspins ; i++)
-                        {
-                            std::cout << "Atom " << i << " has neighbours" << std::endl;
-                            for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
-                            {
-                                std::cout << adjncy[j] << "\t" << dataxx[j] << "\t" << std::flush;
-                            }
-                            std::cout << std::endl;
-                        }
-                        std::cin.get();*/
+                          {
+                          std::cout << "Atom " << i << " has neighbours" << std::endl;
+                          for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
+                          {
+                          std::cout << adjncy[j] << "\t" << dataxx[j] << "\t" << std::flush;
+                          }
+                          std::cout << std::endl;
+                          }
+                          std::cin.get();*/
 
                         if(config::exchm==1)
                         {//then convert CSR to DIA
@@ -430,7 +463,7 @@ namespace exch
                                     error::errMessage("Could not open file for outputting dia exchange matrix.");
                                 }
                                 opem << geom::nspins << std::endl;
-                                opem << diagnumdiag <<< std::endl;
+                                opem << diagnumdiag << std::endl;
                                 for(unsigned int i = 0 ; i < diagnumdiag-1 ; i++)
                                 {
                                     opem << diagoffset[i] << "\t";
@@ -453,7 +486,7 @@ namespace exch
                             }
 
                         }
-                        #ifdef CUDA
+#ifdef CUDA
                         if(config::exchm>98)
                         {
                             //call the routine to convert the CSR to a DIA sparse matrix format
@@ -503,7 +536,7 @@ namespace exch
 
 
                         }
-                        #endif /*CUDA*/
+#endif /*CUDA*/
                         if(config::offdiag && config::exchm==1)
                         {
                             offdiagoffset.resize(diagoffset.size());
@@ -546,7 +579,7 @@ namespace exch
                 }
                 else if(config::exchm==0)//add the exchange to the interaction matrix
                 {
-//check if we have a single layer of atoms in any dimension
+                    //check if we have a single layer of atoms in any dimension
                     bool checkmonolayer[3]={false,false,false};
                     for(unsigned int xyz = 0 ; xyz < 3; xyz++)
                     {
@@ -778,11 +811,11 @@ namespace exch
                                                     for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                                                     {
                                                         intmat::hNrab(alpha,alpha,plane,wc[1],wc[2])[0]+=(J(s1,s1,i,alpha,alpha)/(geom::ucm.GetMuBase(s1)*llg::muB));
-//                                                        if(alpha==0)
-//                                                        {
-//                                                            std::cout << "Plane Interaction Vector:  [" << plane << "," << owc[1] << "," << owc[2] << "]\t -> [" << wc[0] << "," << wc[1] << "," << wc[2] << "]" << std::endl;
-//                                                            std::cout << "Adding to intmat:\t" << intmat::hNrab(alpha,alpha,plane,wc[1],wc[2])[0] << std::endl;
-//                                                        }
+                                                        //                                                        if(alpha==0)
+                                                        //                                                        {
+                                                        //                                                            std::cout << "Plane Interaction Vector:  [" << plane << "," << owc[1] << "," << owc[2] << "]\t -> [" << wc[0] << "," << wc[1] << "," << wc[2] << "]" << std::endl;
+                                                        //                                                            std::cout << "Adding to intmat:\t" << intmat::hNrab(alpha,alpha,plane,wc[1],wc[2])[0] << std::endl;
+                                                        //                                                        }
                                                     }
                                                     //do the DM (off-diagonals by hand)
                                                     //The format of the file that is read in is in Jxx. We want in our interaction
@@ -817,16 +850,16 @@ namespace exch
                                     }//end of a loop
                                 }//end of wrap loop
                             }
-                                counter=0;
-                                config::printline(config::Log);
-                            }//end of shell list loop
-                        }//end of s1 loop
+                            counter=0;
+                            config::printline(config::Log);
+                        }//end of shell list loop
+                    }//end of s1 loop
 
 
-                    }//end of else if(config::exchm>98)
+                }//end of else if(config::exchm>98)
 
-                }//end of if(method=="permute") statement
-            else if(method=="direct")
+            }//end of if(method=="permute") statement
+            else if(method=="direct" && rem==false)
             {
                 error::errPreamble(__FILE__,__LINE__);
                 error::errMessage("The use of \"direct\" method of reading in the exchange is currently not written for a general N lattice code and needs to be fixed");
@@ -961,6 +994,68 @@ namespace exch
                 {
                     error::errPreamble(__FILE__,__LINE__);
                     error::errWarning("Could not close interaction map file.");
+                }
+            }
+            else if(rem)//then the interaction matrix has already been calculated and we just have to read it
+            {
+                if(config::exchm==0)
+                {
+                    std::ifstream ipem("csr_exch_mag.dat");
+                    if(!ipem.is_open())
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("You requested to read in a CSR exchange matrix but it does not exist. Check it is called csr_exch_mag.dat");
+                    }
+                    unsigned int lns=0,adjsize;
+                    ipem >> lns;
+                    ipem >> adjsize;
+                    if(lns!=geom::nspins)
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("The number of spins (first line) in the CSR input file is not consistent with the system size you have generated. (First check failed)");
+                    }
+                    if(adjsize < 1)
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("The size of adjncy (neighbour list) is zero. (Second check failed)");
+                    }
+
+                    FIXOUT(config::Info,"Size of xadj read as:" << lns+1 << std::endl);
+
+                    FIXOUT(config::Info,"Resizing and filling xadj array:" << std::flush);
+                    xadj.resize(geom::nspins+1);
+                    xadj.IFill(0);
+                    //read the xadj array
+                    for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                    {
+                        ipem >> xadj[i];
+                    }
+                    ipem >> xadj[geom::nspins];
+                    SUCCESS(config::Info);
+                    FIXOUT(config::Info,"Size of adjncy array read as:" << adjsize << std::endl);
+                    FIXOUT(config::Info,"Resizing and filling adjncy array:" << std::flush);
+                    adjncy.resize(adjsize);adjncy.IFill(0);
+                    dataxx.resize(adjsize);dataxx.IFill(0);
+                    datayy.resize(adjsize);datayy.IFill(0);
+                    datazz.resize(adjsize);datazz.IFill(0);
+                    for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                    {
+                        for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
+                        {
+                            if(j > adjncy.size())
+                            {
+                                error::errPreamble(__FILE__,__LINE__);
+                                error::errMessage("Stopping a seg fault. There is an error in the xadj lookup (adjncy would seg fault). (Third check failed)");
+                            }
+                            ipem >> adjncy[j] >> dataxx[j] >> datayy[j] >> datazz[j];
+                        }
+                    }
+                    ipem.close();
+                    if(ipem.is_open())
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errWarning("Could not close the csr_exch_mat.dat file.");
+                    }
                 }
             }
             else
