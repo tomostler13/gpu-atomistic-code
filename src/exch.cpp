@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 03 Dec 2014 18:25:08
+// Last-modified: 03 Dec 2014 18:34:32
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -32,7 +32,7 @@ namespace exch
     Array4D<double> exchvec;
     Array5D<double> J;
     std::string enerType;
-    bool outputJ,oem=false,rem=false;
+    bool outputJ,oem=false,rem=false,eaem=false;
     void initExch(int argc,char *argv[])
     {
 
@@ -62,6 +62,7 @@ namespace exch
         setting.lookupValue("OutputExchange",outputJ);
         setting.lookupValue("OutputExchangeMatrix",oem);
         setting.lookupValue("ReadExchangeMatrix",rem);
+        setting.lookupValue("ExitAfterExchangeMatrix",eaem);
         if(oem && rem)
         {
             error::errPreamble(__FILE__,__LINE__);
@@ -70,6 +71,12 @@ namespace exch
         FIXOUT(config::Info,"Output the exchange matrix in the current format:" << config::isTF(oem) << std::endl);
         FIXOUT(config::Info,"Read the exchange matrix:" << config::isTF(rem) << std::endl);
         FIXOUT(config::Info,"Output of exchange matrix (mostly for visualization how diagonal it is):" << config::isTF(outputJ) << std::endl);
+        FIXOUT(config::Info,"Exit after exchange matrix calculation?:" << config::isTF(eaem) << std::endl);
+        if(eaem && rem)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("You are reading the exchange matrix then exiting, why?");
+        }
         if(readMethod=="thisfile")
         {
             FIXOUT(config::Info,"Reading exchange interactions from:" << "config file" << std::endl);
@@ -424,6 +431,11 @@ namespace exch
                                 }
 
                             }
+                            if(eaem)
+                            {
+                                FIXOUT(config::Info,"Exiting after calculating exchange matrix:" << std::endl);
+                                exit(0);
+                            }
                         }
                         //For debugging the CSR neighbour list
                         /*for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -494,6 +506,11 @@ namespace exch
                                     error::errWarning("Could not close the file for outputting the DIA exchange matrix.");
                                 }
 
+                            }
+                            if(eaem)
+                            {
+                                FIXOUT(config::Info,"Exiting after calculating exchange matrix:" << std::endl);
+                                exit(0);
                             }
 
                         }

@@ -39,6 +39,7 @@ exchange:
     exchinput="extfile";
     exchfile="exch.sc";
     OutputExchangeMatrix=TRUE;
+    ExitAfterExchangeMatrix=TRUE;
     ReadExchangeMatrix=FALSE;
 };
 sf:
