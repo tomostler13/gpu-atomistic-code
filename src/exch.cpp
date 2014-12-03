@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 03 Dec 2014 18:08:07
+// Last-modified: 03 Dec 2014 18:25:08
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -221,10 +221,20 @@ namespace exch
                     xadj.IFill(0);
                     xadj[0]=0;
                     unsigned int xadj_counter=0,adjncy_counter=0;
-
+                    FIXOUT(config::Info,"Generating CSR neighbour list:" << std::endl);
+                    double percent_counter=10.0;
                     //loop over the spins and find the neighbours
                     for(unsigned int i = 0 ; i < geom::nspins ; i++)
                     {
+                        if(i==0)
+                        {
+                            config::Info << "Progress\t" << std::flush;
+                        }
+                        else if(static_cast<double>(i)*100.0/static_cast<double>(geom::nspins)>percent_counter)
+                        {
+                            config::Info << percent_counter << " % " << std::flush;
+                            percent_counter+=10;
+                        }
                         xadj[xadj_counter]=adjncy_counter;
                         //what is my species (or sublattice)
                         unsigned sl=geom::sublattice(i);
@@ -346,6 +356,7 @@ namespace exch
                         }
                         xadj_counter++;
                     }
+                    config::Info << "100 %" << std::endl;
                     int diagcount=0;
                     for(unsigned int i = 0 ; i < 2*geom::nspins-1 ; i++)
                     {
