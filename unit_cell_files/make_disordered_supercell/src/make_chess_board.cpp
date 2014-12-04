@@ -1,7 +1,7 @@
 // File: make_chess_board.cpp
 // Author:Tom Ostler
 // Created: 22 Nov 2014
-// Last-modified: 24 Nov 2014 10:36:10
+// Last-modified: 02 Dec 2014 19:43:34
 
 //The purpose of this section of code is to create a unit cell
 //file for use with the main program. The specific type of unit
@@ -391,8 +391,8 @@ int main(int argc,char *argv[])
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errWarning("Could not close spinmap file.");
-        }
-    }*/
+        }*/
+    }
     ucf.close();
     if(ucf.is_open())
     {
