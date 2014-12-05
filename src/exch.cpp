@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 05 Dec 2014 11:15:54
+// Last-modified: 05 Dec 2014 12:50:55
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -43,11 +43,11 @@ namespace exch
         {
             if(method=="permute" && rem==false)
             {
-                permute();
+                permute(argc,argv);
             }//end of if(method=="permute") statement
             else if(method=="direct" && rem==false)
             {
-                direct();
+                direct(argc,argv);
             }
             else if(rem)//then the interaction matrix has already been calculated and we just have to read it
             {

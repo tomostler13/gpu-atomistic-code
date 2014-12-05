@@ -1,7 +1,7 @@
 // File: exch.h
 // Author:Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 05 Dec 2014 11:18:36
+// Last-modified: 05 Dec 2014 13:32:25
 #ifndef _EXCH_H_
 #define _EXCH_H_
 #include <string>
@@ -23,7 +23,15 @@ namespace exch
     void readGlobalExch(int argc,char *argv[]);
 
     extern libconfig::Config exchcfg;
-    void permute();
-    void direct();
+    void permute(int argc,char *argv[]);
+    void direct(int argc,char *argv[]);
+    void get_exch_permute(int argc,char *argv[]);
+    void get_exch_direct(int argc,char *argv[]);
+    void hybrid();
+    void fft();
+    void directfft();
+    void directhybrid();
+    void exchpermute();
+    void exchdirect();
 }
 #endif /*_EXCH_H_*/
