@@ -1,7 +1,7 @@
 // File: exch_direct_Sp.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 05 Dec 2014 14:58:20
+// Last-modified: 05 Dec 2014 19:48:21
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // routines here take the exchange list of interaction
@@ -49,6 +49,26 @@ namespace exch
         xadj.IFill(0);
         xadj[0]=0;
         unsigned int xadj_counter=0,adjncy_counter=0;
+
+/*        for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+        {
+            for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+            {
+                for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2] ; k++)
+                {
+                    if(geom::coords(i,j,k,0)>-1)
+                    {
+                        const double dx[3]={geom::abc[0]*static_cast<double>(i)/static_cast<double>(geom::dim[0]*geom::Nk[0])/1e-10,
+                            geom::abc[1]*static_cast<double>(j)/static_cast<double>(geom::dim[1]*geom::Nk[1])/1e-10,
+                            geom::abc[2]*static_cast<double>(k)/static_cast<double>(geom::dim[2]*geom::Nk[2])/1e-10};
+                        std::cout << sqrt(dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]) << "\t" << dx[0] << "\t"
+                        << dx[1] << "\t"
+                        << dx[2] << "\t" << static_cast<double>(i)/static_cast<double>(geom::Nk[0]) << "\t" << static_cast<double>(j)/static_cast<double>(geom::Nk[1]) << "\t" << static_cast<double>(k)/static_cast<double>(geom::Nk[2]) <<  std::endl;
+                    }
+                }
+            }
+        }
+        exit(0);*/
 
         //loop over the spins and find the neighbours
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -105,17 +125,32 @@ namespace exch
                             check_lookup++;
                         }
                     }
-                    std::cout << i << std::endl;
-                    std::cout << geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],0) << std::endl;
-std::cout << lookup[0] << "\t" <<lookup[1] << "\t" << lookup[2] << std::endl;
-std::cout << lookupvec[0] << "\t" <<lookupvec[1] << "\t" << lookupvec[2] << std::endl;
-std::cin.get();
+                    std::cout << i << "\t" << shell << std::endl;
+                    //std::cout << geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],0) << std::endl;
+                    //std::cout << lookup[0] << "\t" <<lookup[1] << "\t" << lookup[2] << std::endl;
+                    //std::cout << lookupvec[0] << "\t" <<lookupvec[1] << "\t" << lookupvec[2] << std::endl;
+                    int spec2=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],1);
+                        const double dx[3]={geom::abc[0]*static_cast<double>(lookup[0])/static_cast<double>(geom::dim[0]*geom::Nk[0])/1e-10,
+                            geom::abc[1]*static_cast<double>(lookup[1])/static_cast<double>(geom::dim[1]*geom::Nk[1])/1e-10,
+                            geom::abc[2]*static_cast<double>(lookup[2])/static_cast<double>(geom::dim[2]*geom::Nk[2])/1e-10};
+                        std::cout << sqrt(dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]) << "\t" << dx[0] << "\t"
+                        << dx[1] << "\t"
+                        << dx[2] << std::endl;//"\t" << static_cast<double>(i)/static_cast<double>(geom::Nk[0]) << "\t" << static_cast<double>(j)/static_cast<double>(geom::Nk[1]) << "\t" << static_cast<double>(k)/static_cast<double>(geom::Nk[2]) <<  std::endl;
+
+                    if(spec2>-1)
+                    {
+std::cout << J(sl,spec2,shell,0,0)/(geom::ucm.GetMu(aiuc)*llg::muB);
+                    }
+                    else
+                    {
+                    std::cout <<"No exchange" << std::endl;
+                    }
+                    //std::cin.get();
                     //if check_lookup==3 then the lookup for the atom exists
                     if(check_lookup==3)//then we are array safe (i.e. should not seg fault) to look up the atom
                     {
                         //find the species of the neighbouring atom
-                        unsigned int spec=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],1);
-                        //check if we have assigned a J value to this interaction vector previously
+                        unsigned int spec=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],1); //check if we have assigned a J value to this interaction vector previously
                         //we also need to check that we are looking at the right species
                         if(check(lookupvec[0],lookupvec[1],lookupvec[2])==0 && spec==s1)
                         {
