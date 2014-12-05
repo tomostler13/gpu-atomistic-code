@@ -44,7 +44,8 @@ obj/matrix_mul_cpu.o \
 obj/sf.o \
 obj/sf_glob.o \
 obj/timeseries.o \
-obj/laser_heating.o
+obj/laser_heating.o \
+obj/exch_routines.o
 
 SWITCHOBJ= \
 obj/main.o \
