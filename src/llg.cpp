@@ -1,13 +1,14 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 09 Dec 2014 20:00:29
+// Last-modified: 09 Dec 2014 20:16:35
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
 #include "../inc/defines.h"
 #include "../inc/geom.h"
 #include "../inc/spins.h"
+#include "../inc/util.h"
 #include <cmath>
 #include <sstream>
 #ifdef CUDA
@@ -54,6 +55,9 @@ namespace llg
 		FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
         setting.lookupValue("MagnetizationCalculationMethod:",spins::mag_calc_method);
         setting.lookupValue("OutputMagnetization",spins::output_mag);
+        FIXOUT(config::Info,"Initializing output of magnetization:" << std::flush);
+        util::init_output();
+        SUCCESS(config::Info);
         if(geom::ucm.NumAtomsUnitCell() > 5)
         {
             config::openLogFile();
@@ -63,11 +67,11 @@ namespace llg
         //Output the prefactor to the LLG for each species to the output file
         for(unsigned int i = 0 ; i < geom::ucm.NumAtomsUnitCell() ; i++)
         {
+            std::stringstream sstr,sstr1;
+            std::string str=sstr.str();
             if(geom::logunit)
             {
-                std::stringstream sstr,sstr1;
                 sstr << "Sigma prefactor for unit cell atom " << i << ":";
-                std::string str=sstr.str();
                 sstr1 << "Prefactor for LLG for unit cell atom " << i << ":";
             }
 

@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 26 Nov 2014 09:43:11
+// Last-modified: 09 Dec 2014 20:11:45
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -88,13 +88,6 @@ void sim::timeseries(int argc,char *argv[])
         error::errMessage("Could not read whether you want to output the individual time series for each magnetic species (timseries:OutputIndividualTimeSeries (bool))");
     }
 
-    //open the magnetization file and do some error handling
-    std::ofstream magout("mag.dat");
-    if(!magout.is_open())
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not open file mag.dat");
-    }
     FIXOUT(config::Info,"Planning FFT for spin map:" << std::flush);
     //This array stores the spin map in real space
     Array3D<fftw_complex> s3d;
@@ -246,7 +239,7 @@ void sim::timeseries(int argc,char *argv[])
         if(t%spins::update==0)
         {
             util::calc_mag();
-            util::output_mag(magout,t);
+            util::output_mag(t);
         }
         llg::integrate(t);
     }
@@ -261,7 +254,7 @@ void sim::timeseries(int argc,char *argv[])
         if(t%spins::update==0)
         {
             util::calc_mag();
-            util::output_mag(magout,t);
+            util::output_mag(t);
         }
         if(t%(spins::update*sf::sfupdate)==0)
         {

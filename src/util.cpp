@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Dec 2014 19:16:08
+// Last-modified: 09 Dec 2014 20:17:28
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -257,7 +257,7 @@ namespace util
         // List of arguements and what they do
         //
         // 0 - calculate the sublattice resolved magnetization
-        if(spins::mag_calc_method==0)
+        if(spins::mag_calc_method==0 || spins::output_mag==true)
         {
             spins::mag.IFill(0);
             //add up the magnetization for each sublattice
@@ -276,6 +276,52 @@ namespace util
                 spins::mag(i,1)*=oones;
                 spins::mag(i,2)*=oones;
             }
+        }
+        else if(spins::mag_calc_method==1)
+        {
+            magx.IFill(0);
+            //calculate the total magnetization in the layer
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                //check which plane the spin belongs to
+                unsigned int klu=geom::lu(i,1);
+                magx(klu,0)+=spins::Sx[i]*geom::mu[i];
+                magx(klu,1)+=spins::Sy[i]*geom::mu[i];
+                magx(klu,2)+=spins::Sz[i]*geom::mu[i];
+            }
+
+        }
+        else if(spins::mag_calc_method==2)
+        {
+            magy.IFill(0);
+            //calculate the total magnetization in the layer
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                //check which plane the spin belongs to
+                unsigned int klu=geom::lu(i,1);
+                magy(klu,0)+=spins::Sx[i]*geom::mu[i];
+                magy(klu,1)+=spins::Sy[i]*geom::mu[i];
+                magy(klu,2)+=spins::Sz[i]*geom::mu[i];
+            }
+
+        }
+        else if(spins::mag_calc_method==3)
+        {
+            magz.IFill(0);
+            //calculate the total magnetization in the layer
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                //check which plane the spin belongs to
+                unsigned int klu=geom::lu(i,2);
+                magz(klu,0)+=spins::Sx[i]*geom::mu[i];
+                magz(klu,1)+=spins::Sy[i]*geom::mu[i];
+                magz(klu,2)+=spins::Sz[i]*geom::mu[i];
+            }
+        }
+        else if(spins::mag_calc_method==4)
+        {
+            // do not need to do anything, everything is done
+            // when output_mag is called.
         }
         else
         {
@@ -365,7 +411,7 @@ namespace util
 
 
     }
-    void output_mag(std::ofstream& ofs,unsigned int t)
+    void output_mag(unsigned int t)
     {
         //This section of code outputs the code in a method consistent
         //with the method specified by spins::mag_calc_method.
@@ -394,16 +440,6 @@ namespace util
         else if(spins::mag_calc_method==1)//along x
         {
             const double timeid=static_cast<double>(t)*llg::dt;
-            magx.IFill(0);
-            //calculate the total magnetization in the layer
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
-            {
-                //check which plane the spin belongs to
-                unsigned int klu=geom::lu(i,1);
-                magx(klu,0)+=spins::Sx[i]*geom::mu[i];
-                magx(klu,1)+=spins::Sy[i]*geom::mu[i];
-                magx(klu,2)+=spins::Sz[i]*geom::mu[i];
-            }
             //output in index format for plotting with gnuplot
             for(unsigned int i = 0 ; i < geom::Nk[0]*geom::dim[0] ; i++)
             {
@@ -414,16 +450,6 @@ namespace util
         else if(spins::mag_calc_method==2)//along y
         {
             const double timeid=static_cast<double>(t)*llg::dt;
-            magy.IFill(0);
-            //calculate the total magnetization in the layer
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
-            {
-                //check which plane the spin belongs to
-                unsigned int klu=geom::lu(i,1);
-                magy(klu,0)+=spins::Sx[i]*geom::mu[i];
-                magy(klu,1)+=spins::Sy[i]*geom::mu[i];
-                magy(klu,2)+=spins::Sz[i]*geom::mu[i];
-            }
             //output in index format for plotting with gnuplot
             for(unsigned int i = 0 ; i < geom::Nk[1]*geom::dim[1] ; i++)
             {
@@ -434,16 +460,6 @@ namespace util
         else if(spins::mag_calc_method==3)//along z
         {
             const double timeid=static_cast<double>(t)*llg::dt;
-            magz.IFill(0);
-            //calculate the total magnetization in the layer
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
-            {
-                //check which plane the spin belongs to
-                unsigned int klu=geom::lu(i,2);
-                magz(klu,0)+=spins::Sx[i]*geom::mu[i];
-                magz(klu,1)+=spins::Sy[i]*geom::mu[i];
-                magz(klu,2)+=spins::Sz[i]*geom::mu[i];
-            }
             //output in index format for plotting with gnuplot
             for(unsigned int i = 0 ; i < geom::Nk[2]*geom::dim[2] ; i++)
             {

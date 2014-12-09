@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 09 Dec 2014 16:30:57
+// Last-modified: 09 Dec 2014 20:16:58
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -115,7 +115,7 @@ namespace util
     std::string exec(char*);
     void outputSpinsVTU(unsigned int);
     void calc_mag();
-    void output_mag(std::ofstream&,unsigned int);
+    void output_mag(unsigned int);
     void init_output();
 
 }

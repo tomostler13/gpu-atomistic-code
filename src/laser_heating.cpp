@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 04 Dec 2014 11:28:15
+// Last-modified: 09 Dec 2014 20:14:14
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -188,13 +188,6 @@ void sim::laser_heating(int argc,char *argv[])
     }
     config::Info << pulse_scale[num_pulses-1] << " ]" << std::endl;
 
-    //open the magnetization file and do some error handling
-    std::ofstream magout("mag.dat");
-    if(!magout.is_open())
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not open file mag.dat");
-    }
     FIXOUT(config::Info,"Planning FFT for spin map:" << std::flush);
     //This array stores the spin map in real space
     Array3D<fftw_complex> s3d;
@@ -253,7 +246,7 @@ void sim::laser_heating(int argc,char *argv[])
         if(t%spins::update==0)
         {
             util::calc_mag();
-            util::output_mag(magout,t);
+            util::output_mag(t);
             ttmout << static_cast<double>(t)*llg::dt << "\t" << initT << "\t" << initT << std::endl;
         }
         llg::integrate(t);
@@ -268,7 +261,7 @@ void sim::laser_heating(int argc,char *argv[])
         if(t%spins::update==0)
         {
             util::calc_mag();
-            util::output_mag(magout,t);
+            util::output_mag(t);
             ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl << std::endl;
         }
         if(t%(spins::update*sf::sfupdate)==0)
@@ -297,12 +290,6 @@ void sim::laser_heating(int argc,char *argv[])
 
         }
         llg::integrate(t);
-    }
-    magout.close();
-    if(magout.is_open())
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errWarning("Could not close the magnetization file (mag.dat)");
     }
     ttmout.close();
     if(ttmout.is_open())
