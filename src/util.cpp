@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 02 Dec 2014 14:22:15
+// Last-modified: 09 Dec 2014 19:16:08
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -22,6 +22,8 @@ extern "C" {
 }
 namespace util
 {
+    std::ofstream ofs,sofs;
+    Array2D<double> magx,magy,magz;
     void inverse(double* A, int N)
     {
         int *IPIV = new int[N+1];
@@ -281,6 +283,88 @@ namespace util
             error::errMessage("The method for calculating the magnetization is not recognised.");
         }
     }
+    void init_output()
+    {
+        if(spins::mag_calc_method==0 || spins::output_mag==true)
+        {
+            ofs.open("mag.dat");
+            if(!ofs.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open magnetization file.");
+            }
+            ofs << "#File description: this file contains the magnetization as a function of time throughout the simulation." << std::endl;
+            ofs << "#time - mx_0 - my_0 - mz_0 - mx_1 ...." << std::endl;
+        }
+        else if(spins::mag_calc_method==1)
+        {
+
+            sofs.open("mag_x.dat");
+            if(!sofs.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open magnetization file mag_x.dat.");
+            }
+            sofs << "#File description: this file contains the magnetization as a function of time and x-direction in mu_B. The data is arranged in indices, one for each time." << std::endl;
+            sofs << "#time - x - mx - my - mz ...." << std::endl;
+            magx.resize(geom::Nk[0]*geom::dim[0],2);
+        }
+        else if(spins::mag_calc_method==2)
+        {
+            sofs.open("mag_y.dat");
+            if(!sofs.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open magnetization file mag_y.dat.");
+            }
+            sofs << "#File description: this file contains the magnetization as a function of time and y-direction in mu_B. The data is arranged in indices, one for each time." << std::endl;
+            sofs << "#time - y - mx - my - mz ...." << std::endl;
+            magy.resize(geom::Nk[1]*geom::dim[1],3);
+        }
+        else if(spins::mag_calc_method==3)
+        {
+            sofs.open("mag_z.dat");
+            if(!sofs.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open magnetization file mag_z.dat.");
+            }
+            sofs << "#File description: this file contains the magnetization as a function of time and y-direction in mu_B. The data is arranged in indices, one for each time." << std::endl;
+            sofs << "#time - z - mx - my - mz ...." << std::endl;
+            magz.resize(geom::Nk[2]*geom::dim[2],3);
+        }
+        else if(spins::mag_calc_method==4)
+        {
+            sofs.open("spec_map.dat");
+            if(!sofs.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open species map file (spec_map.dat)");
+            }
+            sofs << "#File Description: contains the species number for each occupied lattice point. This is so that the positions do not have to be output each time for spinmap output." << std::endl;
+            sofs << "# x [A] - y [A] - z [A] - atom numner - species number - Symbol" << std::endl;
+            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            {
+                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                {
+                    for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2] ; k++)
+                    {
+                        if(geom::coords(i,j,k,0)>-1)
+                        {
+                            sofs << static_cast<double>(i)*geom::abc[0]/static_cast<double>(geom::Nk[0]) << "\t";
+                            sofs << static_cast<double>(j)*geom::abc[1]/static_cast<double>(geom::Nk[1]) << "\t";
+                            sofs << static_cast<double>(k)*geom::abc[2]/static_cast<double>(geom::Nk[2]) << std::endl;
+                        }
+                    }
+                }
+            }
+
+
+            sofs.close();
+        }
+
+
+    }
     void output_mag(std::ofstream& ofs,unsigned int t)
     {
         //This section of code outputs the code in a method consistent
@@ -297,7 +381,8 @@ namespace util
         // 1 - output the magnetization as a function of x (mu_b)
         // 2 - output the magnetization as a function of y (mu_b)
         // 3 - output the magnetization as a function of z (mu_b)
-        if(spins::mag_calc_method==0)
+        // 4 - output the entire spin map at the spins::update frequency
+        if(spins::mag_calc_method==0 || spins::output_mag==true)
         {
             ofs << static_cast<double>(t)*llg::dt << "\t";
             for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
@@ -309,8 +394,6 @@ namespace util
         else if(spins::mag_calc_method==1)//along x
         {
             const double timeid=static_cast<double>(t)*llg::dt;
-            Array2D<double> magx;
-            magx.resize(geom::Nk[0]*geom::dim[0],2);
             magx.IFill(0);
             //calculate the total magnetization in the layer
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -324,15 +407,13 @@ namespace util
             //output in index format for plotting with gnuplot
             for(unsigned int i = 0 ; i < geom::Nk[0]*geom::dim[0] ; i++)
             {
-                ofs << timeid << "\t" << magx(i,0) << "\t" << magx(i,1) << "\t" << magx(i,2) << std::endl;
+                sofs << timeid << "\t" << magx(i,0) << "\t" << magx(i,1) << "\t" << magx(i,2) << std::endl;
             }
-            ofs << std::endl << std::endl;
+            sofs << std::endl << std::endl;
         }
         else if(spins::mag_calc_method==2)//along y
         {
             const double timeid=static_cast<double>(t)*llg::dt;
-            Array2D<double> magy;
-            magy.resize(geom::Nk[1]*geom::dim[1],3);
             magy.IFill(0);
             //calculate the total magnetization in the layer
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -346,15 +427,13 @@ namespace util
             //output in index format for plotting with gnuplot
             for(unsigned int i = 0 ; i < geom::Nk[1]*geom::dim[1] ; i++)
             {
-                ofs << timeid << "\t" << magy(i,0) << "\t" << magy(i,1) << "\t" << magy(i,2) << std::endl;
+                sofs << timeid << "\t" << magy(i,0) << "\t" << magy(i,1) << "\t" << magy(i,2) << std::endl;
             }
-            ofs << std::endl << std::endl;
+            sofs << std::endl << std::endl;
         }
         else if(spins::mag_calc_method==3)//along z
         {
             const double timeid=static_cast<double>(t)*llg::dt;
-            Array2D<double> magz;
-            magz.resize(geom::Nk[2]*geom::dim[2],3);
             magz.IFill(0);
             //calculate the total magnetization in the layer
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -368,9 +447,51 @@ namespace util
             //output in index format for plotting with gnuplot
             for(unsigned int i = 0 ; i < geom::Nk[2]*geom::dim[2] ; i++)
             {
-                ofs << timeid << "\t" << magz(i,0) << "\t" << magz(i,1) << "\t" << magz(i,2) << std::endl;
+                sofs << timeid << "\t" << magz(i,0) << "\t" << magz(i,1) << "\t" << magz(i,2) << std::endl;
             }
-            ofs << std::endl << std::endl;
+            sofs << std::endl << std::endl;
+        }
+        else if(spins::mag_calc_method==4)
+        {
+            const double timeid=static_cast<double>(t)*llg::dt;
+            std::stringstream sstr;
+            sstr << "spinmap_" << timeid << ".dat";
+            std::string str=sstr.str();
+            std::ofstream smofs(str.c_str());
+            if(!smofs.is_open())
+            {
+                std::stringstream sstr1;
+                sstr1 << "Could not open file spinmap_" << timeid << ".dat";
+                std::string str1=sstr1.str();
+                error::errPreamble(__FILE__,__LINE__);
+                error::errWarning(str1);
+            }
+            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            {
+                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                {
+                    for(unsigned int k = 0 ; k < geom::dim[2]*geom::Nk[2] ; k++)
+                    {
+                        int sn=geom::coords(i,j,k,0);
+                        if(geom::coords(i,j,k,0)>-1)
+                        {
+                            smofs << spins::Sx[sn] << "\t";
+                            smofs << spins::Sy[sn] << "\t";
+                            smofs << spins::Sz[sn] << std::endl;
+                        }
+                    }
+                }
+            }
+            smofs.close();
+            if(smofs.is_open())
+            {
+                std::stringstream sstr1;
+                sstr1 << "Could not close file spinmap_" << timeid << ".dat";
+                std::string str1=sstr1.str();
+                error::errPreamble(__FILE__,__LINE__);
+                error::errWarning(str1);
+            }
+
         }
     }
 

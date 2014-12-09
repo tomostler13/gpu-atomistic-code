@@ -53,6 +53,9 @@ llg:
     applied = [ 0.0 , 0.0 , 0.0 ];
     update=10;
     MagnetizationCalculationMethod=0;
+    //If this flag is true then the magnetization is output
+    //independently of the MagnetizationCalculationMethod
+    OutputMagnetization=TRUE;
 };
 cuda:
 {

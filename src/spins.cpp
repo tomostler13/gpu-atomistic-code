@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 26 Nov 2014 16:07:34
+// Last-modified: 09 Dec 2014 19:18:06
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -30,6 +30,7 @@ namespace spins
     Array2D<double> mag;
     fftw_plan SP,dSP;
     unsigned int update=0,mag_calc_method=0;
+    bool output_mag=true;
     std::ifstream sfs;
     void initSpins(int argc,char *argv[])
     {
@@ -54,7 +55,8 @@ namespace spins
             Sy[i]=geom::ucm.GetInitS(aiuc,1);
             Sz[i]=geom::ucm.GetInitS(aiuc,2);
         }
-
+        FIXOUT(config::Info,"Method for calculating the magnetization:" << mag_calc_method << " (see notes in src/util.cpp, function -> calc_mag)" << std::endl);
+        FIXOUT(config::Info,"Output magnetization?" << config::isTF(output_mag) << std::endl);
         if(config::exchm==0)
         {
             Sk.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
@@ -62,7 +64,6 @@ namespace spins
             Sr.IFill(0);
             Sk.IFill(0);
 
-            FIXOUT(config::Info,"Method for calculating the magnetization:" << mag_calc_method << " (see notes in src/util.cpp, function -> calc_mag)" << std::endl);
             FIXOUT(config::Info,"Planning forward and transform of spin map:" << std::flush);
             int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
             int *inembed=n;

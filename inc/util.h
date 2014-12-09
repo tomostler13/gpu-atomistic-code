@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 26 Nov 2014 16:00:32
+// Last-modified: 09 Dec 2014 16:30:57
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -13,6 +13,7 @@
 #define _UTIL_H_
 namespace util
 {
+    extern std::ofstream ofs,sofs;
     //convergence class
     class RunningStat
     {
@@ -115,6 +116,7 @@ namespace util
     void outputSpinsVTU(unsigned int);
     void calc_mag();
     void output_mag(std::ofstream&,unsigned int);
+    void init_output();
 
 }
 #endif /*_UTIL_H_*/

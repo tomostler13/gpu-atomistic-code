@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 03 Nov 2014 10:01:14
+// Last-modified: 09 Dec 2014 19:18:07
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -53,6 +53,7 @@ namespace llg
         rdt=dt*gyro;
 		FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
         setting.lookupValue("MagnetizationCalculationMethod:",spins::mag_calc_method);
+        setting.lookupValue("OutputMagnetization",spins::output_mag);
         if(geom::ucm.NumAtomsUnitCell() > 5)
         {
             config::openLogFile();
