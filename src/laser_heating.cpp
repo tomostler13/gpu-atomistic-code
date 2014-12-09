@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 29 Nov 2014 12:14:24
+// Last-modified: 04 Dec 2014 11:28:15
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -21,13 +21,12 @@
 #include "../inc/sim.h"
 #include "../inc/sf.h"
 //function prototype
-double pump_power(double);
 void CalcTe(double*,double*,double,unsigned int,double,double,double&,double&,double,double,double,double,double,double);
 void sim::laser_heating(int argc,char *argv[])
 {
     bool opsf=false;//OutPut Structure Factor info
     unsigned int ets = 0 , rts = 0 , num_pulses=0;
-    double et = 0.0 , rt = 0.0 , gamma_e = 0.0 , Cl = 0.0 , G_ep = 0.0 , Pump_Time = 0.0 , ct = 0.0 , T_el_max = 0 , initT = 0.0;
+    double et = 0.0 , rt = 0.0 , gamma_e = 0.0 , Cl = 0.0 , G_ep = 0.0 , Pump_Time = 0.0 , ct = 0.0 , pumpfluence = 0 , initT = 0.0;
     config::printline(config::Info);
     config::Info.width(45);config::Info << std::right << "*" << "**Laser Heating Simulation details***" << std::endl;
     try
@@ -145,18 +144,15 @@ void sim::laser_heating(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("Could not read the state of the outputting of the structure factor (laserheating:OutputStructureFactor (bool))");
     }
-    errstatus = setting.lookupValue("MaxElectronTemperature",T_el_max);
+    errstatus = setting.lookupValue("PumpFluence",pumpfluence);
     if(errstatus)
     {
-        FIXOUT(config::Info,"Input max electron temperature:" << T_el_max << std::endl);
-        //convert to power
-        T_el_max = pump_power(T_el_max);
-        FIXOUT(config::Info,"Laser power:" << T_el_max << std::endl);
+        FIXOUT(config::Info,"Laser power:" << pumpfluence << std::endl);
     }
     else
     {
         error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not read the max electron temperature (laserheating:MaxElectronTemperature (double))");
+        error::errMessage("Could not read the pump fluence (laserheating:PumpFluence (double))");
     }
     errstatus = setting.lookupValue("NumPulses",num_pulses);
     if(errstatus)
@@ -267,7 +263,7 @@ void sim::laser_heating(int argc,char *argv[])
     for(unsigned int t = ets ; t < ets+rts ; t++)
     {
         unsigned int nt=t-ets;
-        CalcTe(pulse_scale,pulse_delays,static_cast<double>(nt)*llg::dt,num_pulses,Pump_Time,T_el_max,Te,Tl,G_ep,Cl,gamma_e,llg::dt,initT,ct);
+        CalcTe(pulse_scale,pulse_delays,static_cast<double>(nt)*llg::dt,num_pulses,Pump_Time,pumpfluence,Te,Tl,G_ep,Cl,gamma_e,llg::dt,initT,ct);
         llg::T=Te;
         if(t%spins::update==0)
         {
@@ -326,11 +322,6 @@ void sim::laser_heating(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errWarning("Could not close kvec.dat.");
     }
-}
-
-double pump_power(double x)//we do not pass by reference here deliberately because T_el_max set
-{
-    return((-5.9408+0.00722*x+4.11859e-5*(x*x)-3.66025e-10*x*x*x)*1.152E20);
 }
 
 void CalcTe(double *scale,double *delay,double time,unsigned int numpulses,double tau,double pumppower,double &Te,double &Tl,double G,double Cl,double gamma_e,double dt_real,double init_temp,double cool)

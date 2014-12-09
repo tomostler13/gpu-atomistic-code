@@ -75,10 +75,10 @@ timeseries:
 laserheating:
 {
     Gamma_e = 2.25e2;
-    Cl = 3.1e6;
+    Cl = 3.0e6;
     PumpTime = 50e-15;
     G_ep = 17.0e17;
-    InitialTemperature=300.0;
+    InitialTemperature=82.0;
     EquilibrationTime = 15e-12;
     RunTime = 30e-12;
     MaxElectronTemperature = 1500.0;
