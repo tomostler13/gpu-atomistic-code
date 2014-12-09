@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Dec 2014 20:17:28
+// Last-modified: 09 Dec 2014 20:27:42
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -257,6 +257,10 @@ namespace util
         // List of arguements and what they do
         //
         // 0 - calculate the sublattice resolved magnetization
+        // 1 - output the magnetization as a function of x (mu_b)
+        // 2 - output the magnetization as a function of y (mu_b)
+        // 3 - output the magnetization as a function of z (mu_b)
+        // 4 - output the entire spin map at the spins::update frequency
         if(spins::mag_calc_method==0 || spins::output_mag==true)
         {
             spins::mag.IFill(0);
@@ -277,7 +281,7 @@ namespace util
                 spins::mag(i,2)*=oones;
             }
         }
-        else if(spins::mag_calc_method==1)
+        if(spins::mag_calc_method==1)
         {
             magx.IFill(0);
             //calculate the total magnetization in the layer
@@ -437,7 +441,7 @@ namespace util
             }
             ofs << std::endl;
         }
-        else if(spins::mag_calc_method==1)//along x
+        if(spins::mag_calc_method==1)//along x
         {
             const double timeid=static_cast<double>(t)*llg::dt;
             //output in index format for plotting with gnuplot
