@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 09 Dec 2014 19:18:06
+// Last-modified: 09 Dec 2014 20:34:25
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -30,7 +30,7 @@ namespace spins
     Array2D<double> mag;
     fftw_plan SP,dSP;
     unsigned int update=0,mag_calc_method=0;
-    bool output_mag=true;
+    bool output_mag=true,spins::mapout=false;
     std::ifstream sfs;
     void initSpins(int argc,char *argv[])
     {

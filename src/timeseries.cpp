@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 09 Dec 2014 20:11:45
+// Last-modified: 09 Dec 2014 20:36:36
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -248,7 +248,7 @@ void sim::timeseries(int argc,char *argv[])
 
 
 
-
+    spins::mapout=true;
     for(unsigned int t = ets ; t < (rts+ets) ; t++)
     {
         if(t%spins::update==0)

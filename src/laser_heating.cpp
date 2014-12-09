@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 09 Dec 2014 20:14:14
+// Last-modified: 09 Dec 2014 20:36:14
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -252,6 +252,9 @@ void sim::laser_heating(int argc,char *argv[])
         llg::integrate(t);
     }
 
+
+    // Check the flag to output the spin map
+    spins::mapout=true;
     double Te=initT,Tl=initT;
     for(unsigned int t = ets ; t < ets+rts ; t++)
     {

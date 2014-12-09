@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Dec 2014 20:27:42
+// Last-modified: 09 Dec 2014 20:34:35
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -471,7 +471,7 @@ namespace util
             }
             sofs << std::endl << std::endl;
         }
-        else if(spins::mag_calc_method==4)
+        else if(spins::mag_calc_method==4 && spins::mapout)
         {
             const double timeid=static_cast<double>(t)*llg::dt;
             std::stringstream sstr;
