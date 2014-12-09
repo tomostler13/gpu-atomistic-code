@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Nov 2014 12:48:39
+// Last-modified: 09 Dec 2014 19:55:43
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -73,7 +73,7 @@ namespace geom
         config::printline(config::Info);
         for(unsigned int i = 0 ; i < ucm.NumAtomsUnitCell() ; i++)
         {
-            //output to the config file (up to 5)
+            //output to the output file (up to 5)
             if(i < 5)
             {
                 FIXOUT(config::Info,"Unit cell atom:" << i << std::endl);
@@ -89,7 +89,7 @@ namespace geom
                 FIXOUTVEC(config::Info,"Direction of anisotropy axis:",ucm.GetK1UDir(i,0),ucm.GetK1UDir(i,1),ucm.GetK1UDir(i,2));
                 config::printline(config::Info);
             }
-            if(ucm.NumAtomsUnitCell() > 5)
+            if(ucm.NumAtomsUnitCell() > 5 && logunit)
             {
                 FIXOUT(config::Log,"Unit cell atom:" << i << std::endl);
                 FIXOUT(config::Log,"Element:" << ucm.GetElement(i) << std::endl);

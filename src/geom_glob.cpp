@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 01 Oct 2014 09:54:04
+// Last-modified: 09 Dec 2014 19:57:02
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -42,6 +42,7 @@ namespace geom
     Array4D<int> coords;
     //instance of the unit cell
     unitCellMembers ucm;
+    bool logunit=false;
 
     void readconfig(int argc,char *argv[])
     {
@@ -67,7 +68,6 @@ namespace geom
 
         libconfig::Setting &setting = config::cfg.lookup("system");
         //do we want to write the unit cell info to the log file?
-        bool logunit=false;
         setting.lookupValue("log_unit_cell",logunit);
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
