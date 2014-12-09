@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 09 Dec 2014 19:18:07
+// Last-modified: 09 Dec 2014 20:00:29
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -63,11 +63,15 @@ namespace llg
         //Output the prefactor to the LLG for each species to the output file
         for(unsigned int i = 0 ; i < geom::ucm.NumAtomsUnitCell() ; i++)
         {
-            std::stringstream sstr,sstr1;
-            sstr << "Sigma prefactor for unit cell atom " << i << ":";
-            std::string str=sstr.str();
+            if(geom::logunit)
+            {
+                std::stringstream sstr,sstr1;
+                sstr << "Sigma prefactor for unit cell atom " << i << ":";
+                std::string str=sstr.str();
+                sstr1 << "Prefactor for LLG for unit cell atom " << i << ":";
+            }
+
             geom::ucm.SetSigma(i,sqrt(2.0*kB*geom::ucm.GetDamping(i)/(geom::ucm.GetMu(i)*muB*dt*geom::ucm.GetGamma(i)*gyro)));
-            sstr1 << "Prefactor for LLG for unit cell atom " << i << ":";
             geom::ucm.Setllgpf(i,-1./(1.0+geom::ucm.GetDamping(i)*geom::ucm.GetDamping(i)));
 
             if(i < 5)
@@ -77,7 +81,7 @@ namespace llg
                 FIXOUT(config::Info,str.c_str() << geom::ucm.Getllgpf(i) << std::endl);
                 config::printline(config::Info);
             }
-            if(geom::ucm.NumAtomsUnitCell() > 5)
+            if(geom::ucm.NumAtomsUnitCell() > 5 && geom::logunit)
             {
                 FIXOUT(config::Log,str.c_str() << geom::ucm.GetSigma(i) << std::endl);
                 str=sstr1.str();
@@ -91,7 +95,10 @@ namespace llg
             {
                 FIXOUT(config::Info,"             . . . " << "    . . ." << std::endl);
             }
-            FIXOUT(config::Info,"FOR COMPLETE LLG INFO FOR UNIT CELL SEE LOG FILE:" << "   log.dat" << std::endl);
+            if(geom::logunit)
+            {
+                FIXOUT(config::Info,"FOR COMPLETE LLG INFO FOR UNIT CELL SEE LOG FILE:" << "   log.dat" << std::endl);
+            }
             for(unsigned int i = 0 ; i < 4 ; i++)
             {
                 FIXOUT(config::Info,"             . . . " << "    . . ." << std::endl);
