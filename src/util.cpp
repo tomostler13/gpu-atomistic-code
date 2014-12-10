@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Dec 2014 09:57:10
+// Last-modified: 10 Dec 2014 11:58:34
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -392,7 +392,7 @@ namespace util
                 error::errMessage("Could not open species map file (spec_map.dat)");
             }
             sofs << "#File Description: contains the species number for each occupied lattice point. This is so that the positions do not have to be output each time for spinmap output." << std::endl;
-            sofs << "# x [A] - y [A] - z [A] - atom numner - species number - Symbol" << std::endl;
+            sofs << "# x [A] - y [A] - z [A] - atom numner - species number" << std::endl;
             for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
             {
                 for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
@@ -403,7 +403,8 @@ namespace util
                         {
                             sofs << static_cast<double>(i)*geom::abc[0]/static_cast<double>(geom::Nk[0]) << "\t";
                             sofs << static_cast<double>(j)*geom::abc[1]/static_cast<double>(geom::Nk[1]) << "\t";
-                            sofs << static_cast<double>(k)*geom::abc[2]/static_cast<double>(geom::Nk[2]) << std::endl;
+                            sofs << static_cast<double>(k)*geom::abc[2]/static_cast<double>(geom::Nk[2]) << "\t";
+                            sofs << geom::coords(i,j,k,0) << "\t" << geom::coords(i,j,k,1) << std::endl;
                         }
                     }
                 }
