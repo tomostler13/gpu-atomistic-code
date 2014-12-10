@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Dec 2014 20:34:35
+// Last-modified: 10 Dec 2014 09:57:10
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -346,7 +346,7 @@ namespace util
             ofs << "#File description: this file contains the magnetization as a function of time throughout the simulation." << std::endl;
             ofs << "#time - mx_0 - my_0 - mz_0 - mx_1 ...." << std::endl;
         }
-        else if(spins::mag_calc_method==1)
+        if(spins::mag_calc_method==1)
         {
 
             sofs.open("mag_x.dat");
