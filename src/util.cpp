@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Dec 2014 11:58:34
+// Last-modified: 10 Dec 2014 14:16:04
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -468,7 +468,7 @@ namespace util
             //output in index format for plotting with gnuplot
             for(unsigned int i = 0 ; i < geom::Nk[2]*geom::dim[2] ; i++)
             {
-                sofs << timeid << "\t" << magz(i,0) << "\t" << magz(i,1) << "\t" << magz(i,2) << std::endl;
+                sofs << timeid << "\t" << i << "\t" << magz(i,0) << "\t" << magz(i,1) << "\t" << magz(i,2) << std::endl;
             }
             sofs << std::endl << std::endl;
         }
