@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Dec 2014 14:16:04
+// Last-modified: 10 Dec 2014 14:47:57
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -412,6 +412,18 @@ namespace util
 
 
             sofs.close();
+        }
+        else if(spins::mag_calc_method==5)
+        {
+            sofs.open("mag_x.dat");
+            if(!sofs.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open magnetization file mag_x.dat.");
+            }
+            sofs << "#File description: this file contains the magnetization as a function of time and x-direction in mu_B. The data is arranged in indices, one for each time." << std::endl;
+            sofs << "#time - x - mx - my - mz ...." << std::endl;
+            magx.resize(geom::Nk[0]*geom::dim[0],2);
         }
 
 
