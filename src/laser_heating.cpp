@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 09 Dec 2014 20:36:14
+// Last-modified: 15 Dec 2014 17:18:43
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -267,7 +267,7 @@ void sim::laser_heating(int argc,char *argv[])
             util::output_mag(t);
             ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl << std::endl;
         }
-        if(t%(spins::update*sf::sfupdate)==0)
+        if(t%(spins::update*sf::sfupdate)==0 && opsf)
         {
             //zero the 3d spin array
             s3d.IFill(0);

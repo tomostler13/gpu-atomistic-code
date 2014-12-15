@@ -9,9 +9,9 @@ system:
     //on the locations of the magnetic system
     unitcellfile="disordered.ucf";
     //Number of k-points in each direction
-    Nk = [ 100 , 100 , 100 ];
+    Nk = [ 40 , 40 , 40 ];
     //lattice constants
-    abc = [ 15e-9 , 15e-9 , 15e-9 ];
+    abc = [ 6e-9 , 6e-9 , 6e-9 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
     Exchange_method="CSR";
@@ -42,7 +42,7 @@ exchange:
 };
 sf:
 {
-    Calculate=TRUE;
+    Calculate=FALSE;
     InputFile="sf.in";
 };
 llg:
@@ -72,10 +72,10 @@ laserheating:
     InitialTemperature=82.0;
     EquilibrationTime = 15e-12;
     RunTime = 15e-12;
-    PumpFluence=1e20;
+    PumpFluence=1e21;
     CoolingTime = 300000.0e-12;
     NumPulses = 1;
     PulseDelays = [ 150e-15 ];
     PulseScale = [ 1.0 ];
-    OutputStructureFactor = TRUE;
+    OutputStructureFactor = FALSE;
 };
