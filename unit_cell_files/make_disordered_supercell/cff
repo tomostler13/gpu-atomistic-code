@@ -1,17 +1,17 @@
 system:
 {
-    seed=123456;
-    dim = [ 10 , 10 , 30 ];
-    globdim = [ 20 , 20 , 1 ];
+    seed=123452346;
+    dim = [ 50 , 50 , 50 ];
+    globdim = [ 1 , 1 , 1 ];
     nk = [ 2 , 2 , 2 ];
     nms = 2;
-    spec = [ "Fe" , "Gd" ];
+    spec = [ "Fe" , "Tb" ];
     damping = [ 0.02 , 0.02 ];
     gamma = [ 1.0 , 1.0 ];
-    mu = [ 1.92 , 7.63 ];
+    mu = [ 1.6 , 9.1 ];
     spin0 = [ 0.0 , 0.0 , 1.0 ];
     spin1 = [ 0.0 , 0.0 , -1.0 ];
-    D0 = [ 0.807243e-23 , 0.807243e-23 ];
+    D0 = [ 1e-23 , 0.807243e-23 ];
     DVec0 = [ 0.0 , 0.0 , 1.0 ];
     DVec1 = [ 0.0 , 0.0 , 1.0 ];
     //Assuming that the system has two composition areas
@@ -22,7 +22,9 @@ system:
     //it is only related to the underlying crystal 
     //structure. The total number of atoms should be:
     // dim[0]*dim[1]*dim[2]*globdim[0]*globdim[1]*globdim[2]*nauc
-    nauc = 2;
+    nauc = 4;
     atom0 = [ 0.0 , 0.0 , 0.0 ];
-    atom1 = [ 0.5 , 0.5 , 0.5 ];
+    atom1 = [ 0.5 , 0.0 , 0.5 ];
+    atom2 = [ 0.5 , 0.5 , 0.0 ];
+    atom3 = [ 0.0 , 0.5 , 0.5 ];
 };

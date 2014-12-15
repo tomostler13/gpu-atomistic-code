@@ -3,20 +3,18 @@ seed = 1359107200;
 system:
 {
     //number of unit cells
-    dim = [ 3 , 3 , 3 ];
+    dim = [ 1 , 1 , 1 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="unit_cell_files/hcp.ucf";
+    unitcellfile="disordered.ucf";
     //Number of k-points in each direction
-    Nk = [ 2 , 6 , 2 ];
+    Nk = [ 100 , 100 , 100 ];
     //lattice constants
-    abc = [ 3.634e-10 , 6.294088e-10 , 5.803498e-10 ];
+    abc = [ 15e-9 , 15e-9 , 15e-9 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
-//    Exchange_method="hybrid";
     Exchange_method="CSR";
-//    Exchange_method="fft";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
@@ -31,13 +29,13 @@ exchange:
     //Exchange reading method 
     //direct (by reading in all interactions directly)
     //permute (take a neighbour and calculate permutations)
-    exchmethod="direct";
+    exchmethod="permute";
     OutputExchange=TRUE;
     //How are we to read in the exchange
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
-    exchfile="exchange_files/exch.hcp";
+    exchfile="exch.fcc";
     OutputExchangeMatrix=TRUE;
     ExitAfterExchangeMatrix=TRUE;
     ReadExchangeMatrix=FALSE;
@@ -63,17 +61,7 @@ cuda:
 };
 sim:
 {
-//    sim_type = "MvT";
-//    sim_type = "quick";
-//    sim_type = "timeseries";
     sim_type="laserheating";
-};
-timeseries:
-{
-    EquilibrationTime = 10e-12;
-    RunTime = 250e-12;
-    Temperature = 1.0;
-    OutputIndividualTimeSeries = TRUE;
 };
 laserheating:
 {
@@ -83,8 +71,8 @@ laserheating:
     G_ep = 17.0e17;
     InitialTemperature=82.0;
     EquilibrationTime = 15e-12;
-    RunTime = 30e-12;
-    MaxElectronTemperature = 1500.0;
+    RunTime = 15e-12;
+    PumpFluence=1e20;
     CoolingTime = 300000.0e-12;
     NumPulses = 1;
     PulseDelays = [ 150e-15 ];

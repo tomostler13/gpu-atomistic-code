@@ -1,7 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 15 Dec 2014 11:40:06
+// Last-modified: 15 Dec 2014 16:01:20
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
@@ -142,7 +142,7 @@ namespace util
                 mag_species_z(klu,splu,2)+=spins::Sz[i];
             }
         }
-        else
+        else if(spins::mag_calc_method>7)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("The method for calculating the magnetization is not recognised.");

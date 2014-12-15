@@ -1,7 +1,7 @@
 // File: exch_determine_exchange_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 05 Dec 2014 14:28:33
+// Last-modified: 15 Dec 2014 15:58:12
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the CSR neighbourlist
@@ -168,7 +168,6 @@ namespace exch
                 }
             }
         }
-        std::cout << __FILE__ << __LINE__ << std::endl;
     }
     void hybrid()
     {
