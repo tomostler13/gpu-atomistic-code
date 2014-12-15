@@ -1,11 +1,7 @@
 // File: make_chess_board.cpp
 // Author:Tom Ostler
 // Created: 22 Nov 2014
-<<<<<<< HEAD
-// Last-modified: 02 Dec 2014 16:50:06
-=======
-// Last-modified: 02 Dec 2014 19:43:34
->>>>>>> 325eed9487ec64f9ab051b54d5d885be0c06afed
+// Last-modified: 12 Dec 2014 18:42:36
 
 //The purpose of this section of code is to create a unit cell
 //file for use with the main program. The specific type of unit
@@ -235,9 +231,12 @@ int main(int argc,char *argv[])
             {
                 for(unsigned int ca = 0 ; ca < nauc ; ca++)
                 {
-                    coords(i*nk[0]+static_cast<unsigned int>(static_cast<double>(nk[0])*basis(ca,0)+0.5),
-                           j*nk[1]+static_cast<unsigned int>(static_cast<double>(nk[1])*basis(ca,1)+0.5),
-                           k*nk[2]+static_cast<unsigned int>(static_cast<double>(nk[2])*basis(ca,2)+0.5))=0;
+                    unsigned int cx=i*nk[0]+static_cast<int>(static_cast<double>(nk[0])*basis(ca,0)+0.5);
+                    unsigned int cy=j*nk[1]+static_cast<int>(static_cast<double>(nk[1])*basis(ca,1)+0.5);
+                    unsigned int cz=k*nk[2]+static_cast<int>(static_cast<double>(nk[2])*basis(ca,2)+0.5);
+                    unsigned int nc[3]={cx,cy,cz};
+                    //std::cout << nc[0] << "\t" << nc[1] << "\t" << nc[2] << std::endl;
+                    coords(nc[0],nc[1],nc[2])=0;
                     atom_counter++;
 
                 }
@@ -317,12 +316,13 @@ int main(int argc,char *argv[])
                                 {
                                     unsigned int zcoord=zoffs+kk;
 
-                                    //std::cout << "Coord\t" << xcoord << "\t" << ycoord << "\t" << zcoord << "\t" << coords(xcoord,ycoord,zcoord) << std::endl;
                                     //we only want to replace atoms that should
                                     //exist (>-1) and ones that are not species
                                     //that we have placed after placing species 0
                                     if(coords(xcoord,ycoord,zcoord)==0)
                                     {
+                                    //std::cout << "Coord\t" << xcoord << "\t" << ycoord << "\t" << zcoord << "\t" << coords(xcoord,ycoord,zcoord) << std::endl;
+
                                         if(Random::rand()*100.0 <= amounts(comp,species))
                                         {
                                             //then place an atom
@@ -395,12 +395,7 @@ int main(int argc,char *argv[])
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errWarning("Could not close spinmap file.");
-<<<<<<< HEAD
-        }
-    }*/
-=======
         }*/
->>>>>>> 325eed9487ec64f9ab051b54d5d885be0c06afed
     }
     ucf.close();
     if(ucf.is_open())

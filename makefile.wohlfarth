@@ -29,6 +29,7 @@ obj/random.o \
 obj/geom_glob.o \
 obj/geom.o \
 obj/util.o \
+obj/util_mag.o \
 obj/intmat.o \
 obj/spins.o \
 obj/fields.o \
