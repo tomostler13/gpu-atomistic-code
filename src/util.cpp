@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Oct 2014 14:44:15
+// Last-modified: 15 Dec 2014 11:47:14
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -22,6 +22,10 @@ extern "C" {
 }
 namespace util
 {
+    std::ofstream ofs,sofs;
+    Array2D<double> magx,magy,magz;
+    Array3D<double> mag_species_x,mag_species_y,mag_species_z;
+    Array2D<double> nspl;//number of spins per layer
     void inverse(double* A, int N)
     {
         int *IPIV = new int[N+1];
@@ -60,6 +64,39 @@ namespace util
                                 }
                             }
 
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+    void hcpuConvFourier()
+    {
+        fields::hHk.IFill(0);
+
+        //perform convolution in fourier space
+        register unsigned int i = 0,j = 0, k = 0, alpha=0, beta=0;
+        //convolute for each atomic plane
+        for(i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+        {
+            for(j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
+            {
+                for(k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
+                {
+                    for(alpha = 0 ; alpha < 3 ; alpha++)
+                    {
+                        for(beta = 0 ; beta < 3 ; beta++)
+                        {
+                            fields::hHk(alpha,i,j,k)[0]+=(intmat::hNkab(alpha,beta,i,j,k)[0]*spins::hSk(beta,i,j,k)[0]-intmat::hNkab(alpha,beta,i,j,k)[1]*spins::hSk(beta,i,j,k)[1]);
+                            fields::hHk(alpha,i,j,k)[1]+=(intmat::hNkab(alpha,beta,i,j,k)[0]*spins::hSk(beta,i,j,k)[1]+intmat::hNkab(alpha,beta,i,j,k)[1]*spins::hSk(beta,i,j,k)[0]);
+                            /*if(alpha==beta)
+                            {
+                                std::cout << "spins\t" << spins::hSk(beta,i,j,k)[0] << "\t" << spins::hSk(beta,i,j,k)[1] << std::endl;
+                                std::cout << "IM\t" << intmat::hNkab(alpha,beta,i,j,k)[0] << "\t" << intmat::hNkab(alpha,beta,i,j,k)[1] << std::endl;
+
+                    std::cout << fields::hHk(alpha,i,j,k)[0] << std::endl;
+                            }*/
                         }
                     }
 
@@ -208,69 +245,4 @@ namespace util
         pvf.close();
     }
 
-    void calc_mag()
-    {
-        //This section of code can be used to add new ways to calculate the magnetization.
-        //For example if one wanted to calculate the height resolved magnetization then it should
-        //be added here. It should be added to the list below just incase I ever want to write a
-        //manual (insert ridiculous laugh here). It may be possible that you have to create a
-        //new set of arrays for storing and calculating the magnetization. Using the above example
-        //(m(height)) you would have to create an array in src/spins.cpp and also declare an
-        //extern array in inc/spins.h.
-        //
-        //
-        // List of arguements and what they do
-        //
-        // 0 - calculate the sublattice resolved magnetization
-        if(spins::mag_calc_method==0)
-        {
-            spins::mag.IFill(0);
-            //add up the magnetization for each sublattice
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
-            {
-                unsigned int sl = geom::sublattice[i];
-                spins::mag(sl,0)+=spins::Sx[i];
-                spins::mag(sl,1)+=spins::Sy[i];
-                spins::mag(sl,2)+=spins::Sz[i];
-            }
-            //divide by the number of spins in each sublattice
-            for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
-            {
-                double oones=1./static_cast<double>(geom::ucm.GetNES(i));
-                spins::mag(i,0)*=oones;
-                spins::mag(i,1)*=oones;
-                spins::mag(i,2)*=oones;
-            }
-        }
-        else
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("The method for calculating the magnetization is not recognised.");
-        }
-    }
-    void output_mag(std::ofstream& ofs,unsigned int t)
-    {
-        //This section of code outputs the code in a method consistent
-        //with the method specified by spins::mag_calc_method.
-        //If you want to introduce a new method of outputting the method
-        //that is not the same as calculating the magnetization or if you
-        //want to output in two ways then a new control variable should be
-        //defined and read in somewhere.
-        //
-        //
-        // List of arguements and what they do
-        //
-        // 0 - output the sublattice resolved magnetization
-        if(spins::mag_calc_method==0)
-        {
-            ofs << static_cast<double>(t)*llg::dt << "\t";
-            for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
-            {
-                ofs << spins::mag(s,0) << "\t" << spins::mag(s,1) << "\t" << spins::mag(s,2) << "\t";
-            }
-            ofs << std::endl;
-        }
-    }
-
 }
-

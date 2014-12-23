@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 03 Nov 2014 11:51:44
+// Last-modified: 26 Nov 2014 13:34:50
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -23,7 +23,7 @@
 #include "../inc/util.h"
 #include "../inc/sim.h"
 #include "../inc/llg.h"
-#include "../inc/dsf.h"
+#include "../inc/sf.h"
 #ifdef CUDA
 #include "../inc/cuda.h"
 #endif
@@ -32,7 +32,7 @@ int main(int argc,char *argv[])
     config::initConfig(argc,argv);
     //Initialize the lattice
     geom::initGeom(argc,argv);
-    if(config::exchm==0)
+    if(config::exchm==0)//then we are using the FFT method for the exchange calculation
     {
         //initialize the interaction matrices
         intmat::initIntmat(argc,argv);
@@ -50,6 +50,18 @@ int main(int argc,char *argv[])
         // not need to be species dependent
         intmat::fillDipIntmat();
     }
+    else if(config::exchm>98)
+    {
+        //If we are using the hybrid method we will always
+        //use CSR for the CPU and DIA for the GPU
+        intmat::initIntmat(argc,argv);
+        if(config::inc_dip==true && config::dipm==0)
+        {
+            intmat::initDipIntmat(argc,argv);
+            intmat::fillDipIntmat();
+        }
+
+    }
     //Read in the exchange matrix
     exch::initExch(argc,argv);
 
@@ -62,6 +74,10 @@ int main(int argc,char *argv[])
     {
         intmat::fftDipIntmat();
     }
+    else if(config::exchm>98)
+    {
+        intmat::fftIntmat();
+    }
     //Initialise the field arrays
     fields::initFields(argc,argv);
     //Initialise the spin arrays
@@ -69,7 +85,7 @@ int main(int argc,char *argv[])
     sim::initSim(argc,argv);
     llg::initLLG(argc,argv);
     //Initialise the Dynamic structure factor calculation
-    dsf::initDSF(argc,argv);
+    sf::initSF(argc,argv);
 
 #ifdef CUDA
     cullg::cuinit(argc,argv);
@@ -88,6 +104,10 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="timeseries")
     {
         sim::timeseries(argc,argv);
+    }
+    else if(sim::sim_type=="laserheating")
+    {
+        sim::laser_heating(argc,argv);
     }
     else if(sim::sim_type=="quick")
     {
@@ -120,6 +140,11 @@ int main(int argc,char *argv[])
         time_t nowe=time(0);
         char *dtimee=ctime(&nowe);
         std::cout << "#End time:\t" << dtimee << std::endl;
+    }
+    else
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Simulation not recognised. Options are: \n-Mvt\n-suscep\n-timeseries\n-laserheating\n-quick");
     }
     return(0);
 }

@@ -1,13 +1,14 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 03 Nov 2014 10:01:14
+// Last-modified: 09 Dec 2014 20:16:35
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
 #include "../inc/defines.h"
 #include "../inc/geom.h"
 #include "../inc/spins.h"
+#include "../inc/util.h"
 #include <cmath>
 #include <sstream>
 #ifdef CUDA
@@ -53,6 +54,10 @@ namespace llg
         rdt=dt*gyro;
 		FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
         setting.lookupValue("MagnetizationCalculationMethod:",spins::mag_calc_method);
+        setting.lookupValue("OutputMagnetization",spins::output_mag);
+        FIXOUT(config::Info,"Initializing output of magnetization:" << std::flush);
+        util::init_output();
+        SUCCESS(config::Info);
         if(geom::ucm.NumAtomsUnitCell() > 5)
         {
             config::openLogFile();
@@ -63,10 +68,14 @@ namespace llg
         for(unsigned int i = 0 ; i < geom::ucm.NumAtomsUnitCell() ; i++)
         {
             std::stringstream sstr,sstr1;
-            sstr << "Sigma prefactor for unit cell atom " << i << ":";
             std::string str=sstr.str();
+            if(geom::logunit)
+            {
+                sstr << "Sigma prefactor for unit cell atom " << i << ":";
+                sstr1 << "Prefactor for LLG for unit cell atom " << i << ":";
+            }
+
             geom::ucm.SetSigma(i,sqrt(2.0*kB*geom::ucm.GetDamping(i)/(geom::ucm.GetMu(i)*muB*dt*geom::ucm.GetGamma(i)*gyro)));
-            sstr1 << "Prefactor for LLG for unit cell atom " << i << ":";
             geom::ucm.Setllgpf(i,-1./(1.0+geom::ucm.GetDamping(i)*geom::ucm.GetDamping(i)));
 
             if(i < 5)
@@ -76,7 +85,7 @@ namespace llg
                 FIXOUT(config::Info,str.c_str() << geom::ucm.Getllgpf(i) << std::endl);
                 config::printline(config::Info);
             }
-            if(geom::ucm.NumAtomsUnitCell() > 5)
+            if(geom::ucm.NumAtomsUnitCell() > 5 && geom::logunit)
             {
                 FIXOUT(config::Log,str.c_str() << geom::ucm.GetSigma(i) << std::endl);
                 str=sstr1.str();
@@ -90,7 +99,10 @@ namespace llg
             {
                 FIXOUT(config::Info,"             . . . " << "    . . ." << std::endl);
             }
-            FIXOUT(config::Info,"FOR COMPLETE LLG INFO FOR UNIT CELL SEE LOG FILE:" << "   log.dat" << std::endl);
+            if(geom::logunit)
+            {
+                FIXOUT(config::Info,"FOR COMPLETE LLG INFO FOR UNIT CELL SEE LOG FILE:" << "   log.dat" << std::endl);
+            }
             for(unsigned int i = 0 ; i < 4 ; i++)
             {
                 FIXOUT(config::Info,"             . . . " << "    . . ." << std::endl);

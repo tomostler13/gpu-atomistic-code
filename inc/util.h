@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 08 Oct 2014 14:25:49
+// Last-modified: 15 Dec 2014 11:21:09
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -8,11 +8,13 @@
 #include <fftw3.h>
 #include <iostream>
 #include "../inc/array.h"
+#include "../inc/array2d.h"
 #include "../inc/array3d.h"
 #ifndef _UTIL_H_
 #define _UTIL_H_
 namespace util
 {
+    extern std::ofstream ofs,sofs;
     //convergence class
     class RunningStat
     {
@@ -81,6 +83,7 @@ namespace util
     };
     void inverse(double*, int);
     void cpuConvFourier();
+    void hcpuConvFourier();
     void dipcpuConvFourier();
     ////////////////////////////////////////////////////////////////////////////////
     //! Compute sum reduction on CPU
@@ -105,6 +108,9 @@ namespace util
             return sum;
         }
     double reduceArrayDouble(Array<double>,unsigned int);
+    extern Array2D<double> magx,magy,magz;
+    extern Array3D<double> mag_species_x,mag_species_y,mag_species_z;
+    extern Array2D<double> nspl;//number of spins per layer
     void fillfloat(int,double*,float*);
     void fillfloat(int,int,int,Array3D<fftw_complex>,Array3D<fftwf_complex>);
     void copy3vecto1(int,double*,double*,double*,double*);
@@ -113,7 +119,8 @@ namespace util
     std::string exec(char*);
     void outputSpinsVTU(unsigned int);
     void calc_mag();
-    void output_mag(std::ofstream&,unsigned int);
+    void output_mag(unsigned int);
+    void init_output();
 
 }
 #endif /*_UTIL_H_*/

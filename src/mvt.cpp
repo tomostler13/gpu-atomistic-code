@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 07 Oct 2014 11:27:06
+// Last-modified: 09 Dec 2014 20:13:41
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -70,13 +70,7 @@ void sim::MvT(int argc,char *argv[])
         ofs << "#Temperature\tMean" << std::endl;
     }
     util::RunningStat *MS=new util::RunningStat[geom::ucm.GetNMS()];
-    std::ofstream magout("mag.dat");
-    if(!magout.is_open())
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Cannot open mag.dat file");
-    }
-    magout << "#The magnetization is output into indices for each temperature and depending on the output method" << std::endl;
+    util::ofs << "#The magnetization is output into indices for each temperature and depending on the output method" << std::endl;
     //temperature loop
     for(double T = lT ; T < uT ; T+=dT)
     {
@@ -98,7 +92,7 @@ void sim::MvT(int argc,char *argv[])
             if(t%spins::update==0)
             {
                 util::calc_mag();
-                util::output_mag(magout,t);
+                util::output_mag(t);
             }
         }
         //have all the magnetization converged?
@@ -109,7 +103,7 @@ void sim::MvT(int argc,char *argv[])
             if(t%spins::update==0)
             {
                 util::calc_mag();
-                util::output_mag(magout,t);
+                util::output_mag(t);
 
                 if(t>int(10e-12/llg::dt))
                 {
@@ -145,7 +139,7 @@ void sim::MvT(int argc,char *argv[])
         ofs << std::endl;
 
         FIXOUT(config::Info,"Converged?" << config::isTF(allconv) << std::endl);
-        magout << std::endl << std::endl;
+        util::ofs << std::endl << std::endl;
     }
     ofs.close();
     if(ofs.is_open())

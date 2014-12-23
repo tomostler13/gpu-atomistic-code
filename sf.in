@@ -1,0 +1,12 @@
+sf:
+{
+    QuantizationAxis = [ 1.0 , 0.0 , 1.0 ];
+    UnitaryOperator0 = [ 1.0 , 1.0 , 1.0 ];
+    UnitaryOperator1 = [ -1.0 , 1.0 , -1.0 ];
+    //Update is in units of the llg update (magnetization output)
+    Update = 1;
+    Temperature=1.0;
+    NumberKPoints=2;
+    KPoint0 = [ 0 , 0 , 0 ]
+    KPoint1 = [ 1 , 0 , 0 ]
+};

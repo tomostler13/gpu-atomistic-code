@@ -1,0 +1,28 @@
+system:
+{
+    seed=123456;
+    dim = [ 10 , 10 , 30 ];
+    globdim = [ 20 , 20 , 1 ];
+    nk = [ 2 , 2 , 2 ];
+    nms = 2;
+    spec = [ "Fe" , "Gd" ];
+    damping = [ 0.02 , 0.02 ];
+    gamma = [ 1.0 , 1.0 ];
+    mu = [ 1.92 , 7.63 ];
+    spin0 = [ 0.0 , 0.0 , 1.0 ];
+    spin1 = [ 0.0 , 0.0 , -1.0 ];
+    D0 = [ 0.807243e-23 , 0.807243e-23 ];
+    DVec0 = [ 0.0 , 0.0 , 1.0 ];
+    DVec1 = [ 0.0 , 0.0 , 1.0 ];
+    //Assuming that the system has two composition areas
+    //Then amount 0 should be nms long
+    amount0 = [ 70.0 , 30.0 ];
+    amount1 = [ 80.0 , 20.0 ];
+    //This has NOTHING to do with the magnetic system
+    //it is only related to the underlying crystal 
+    //structure. The total number of atoms should be:
+    // dim[0]*dim[1]*dim[2]*globdim[0]*globdim[1]*globdim[2]*nauc
+    nauc = 2;
+    atom0 = [ 0.0 , 0.0 , 0.0 ];
+    atom1 = [ 0.5 , 0.5 , 0.5 ];
+};

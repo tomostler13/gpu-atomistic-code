@@ -1,0 +1,10 @@
+Number of sublattices (N)
+Number of atoms in the unit cell (M)
+Atom 0: Sublattice - Position x within unit cell - y - z - Magnetic Moment [mu_b] - Lambda - Gyromagnetic Ratio (relative to free electron value) - Element string - Initial spin alignment (Sx) - Sy - Sz - First order Uniaxial Anisotropy Constant  - Direction of anisotropy
+Atom 1: same format as atom 0
+.
+.
+.
+.
+.
+Atom M-1:

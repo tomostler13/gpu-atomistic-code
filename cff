@@ -1,20 +1,22 @@
 OutputFile = "opf.dat";
-seed = 1359107107;
+seed = 1359107200;
 system:
 {
     //number of unit cells
-    dim = [ 16 , 16 , 16 ];
+    dim = [ 3 , 3 , 3 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="sc.test";
+    unitcellfile="unit_cell_files/hcp.ucf";
     //Number of k-points in each direction
-    Nk = [ 1 , 1 , 1 ];
+    Nk = [ 2 , 6 , 2 ];
     //lattice constants
-    abc = [ 300e-12 , 300e-12 , 300e-12 ];
+    abc = [ 3.634e-10 , 6.294088e-10 , 5.803498e-10 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
-    Exchange_method="DIA";
+//    Exchange_method="hybrid";
+    Exchange_method="CSR";
+//    Exchange_method="fft";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
@@ -29,24 +31,31 @@ exchange:
     //Exchange reading method 
     //direct (by reading in all interactions directly)
     //permute (take a neighbour and calculate permutations)
-    exchmethod="permute";
+    exchmethod="direct";
+    OutputExchange=TRUE;
     //How are we to read in the exchange
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
-    exchfile="exch.sc";
+    exchfile="exchange_files/exch.hcp";
+    OutputExchangeMatrix=TRUE;
+    ExitAfterExchangeMatrix=TRUE;
+    ReadExchangeMatrix=FALSE;
 };
-dsf:
+sf:
 {
     Calculate=TRUE;
-    InputFile="dsf.in";
+    InputFile="sf.in";
 };
 llg:
 {
     dt = 0.1e-15;
-    applied = [ 0.0 , 0.0 , 1.0 ];
-    update=1;
+    applied = [ 0.0 , 0.0 , 0.0 ];
+    update=10;
     MagnetizationCalculationMethod=0;
+    //If this flag is true then the magnetization is output
+    //independently of the MagnetizationCalculationMethod
+    OutputMagnetization=TRUE;
 };
 cuda:
 {
@@ -56,16 +65,29 @@ sim:
 {
 //    sim_type = "MvT";
 //    sim_type = "quick";
-    sim_type = "timeseries";
+//    sim_type = "timeseries";
+    sim_type="laserheating";
 };
-mvt:
+timeseries:
 {
-    lower_temp = 25.0;
-    upper_temp = 750.0;
-    temp_step = 25.0;
-    mean_tolerance = 0.0001;
-    variance_tolerance = 0.00025;
-    MaxRunTime = 45e-12;
-    MinRunTime = 1e-12;
-    MvTFile = "MvT.dat";
+    EquilibrationTime = 10e-12;
+    RunTime = 250e-12;
+    Temperature = 1.0;
+    OutputIndividualTimeSeries = TRUE;
+};
+laserheating:
+{
+    Gamma_e = 2.25e2;
+    Cl = 3.0e6;
+    PumpTime = 50e-15;
+    G_ep = 17.0e17;
+    InitialTemperature=82.0;
+    EquilibrationTime = 15e-12;
+    RunTime = 30e-12;
+    MaxElectronTemperature = 1500.0;
+    CoolingTime = 300000.0e-12;
+    NumPulses = 1;
+    PulseDelays = [ 150e-15 ];
+    PulseScale = [ 1.0 ];
+    OutputStructureFactor = TRUE;
 };
