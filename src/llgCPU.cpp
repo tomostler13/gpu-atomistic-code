@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 27 Nov 2014 11:49:45
+// Last-modified: 17 Jan 2015 20:30:27
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -54,6 +54,7 @@ namespace llgCPU
     void llgCPU(unsigned int t)
     {
         //calculate the 2 spin fields (dipolar, exchange)
+
         if(config::exchm==0 || config::exchm>98)
         {
             fields::ftdip();
@@ -65,12 +66,14 @@ namespace llgCPU
                 fields::dipftdip();
             }
         }
+//        fields::bfdip();
+//        else if(config::dipm==
         //FOR DEBUGGING THE FIELD
-        /*if(t==0)
+/*        if(t==0)
         {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
-            std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::Hx(i) << "\t" << fields::Hy(i) << "\t" << fields::Hz(i) << std::endl;
+            std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::HDemagx(i) << "\t" << fields::HDemagy(i) << "\t" << fields::HDemagz(i) << std::endl;
         }
         exit(0);
         }

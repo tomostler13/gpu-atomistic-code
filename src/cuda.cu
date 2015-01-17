@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 02 Dec 2014 14:39:41
+// Last-modified: 17 Jan 2015 20:30:05
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -60,12 +60,24 @@ namespace cullg
                 //copy the spin data to the zero padded arrays
                 cufields::CdipCopySpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cmagmom);
                 //copy the fields from the zero padded array to the demag field array
-                cufields::CdipCopyFields<<<zpblockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CHDemag,CHr,Ckx,Cky,Ckz);
+//                cufields::CdipCopyFields<<<zpblockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CHDemag,CHr,Ckx,Cky,Ckz);
                 //forward transform
                 spins_forward();
                 cufields::CdipFConv<<<zpblockspergrid,threadsperblock>>>(geom::zps,CNk,CHk,CSk);
                 fields_back();
                 cufields::CdipCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CHDemag,CHr,Ckx,Cky,Ckz);
+                /*
+                //copy spin arrays back to CPU
+                    float *temp=NULL;
+                    temp = new float [3*geom::nspins];
+                    CUDA_CALL(cudaMemcpy(temp,CHDemag,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
+                    for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                    {
+                        std::cout << i << "\t" << temp[3*i] << "\t" << temp[3*i+1] << "\t" << temp[3*i+2] << std::endl;
+                    }
+                    exit(0);
+                */
+
             }
             if(config::exchm==1)//DIA
             {
