@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 27 Nov 2014 11:19:33
+// Last-modified: 17 Jan 2015 20:30:38
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -19,6 +19,7 @@
 #include "../inc/util.h"
 #include "../inc/intmat.h"
 #include "../inc/defines.h"
+#include "../inc/llg.h"
 #define FIXOUT(a,b) a.width(75);a << std::left << b;
 namespace fields
 {
@@ -140,7 +141,7 @@ namespace fields
 
     }
 
-    /*void bfdip()
+    void bfdip()
     {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
@@ -179,18 +180,20 @@ namespace fields
 
                     for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
                     {
-                        h[xyz]+=(3.0*sjdote*eij[xyz]-sj[xyz])*oomrij3;
+                        h[xyz]+=(3.0*sjdote*eij[xyz]*geom::mu[j]-sj[xyz]*geom::mu[j])*oomrij3;
                     }//xyz
 
                 }
             }
-//            fields::Hx[i]=h[0]*1e-7*mat::mu*mat::muB;
-//            fields::Hy[i]=h[1]*1e-7*mat::mu*mat::muB;
-//            fields::Hz[i]=h[2]*1e-7*mat::mu*mat::muB;
-            std::cerr << ri[0]/geom::abc[0] << "\t" << ri[1]/geom::abc[1] << "\t" << ri[2]/geom::abc[2] << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
+            std::cout << i << "\t" << h[0]*1e-7*llg::muB << "\t" << h[1]*1e-7*llg::muB << "\t" << h[2]*1e-7*llg::muB << std::endl;
+//            fields::Hx[i]=h[0]*1e-7*mat::mu*llg::muB;
+//            fields::Hy[i]=h[1]*1e-7*mat::mu*llg::muB;
+//            fields::Hz[i]=h[2]*1e-7*mat::mu*llg::muB;
+//            std::cerr << ri[0]/geom::abc[0] << "\t" << ri[1]/geom::abc[1] << "\t" << ri[2]/geom::abc[2] << "\t" << fields::Hx[i] << "\t" << fields::Hy[i] << "\t" << fields::Hz[i] << std::endl;
 
         }
-    }//bfdip function*/
+        exit(0);
+    }//bfdip function
     //back transform the fields
     void FFTBack()
     {
