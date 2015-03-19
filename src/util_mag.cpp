@@ -1,11 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-<<<<<<< HEAD
-// Last-modified: 17 Mar 2015 10:57:14
-=======
-// Last-modified: 04 Feb 2015 14:32:57
->>>>>>> ecb357bea9c424a288dbd75b47fcf5211d0db05b
+// Last-modified: 19 Mar 2015 11:14:50
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
