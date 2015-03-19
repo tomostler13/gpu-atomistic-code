@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 15 Dec 2014 17:18:43
+// Last-modified: 17 Mar 2015 10:57:57
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -267,29 +267,31 @@ void sim::laser_heating(int argc,char *argv[])
             util::output_mag(t);
             ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl << std::endl;
         }
-        if(t%(spins::update*sf::sfupdate)==0 && opsf)
+        if(opsf==true)
         {
-            //zero the 3d spin array
-            s3d.IFill(0);
-            //copy spin to 3D arrays and apply unitary transforms
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            if(t%(spins::update*sf::sfupdate)==0 && opsf==true)
             {
-                unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-                //get the magnetic species number
-                unsigned int ms=geom::lu(i,3);
-                s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
-                s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
+                //zero the 3d spin array
+                s3d.IFill(0);
+                //copy spin to 3D arrays and apply unitary transforms
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                    //get the magnetic species number
+                    unsigned int ms=geom::lu(i,3);
+                    s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
+                    s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
+                }
+                fftw_execute(ftspins);
+                //output the time for completeness
+                kvout << static_cast<double>(t-ets)*llg::dt << "\t";
+                //loop over the k-points that we are interested in
+                for(unsigned int i = 0 ; i < sf::nk ; i++)
+                {
+                    kvout << s3d(kplu(i,0),kplu(i,1),kplu(i,2))[0] << "\t" << s3d(kplu(i,0),kplu(i,1),kplu(i,2))[1] << "\t";
+                }
+                kvout << std::endl;
             }
-            fftw_execute(ftspins);
-            //output the time for completeness
-            kvout << static_cast<double>(t-ets)*llg::dt << "\t";
-            //loop over the k-points that we are interested in
-            for(unsigned int i = 0 ; i < sf::nk ; i++)
-            {
-                kvout << s3d(kplu(i,0),kplu(i,1),kplu(i,2))[0] << "\t" << s3d(kplu(i,0),kplu(i,1),kplu(i,2))[1] << "\t";
-            }
-            kvout << std::endl;
-
 
         }
         llg::integrate(t);
