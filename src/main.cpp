@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Nov 2014 13:34:50
+// Last-modified: 27 Mar 2015 16:29:55
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -112,7 +112,7 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="quick")
     {
 
-        llg::T=1e-27;
+        llg::T=10.0;
         int counter=0;
         time_t now = time(0);
         char *dtime=ctime(&now);
@@ -125,6 +125,7 @@ int main(int argc,char *argv[])
                 {
                     counter=0;
                 }
+                util::outputSpinsVTU(t);
                 counter++;
                 util::calc_mag();
                 std::cout << static_cast<double>(t)*llg::dt << "\t";
