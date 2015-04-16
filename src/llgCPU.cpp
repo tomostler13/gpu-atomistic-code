@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 17 Jan 2015 20:30:27
+// Last-modified: 17 Mar 2015 10:57:23
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -53,6 +53,9 @@ namespace llgCPU
 
     void llgCPU(unsigned int t)
     {
+        fields::Hx.IFill(0);
+        fields::Hy.IFill(0);
+        fields::Hz.IFill(0);
         //calculate the 2 spin fields (dipolar, exchange)
 
         if(config::exchm==0 || config::exchm>98)
@@ -76,7 +79,7 @@ namespace llgCPU
             std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << fields::HDemagx(i) << "\t" << fields::HDemagy(i) << "\t" << fields::HDemagz(i) << std::endl;
         }
         exit(0);
-        }
+        }*/
         //exit(0);*/
         //then we call the DIA SpMV multiplication
         if(config::exchm==1)
@@ -104,7 +107,7 @@ namespace llgCPU
             }
         }
         //FOR DEBUGGING THE FIELD
-        if(t==0)
+        /*if(t==0)
         {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
@@ -120,8 +123,9 @@ namespace llgCPU
             fields::Hthx[i]=sqrtT*geom::sigma[i]*Random::normal();
             fields::Hthy[i]=sqrtT*geom::sigma[i]*Random::normal();
             fields::Hthz[i]=sqrtT*geom::sigma[i]*Random::normal();
-
+            //std::cout << fields::Hthx[i] << "\t" << fields::Hthy[i] << "\t" << fields::Hthz[i] << std::endl;
         }
+
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
 

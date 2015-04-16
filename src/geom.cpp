@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Dec 2014 19:55:43
+// Last-modified: 26 Mar 2015 14:18:48
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -217,7 +217,7 @@ namespace geom
             FIXOUT(config::Info,str.c_str() << ucm.GetNES(i) << " [ " << 100*(static_cast<double>(ucm.GetNES(i))/static_cast<double>(nspins)) << "% ]" << std::endl);
         }
 
-        if(nms > 5)
+        if(nms > 50)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Too many magnetic types. If you want more edit cuint.cu variable MAXNSPEC (a #define).\n This is because the constant memory allocation for the species dependent variables cannot be\ndynamic.");
@@ -225,9 +225,12 @@ namespace geom
         //sloc << "#This file contains the positions of the magnetic species and their type" << std::endl;
         //sloc << "# Element - x [A] - y [A] - z[A]" << std::endl;
         sloc << nspins << "\n\n";
+        //int c2225[3]={static_cast<int>(lu(2225,0)),static_cast<int>(lu(2225,1)),static_cast<int>(lu(2225,2))};
         for(unsigned int i = 0 ; i < nspins; i++)
         {
+         //   const double dx=rx[i]-rx[2225],dy=ry[i]-ry[2225],dz=rz[i]-rz[2225];
             sloc << ucm.GetElement(lu(i,4)) << "\t" << rx[i]/1e-10 << "\t" << ry[i]/1e-10 << "\t" << rz[i]/1e-10 << std::endl;
+//  sloc << sqrt(dx*dx+dy*dy+dz*dz) << "\t" << static_cast<int>(lu(i,0))-c2225[0] << "\t" << static_cast<int>(lu(i,1))-c2225[1] << "\t" << static_cast<int>(lu(i,2))-c2225[2] << "\t" << ucm.GetElement(lu(i,4)) << "\t" << rx[i]/1e-10 << "\t" << ry[i]/1e-10 << "\t" << rz[i]/1e-10 << std::endl;
         }
         sloc.close();
         if(sloc.is_open())

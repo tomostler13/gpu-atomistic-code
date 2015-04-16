@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 15 Dec 2014 11:44:50
+// Last-modified: 28 Mar 2015 11:26:54
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -20,7 +20,7 @@
 #include <sstream>
 namespace exch
 {
-    unsigned int max_shells=0,diagnumdiag=0,offdiagnumdiag=0;
+    unsigned int max_shells=0,diagnumdiag=0,offdiagnumdiag=0,max_int=0;
     Array<int> diagoffset,offdiagoffset;//for DIA neighbour list
     Array<int> checkdiag;
     Array<unsigned int> xadj,adjncy,offdiagxadj,offdiagadjncy;//for CSR neighbour list
@@ -32,7 +32,9 @@ namespace exch
     Array4D<double> exchvec;
     Array5D<double> J;
     std::string enerType;
-    bool outputJ,oem=false,rem=false;
+    bool outputJ,oem=false,rem=false,cutexch=false;
+    //cut off of exchange in m
+    double rcut=1.0;
     std::string readMethod,readFile,method;
     libconfig::Config exchcfg;
     void initExch(int argc,char *argv[])
@@ -48,6 +50,10 @@ namespace exch
             else if(method=="direct" && rem==false)
             {
                 direct(argc,argv);
+            }
+            else if(method=="mapint" && rem==false)
+            {
+                mapint(argc,argv);
             }
             else if(rem)//then the interaction matrix has already been calculated and we just have to read it
             {

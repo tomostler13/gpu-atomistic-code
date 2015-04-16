@@ -1,7 +1,7 @@
 //File matrix_mul_cpu.cpp
 // Author: Tom Ostler
 // Created: 08 Oct 2014
-// Last-modified: 27 Nov 2014 11:48:10
+// Last-modified: 15 Dec 2014 17:56:55
 #include "../inc/arrays.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -91,6 +91,7 @@ namespace matmul
                 sumz+=datazz[j]*Sz[neigh];
             }
             //std::cout << i << "\t" << sumx << "\t" << sumy << "\t" << sumz << std::endl;
+            //std::cin.get();
             Hx[i]+=sumx;
             Hy[i]+=sumy;
             Hz[i]+=sumz;
