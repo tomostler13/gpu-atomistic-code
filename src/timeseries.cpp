@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 01 Apr 2015 10:59:53
+// Last-modified: 21 Apr 2015 09:50:13
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -269,8 +269,21 @@ void sim::timeseries(int argc,char *argv[])
                         unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
                         //get the magnetic species number
                         unsigned int ms=geom::lu(i,3);
-                        s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i]*sf::uo(ms,0);
-                        s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,1);
+                        if(sf::qa[0]>1e-12)//quantization axis is x
+                        {
+                            s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i]*sf::uo(ms,1);
+                            s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
+                        }
+                        else if(sf::qa[1]>1e-12)
+                        {
+                            s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
+                            s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
+                        }
+                        else if(sq::qa[2]>1e-12)
+                        {
+                            s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
+                            s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
+                        }
                     }
                     fftw_execute(ftspins);
                     //output the time for completeness
@@ -294,8 +307,23 @@ void sim::timeseries(int argc,char *argv[])
                             unsigned int ms=geom::lu(i,3);
                             if(ms==s)//then output store the info for that magetic species
                             {
-                                is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i];
-                                is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i];
+//                                is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i];
+//                                is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i];
+                                if(sf::qa[0]>1e-12)//quantization axis is x
+                                {
+                                    is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i]*sf::uo(ms,1);
+                                    is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
+                                }
+                                else if(sf::qa[1]>1e-12)
+                                {
+                                    is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
+                                    is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
+                                }
+                                else if(sq::qa[2]>1e-12)
+                                {
+                                    is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
+                                    is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
+                                }
                             }
                             else
                             {

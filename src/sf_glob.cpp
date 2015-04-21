@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 2 Nov 2014
-// Last-modified: 11 Nov 2014 13:28:31
+// Last-modified: 21 Apr 2015 09:47:10
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -107,6 +107,11 @@ namespace sf
             qa[i]=0.0;
             //read from the config file
             qa[i]=nsetting["QuantizationAxis"][i];
+        }
+        if((qa[0]+qa[1]+qa[2]) > 1.01 && (qa[0]+qa[1]+qa[2]) < 0.99)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("The quantization axis must be on +x,+y or +z");
         }
         FIXOUTVEC(config::Info,"Axis to calculate deviations around:",qa[0],qa[1],qa[2]);
         //resize the rotation matrices
