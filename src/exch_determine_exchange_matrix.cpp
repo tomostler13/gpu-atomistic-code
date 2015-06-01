@@ -1,7 +1,7 @@
 // File: exch_determine_exchange_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 26 Mar 2015 14:26:31
+// Last-modified: 30 Apr 2015 15:53:17
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the CSR neighbourlist
@@ -184,21 +184,26 @@ namespace exch
                 sstr_int << "exchange" << "_" << s1 << "_" << s2;
                 std::string str_int = sstr_int.str();
                 libconfig::Setting &exchset = exchcfg.lookup(str_int.c_str());
+
                 //If the interactions are "direct" then the array shell_list actually stores the total number
                 //of interactions for the interaction between species s1 and s2
                 exchset.lookupValue("Num_Interactions",shell_list(s1,s2));
+
                 FIXOUT(config::Info,"Reading information for:" << shell_list(s1,s2) << " interactions" << std::endl);
+
                 exchset.lookupValue("units",enerType);
                 for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
                 {
                     std::stringstream evsstr;
                     std::string evstr;
+
                     evsstr << "Interaction" << i+1 << "Vec";
                     evstr=evsstr.str();
                     //get the vector for interaction i
                     for(unsigned int j = 0 ; j < 3 ; j++)
                     {
                         exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
+
                     }
                     config::Info << "Interaction " << i << " ";
                     FIXOUTVEC(config::Info," vector:",exchvec(s1,s2,i,0),exchvec(s1,s2,i,1),exchvec(s1,s2,i,2));
