@@ -1,7 +1,7 @@
 // File: exch_determine_exchange_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 30 Apr 2015 15:53:17
+// Last-modified: 04 Jun 2015 10:32:44
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the CSR neighbourlist
@@ -281,7 +281,7 @@ namespace exch
                     error::errMessage("The number of species should be equal to the number of planes in the x-direcion to use the hybrid method.");
                 }
 
-                lc[0]=static_cast<unsigned int>(exchvec(s1,s1,i,0)*static_cast<double>(geom::Nk[0])*evs[0]+0.5);;
+                lc[0]=static_cast<unsigned int>(exchvec(s1,s1,i,0)*static_cast<double>(geom::Nk[0])*evs[0]+0.5);
                 lc[1]=static_cast<unsigned int>(exchvec(s1,s1,i,1)*static_cast<double>(geom::Nk[1])*evs[1]+0.5);
                 lc[2]=static_cast<unsigned int>(exchvec(s1,s1,i,2)*static_cast<double>(geom::Nk[2])*evs[2]+0.5);
                 for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)

@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 28 Mar 2015 11:27:52
+// Last-modified: 04 Jun 2015 09:43:11
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -94,6 +94,16 @@ namespace exch
             error::errMessage("Method of reading exchange file not recognised.");
         }
         libconfig::Setting &GlobExch = exchcfg.lookup("exchange");
+        if(GlobExch.lookupValue("FourSpin",inc4spin))
+        {
+            FIXOUT(config::Info,"Include four spin term?:" << config::isTF(inc4spin) << std::endl);
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read whether you want to include 4 spin terms. Setting exchange.FourSpin (bool).");
+        }
+        std::cout << "Here " << std::endl;
         if(method=="permute" || method=="direct")
         {
             GlobExch.lookupValue("MaxShells",max_shells);
@@ -122,6 +132,19 @@ namespace exch
             exchvec.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_int,3);
             shell_list.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS());
             numint.IFill(0);exchvec.IFill(0);shell_list.IFill(0);
+        }
+        if(inc4spin)
+        {
+            if(GlobExch.lookupValue("MaxQuartetPermutations",max_4s))
+            {
+                FIXOUT(config::Info,"Maximum number of quartet permutations:" << max_4s << std::endl);
+            }
+            else
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not read the setting exchange.MaxQuartetPermutations (int)");
+            }
+            read4spin();
         }
     }
 

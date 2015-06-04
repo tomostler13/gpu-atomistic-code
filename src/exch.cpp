@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 28 Mar 2015 11:26:54
+// Last-modified: 04 Jun 2015 12:29:21
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -20,19 +20,20 @@
 #include <sstream>
 namespace exch
 {
-    unsigned int max_shells=0,diagnumdiag=0,offdiagnumdiag=0,max_int=0;
+    unsigned int max_shells=0,diagnumdiag=0,offdiagnumdiag=0,max_int=0,max_4s=0;
     Array<int> diagoffset,offdiagoffset;//for DIA neighbour list
     Array<int> checkdiag;
-    Array<unsigned int> xadj,adjncy,offdiagxadj,offdiagadjncy;//for CSR neighbour list
+    Array<unsigned int> xadj,adjncy,offdiagxadj,offdiagadjncy,xadj_j,xadj_k,xadj_l,adjncy_j,adjncy_k,adjncy_l;//for CSR neighbour list
     Array<double> dataxx,datayy,datazz,dataxz,dataxy,datayx,datayz,datazx,datazy;
     //evs = exchange vec scale
     Array<double> evs;
     Array3D<unsigned int> numint;
-    Array2D<unsigned int> shell_list;
+    Array2D<unsigned int> shell_list,numquart;
     Array4D<double> exchvec;
-    Array5D<double> J;
+    Array5D<int> fsqi;
+    Array5D<double> J,fsq;
     std::string enerType;
-    bool outputJ,oem=false,rem=false,cutexch=false;
+    bool outputJ,oem=false,rem=false,cutexch=false,inc4spin=false;
     //cut off of exchange in m
     double rcut=1.0;
     std::string readMethod,readFile,method;
