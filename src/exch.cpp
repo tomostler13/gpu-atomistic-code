@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 04 Jun 2015 12:29:21
+// Last-modified: 05 Jun 2015 18:15:33
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -35,7 +35,7 @@ namespace exch
     std::string enerType;
     bool outputJ,oem=false,rem=false,cutexch=false,inc4spin=false;
     //cut off of exchange in m
-    double rcut=1.0;
+    double rcut=1.0,JQ;
     std::string readMethod,readFile,method;
     libconfig::Config exchcfg;
     void initExch(int argc,char *argv[])

@@ -26,6 +26,7 @@ exchange_0_0:
 FourSpinExchange_0_0:
 {
     NumPermutations = 32;
+    JQ=0.23e-21;
     //These are the atom locations involved in each permutation of four spins
     //first permutation
     Permute1_1 = [ 0.0 , 0.0 , 1.0 ];

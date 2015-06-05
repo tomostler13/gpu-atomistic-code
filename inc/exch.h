@@ -1,7 +1,7 @@
 // File: exch.h
 // Author:Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 05 Jun 2015 17:24:00
+// Last-modified: 05 Jun 2015 18:15:20
 #ifndef _EXCH_H_
 #define _EXCH_H_
 #include <string>
@@ -20,7 +20,7 @@ namespace exch
     extern Array5D<double> J,fsq;
     extern unsigned int num_shells,diagnumdiag,offdiagnumdiag,max_shells,max_int,max_4s;
     extern bool outputJ,oem,rem,cutexch,inc4spin;
-    extern double rcut;
+    extern double rcut,JQ;
     extern std::string readMethod,readFile,method,enerType;
     void initExch(int argc,char *argv[]);
     void read4spin();

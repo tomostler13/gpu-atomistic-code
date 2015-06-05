@@ -1,7 +1,7 @@
 // File: exch_read_4_spin.cpp
 // Author: Tom Ostler
 // Created: 03 June 2015
-// Last-modified: 05 Jun 2015 17:22:32
+// Last-modified: 05 Jun 2015 20:01:55
 // If the 4 spin terms are included the routines
 // in this source file will be called. It reads
 // permutations of the quartets. It then mallocs
@@ -16,6 +16,7 @@
 #include "../inc/llg.h"
 #include "../inc/matrix_conv.h"
 #include "../inc/defines.h"
+#include "../inc/fields.h"
 #include <iostream>
 #include <fstream>
 #include <libconfig.h++>
