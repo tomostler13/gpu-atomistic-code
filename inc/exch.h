@@ -1,7 +1,7 @@
 // File: exch.h
 // Author:Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 04 Jun 2015 10:14:32
+// Last-modified: 05 Jun 2015 17:24:00
 #ifndef _EXCH_H_
 #define _EXCH_H_
 #include <string>
@@ -9,7 +9,7 @@
 namespace exch
 {
     extern Array<int> diagoffset,offdiagoffset,checkdiag;
-    extern Array<unsigned int> xadj,adjncy,offdiagxadj,offdiagadjncy;
+    extern Array<unsigned int> xadj,adjncy,offdiagxadj,offdiagadjncy,xadj_j,xadj_k,xadj_l,adjncy_j,adjncy_k,adjncy_l;
     extern Array2D<unsigned int> numquart;
     extern Array<double> dataxx,dataxy,dataxz,datayx,datayy,datayz,datazx,datazy,datazz;
     extern Array<double> evs;
@@ -40,5 +40,6 @@ namespace exch
     void exchpermute();
     void exchdirect();
     void exchmapint();
+    void setup4SpinCSR();
 }
 #endif /*_EXCH_H_*/

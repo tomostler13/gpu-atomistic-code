@@ -10,3 +10,8 @@ obj/*.o
 *.pdf
 array.job
 *.vtu
+unit_cell_files
+*.swp
+*/*.swp
+*.ucf
+*.DS*
