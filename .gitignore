@@ -6,6 +6,8 @@ obj/*
 ASD
 *.gpl
 obj/*.o
+*/*.o
+*/*/*.o
 *.eps
 *.pdf
 array.job
@@ -15,3 +17,7 @@ unit_cell_files
 */*.swp
 *.ucf
 *.DS*
+N_8
+exchange_files/GdFe_MultiLayers/
+fourier_space_analysis/ssf
+fourier_space_analysis/timeseries
