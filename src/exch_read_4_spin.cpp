@@ -1,7 +1,7 @@
 // File: exch_read_4_spin.cpp
 // Author: Tom Ostler
 // Created: 03 June 2015
-// Last-modified: 05 Jun 2015 20:01:55
+// Last-modified: 05 Jun 2015 20:28:41
 // If the 4 spin terms are included the routines
 // in this source file will be called. It reads
 // permutations of the quartets. It then mallocs
@@ -31,9 +31,11 @@ namespace exch
         fsq.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_4s,3,3);
         fsqi.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_4s,3,3);
         numquart.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS());
+        JQ.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS());
         fsq.IFill(0);
         fsq.IFill(0);
         numquart.IFill(0);
+        JQ.IFill(0);
         for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
         {
             for(unsigned int j = 0 ; j < geom::ucm.GetNMS() ; j++)
@@ -60,6 +62,30 @@ namespace exch
                     std::string str=sstr.str();
                     FIXOUT(config::Info,str << numquart(i,j) << std::endl);
                 }
+                else
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream sstr;
+                    sstr << "Could not read the number of quartets between species " << i << " and " << j;
+                    std::string str=sstr.str();
+                    error::errMessage(str);
+                }
+                if(setting.lookupValue("JQ",JQ(i,j)))
+                {
+                    std::stringstream sstr;
+                    sstr << "The four spin exchange between species " << i << " and " << j << " is:";
+                    std::string str=sstr.str();
+                    FIXOUT(config::Info,str << JQ(i,j) << std::endl);
+                    JQ(i,j)=JQ(i,j)/(geom::ucm.GetMu(i)*9.27e-24);
+                }
+                else
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream sstr;
+                    sstr << "Could not read the four spin exchange between species " << i << " and " << j;
+                    std::string str=sstr.str();
+                    error::errMessage(str);
+                }
                 //now read the quartets
                 for(unsigned int q = 0 ; q < numquart(i,j) ; q++)
                 {
@@ -73,14 +99,14 @@ namespace exch
                             try
                             {
                                 fsq(i,j,q,jkl,c)=setting[str.c_str()][c];
-                                if(fsq(i,j,q,jkl,c)<0)
+/*                                if(fsq(i,j,q,jkl,c)<0)
                                 {
                                     fsqi(i,j,q,jkl,c)=static_cast<int>(fsq(i,j,q,jkl,c)*static_cast<double>(geom::Nk[c]*evs[c]-0.5));
                                 }
                                 else
-                                {
+                                {*/
                                      fsqi(i,j,q,jkl,c)=static_cast<int>(fsq(i,j,q,jkl,c)*static_cast<double>(geom::Nk[c]*evs[c]+0.5));
-                                }
+                                //}
                             }
                             catch(const libconfig::SettingNotFoundException &snf)
                             {

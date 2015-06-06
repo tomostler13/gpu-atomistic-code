@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 05 Jun 2015 20:01:50
+// Last-modified: 06 Jun 2015 16:19:39
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -128,7 +128,7 @@ namespace llgCPU
 
 
         //calculate the four-spin exchange
-        if(inc4spin)
+        if(exch::inc4spin)
         {
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
             {
@@ -140,18 +140,23 @@ namespace llgCPU
                     unsigned int j=exch::adjncy_j[q];
                     unsigned int k=exch::adjncy_k[q];
                     unsigned int l=exch::adjncy_l[q];
+
+                    //std::cout << "spin i=" << i << "\thas quartet\t" << j << "\t" << k << "\t" << l << std::endl;
                     const double sj[3]={spins::Sx[j],spins::Sy[j],spins::Sz[j]};
                     const double sk[3]={spins::Sx[k],spins::Sy[k],spins::Sz[k]};
                     const double sl[3]={spins::Sx[l],spins::Sy[l],spins::Sz[l]};
                     const double skdotsl=sk[0]*sl[0]+sk[1]*sl[1]+sk[2]*sl[2];
                     const double sjdotsl=sj[0]*sl[0]+sj[1]*sl[1]+sj[2]*sl[2];
                     const double skdotsj=sk[0]*sj[0]+sk[1]*sj[1]+sk[2]*sj[2];
-                    fields::H4sx+=(0.333333333333333333333333333333333333*exch::JQ*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj));
-                    fields::H4sy+=(0.333333333333333333333333333333333333*exch::JQ*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj));
-                    fields::H4sz+=(0.333333333333333333333333333333333333*exch::JQ*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
+                    fields::H4sx[i]-=(exch::JQ(0,0)*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj));
+                    fields::H4sy[i]-=(exch::JQ(0,0)*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj));
+                    fields::H4sz[i]-=(exch::JQ(0,0)*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
                 }
+                //std::cin.get();
+                //std::cout << fields::H4sx[i] << "\t" << fields::H4sy[i] << "\t" << fields::H4sz[i] << std::endl;
             }
         }
+//     exit(0);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
 
@@ -212,7 +217,7 @@ namespace llgCPU
                 matmul::spmv_csr_offdiag();
             }
         }
-        if(inc4spin)
+        if(exch::inc4spin)
         {
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
             {
@@ -230,16 +235,16 @@ namespace llgCPU
                     const double skdotsl=sk[0]*sl[0]+sk[1]*sl[1]+sk[2]*sl[2];
                     const double sjdotsl=sj[0]*sl[0]+sj[1]*sl[1]+sj[2]*sl[2];
                     const double skdotsj=sk[0]*sj[0]+sk[1]*sj[1]+sk[2]*sj[2];
-                    fields::H4sx+=(0.333333333333333333333333333333333333*exch::JQ*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj));
-                    fields::H4sy+=(0.333333333333333333333333333333333333*exch::JQ*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj));
-                    fields::H4sz+=(0.333333333333333333333333333333333333*exch::JQ*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
+                    fields::H4sx[i]-=(exch::JQ(0,0)*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj));
+                    fields::H4sy[i]-=(exch::JQ(0,0)*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj));
+                    fields::H4sz[i]-=(exch::JQ(0,0)*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
                 }
             }
         }
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i]+fields::HDemagx[i]+fields::H4sx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i]+fields::Hdemagy[i]+fields::H4sy[i],fields::Hz[i]+fields::Hthx[i]+llg::applied[2]+fields::Hdemagz[i]+fields::H4sz[i]};
+            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i]+fields::HDemagx[i]+fields::H4sx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i]+fields::HDemagy[i]+fields::H4sy[i],fields::Hz[i]+fields::Hthx[i]+llg::applied[2]+fields::HDemagz[i]+fields::H4sz[i]};
             //--------------------------------------------------------
             //calculate the first order uniaxial anisotropy component
             //direction of the axis

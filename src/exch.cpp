@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 05 Jun 2015 18:15:33
+// Last-modified: 05 Jun 2015 20:25:31
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -29,13 +29,14 @@ namespace exch
     Array<double> evs;
     Array3D<unsigned int> numint;
     Array2D<unsigned int> shell_list,numquart;
+    Array2D<double> JQ;
     Array4D<double> exchvec;
     Array5D<int> fsqi;
     Array5D<double> J,fsq;
     std::string enerType;
     bool outputJ,oem=false,rem=false,cutexch=false,inc4spin=false;
     //cut off of exchange in m
-    double rcut=1.0,JQ;
+    double rcut=1.0;
     std::string readMethod,readFile,method;
     libconfig::Config exchcfg;
     void initExch(int argc,char *argv[])

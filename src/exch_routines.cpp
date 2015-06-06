@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 04 Jun 2015 09:43:11
+// Last-modified: 05 Jun 2015 20:13:57
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -103,7 +103,6 @@ namespace exch
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Could not read whether you want to include 4 spin terms. Setting exchange.FourSpin (bool).");
         }
-        std::cout << "Here " << std::endl;
         if(method=="permute" || method=="direct")
         {
             GlobExch.lookupValue("MaxShells",max_shells);

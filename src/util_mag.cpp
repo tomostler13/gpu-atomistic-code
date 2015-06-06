@@ -1,7 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 19 Mar 2015 11:14:50
+// Last-modified: 06 Jun 2015 17:21:36
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
@@ -38,6 +38,7 @@ namespace util
         // 5 - output the layer resolved magnetization as a function of x (reduced)
         // 6 - output the layer resolved magnetization as a function of y (reduced)
         // 7 - output the layer resolved magnetization as a function of z (reduced)
+        // 8 - Neel vector for a checkerboard AFM
         if(spins::mag_calc_method==0 || spins::output_mag==true)
         {
             spins::mag.IFill(0);
@@ -147,6 +148,33 @@ namespace util
                     mag_species_z(klu,splu,1)+=spins::Sy[i];
                     mag_species_z(klu,splu,2)+=spins::Sz[i];
                 }
+            }
+            else if(spins::mag_calc_method==8)
+            {
+                lx2=0;ly2=0;lz2=0;
+                lx1=0;ly1=0;lz2=0;
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    int mycoords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                    if((mycoords[0]+mycoords[1]+mycoords[2])%2==0)
+                    {//then we are on sublattice A
+                        lx1+=spins::Sx[i];
+                        ly1+=spins::Sy[i];
+                        lz1+=spins::Sz[i];
+                    }
+                    else
+                    {
+                        lx2+=spins::Sx[i];
+                        ly2+=spins::Sy[i];
+                        lz2+=spins::Sz[i];
+                    }
+                }
+                lx1=lx1/(static_cast<double>(geom::nspins)*0.5);
+                ly1=ly1/(static_cast<double>(geom::nspins)*0.5);
+                lz1=lz1/(static_cast<double>(geom::nspins)*0.5);
+                lx2=lx2/(static_cast<double>(geom::nspins)*0.5);
+                ly2=ly2/(static_cast<double>(geom::nspins)*0.5);
+                lz2=lz2/(static_cast<double>(geom::nspins)*0.5);
             }
             else
             {
@@ -340,8 +368,18 @@ namespace util
                 }
             }
         }
+        else if(spins::mag_calc_method==8)
+        {
+            sofs.open("afm_check_sublat.dat");
+            if(!sofs.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open magnetization file afm_check_sublat.dat.");
+            }
+            sofs << "#File description: this file contains the magnetization for each sublattice of a 3D checker board antiferromagnet." << std::endl;
+            sofs << "#time - z - mx_A - my_A - mz_A - mx_B - my_B - mz_B" << std::endl;
 
-
+        }
     }
     void output_mag(unsigned int t)
     {
@@ -520,6 +558,11 @@ namespace util
                 sofs << std::endl;
             }
             sofs << std::endl << std::endl;
+        }
+        else if(spins::mag_calc_method==8)
+        {
+            const double timeid=static_cast<double>(t)*llg::dt;
+            sofs << timeid << "\t" << lx1 << "\t" << ly1 << "\t" << lz1 << "\t" << lx2 << "\t" << ly2 << "\t" << lz2 << std::endl;
         }
     }
 
