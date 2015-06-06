@@ -1,7 +1,7 @@
 // File: exch_read_4_spin.cpp
 // Author: Tom Ostler
 // Created: 03 June 2015
-// Last-modified: 05 Jun 2015 20:28:41
+// Last-modified: 06 Jun 2015 18:47:14
 // If the 4 spin terms are included the routines
 // in this source file will be called. It reads
 // permutations of the quartets. It then mallocs
@@ -136,16 +136,13 @@ namespace exch
     void setup4SpinCSR()
     {
         xadj_j.resize(geom::nspins+1);
-        xadj_k.resize(geom::nspins+1);
-        xadj_l.resize(geom::nspins+1);
         std::vector<unsigned int> tempadjncy_j,tempadjncy_k,tempadjncy_l;
         //loop over all spins and find the neighbours
         unsigned int xadj_counter=0,adjncy_count_j=0,adjncy_count_k=0,adjncy_count_l=0;
+        unsigned int totquartets=0,missingquartets=0;
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             xadj_j[xadj_counter]=adjncy_count_j;
-            xadj_k[xadj_counter]=adjncy_count_k;
-            xadj_l[xadj_counter]=adjncy_count_l;
             unsigned int sl=geom::sublattice(i);
             //get the atom in the unit cell
             unsigned int aiuc = geom::lu(i,4);
@@ -221,7 +218,7 @@ namespace exch
                             check_lookupl++;
                         }
                     }//end of xyz loop for l
-                    if(check_lookupj==3)
+                    if((check_lookupj+check_lookupk+check_lookupl)==9)//if there aren't four spins in the quartet we ignore the entire 4 spin term
                     {
                         unsigned int spec=geom::coords(lookupvecj[0],lookupvecj[1],lookupvecj[2],1);
                         if(spec==sl)
@@ -231,10 +228,7 @@ namespace exch
                             tempadjncy_j[adjncy_count_j]=neighj;
                             adjncy_count_j++;
                         }//end of check that atom exists and is correct spec
-                    }
-                    if(check_lookupk==3)
-                    {
-                        unsigned int spec=geom::coords(lookupveck[0],lookupveck[1],lookupveck[2],1);
+                        spec=geom::coords(lookupveck[0],lookupveck[1],lookupveck[2],1);
                         if(spec==sl)
                         {
                             unsigned int neighk=geom::coords(lookupveck[0],lookupveck[1],lookupveck[2],0);
@@ -242,10 +236,7 @@ namespace exch
                             tempadjncy_k[adjncy_count_k]=neighk;
                             adjncy_count_k++;
                         }//end of check that atom exists and is correct spec
-                    }
-                    if(check_lookupl==3)
-                    {
-                        unsigned int spec=geom::coords(lookupvecl[0],lookupvecl[1],lookupvecl[2],1);
+                        spec=geom::coords(lookupvecl[0],lookupvecl[1],lookupvecl[2],1);
                         if(spec==sl)
                         {
                             unsigned int neighl=geom::coords(lookupvecl[0],lookupvecl[1],lookupvecl[2],0);
@@ -253,6 +244,11 @@ namespace exch
                             tempadjncy_l[adjncy_count_l]=neighl;
                             adjncy_count_l++;
                         }//end of check that atom exists and is correct spec
+                        totquartets++;
+                    }//end of check of sum of check_lookup equal to 9
+                    else
+                    {
+                        missingquartets++;
                     }
                 }//end of q loop
             }//end of s1 loop
@@ -261,9 +257,8 @@ namespace exch
 
         }//end of i loop
         xadj_j[geom::nspins]=adjncy_count_j;
-        xadj_k[geom::nspins]=adjncy_count_k;
-        xadj_l[geom::nspins]=adjncy_count_l;
-
+        FIXOUT(config::Info,"Total number of quartets:" << totquartets << std::endl);
+        FIXOUT(config::Info,"Total number of missing quartets:" << missingquartets << std::endl);
         adjncy_j.resize(adjncy_count_j);
         adjncy_k.resize(adjncy_count_k);
         adjncy_l.resize(adjncy_count_l);
