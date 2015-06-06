@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 13 May 2015 20:34:21
+// Last-modified: 06 Jun 2015 18:09:28
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -116,7 +116,7 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="quick")
     {
 
-        llg::T=1.0;
+        llg::T=100.0;
         int counter=0;
         time_t now = time(0);
         char *dtime=ctime(&now);
@@ -129,9 +129,9 @@ int main(int argc,char *argv[])
                 {
                     counter=0;
                 }
-//                util::outputSpinsVTU(t);
                 counter++;
                 util::calc_mag();
+                util::output_mag(t);
                 std::cout << static_cast<double>(t)*llg::dt << "\t";
                 for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
                 {
@@ -145,6 +145,7 @@ int main(int argc,char *argv[])
         util::outputSpinsVTU(-1);
         time_t nowe=time(0);
         char *dtimee=ctime(&nowe);
+        util::outputSpinsVTU(-1);
         std::cout << "#End time:\t" << dtimee << std::endl;
     }
     else

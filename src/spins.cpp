@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 09 Dec 2014 20:38:49
+// Last-modified: 06 Jun 2015 17:56:54
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -18,6 +18,7 @@
 #include "../inc/intmat.h"
 #include "../inc/defines.h"
 #include "../inc/maths.h"
+#include "../inc/random.h"
 namespace spins
 {
     Array5D<fftw_complex> Sk;
@@ -47,14 +48,6 @@ namespace spins
         Sz.IFill(geom::nspins);
 
         SUCCESS(config::Info);
-        for(unsigned int i = 0 ; i < geom::nspins ; i++)
-        {
-            //get which atom in the unit cell spin i is
-            unsigned int aiuc=geom::lu(i,4);
-            Sx[i]=geom::ucm.GetInitS(aiuc,0);
-            Sy[i]=geom::ucm.GetInitS(aiuc,1);
-            Sz[i]=geom::ucm.GetInitS(aiuc,2);
-        }
         FIXOUT(config::Info,"Method for calculating the magnetization:" << mag_calc_method << " (see notes in src/util.cpp, function -> calc_mag)" << std::endl);
         FIXOUT(config::Info,"Output magnetization?" << config::isTF(output_mag) << std::endl);
         if(config::exchm==0)
@@ -252,4 +245,53 @@ namespace spins
         }
         fftw_execute(dSP);
     }
+    void setSpinsConfig()
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            //get which atom in the unit cell spin i is
+            unsigned int aiuc=geom::lu(i,4);
+            Sx[i]=geom::ucm.GetInitS(aiuc,0);
+            Sy[i]=geom::ucm.GetInitS(aiuc,1);
+            Sz[i]=geom::ucm.GetInitS(aiuc,2);
+        }
+    }
+    void setSpinsRandom()
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            double v1=0,v2=0,s=2.0,ss=0.0;
+            while(s>1.0)
+            {
+                v1=2.0*Random::rand()-1.0;
+                v2=2.0*Random::rand()-1.0;
+                s=v1*v1+v2*v2;
+            }
+            ss=sqrt(1.0-s);
+            Sx[i]=2.0*v1*ss;
+            Sy[i]=2.0*v2*ss;
+            Sz[i]=1.0-2.0*s;
+        }
+    }
+    void setSpinsChequer()
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+
+            int mycoords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            if((mycoords[0]+mycoords[1]+mycoords[2])%2==0)
+            {//then we are on sublattice A
+                spins::Sx[i]=0.0;
+                spins::Sy[i]=0.0;
+                spins::Sz[i]=1.0;
+            }
+            else
+            {//then we are on sublattice B
+                spins::Sx[i]=0.0;
+                spins::Sy[i]=0.0;
+                spins::Sz[i]=-1.0;
+            }
+        }
+    }
+
 }
