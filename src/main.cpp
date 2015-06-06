@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 01 May 2015 08:13:59
+// Last-modified: 13 May 2015 20:34:21
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -108,6 +108,10 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="laserheating")
     {
         sim::laser_heating(argc,argv);
+    }
+    else if(sim::sim_type=="ramp_field")
+    {
+        sim::ramp_field(argc,argv);
     }
     else if(sim::sim_type=="quick")
     {
