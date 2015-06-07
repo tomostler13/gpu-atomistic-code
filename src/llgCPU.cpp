@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 06 Jun 2015 16:19:39
+// Last-modified: 07 Jun 2015 15:38:06
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -135,6 +135,7 @@ namespace llgCPU
                 fields::H4sx[i]=0.0;
                 fields::H4sy[i]=0.0;
                 fields::H4sz[i]=0.0;
+                double h[3]={0,0,0};
                 for(unsigned int q = exch::xadj_j[i] ; q < exch::xadj_j[i+1] ; q++)
                 {
                     unsigned int j=exch::adjncy_j[q];
@@ -151,8 +152,11 @@ namespace llgCPU
                     fields::H4sx[i]-=(exch::JQ(0,0)*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj));
                     fields::H4sy[i]-=(exch::JQ(0,0)*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj));
                     fields::H4sz[i]-=(exch::JQ(0,0)*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
+//h[2]-=(exch::JQ(0,0)*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
                 }
-                //std::cin.get();
+//std::cout << h[0] << "\t" << h[1] << "\t" << h[2] << std::endl;
+//std::cin.get();
+
                 //std::cout << fields::H4sx[i] << "\t" << fields::H4sy[i] << "\t" << fields::H4sz[i] << std::endl;
             }
         }
@@ -163,6 +167,11 @@ namespace llgCPU
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
             //Adding the demag here should be zero (see fields.cpp) if config::inc_dip==false
             double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i]+fields::HDemagx[i]+fields::H4sx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i]+fields::HDemagy[i]+fields::H4sy[i],fields::Hz[i]+fields::Hthx[i]+llg::applied[2]+fields::HDemagz[i]+fields::H4sz[i]};
+/*        if(t==0)
+        {
+            std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << h[0] << "\t" << h[1] << "\t" << h[2] << std::endl;
+        }*/
+            //std::cout << h[0] << "\t" << h[1] << "\t" << h[2] << std::endl;
             //--------------------------------------------------------
             //calculate the first order uniaxial anisotropy component
             //direction of the axis
@@ -190,6 +199,7 @@ namespace llgCPU
             spins::eSy[i]/=mods;
             spins::eSz[i]/=mods;
         }
+        //exit(0);
 
         //perform the calculation of the 2 spin fields using the euler spin arrays
         if(config::exchm==0)

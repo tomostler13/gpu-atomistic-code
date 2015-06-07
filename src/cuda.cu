@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 17 Jan 2015 20:30:05
+// Last-modified: 07 Jun 2015 15:36:55
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -17,6 +17,7 @@
 #include "../inc/cufields.h"
 #include "../inc/cuint.h"
 #include "../inc/llg.h"
+#include "../inc/exch.h"
 //Cuda headers
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -116,9 +117,23 @@ namespace cullg
                 }
             }
         }
-        check_cuda_errors(__FILE__,__LINE__);
+        //calcalute the four spin term?
+        if(exch::inc4spin)
+        {
+            cufields::CSpMV_CSR_FourSpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj_jkl,Cadjncy_j,Cadjncy_k,Cadjncy_l,CH,Cspin);//,CH,Cspin);
+        }
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
+/*            float *temp=NULL;
+            temp = new float [3*geom::nspins];
+            CUDA_CALL(cudaMemcpy(temp,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << temp[3*i] << "\t" << temp[3*i+1] << "\t" << temp[3*i+2] << std::endl;
+            }
+            delete [] temp;
+            temp=NULL;
+            exit(0);*/
         cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
         //in this case we are using the interaction matrix for both the exchange and the
         //dipole-dipole field so we might aswell update both at once
@@ -174,7 +189,11 @@ namespace cullg
                 }
             }
         }
-
+        //calcalute the four spin term?
+        if(exch::inc4spin)
+        {
+            cufields::CSpMV_CSR_FourSpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj_jkl,Cadjncy_j,Cadjncy_k,Cadjncy_l,CH,Cespin);
+        }
         cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
         if(t%spins::update==0)
         {

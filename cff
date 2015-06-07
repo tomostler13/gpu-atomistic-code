@@ -1,5 +1,5 @@
-OutputFile = "opf.dat";
-seed = 1421523042;
+OutputFile = "opfGPU.dat";
+seed = 1421523;
 system:
 {
     //number of unit cells
@@ -49,13 +49,13 @@ llg:
 {
     dt = 0.1e-15;
     applied = [ 0.0 , 0.0 , 0.0 ];
-    update=100;
+    update=10;
     MagnetizationCalculationMethod=8;
     OutputMagnetization=TRUE;
     //options are
     // - file - defined through the config file
     // - random - randomized before start of simulation
-    SpinConfigMethod="chequer";
+    SpinConfigMethod="file";
 
 };
 cuda:
@@ -64,7 +64,25 @@ cuda:
 };
 sim:
 {
-    sim_type="quick";
+    sim_type="thermal_hyst";
+};
+thermal_hyst:
+{
+    StartTemp=5.0;
+    IncTemp=15.0;
+    EquilTime=15.0e-12;
+    RunTime=15.0e-12;
+};
+mvt:
+{
+    lower_temp=15.0;
+    upper_temp=800.0;
+    temp_step=15.0;
+    mean_tolerance=1e-7;
+    variance_tolerance=1e-9;
+    MaxRunTime=50e-12;
+    MinRunTime=15e-12;
+    MvTFile="mvt.dat";
 };
 laserheating:
 {
