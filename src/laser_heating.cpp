@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 08 Jun 2015 12:04:53
+// Last-modified: 08 Jun 2015 12:52:08
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -76,7 +76,7 @@ void sim::laser_heating(int argc,char *argv[])
         error::errMessage("Could not read temperature (laserheating:InitialTemperature (double))");
     }
     bool oits=false;
-    if(setting.lookupValue("OuputIndividualTimeSeries",oits))
+    if(setting.lookupValue("OutputIndividualTimeSeries",oits))
     {
         FIXOUT(config::Info,"Outputting individual ssf's for each species?:" << config::isTF(oits) << std::endl);
     }
