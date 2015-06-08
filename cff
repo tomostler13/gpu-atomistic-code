@@ -64,7 +64,7 @@ cuda:
 };
 sim:
 {
-    sim_type="MvT";
+    sim_type="quick";
 };
 thermal_hyst:
 {

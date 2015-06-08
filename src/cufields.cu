@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 07 Jun 2015 15:48:23
+// Last-modified: 08 Jun 2015 19:04:09
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -57,9 +57,9 @@ namespace cufields
                 const double skdotsl=sk[0]*sl[0]+sk[1]*sl[1]+sk[2]*sl[2];
                 const double sjdotsl=sj[0]*sl[0]+sj[1]*sl[1]+sj[2]*sl[2];
                 const double skdotsj=sk[0]*sj[0]+sk[1]*sj[1]+sk[2]*sj[2];
-                h[0]-=(JQ*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj));
-                h[1]-=(JQ*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj));
-                h[2]-=(JQ*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
+                h[0]-=(JQ*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj))/3.0;
+                h[1]-=(JQ*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj))/3.0;
+                h[2]-=(JQ*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj))/3.0;
                 /*if(i==100)
                 {
                     //    printf("JQ=%4.6f\tFields=[%4.6f\t%4.6f\t%4.6f]\nNeigh\t%d\t%d\n",JQ,h[0],h[1],h[2],Cxadj_jkl[100],Cxadj_jkl[101]);
