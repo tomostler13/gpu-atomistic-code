@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 29 Nov 2014 11:12:04
+// Last-modified: 07 Jun 2015 15:17:45
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -381,6 +381,17 @@ namespace cullg
             }
         }
 
+        if(exch::inc4spin)
+        {
+            CUDA_CALL(cudaMalloc((void**)&Cxadj_jkl,exch::xadj_j.size()*sizeof(unsigned int)));
+            CUDA_CALL(cudaMalloc((void**)&Cadjncy_j,exch::adjncy_j.size()*sizeof(unsigned int)));
+            CUDA_CALL(cudaMalloc((void**)&Cadjncy_k,exch::adjncy_k.size()*sizeof(unsigned int)));
+            CUDA_CALL(cudaMalloc((void**)&Cadjncy_l,exch::adjncy_l.size()*sizeof(unsigned int)));
+            CUDA_CALL(cudaMemcpy(Cxadj_jkl,exch::xadj_j.ptr(),exch::xadj_j.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(Cadjncy_j,exch::adjncy_j.ptr(),exch::adjncy_j.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(Cadjncy_k,exch::adjncy_k.ptr(),exch::adjncy_k.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(Cadjncy_l,exch::adjncy_l.ptr(),exch::adjncy_l.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
+        }
         CUDA_CALL(cudaMalloc((void**)&CHDemag,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));

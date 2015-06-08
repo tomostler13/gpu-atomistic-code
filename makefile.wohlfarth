@@ -51,7 +51,9 @@ obj/exch_determine_exchange_matrix.o \
 obj/exch_intmat.o \
 obj/exch_permute_Sp.o \
 obj/exch_direct_Sp.o \
-obj/exch_mapint_Sp.o
+obj/exch_mapint_Sp.o \
+obj/ramp_field.o \
+obj/exch_read_4_spin.o
 
 SWITCHOBJ= \
 obj/main.o \

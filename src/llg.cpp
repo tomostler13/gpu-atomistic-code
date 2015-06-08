@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 09 Dec 2014 20:16:35
+// Last-modified: 06 Jun 2015 17:54:48
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -11,6 +11,7 @@
 #include "../inc/util.h"
 #include <cmath>
 #include <sstream>
+#include <string>
 #ifdef CUDA
 #include <cuda.h>
 #include "../inc/cuda.h"
@@ -19,6 +20,7 @@ namespace llg
 {
     double applied[3]={0,0,0},T,dt,rdt,gyro=1.76e11,muB=9.27e-24,kB=1.38e-23;
     Array<double> llgpf;
+    std::string scm;
 
 	void initLLG(int argc,char *argv[])
 	{
@@ -56,6 +58,32 @@ namespace llg
         setting.lookupValue("MagnetizationCalculationMethod:",spins::mag_calc_method);
         setting.lookupValue("OutputMagnetization",spins::output_mag);
         FIXOUT(config::Info,"Initializing output of magnetization:" << std::flush);
+        if(setting.lookupValue("SpinConfigMethod",scm))
+        {
+            FIXOUT(config::Info,"How are spins initially configured?:" << scm << std::endl);
+            if(scm=="random")
+            {
+                spins::setSpinsRandom();
+            }
+            else if(scm=="file")
+            {
+                spins::setSpinsConfig();
+            }
+            else if(scm=="chequer")
+            {
+                spins::setSpinsChequer();
+            }
+            else
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Method for initialising spins not recognised (llg.SpinConfigMethod (string). Check you config file.");
+            }
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read the method for applying the initial spin config. Setting llg.SpinConfigMethod (string)");
+        }
         util::init_output();
         SUCCESS(config::Info);
         if(geom::ucm.NumAtomsUnitCell() > 5)

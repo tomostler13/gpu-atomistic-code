@@ -15,5 +15,7 @@ namespace cufields
     extern __global__ void CZero5DRSArrays(int,cufftComplex*,cufftComplex*,cufftComplex*,cufftComplex*);
     extern __global__ void CZero4DRSArrays(int,cufftComplex*,cufftComplex*,cufftComplex*,cufftComplex*);
     extern void copyConstData();
+//    extern __global__ void CSpMV_CSR_FourSpin(unsigned int,unsigned int*,unsigned int*,unsigned int*,unsigned int*,float*,double*);
+    extern __global__ void CSpMV_CSR_FourSpin(unsigned int,unsigned int*,unsigned int*,unsigned int*,unsigned int*,float*,double*);
 }
 #endif /*_CUFIELDS_H_*/

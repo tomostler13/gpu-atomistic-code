@@ -1,34 +1,19 @@
-OutputFile = "opf.dat";
-seed = 1421523042;
+OutputFile = "opfGPU.dat";
+seed = 1421523;
 system:
 {
     //number of unit cells
-<<<<<<< HEAD
-    dim = [ 1 , 1 , 1 ];
+    dim = [ 24 , 24 , 24 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="disordered.ucf";
+    unitcellfile="FeRh.ucf";
     //Number of k-points in each direction
-    Nk = [ 40 , 40 , 40 ];
+    Nk = [ 1 , 1 , 1 ];
     //lattice constants
-    abc = [ 6e-9 , 6e-9 , 6e-9 ];
+    abc = [ 300e-12 , 300e-12 , 300e-12 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
-=======
-    dim = [ 10 , 10 , 10 ];
-    //The unit cell file
-    //This file gives all of the information
-    //on the locations of the magnetic system
-    unitcellfile="Yury.ucf";
-    //Number of k-points in each direction
-    Nk = [ 2 , 2 , 8 ];
-    //lattice constants
-    abc = [ 300e-12 , 300e-12 , 1200e-12 ];
-    //do we include the dipole-dipole calculation?
-    include_dipole = TRUE;
-    //3 options. CSR (good for CPU). fft (good for single species). DIA (good for GPU)
->>>>>>> ecb357bea9c424a288dbd75b47fcf5211d0db05b
     Exchange_method="CSR";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
@@ -36,8 +21,8 @@ system:
     //If not then they are ignored.
     Off_Diagonals = FALSE;
     //Do you want to output the unit cell info to the log file?
-    log_unit_cell = FALSE;
-    Periodic_Boundaries = [ TRUE , TRUE , FALSE ];
+    log_unit_cell = TRUE;
+    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
 };
 exchange:
 {
@@ -45,24 +30,14 @@ exchange:
     //direct (by reading in all interactions directly)
     //permute (take a neighbour and calculate permutations)
     exchmethod="permute";
-<<<<<<< HEAD
     OutputExchange=TRUE;
-=======
-    //Outputs the entire matrix of interations
-    OutputExchange=FALSE;
->>>>>>> ecb357bea9c424a288dbd75b47fcf5211d0db05b
     //How are we to read in the exchange
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
-    exchfile="exch.fcc";
-<<<<<<< HEAD
+    exchfile="exch.FeRh";
     OutputExchangeMatrix=TRUE;
-    ExitAfterExchangeMatrix=TRUE;
-=======
-    OutputExchangeMatrix=FALSE;
     ExitAfterExchangeMatrix=FALSE;
->>>>>>> ecb357bea9c424a288dbd75b47fcf5211d0db05b
     ReadExchangeMatrix=FALSE;
 };
 sf:
@@ -72,11 +47,16 @@ sf:
 };
 llg:
 {
-    dt = 0.2e-15;
+    dt = 0.1e-15;
     applied = [ 0.0 , 0.0 , 0.0 ];
-    update=100;
-    MagnetizationCalculationMethod=7;
+    update=10;
+    MagnetizationCalculationMethod=8;
     OutputMagnetization=TRUE;
+    //options are
+    // - file - defined through the config file
+    // - random - randomized before start of simulation
+    SpinConfigMethod="file";
+
 };
 cuda:
 {
@@ -84,35 +64,37 @@ cuda:
 };
 sim:
 {
-<<<<<<< HEAD
-    sim_type="laserheating";
-=======
-//    sim_type = "MvT";
-//    sim_type = "quick";
-//    sim_type = "timeseries";
-      sim_type="laserheating";
->>>>>>> ecb357bea9c424a288dbd75b47fcf5211d0db05b
+    sim_type="thermal_hyst";
+};
+thermal_hyst:
+{
+    StartTemp=5.0;
+    IncTemp=15.0;
+    EquilTime=15.0e-12;
+    RunTime=15.0e-12;
+};
+mvt:
+{
+    lower_temp=15.0;
+    upper_temp=800.0;
+    temp_step=15.0;
+    mean_tolerance=1e-7;
+    variance_tolerance=1e-9;
+    MaxRunTime=50e-12;
+    MinRunTime=15e-12;
+    MvTFile="mvt.dat";
 };
 laserheating:
 {
     Gamma_e = 2.25e2;
     Cl = 3.1e6;
     PumpTime = 50e-15;
-<<<<<<< HEAD
     G_ep = 17.0e17;
     InitialTemperature=82.0;
     EquilibrationTime = 15e-12;
     RunTime = 15e-12;
     PumpFluence=1e21;
     CoolingTime = 300000.0e-12;
-=======
-    G_ep = 12.0e17;
-    InitialTemperature=90.0;
-    EquilibrationTime = 10.0e-12;
-    RunTime = 0e-12;
-    PumpFluence = 1e21;
-    CoolingTime = 1000.0e-12;
->>>>>>> ecb357bea9c424a288dbd75b47fcf5211d0db05b
     NumPulses = 1;
     PulseDelays = [ 150e-15 ];
     PulseScale = [ 1.0 ];

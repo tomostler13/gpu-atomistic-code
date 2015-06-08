@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 10 Oct 2014 16:24:23
+// Last-modified: 06 Jun 2015 19:10:10
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -55,7 +55,7 @@ namespace cullg
     cufftComplex *CHr=NULL;
     //unsigned int the kx, ky and kz positions of the spins. The point is that you can use these arrays to
     //lookup which element of the array the the spin data should be copied to.
-    unsigned int *Ckx=NULL,*Cky=NULL,*Ckz=NULL,*Cspec=NULL,*Cxadj=NULL,*Cadjncy=NULL;
+    unsigned int *Ckx=NULL,*Cky=NULL,*Ckz=NULL,*Cspec=NULL,*Cxadj=NULL,*Cadjncy=NULL,*Cxadj_jkl=NULL,*Cadjncy_j=NULL,*Cadjncy_k=NULL,*Cadjncy_l=NULL;
     int *Cdiagoffset=NULL,*Coffdiagoffset=NULL;
     //DIA format components of the exchange tensor
     float *Cdxx=NULL,*Cdyy=NULL,*Cdzz=NULL;

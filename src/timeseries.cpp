@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 21 Apr 2015 09:50:13
+// Last-modified: 01 May 2015 08:15:38
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -279,7 +279,7 @@ void sim::timeseries(int argc,char *argv[])
                             s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
                             s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
                         }
-                        else if(sq::qa[2]>1e-12)
+                        else if(sf::qa[2]>1e-12)
                         {
                             s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
                             s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
@@ -319,7 +319,7 @@ void sim::timeseries(int argc,char *argv[])
                                     is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
                                     is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
                                 }
-                                else if(sq::qa[2]>1e-12)
+                                else if(sf::qa[2]>1e-12)
                                 {
                                     is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
                                     is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);

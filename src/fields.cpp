@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 17 Jan 2015 20:30:38
+// Last-modified: 05 Jun 2015 19:58:58
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -28,6 +28,7 @@ namespace fields
     Array4D<fftw_complex> hHr,hHk;
     Array4D<fftw_complex> dipHr,dipHk;
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz,HDemagx,HDemagy,HDemagz;
+    Array<double> H4sx,H4sy,H4sz;
     fftw_plan HP,dHP;
     void initFields(int argc,char *argv[])
     {
@@ -138,6 +139,12 @@ namespace fields
         HDemagx.IFill(0);
         HDemagy.IFill(0);
         HDemagz.IFill(0);
+        H4sx.resize(geom::nspins);
+        H4sy.resize(geom::nspins);
+        H4sz.resize(geom::nspins);
+        H4sx.IFill(0);
+        H4sy.IFill(0);
+        H4sz.IFill(0);
 
     }
 

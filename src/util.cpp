@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 15 Dec 2014 11:47:14
+// Last-modified: 06 Jun 2015 17:21:18
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -24,6 +24,7 @@ namespace util
 {
     std::ofstream ofs,sofs;
     Array2D<double> magx,magy,magz;
+    double lx1,ly1,lz1,lx2,ly2,lz2;
     Array3D<double> mag_species_x,mag_species_y,mag_species_z;
     Array2D<double> nspl;//number of spins per layer
     void inverse(double* A, int N)
