@@ -3,7 +3,7 @@ seed = 1421523;
 system:
 {
     //number of unit cells
-    dim = [ 24 , 24 , 24 ];
+    dim = [ 32 , 32 , 32 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
@@ -30,13 +30,13 @@ exchange:
     //direct (by reading in all interactions directly)
     //permute (take a neighbour and calculate permutations)
     exchmethod="permute";
-    OutputExchange=TRUE;
+    OutputExchange=FALSE;
     //How are we to read in the exchange
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
     exchfile="exch.FeRh";
-    OutputExchangeMatrix=TRUE;
+    OutputExchangeMatrix=FALSE;
     ExitAfterExchangeMatrix=FALSE;
     ReadExchangeMatrix=FALSE;
 };
@@ -48,14 +48,14 @@ sf:
 llg:
 {
     dt = 0.1e-15;
-    applied = [ 0.0 , 0.0 , 0.0 ];
+    applied = [ 0.0 , 0.0 , 0.001 ];
     update=10;
     MagnetizationCalculationMethod=8;
     OutputMagnetization=TRUE;
     //options are
     // - file - defined through the config file
     // - random - randomized before start of simulation
-    SpinConfigMethod="file";
+    SpinConfigMethod="chequer";
 
 };
 cuda:
@@ -64,7 +64,7 @@ cuda:
 };
 sim:
 {
-    sim_type="thermal_hyst";
+    sim_type="MvT";
 };
 thermal_hyst:
 {
