@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 09 Dec 2014 20:13:41
+// Last-modified: 08 Jun 2015 19:30:55
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -105,8 +105,8 @@ void sim::MvT(int argc,char *argv[])
                 util::calc_mag();
                 util::output_mag(t);
 
-                if(t>int(10e-12/llg::dt))
-                {
+/*                if(t>int(10e-12/llg::dt))
+                {*/
 
                     unsigned int counter=0;
                     for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
@@ -127,7 +127,7 @@ void sim::MvT(int argc,char *argv[])
                         break;
                     }
 
-                }
+                //}
 
             }
         }
