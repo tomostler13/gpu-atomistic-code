@@ -3,7 +3,7 @@ seed = 1421523;
 system:
 {
     //number of unit cells
-    dim = [ 32 , 32 , 32 ];
+    dim = [ 4 , 4 , 4 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
@@ -64,39 +64,12 @@ cuda:
 };
 sim:
 {
-    sim_type="quick";
+    sim_type="thermal_hyst";
 };
 thermal_hyst:
 {
-    StartTemp=5.0;
-    IncTemp=15.0;
-    EquilTime=15.0e-12;
-    RunTime=15.0e-12;
-};
-mvt:
-{
-    lower_temp=15.0;
-    upper_temp=800.0;
-    temp_step=15.0;
-    mean_tolerance=1e-7;
-    variance_tolerance=1e-9;
-    MaxRunTime=50e-12;
-    MinRunTime=15e-12;
-    MvTFile="mvt.dat";
-};
-laserheating:
-{
-    Gamma_e = 2.25e2;
-    Cl = 3.1e6;
-    PumpTime = 50e-15;
-    G_ep = 17.0e17;
-    InitialTemperature=82.0;
-    EquilibrationTime = 15e-12;
-    RunTime = 15e-12;
-    PumpFluence=1e21;
-    CoolingTime = 300000.0e-12;
-    NumPulses = 1;
-    PulseDelays = [ 150e-15 ];
-    PulseScale = [ 1.0 ];
-    OutputStructureFactor = FALSE;
+    EquilTime = 10e-12;
+    NumRateIntervals = 3;
+    Temps = [ 15.0 , 300.0 , 450.0 , 800.0 ];
+    Rates = [ 1000e9 , 40e9 , 1000e9 ];
 };

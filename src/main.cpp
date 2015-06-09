@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Jun 2015 19:13:36
+// Last-modified: 09 Jun 2015 20:49:21
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -112,6 +112,10 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="ramp_field")
     {
         sim::ramp_field(argc,argv);
+    }
+    else if(sim::sim_type=="thermal_hyst")
+    {
+        sim::thermal_hyst(argc,argv);
     }
     else if(sim::sim_type=="quick")
     {
