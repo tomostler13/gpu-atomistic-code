@@ -1,7 +1,7 @@
 // File: thermal_hyst.cpp
 // Author: Tom Ostler
 // Created: 7th June 2015
-// Last-modified: 09 Jun 2015 20:58:42
+// Last-modified: 10 Jun 2015 10:34:07
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -114,7 +114,7 @@ void sim::thermal_hyst(int argc,char *argv[])
         sstr << "Interval " << i << " has rate:";
         std::string strn=sstrn.str();
         FIXOUT(config::Info,strn << rates[i] << std::endl);
-        dT[i]=rates[i]*static_cast<double>(spins::update)*llg::dt;
+        dT[i]=rates[i]*llg::dt;
         FIXOUT(config::Info,"Temperature increase (per update):" << dT[i] << " [K]" << std::endl);
 
     }
@@ -141,13 +141,14 @@ void sim::thermal_hyst(int argc,char *argv[])
     {
         for(llg::T = temps[i] ; llg::T < temps[i+1] ; llg::T+=dT[i])
         {
-            Ttime << static_cast<double>(time_counter)*llg::dt << "\t" << llg::T << std::endl;
-            llg::integrate(time_counter);
             if(time_counter%spins::update==0)
             {
                 util::calc_mag();
                 util::output_mag(time_counter);
+                Ttime << static_cast<double>(time_counter)*llg::dt << "\t" << llg::T << std::endl;
             }
+
+            llg::integrate(time_counter);
             time_counter++;
         }
     }
