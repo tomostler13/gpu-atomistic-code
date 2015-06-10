@@ -1,7 +1,7 @@
 // File: thermal_hyst.cpp
 // Author: Tom Ostler
 // Created: 7th June 2015
-// Last-modified: 10 Jun 2015 11:06:49
+// Last-modified: 10 Jun 2015 11:34:54
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -128,13 +128,13 @@ void sim::thermal_hyst(int argc,char *argv[])
     Ttime << std::setprecision(6);
     for(unsigned int t = 0 ; t < ets ; t++)
     {
-        Ttime << static_cast<double>(t)*llg::dt << "\t" << llg::T << std::endl;
-        llg::integrate(t);
         if(t%spins::update==0)
         {
+            Ttime << static_cast<double>(t)*llg::dt << "\t" << llg::T << std::endl;
             util::calc_mag();
             util::output_mag(t);
         }
+        llg::integrate(t);
     }
     unsigned int time_counter=ets;
     if(rates[0]>0)//then we are heating
