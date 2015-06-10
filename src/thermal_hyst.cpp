@@ -1,7 +1,7 @@
 // File: thermal_hyst.cpp
 // Author: Tom Ostler
 // Created: 7th June 2015
-// Last-modified: 10 Jun 2015 10:34:07
+// Last-modified: 10 Jun 2015 11:06:49
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -137,19 +137,40 @@ void sim::thermal_hyst(int argc,char *argv[])
         }
     }
     unsigned int time_counter=ets;
-    for(unsigned int i = 0 ; i < numint ; i++)
+    if(rates[0]>0)//then we are heating
     {
-        for(llg::T = temps[i] ; llg::T < temps[i+1] ; llg::T+=dT[i])
+        for(unsigned int i = 0 ; i < numint ; i++)
         {
-            if(time_counter%spins::update==0)
+            for(llg::T = temps[i] ; llg::T < temps[i+1] ; llg::T+=dT[i])
             {
-                util::calc_mag();
-                util::output_mag(time_counter);
-                Ttime << static_cast<double>(time_counter)*llg::dt << "\t" << llg::T << std::endl;
-            }
+                if(time_counter%spins::update==0)
+                {
+                    util::calc_mag();
+                    util::output_mag(time_counter);
+                    Ttime << static_cast<double>(time_counter)*llg::dt << "\t" << llg::T << std::endl;
+                }
 
-            llg::integrate(time_counter);
-            time_counter++;
+                llg::integrate(time_counter);
+                time_counter++;
+            }
+        }
+    }
+    else//we are cooling
+    {
+        for(unsigned int i = 0 ; i < numint ; i++)
+        {
+            for(llg::T = temps[i] ; llg::T > temps[i+1] ; llg::T+=dT[i])
+            {
+                if(time_counter%spins::update==0)
+                {
+                    util::calc_mag();
+                    util::output_mag(time_counter);
+                    Ttime << static_cast<double>(time_counter)*llg::dt << "\t" << llg::T << std::endl;
+                }
+
+                llg::integrate(time_counter);
+                time_counter++;
+            }
         }
     }
     Ttime.close();
