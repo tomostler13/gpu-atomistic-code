@@ -29,6 +29,7 @@ obj/random.o \
 obj/geom_glob.o \
 obj/geom.o \
 obj/util.o \
+obj/util_mag.o \
 obj/intmat.o \
 obj/spins.o \
 obj/fields.o \
@@ -44,7 +45,16 @@ obj/matrix_mul_cpu.o \
 obj/sf.o \
 obj/sf_glob.o \
 obj/timeseries.o \
-obj/laser_heating.o
+obj/laser_heating.o \
+obj/exch_routines.o \
+obj/exch_determine_exchange_matrix.o \
+obj/exch_intmat.o \
+obj/exch_permute_Sp.o \
+obj/exch_direct_Sp.o \
+obj/exch_mapint_Sp.o \
+obj/ramp_field.o \
+obj/exch_read_4_spin.o \
+obj/thermal_hyst.o
 
 SWITCHOBJ= \
 obj/main.o \
