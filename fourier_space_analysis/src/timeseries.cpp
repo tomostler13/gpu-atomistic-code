@@ -67,8 +67,8 @@ int main(int argc,char *argv[])
             }
             else
             {
-                hammalpha=atof(argv[3]);
-                hammbeta=atof(argv[4]);
+                hammalpha=atof(argv[4]);
+                hammbeta=atof(argv[5]);
                 FIXOUT(Info,"Hamm alpha:" << hammalpha << std::endl);
                 FIXOUT(Info,"Hamm beta:" << hammbeta << std::endl);
             }

@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 08 Jun 2015 12:04:53
+// Last-modified: 08 Jun 2015 20:38:06
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -76,7 +76,7 @@ void sim::laser_heating(int argc,char *argv[])
         error::errMessage("Could not read temperature (laserheating:InitialTemperature (double))");
     }
     bool oits=false;
-    if(setting.lookupValue("OuputIndividualTimeSeries",oits))
+    if(setting.lookupValue("OutputIndividualTimeSeries",oits))
     {
         FIXOUT(config::Info,"Outputting individual ssf's for each species?:" << config::isTF(oits) << std::endl);
     }
@@ -403,7 +403,7 @@ void sim::laser_heating(int argc,char *argv[])
                         unsigned int ms=geom::lu(i,3);
                         if(ms==s)
                         {
-                            if(sf::qa[0]>1e-12)//quantization axis is x
+/*                            if(sf::qa[0]>1e-12)//quantization axis is x
                             {
                                 is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i]*sf::uo(ms,1);
                                 is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
@@ -422,7 +422,9 @@ void sim::laser_heating(int argc,char *argv[])
                             {
                                 is3d(s,xyz[0],xyz[1],xyz[2])[0]=0.0;
                                 is3d(s,xyz[0],xyz[1],xyz[2])[1]=0.0;
-                            }
+                            }*/
+                            is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
+                            is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
                         }
                     }//spin loop
                 }//species loop

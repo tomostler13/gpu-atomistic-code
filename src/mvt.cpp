@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 09 Dec 2014 20:13:41
+// Last-modified: 08 Jun 2015 20:54:33
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -71,42 +71,44 @@ void sim::MvT(int argc,char *argv[])
     }
     util::RunningStat *MS=new util::RunningStat[geom::ucm.GetNMS()];
     util::ofs << "#The magnetization is output into indices for each temperature and depending on the output method" << std::endl;
-    //temperature loop
-    for(double T = lT ; T < uT ; T+=dT)
+    if(dT>0.0)
     {
-        double modm[geom::ucm.GetNMS()],oldmean[geom::ucm.GetNMS()];
-        bool convTF[geom::ucm.GetNMS()];
-        config::printline(config::Info);
-        FIXOUT(config::Info,"Converging temperature:" << T << std::endl);
-        llg::T=T;
-        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+        //temperature loop
+        for(double T = lT ; T < uT ; T+=dT)
         {
-            MS[i].Clear();
-            modm[i]=0.0;
-            oldmean[i]=0.0;
-            convTF[i]=false;
-        }
-        for(unsigned int t = 0 ; t < eminrts ; t++)
-        {
-            llg::integrate(t);
-            if(t%spins::update==0)
+            double modm[geom::ucm.GetNMS()],oldmean[geom::ucm.GetNMS()];
+            bool convTF[geom::ucm.GetNMS()];
+            config::printline(config::Info);
+            FIXOUT(config::Info,"Converging temperature:" << T << std::endl);
+            llg::T=T;
+            for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
             {
-                util::calc_mag();
-                util::output_mag(t);
+                MS[i].Clear();
+                modm[i]=0.0;
+                oldmean[i]=0.0;
+                convTF[i]=false;
             }
-        }
-        //have all the magnetization converged?
-        bool allconv=false;
-        for(unsigned int t = eminrts ; t < eminrts+mrts ; t++)
-        {
-            llg::integrate(t);
-            if(t%spins::update==0)
+            for(unsigned int t = 0 ; t < eminrts ; t++)
             {
-                util::calc_mag();
-                util::output_mag(t);
-
-                if(t>int(10e-12/llg::dt))
+                llg::integrate(t);
+                if(t%spins::update==0)
                 {
+                    util::calc_mag();
+                    util::output_mag(t);
+                }
+            }
+            //have all the magnetization converged?
+            bool allconv=false;
+            for(unsigned int t = eminrts ; t < eminrts+mrts ; t++)
+            {
+                llg::integrate(t);
+                if(t%spins::update==0)
+                {
+                    util::calc_mag();
+                    util::output_mag(t);
+
+                    /*                if(t>int(10e-12/llg::dt))
+                                      {*/
 
                     unsigned int counter=0;
                     for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
@@ -127,19 +129,93 @@ void sim::MvT(int argc,char *argv[])
                         break;
                     }
 
+                    //}
+
                 }
-
             }
-        }
-        ofs << T;
-        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
-        {
-            ofs << "\t" << modm[i] << std::flush;
-        }
-        ofs << std::endl;
+            ofs << T;
+            for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+            {
+                ofs << "\t" << modm[i] << std::flush;
+            }
+            ofs << std::endl;
 
-        FIXOUT(config::Info,"Converged?" << config::isTF(allconv) << std::endl);
-        util::ofs << std::endl << std::endl;
+            FIXOUT(config::Info,"Converged?" << config::isTF(allconv) << std::endl);
+            util::ofs << std::endl << std::endl;
+        }
+    }
+    if(dT<0.0)
+    {
+        //temperature loop
+        for(double T = uT ; T > lT ; T+=dT)
+        {
+            double modm[geom::ucm.GetNMS()],oldmean[geom::ucm.GetNMS()];
+            bool convTF[geom::ucm.GetNMS()];
+            config::printline(config::Info);
+            FIXOUT(config::Info,"Converging temperature:" << T << std::endl);
+            llg::T=T;
+            for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+            {
+                MS[i].Clear();
+                modm[i]=0.0;
+                oldmean[i]=0.0;
+                convTF[i]=false;
+            }
+            for(unsigned int t = 0 ; t < eminrts ; t++)
+            {
+                llg::integrate(t);
+                if(t%spins::update==0)
+                {
+                    util::calc_mag();
+                    util::output_mag(t);
+                }
+            }
+            //have all the magnetization converged?
+            bool allconv=false;
+            for(unsigned int t = eminrts ; t < eminrts+mrts ; t++)
+            {
+                llg::integrate(t);
+                if(t%spins::update==0)
+                {
+                    util::calc_mag();
+                    util::output_mag(t);
+
+                    /*                if(t>int(10e-12/llg::dt))
+                                      {*/
+
+                    unsigned int counter=0;
+                    for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+                    {
+                        modm[i]=sqrt(spins::mag(i,0)*spins::mag(i,0)+spins::mag(i,1)*spins::mag(i,1)+spins::mag(i,2)*spins::mag(i,2));
+                        MS[i].Push(modm[i]);
+                        config::Info.width(15);config::Info << "| Species " << i << " mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS[i].Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS[i].Mean()-oldmean[i]) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS[i].Variance() << " [ " << convvar << " ]|" << std::endl;
+                        if(((fabs(MS[i].Mean()-oldmean[i])) < convmean) && (MS[i].Variance()<convvar))
+                        {
+                            convTF[i]=true;
+                            counter++;
+                        }
+                        oldmean[i]=MS[i].Mean();
+                    }
+                    if(counter==geom::ucm.GetNMS())
+                    {
+                        allconv=true;
+                        break;
+                    }
+
+                    //}
+
+                }
+            }
+            ofs << T;
+            for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+            {
+                ofs << "\t" << modm[i] << std::flush;
+            }
+            ofs << std::endl;
+
+            FIXOUT(config::Info,"Converged?" << config::isTF(allconv) << std::endl);
+            util::ofs << std::endl << std::endl;
+        }
     }
     ofs.close();
     if(ofs.is_open())

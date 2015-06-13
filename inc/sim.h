@@ -1,7 +1,7 @@
 // File: sim.h
 // Author:Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 13 May 2015 20:33:48
+// Last-modified: 09 Jun 2015 20:48:49
 #include <iostream>
 #include <fstream>
 #ifndef _SIM_H_
@@ -15,5 +15,6 @@ namespace sim
     void timeseries(int argc,char *argv[]);
     void laser_heating(int argc,char *argv[]);
     void ramp_field(int argc,char *argv[]);
+    void thermal_hyst(int argc,char *argv[]);
 }
 #endif /*_SIM_H_*/
