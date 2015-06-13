@@ -53,7 +53,8 @@ obj/exch_permute_Sp.o \
 obj/exch_direct_Sp.o \
 obj/exch_mapint_Sp.o \
 obj/ramp_field.o \
-obj/exch_read_4_spin.o
+obj/exch_read_4_spin.o \
+obj/thermal_hyst.o
 
 SWITCHOBJ= \
 obj/main.o \
