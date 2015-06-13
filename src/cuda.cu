@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 07 Jun 2015 15:36:55
+// Last-modified: 13 Jun 2015 12:07:23
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -317,6 +317,11 @@ namespace cullg
             error::errMessage("CURAND failed to generate random number generator seeds");
         }
         check_cuda_errors(__FILE__,__LINE__);
+        if((cudaThreadSetLimit(cudaLimitStackSize,1024))!=cudaSuccess)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("CUDA ERROR: Failed to set thread limit");
+        }
 
         config::Info << "Done" << std::endl;
         FIXOUT(config::Info,"Checking for any cuda errors:" << std::flush);
