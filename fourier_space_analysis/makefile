@@ -17,9 +17,12 @@ OBJECTSTS= \
 obj/timeseries.o
 OBJECTSSSF= \
 obj/analyse_structure_factor.o
+OBJECTS2SLSSF= \
+obj/twosublatssf.o
 
 EXECUTABLETS=timeseries
 EXECUTABLESSF=ssf
+EXECUTABLE2SLSSF=2slssf
 
 all: $(OBJECTS) ts ssf
 
@@ -37,6 +40,14 @@ ssf: $(OBJECTSSSF)
 
 
 $(OBJECTSSSF): obj/%.o: src/%.cpp
+	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
+
+# Time series targets
+ssf: $(OBJECTS2SLSSF)
+	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTS2SLSSF) $(STATIC_LINK) -o $(EXECUTABLE2SLSSF) $(LIBS)
+
+
+$(OBJECTS2SLSSF): obj/%.o: src/%.cpp
 	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
 
 clean:
