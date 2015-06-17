@@ -1,7 +1,7 @@
 // File: exch_read_4_spin.cpp
 // Author: Tom Ostler
 // Created: 03 June 2015
-// Last-modified: 06 Jun 2015 18:47:14
+// Last-modified: 17 Jun 2015 09:28:33
 // If the 4 spin terms are included the routines
 // in this source file will be called. It reads
 // permutations of the quartets. It then mallocs
@@ -220,30 +220,24 @@ namespace exch
                     }//end of xyz loop for l
                     if((check_lookupj+check_lookupk+check_lookupl)==9)//if there aren't four spins in the quartet we ignore the entire 4 spin term
                     {
-                        unsigned int spec=geom::coords(lookupvecj[0],lookupvecj[1],lookupvecj[2],1);
-                        if(spec==sl)
+                        unsigned int specj=geom::coords(lookupvecj[0],lookupvecj[1],lookupvecj[2],1);
+                        unsigned int speck=geom::coords(lookupveck[0],lookupveck[1],lookupveck[2],1);
+                        unsigned int specl=geom::coords(lookupvecl[0],lookupvecl[1],lookupvecl[2],1);
+                        if(specj==sl && speck==sl && specl==sl)
                         {
                             unsigned int neighj=geom::coords(lookupvecj[0],lookupvecj[1],lookupvecj[2],0);
                             tempadjncy_j.push_back(neighj);
                             tempadjncy_j[adjncy_count_j]=neighj;
                             adjncy_count_j++;
-                        }//end of check that atom exists and is correct spec
-                        spec=geom::coords(lookupveck[0],lookupveck[1],lookupveck[2],1);
-                        if(spec==sl)
-                        {
                             unsigned int neighk=geom::coords(lookupveck[0],lookupveck[1],lookupveck[2],0);
                             tempadjncy_k.push_back(neighk);
                             tempadjncy_k[adjncy_count_k]=neighk;
                             adjncy_count_k++;
-                        }//end of check that atom exists and is correct spec
-                        spec=geom::coords(lookupvecl[0],lookupvecl[1],lookupvecl[2],1);
-                        if(spec==sl)
-                        {
                             unsigned int neighl=geom::coords(lookupvecl[0],lookupvecl[1],lookupvecl[2],0);
                             tempadjncy_l.push_back(neighl);
                             tempadjncy_l[adjncy_count_l]=neighl;
                             adjncy_count_l++;
-                        }//end of check that atom exists and is correct spec
+                        }
                         totquartets++;
                     }//end of check of sum of check_lookup equal to 9
                     else
