@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 13 Jun 2015 14:26:01
+// Last-modified: 20 Jun 2015 16:21:29
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"

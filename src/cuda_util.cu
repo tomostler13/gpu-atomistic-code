@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 07 Jun 2015 15:17:45
+// Last-modified: 20 Jun 2015 15:27:45
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -150,6 +150,7 @@ namespace cullg
             {
                 Array5D<fftwf_complex> tempNkab;
                 tempNkab.resize(3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+                tempNkab.IFill(0);
                 for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                 {
                     for(unsigned int beta = 0 ; beta < 3 ; beta++)
@@ -162,7 +163,7 @@ namespace cullg
                                 {
                                     for(unsigned int l = 0 ; l < 2 ; l++)
                                     {
-                                        tempNkab(alpha,beta,i,j,k)[l]=static_cast<float>(intmat::dipNkab(alpha,beta,i,j,k)[l]);
+                //                        tempNkab(alpha,beta,i,j,k)[l]=0.0;//static_cast<float>(intmat::dipNkab(alpha,beta,i,j,k)[l]);
                                     }
                                 }
                             }
@@ -171,10 +172,10 @@ namespace cullg
                 }
                 //copy the FT'd interaction matrix to the card
                 CUDA_CALL(cudaMemcpy(CNk,tempNkab.ptr(),3*3*geom::zpdim[0]*geom::zpdim[1]*geom::zpdim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2]*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-                intmat::dipNkab.clear();
+                //intmat::dipNkab.clear();
                 //clear the floating point holding arrays as well
-                tempNkab.clear();
-                check_cuda_errors(__FILE__,__LINE__);
+//                tempNkab.clear();
+//                check_cuda_errors(__FILE__,__LINE__);
 
             }
         }
