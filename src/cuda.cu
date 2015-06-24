@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 13 Jun 2015 12:07:23
+// Last-modified: 24 Jun 2015 18:30:53
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -267,6 +267,22 @@ namespace cullg
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Could not get device properties");
         }
+        FIXOUT(config::Info,"Selecting device:" << std::endl);
+        for(unsigned int i = 0 ; i < device_count ; i++)
+        {
+            std::stringstream sstr;
+            sstr << "Setting device " << i;
+            std::string str=sstr.str();
+            FIXOUT(config::Info,str << std::flush);
+            if(cudaSetDevice(device)!=cudaSuccess)
+            {
+                config::Info << "Failed" << std::endl;
+            }
+            else
+            {
+                config::Info << "Success" << std::endl;
+            }
+        }
         FIXOUT(config::Info,"Number of devices:" << device_count << std::endl);
         FIXOUT(config::Info,"Device selected:" << device << std::endl);
         FIXOUT(config::Info,"Device major.minor:" << deviceProp.major << "." << deviceProp.minor << std::endl);
@@ -297,6 +313,7 @@ namespace cullg
         unsigned long long int curandseed=config::seed;
         FIXOUT(config::Info,"Curand seed:" << curandseed << std::endl);
         //initialize the random number generator
+        check_cuda_errors(__FILE__,__LINE__);
         FIXOUT(config::Info,"Initializing curand random number generator" << std::flush);
         if((curandCreateGenerator(&gen,CURAND_RNG_PSEUDO_DEFAULT))!=CURAND_STATUS_SUCCESS)
         {
