@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 20 Jun 2015 15:27:45
+// Last-modified: 28 Jun 2015 19:34:49
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -163,7 +163,7 @@ namespace cullg
                                 {
                                     for(unsigned int l = 0 ; l < 2 ; l++)
                                     {
-                //                        tempNkab(alpha,beta,i,j,k)[l]=0.0;//static_cast<float>(intmat::dipNkab(alpha,beta,i,j,k)[l]);
+                                        tempNkab(alpha,beta,i,j,k)[l]=static_cast<float>(intmat::dipNkab(alpha,beta,i,j,k)[l]);
                                     }
                                 }
                             }
