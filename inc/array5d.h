@@ -1,6 +1,6 @@
 // File: array5d.h
 // Author:Joe Barker
-// Last-modified: 20 Jun 2015 15:33:52
+// Last-modified: 29 Jun 2015 10:03:32
 #ifndef __ARRAY5D_H__
 #define __ARRAY5D_H__
 

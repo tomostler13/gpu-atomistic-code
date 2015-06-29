@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 28 Jun 2015 19:34:49
+// Last-modified: 29 Jun 2015 10:05:28
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -159,7 +159,7 @@ namespace cullg
                         {
                             for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
                             {
-                                for(unsigned int k = 0 ; k < geom::zpdim[1]*geom::Nk[2] ; k++)
+                                for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
                                 {
                                     for(unsigned int l = 0 ; l < 2 ; l++)
                                     {
@@ -175,7 +175,7 @@ namespace cullg
                 //intmat::dipNkab.clear();
                 //clear the floating point holding arrays as well
 //                tempNkab.clear();
-//                check_cuda_errors(__FILE__,__LINE__);
+                check_cuda_errors(__FILE__,__LINE__);
 
             }
         }
