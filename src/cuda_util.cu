@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 29 Jun 2015 10:05:28
+// Last-modified: 30 Jun 2015 12:18:58
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -124,7 +124,7 @@ namespace cullg
                                 {
                                     for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
                                     {
-                                        for(unsigned int k = 0 ; k < geom::zpdim[1]*geom::Nk[2] ; k++)
+                                        for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
                                         {
                                             for(unsigned int l = 0 ; l < 2 ; l++)
                                             {
