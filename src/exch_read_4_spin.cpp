@@ -1,7 +1,7 @@
 // File: exch_read_4_spin.cpp
 // Author: Tom Ostler
 // Created: 03 June 2015
-// Last-modified: 17 Jun 2015 09:28:33
+// Last-modified: 03 Jul 2015 10:03:24
 // If the 4 spin terms are included the routines
 // in this source file will be called. It reads
 // permutations of the quartets. It then mallocs
@@ -223,7 +223,7 @@ namespace exch
                         unsigned int specj=geom::coords(lookupvecj[0],lookupvecj[1],lookupvecj[2],1);
                         unsigned int speck=geom::coords(lookupveck[0],lookupveck[1],lookupveck[2],1);
                         unsigned int specl=geom::coords(lookupvecl[0],lookupvecl[1],lookupvecl[2],1);
-                        if(specj==sl && speck==sl && specl==sl)
+                        if((specj==sl || specj==s1) && (speck==sl || speckk==s1) && (specl==sl || specl==s1))
                         {
                             unsigned int neighj=geom::coords(lookupvecj[0],lookupvecj[1],lookupvecj[2],0);
                             tempadjncy_j.push_back(neighj);
