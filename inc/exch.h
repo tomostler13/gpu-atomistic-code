@@ -1,7 +1,7 @@
 // File: exch.h
 // Author:Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 05 Jun 2015 20:25:45
+// Last-modified: 04 Jul 2015 14:48:33
 #ifndef _EXCH_H_
 #define _EXCH_H_
 #include <string>
@@ -10,15 +10,17 @@ namespace exch
 {
     extern Array<int> diagoffset,offdiagoffset,checkdiag;
     extern Array<unsigned int> xadj,adjncy,offdiagxadj,offdiagadjncy,xadj_j,xadj_k,xadj_l,adjncy_j,adjncy_k,adjncy_l;
-    extern Array2D<unsigned int> numquart;
+    extern Array<unsigned int> numquart;
     extern Array<double> dataxx,dataxy,dataxz,datayx,datayy,datayz,datazx,datazy,datazz;
     extern Array<double> evs;
-    extern Array2D<double> JQ;
+    extern Array<double> JQ;
     extern Array2D<unsigned int> shell_list;
     extern Array3D<unsigned int> numint;
     extern Array4D<double> exchvec;
-    extern Array5D<int> fsqi;
-    extern Array5D<double> J,fsq;
+    extern Array4D<int> fsqi;
+    extern Array5D<double> J;
+    extern Array4D<double> fsq;
+    extern Array<int> Interface;
     extern unsigned int num_shells,diagnumdiag,offdiagnumdiag,max_shells,max_int,max_4s;
     extern bool outputJ,oem,rem,cutexch,inc4spin;
     extern double rcut;

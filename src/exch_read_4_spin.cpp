@@ -1,7 +1,7 @@
 // File: exch_read_4_spin.cpp
 // Author: Tom Ostler
 // Created: 03 June 2015
-// Last-modified: 03 Jul 2015 10:03:24
+// Last-modified: 04 Jul 2015 15:19:14
 // If the 4 spin terms are included the routines
 // in this source file will be called. It reads
 // permutations of the quartets. It then mallocs
@@ -28,20 +28,21 @@ namespace exch
 {
     void read4spin()
     {
-        fsq.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_4s,3,3);
-        fsqi.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_4s,3,3);
-        numquart.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS());
-        JQ.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS());
+        fsq.resize(geom::ucm.GetNMS(),max_4s,3,3);
+        fsqi.resize(geom::ucm.GetNMS(),max_4s,3,3);
+        numquart.resize(geom::ucm.GetNMS());
+        JQ.resize(geom::ucm.GetNMS());
+        //At the moment there can only be one interface per species
+        Interface.resize(geom::ucm.GetNMS());
         fsq.IFill(0);
         fsq.IFill(0);
         numquart.IFill(0);
         JQ.IFill(0);
+        Interface.IFill(-1);
         for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
         {
-            for(unsigned int j = 0 ; j < geom::ucm.GetNMS() ; j++)
-            {
                 std::stringstream sstr;
-                sstr << "FourSpinExchange_" << i << "_" << j;
+                sstr << "FourSpinExchange_" << i;
                 std::string str=sstr.str();
                 bool c4s=exchcfg.exists(str.c_str());
 
@@ -49,45 +50,54 @@ namespace exch
                 {
                     error::errPreamble(__FILE__,__LINE__);
                     std::stringstream errsstr;
-                    errsstr << "Setting " << sstr << " does not exist. Check your config file.";
+                    errsstr << "Setting " << str << " does not exist. Check your config file.";
                     std::string errstr=errsstr.str();
                     error::errMessage(errstr);
                 }
                 libconfig::Setting &setting = exchcfg.lookup(str.c_str());
                 config::printline(config::Info);
-                if(setting.lookupValue("NumPermutations",numquart(i,j)))
+                if(setting.lookupValue("NumPermutations",numquart(i)))
                 {
                     std::stringstream sstr;
-                    sstr << "The number of four spin quartets between species " << i << " and " << j << " is:";
+                    sstr << "The number of four spin quartets between species " << i << " is:";
                     std::string str=sstr.str();
-                    FIXOUT(config::Info,str << numquart(i,j) << std::endl);
+                    FIXOUT(config::Info,str << numquart(i) << std::endl);
                 }
                 else
                 {
                     error::errPreamble(__FILE__,__LINE__);
                     std::stringstream sstr;
-                    sstr << "Could not read the number of quartets between species " << i << " and " << j;
+                    sstr << "Could not read the number of quartets between species " << i;
                     std::string str=sstr.str();
                     error::errMessage(str);
                 }
-                if(setting.lookupValue("JQ",JQ(i,j)))
+                if(setting.lookupValue("JQ",JQ(i)))
                 {
                     std::stringstream sstr;
-                    sstr << "The four spin exchange between species " << i << " and " << j << " is:";
+                    sstr << "The four spin exchange between species " << i << " is:";
                     std::string str=sstr.str();
-                    FIXOUT(config::Info,str << JQ(i,j) << std::endl);
-                    JQ(i,j)=JQ(i,j)/(geom::ucm.GetMu(i)*9.27e-24);
+                    FIXOUT(config::Info,str << JQ(i) << std::endl);
+                    JQ(i)=JQ(i)/(geom::ucm.GetMu(i)*9.27e-24);
                 }
                 else
                 {
                     error::errPreamble(__FILE__,__LINE__);
                     std::stringstream sstr;
-                    sstr << "Could not read the four spin exchange between species " << i << " and " << j;
+                    sstr << "Could not read the four spin exchange between species " << i;
                     std::string str=sstr.str();
                     error::errMessage(str);
+                }
+                if(setting.lookupValue("InterfaceSpecies",Interface[i]))
+                {
+                    FIXOUT(config::Info,"Interface with species:" << Interface[i] << std::endl);
+                }
+                else
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Could not read sublattice for interfaces");
                 }
                 //now read the quartets
-                for(unsigned int q = 0 ; q < numquart(i,j) ; q++)
+                for(unsigned int q = 0 ; q < numquart(i) ; q++)
                 {
                     for(unsigned int jkl = 0 ; jkl < 3 ; jkl++)
                     {
@@ -98,14 +108,14 @@ namespace exch
                         {
                             try
                             {
-                                fsq(i,j,q,jkl,c)=setting[str.c_str()][c];
+                                fsq(i,q,jkl,c)=setting[str.c_str()][c];
 /*                                if(fsq(i,j,q,jkl,c)<0)
                                 {
                                     fsqi(i,j,q,jkl,c)=static_cast<int>(fsq(i,j,q,jkl,c)*static_cast<double>(geom::Nk[c]*evs[c]-0.5));
                                 }
                                 else
                                 {*/
-                                     fsqi(i,j,q,jkl,c)=static_cast<int>(fsq(i,j,q,jkl,c)*static_cast<double>(geom::Nk[c]*evs[c]+0.5));
+                                     fsqi(i,q,jkl,c)=static_cast<int>(fsq(i,q,jkl,c)*static_cast<double>(geom::Nk[c]*evs[c]+0.5));
                                 //}
                             }
                             catch(const libconfig::SettingNotFoundException &snf)
@@ -120,13 +130,12 @@ namespace exch
                         std::stringstream qss;
                         qss << "Quartet " << q << " (number in quartet out of 3) " << jkl+1;
                         std::string qs=qss.str();
-                        FIXOUTVEC(config::Info,qs,fsq(i,j,q,jkl,0),fsq(i,j,q,jkl,1),fsq(i,j,q,jkl,2));
-                        FIXOUTVEC(config::Info,"On integer mesh:",fsqi(i,j,q,jkl,0),fsqi(i,j,q,jkl,1),fsqi(i,j,q,jkl,2));
+                        FIXOUTVEC(config::Info,qs,fsq(i,q,jkl,0),fsq(i,q,jkl,1),fsq(i,q,jkl,2));
+                        FIXOUTVEC(config::Info,"On integer mesh:",fsqi(i,q,jkl,0),fsqi(i,q,jkl,1),fsqi(i,q,jkl,2));
 
 
                     }
                     config::printline(config::Info);
-                }
 
             }
         }
@@ -140,24 +149,28 @@ namespace exch
         //loop over all spins and find the neighbours
         unsigned int xadj_counter=0,adjncy_count_j=0,adjncy_count_k=0,adjncy_count_l=0;
         unsigned int totquartets=0,missingquartets=0;
+
+        Array2D<unsigned int> checkq;
+        checkq.resize(geom::nspins,max_4s);
+        checkq.IFill(0);
+        Array<unsigned int> countq;
+        countq.resize(geom::nspins);
+        countq.IFill(0);
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             xadj_j[xadj_counter]=adjncy_count_j;
             unsigned int sl=geom::sublattice(i);
-            //get the atom in the unit cell
-            unsigned int aiuc = geom::lu(i,4);
 
             //store i's position
             int mypos[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-            for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
-            {
-                for(unsigned int q = 0 ; q < numquart(sl,s1) ; q++)
+
+                for(unsigned int q = 0 ; q < numquart(sl) ; q++)
                 {
                     //this could be tidied up by doing a loop
                     //over j, k and l
-                    int lookupj[3]={fsqi(sl,s1,q,0,0),fsqi(sl,s1,q,0,1),fsqi(sl,s1,q,0,2)};
-                    int lookupk[3]={fsqi(sl,s1,q,1,0),fsqi(sl,s1,q,1,1),fsqi(sl,s1,q,1,2)};
-                    int lookupl[3]={fsqi(sl,s1,q,2,0),fsqi(sl,s1,q,2,1),fsqi(sl,s1,q,2,2)};
+                    int lookupj[3]={fsqi(sl,q,0,0),fsqi(sl,q,0,1),fsqi(sl,q,0,2)};
+                    int lookupk[3]={fsqi(sl,q,1,0),fsqi(sl,q,1,1),fsqi(sl,q,1,2)};
+                    int lookupl[3]={fsqi(sl,q,2,0),fsqi(sl,q,2,1),fsqi(sl,q,2,2)};
                     int lookupvecj[3]={mypos[0]+lookupj[0],mypos[1]+lookupj[1],mypos[2]+lookupj[2]};
                     int lookupveck[3]={mypos[0]+lookupk[0],mypos[1]+lookupk[1],mypos[2]+lookupk[2]};
                     int lookupvecl[3]={mypos[0]+lookupl[0],mypos[1]+lookupl[1],mypos[2]+lookupl[2]};
@@ -223,7 +236,7 @@ namespace exch
                         unsigned int specj=geom::coords(lookupvecj[0],lookupvecj[1],lookupvecj[2],1);
                         unsigned int speck=geom::coords(lookupveck[0],lookupveck[1],lookupveck[2],1);
                         unsigned int specl=geom::coords(lookupvecl[0],lookupvecl[1],lookupvecl[2],1);
-                        if((specj==sl || specj==s1) && (speck==sl || speckk==s1) && (specl==sl || specl==s1))
+                        if((specj==sl || specj==Interface[sl]) && (speck==sl || speck==Interface[sl]) && (specl==sl || specl==Interface[sl]) && checkq(i,q)==0)
                         {
                             unsigned int neighj=geom::coords(lookupvecj[0],lookupvecj[1],lookupvecj[2],0);
                             tempadjncy_j.push_back(neighj);
@@ -237,18 +250,20 @@ namespace exch
                             tempadjncy_l.push_back(neighl);
                             tempadjncy_l[adjncy_count_l]=neighl;
                             adjncy_count_l++;
+                            checkq(i,q)=1;
+                            countq[i]++;
+
+                            totquartets++;
                         }
-                        totquartets++;
+                        else
+                        {
+                            missingquartets++;
+                        }
                     }//end of check of sum of check_lookup equal to 9
-                    else
-                    {
-                        missingquartets++;
-                    }
                 }//end of q loop
-            }//end of s1 loop
             xadj_counter++;
 
-
+        config::Log << "spin " << i << " has " << countq[i] << " quartets" << std::endl;
         }//end of i loop
         xadj_j[geom::nspins]=adjncy_count_j;
         FIXOUT(config::Info,"Total number of quartets:" << totquartets << std::endl);
