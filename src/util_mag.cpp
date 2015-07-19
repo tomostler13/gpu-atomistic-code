@@ -1,7 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 15 Dec 2014 11:40:06
+// Last-modified: 19 Jul 2015 17:24:48
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
@@ -12,6 +12,7 @@
 #include "../inc/intmat.h"
 #include "../inc/geom.h"
 #include "../inc/error.h"
+#include "../inc/config.h"
 #include <string>
 #include <sstream>
 namespace util
@@ -34,6 +35,10 @@ namespace util
         // 2 - output the magnetization as a function of y (mu_b)
         // 3 - output the magnetization as a function of z (mu_b)
         // 4 - output the entire spin map at the spins::update frequency
+        // 5 - output the layer resolved magnetization as a function of x (reduced)
+        // 6 - output the layer resolved magnetization as a function of y (reduced)
+        // 7 - output the layer resolved magnetization as a function of z (reduced)
+        // 8 - Neel vector for a checkerboard AFM
         if(spins::mag_calc_method==0 || spins::output_mag==true)
         {
             spins::mag.IFill(0);
@@ -54,98 +59,101 @@ namespace util
                 spins::mag(i,2)*=oones;
             }
         }
-        if(spins::mag_calc_method==1)
+        if(spins::mag_calc_method>0)
         {
-            magx.IFill(0);
-            //calculate the total magnetization in the layer
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            if(spins::mag_calc_method==1)
             {
-                //check which plane the spin belongs to
-                unsigned int klu=geom::lu(i,0);
-                magx(klu,0)+=spins::Sx[i]*geom::mu[i];
-                magx(klu,1)+=spins::Sy[i]*geom::mu[i];
-                magx(klu,2)+=spins::Sz[i]*geom::mu[i];
-            }
+                magx.IFill(0);
+                //calculate the total magnetization in the layer
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    //check which plane the spin belongs to
+                    unsigned int klu=geom::lu(i,0);
+                    magx(klu,0)+=spins::Sx[i]*geom::mu[i];
+                    magx(klu,1)+=spins::Sy[i]*geom::mu[i];
+                    magx(klu,2)+=spins::Sz[i]*geom::mu[i];
+                }
 
-        }
-        else if(spins::mag_calc_method==2)
-        {
-            magy.IFill(0);
-            //calculate the total magnetization in the layer
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
-            {
-                //check which plane the spin belongs to
-                unsigned int klu=geom::lu(i,1);
-                magy(klu,0)+=spins::Sx[i]*geom::mu[i];
-                magy(klu,1)+=spins::Sy[i]*geom::mu[i];
-                magy(klu,2)+=spins::Sz[i]*geom::mu[i];
             }
+            else if(spins::mag_calc_method==2)
+            {
+                magy.IFill(0);
+                //calculate the total magnetization in the layer
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    //check which plane the spin belongs to
+                    unsigned int klu=geom::lu(i,1);
+                    magy(klu,0)+=spins::Sx[i]*geom::mu[i];
+                    magy(klu,1)+=spins::Sy[i]*geom::mu[i];
+                    magy(klu,2)+=spins::Sz[i]*geom::mu[i];
+                }
 
-        }
-        else if(spins::mag_calc_method==3)
-        {
-            magz.IFill(0);
-            //calculate the total magnetization in the layer
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
-            {
-                //check which plane the spin belongs to
-                unsigned int klu=geom::lu(i,2);
-                magz(klu,0)+=spins::Sx[i]*geom::mu[i];
-                magz(klu,1)+=spins::Sy[i]*geom::mu[i];
-                magz(klu,2)+=spins::Sz[i]*geom::mu[i];
             }
-        }
-        else if(spins::mag_calc_method==4)
-        {
-            // do not need to do anything, everything is done
-            // when output_mag is called.
-        }
-        else if(spins::mag_calc_method==5)
-        {
-            mag_species_x.IFill(0);
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            else if(spins::mag_calc_method==3)
             {
-                //plane lookup
-                unsigned int klu=geom::lu(i,0);
-                //species lookup
-                unsigned int splu=geom::lu(i,3);
-                mag_species_x(klu,splu,0)+=spins::Sx[i];
-                mag_species_x(klu,splu,1)+=spins::Sy[i];
-                mag_species_x(klu,splu,2)+=spins::Sz[i];
+                magz.IFill(0);
+                //calculate the total magnetization in the layer
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    //check which plane the spin belongs to
+                    unsigned int klu=geom::lu(i,2);
+                    magz(klu,0)+=spins::Sx[i]*geom::mu[i];
+                    magz(klu,1)+=spins::Sy[i]*geom::mu[i];
+                    magz(klu,2)+=spins::Sz[i]*geom::mu[i];
+                }
             }
-        }
-        else if(spins::mag_calc_method==6)
-        {
-            mag_species_y.IFill(0);
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            else if(spins::mag_calc_method==4)
             {
-                //plane lookup
-                unsigned int klu=geom::lu(i,1);
-                //species lookup
-                unsigned int splu=geom::lu(i,3);
-                mag_species_y(klu,splu,0)+=spins::Sx[i];
-                mag_species_y(klu,splu,1)+=spins::Sy[i];
-                mag_species_y(klu,splu,2)+=spins::Sz[i];
+                // do not need to do anything, everything is done
+                // when output_mag is called.
             }
-        }
-        else if(spins::mag_calc_method==7)
-        {
-            mag_species_z.IFill(0);
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            else if(spins::mag_calc_method==5)
             {
-                //plane lookup
-                unsigned int klu=geom::lu(i,2);
-                //species lookup
-                unsigned int splu=geom::lu(i,3);
-                mag_species_z(klu,splu,0)+=spins::Sx[i];
-                mag_species_z(klu,splu,1)+=spins::Sy[i];
-                mag_species_z(klu,splu,2)+=spins::Sz[i];
+                mag_species_x.IFill(0);
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    //plane lookup
+                    unsigned int klu=geom::lu(i,0);
+                    //species lookup
+                    unsigned int splu=geom::lu(i,3);
+                    mag_species_x(klu,splu,0)+=spins::Sx[i];
+                    mag_species_x(klu,splu,1)+=spins::Sy[i];
+                    mag_species_x(klu,splu,2)+=spins::Sz[i];
+                }
             }
-        }
-        else
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("The method for calculating the magnetization is not recognised.");
+            else if(spins::mag_calc_method==6)
+            {
+                mag_species_y.IFill(0);
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    //plane lookup
+                    unsigned int klu=geom::lu(i,1);
+                    //species lookup
+                    unsigned int splu=geom::lu(i,3);
+                    mag_species_y(klu,splu,0)+=spins::Sx[i];
+                    mag_species_y(klu,splu,1)+=spins::Sy[i];
+                    mag_species_y(klu,splu,2)+=spins::Sz[i];
+                }
+            }
+            else if(spins::mag_calc_method==7)
+            {
+                mag_species_z.IFill(0);
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    //plane lookup
+                    unsigned int klu=geom::lu(i,2);
+                    //species lookup
+                    unsigned int splu=geom::lu(i,3);
+                    mag_species_z(klu,splu,0)+=spins::Sx[i];
+                    mag_species_z(klu,splu,1)+=spins::Sy[i];
+                    mag_species_z(klu,splu,2)+=spins::Sz[i];
+                }
+            }
+            else
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("The method for calculating the magnetization is not recognised.");
+            }
         }
     }
     void init_output()
@@ -333,8 +341,18 @@ namespace util
                 }
             }
         }
+        else if(spins::mag_calc_method==8)
+        {
+            sofs.open("afm_check_sublat.dat");
+            if(!sofs.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open magnetization file afm_check_sublat.dat.");
+            }
+            sofs << "#File description: this file contains the magnetization for each sublattice of a 3D checker board antiferromagnet." << std::endl;
+            sofs << "#time - z - mx_A - my_A - mz_A - mx_B - my_B - mz_B" << std::endl;
 
-
+        }
     }
     void output_mag(unsigned int t)
     {
