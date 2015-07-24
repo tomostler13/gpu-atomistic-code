@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 07 Jun 2015 15:38:06
+// Last-modified: 04 Jul 2015 15:06:55
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -149,9 +149,9 @@ namespace llgCPU
                     const double skdotsl=sk[0]*sl[0]+sk[1]*sl[1]+sk[2]*sl[2];
                     const double sjdotsl=sj[0]*sl[0]+sj[1]*sl[1]+sj[2]*sl[2];
                     const double skdotsj=sk[0]*sj[0]+sk[1]*sj[1]+sk[2]*sj[2];
-                    fields::H4sx[i]-=(exch::JQ(0,0)*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj));
-                    fields::H4sy[i]-=(exch::JQ(0,0)*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj));
-                    fields::H4sz[i]-=(exch::JQ(0,0)*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
+                    fields::H4sx[i]-=(exch::JQ(0)*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj));
+                    fields::H4sy[i]-=(exch::JQ(0)*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj));
+                    fields::H4sz[i]-=(exch::JQ(0)*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
 //h[2]-=(exch::JQ(0,0)*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
                 }
 //std::cout << h[0] << "\t" << h[1] << "\t" << h[2] << std::endl;
@@ -245,9 +245,9 @@ namespace llgCPU
                     const double skdotsl=sk[0]*sl[0]+sk[1]*sl[1]+sk[2]*sl[2];
                     const double sjdotsl=sj[0]*sl[0]+sj[1]*sl[1]+sj[2]*sl[2];
                     const double skdotsj=sk[0]*sj[0]+sk[1]*sj[1]+sk[2]*sj[2];
-                    fields::H4sx[i]-=(exch::JQ(0,0)*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj));
-                    fields::H4sy[i]-=(exch::JQ(0,0)*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj));
-                    fields::H4sz[i]-=(exch::JQ(0,0)*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
+                    fields::H4sx[i]-=(exch::JQ(0)*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj));
+                    fields::H4sy[i]-=(exch::JQ(0)*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj));
+                    fields::H4sz[i]-=(exch::JQ(0)*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj));
                 }
             }
         }

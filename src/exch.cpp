@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 05 Jun 2015 20:25:31
+// Last-modified: 04 Jul 2015 14:47:12
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -28,11 +28,14 @@ namespace exch
     //evs = exchange vec scale
     Array<double> evs;
     Array3D<unsigned int> numint;
-    Array2D<unsigned int> shell_list,numquart;
-    Array2D<double> JQ;
+    Array2D<unsigned int> shell_list;
+    Array<unsigned int> numquart;
+    Array<double> JQ;
     Array4D<double> exchvec;
-    Array5D<int> fsqi;
-    Array5D<double> J,fsq;
+    Array4D<int> fsqi;
+    Array5D<double> J;
+    Array4D<double> fsq;
+    Array<int> Interface;
     std::string enerType;
     bool outputJ,oem=false,rem=false,cutexch=false,inc4spin=false;
     //cut off of exchange in m

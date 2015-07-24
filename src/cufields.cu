@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 08 Jun 2015 19:04:09
+// Last-modified: 04 Jul 2015 14:52:51
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -35,7 +35,7 @@ namespace cufields
         cudaMemcpyToSymbol(ZPDIM,&geom::zpdim,3*sizeof(unsigned int));
         cudaMemcpyToSymbol(DND,&exch::diagnumdiag,sizeof(unsigned int));
         cudaMemcpyToSymbol(ODND,&exch::offdiagnumdiag,sizeof(unsigned int));
-        cudaMemcpyToSymbol(JQ,&exch::JQ(0,0),sizeof(double));
+        cudaMemcpyToSymbol(JQ,&exch::JQ(0),sizeof(double));
         config::Info << "Done" << std::endl;
     }
 
