@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 30 Jun 2015 16:14:39
+// Last-modified: 24 Jul 2015 11:01:49
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -126,7 +126,7 @@ namespace cullg
         }
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
-            float *temp=NULL;
+/*            float *temp=NULL;
             temp = new float [3*geom::nspins];
             CUDA_CALL(cudaMemcpy(temp,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -135,7 +135,7 @@ namespace cullg
             }
             delete [] temp;
             temp=NULL;
-            exit(0);
+            exit(0);*/
         cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
         //in this case we are using the interaction matrix for both the exchange and the
         //dipole-dipole field so we might aswell update both at once

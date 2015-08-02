@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Jun 2015 20:49:21
+// Last-modified: 24 Jul 2015 13:29:34
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -120,22 +120,23 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="quick")
     {
 
-        llg::T=500.0;
+        llg::T=1.0;
         int counter=0;
         time_t now = time(0);
         char *dtime=ctime(&now);
         std::cout << "#Start time:\t" << dtime << std::endl;
-        for(unsigned int t = 0 ; t < 100000 ; t++)
+        for(unsigned int t = 0 ; t < 20000 ; t++)
         {
             if(t%spins::update==0)
             {
-                if(counter%10==0)
+                if(counter%100==0)
                 {
                     counter=0;
                 }
                 counter++;
                 util::calc_mag();
                 util::output_mag(t);
+                util::outputSpinsVTU(t);
                 std::cout << static_cast<double>(t)*llg::dt << "\t";
                 for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
                 {
