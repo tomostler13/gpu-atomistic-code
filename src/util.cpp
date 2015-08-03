@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 03 Aug 2015 15:38:03
+// Last-modified: 03 Aug 2015 17:30:15
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -261,12 +261,14 @@ namespace util
             const double sdh=s[0]*h[0]+s[1]*h[1]+s[2]*h[2];
             //get the species
             unsigned int spec=geom::lu(i,3);
-            llg::cps[spec]+=sxh[0]*sxh[0]+sxh[1]*sxh[1]+sxh[2]*sxh[2];
+            double mm=geom::ucm.GetMu(i);
+            llg::cps[spec]+=mm*sxh[0]*sxh[0]+mm*sxh[1]*sxh[1]+mm*sxh[2]*sxh[2];
             llg::dps[spec]+=sdh;
         }
         for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
         {
             llg::Ts[s]=llg::muB*llg::cps[s]/(2.0*llg::kB*llg::dps[s]);
+            //std::cout << geom::ucm.GetMu(s) << std::endl;
         }
     }
 

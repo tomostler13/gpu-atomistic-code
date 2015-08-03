@@ -1,36 +1,22 @@
 system:
 {
-<<<<<<< HEAD
-    seed=123452341;
-    dim = [ 10 , 10 , 10 ];
-    globdim = [ 1 , 1 , 1 ];
-    nk = [ 2 , 2 , 2 ];
-    nms = 2;
-    spec = [ "Co" , "Tb" ];
-    damping = [ 1.0 , 1.0 ];
-=======
     seed=123456789;
-    dim = [ 100 , 100 , 100 ];
+    dim = [ 25 , 25 , 25 ];
     globdim = [ 1 , 1 , 1 ];
     nk = [ 2 , 2 , 2 ];
     nms = 2;
     spec = [ "Fe" , "Gd" ];
     damping = [ 0.01 , 0.01 ];
->>>>>>> ecb357bea9c424a288dbd75b47fcf5211d0db05b
     gamma = [ 1.0 , 1.0 ];
-    mu = [ 1.6 , 9.1 ];
+    mu = [ 1.02 , 7.63 ];
     spin0 = [ 0.0 , 0.0 , 1.0 ];
     spin1 = [ 0.0 , 0.0 , -1.0 ];
-    D0 = [ 1e-23 , 0.807243e-23 ];
+    D0 = [ 0.807243e-23 , 0.807243e-23 ];
     DVec0 = [ 0.0 , 0.0 , 1.0 ];
     DVec1 = [ 0.0 , 0.0 , -1.0 ];
     //Assuming that the system has two composition areas
     //Then amount 0 should be nms long
-<<<<<<< HEAD
-    amount0 = [ 74.0 , 26.0 ];
-=======
     amount0 = [ 75.0 , 25.0 ];
->>>>>>> ecb357bea9c424a288dbd75b47fcf5211d0db05b
     amount1 = [ 80.0 , 20.0 ];
     //This has NOTHING to do with the magnetic system
     //it is only related to the underlying crystal 
@@ -38,13 +24,7 @@ system:
     // dim[0]*dim[1]*dim[2]*globdim[0]*globdim[1]*globdim[2]*nauc
     nauc = 4;
     atom0 = [ 0.0 , 0.0 , 0.0 ];
-<<<<<<< HEAD
     atom1 = [ 0.5 , 0.0 , 0.5 ];
     atom2 = [ 0.5 , 0.5 , 0.0 ];
     atom3 = [ 0.0 , 0.5 , 0.5 ];
-=======
-    atom1 = [ 0.5 , 0.5 , 0.0 ];
-    atom2 = [ 0.0 , 0.5 , 0.5 ];
-    atom3 = [ 0.5 , 0.0 , 0.5 ];
->>>>>>> ecb357bea9c424a288dbd75b47fcf5211d0db05b
 };

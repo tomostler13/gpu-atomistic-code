@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 03 Aug 2015 15:37:14
+// Last-modified: 03 Aug 2015 17:00:45
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -145,6 +145,10 @@ namespace llg
             geom::llgpf[i]=geom::ucm.Getllgpf(aiuc);
             geom::sigma[i]=geom::ucm.GetSigma(aiuc);
         }
+        llg::Ts.resize(geom::ucm.GetNMS());
+        llg::dps.resize(geom::ucm.GetNMS());
+        llg::cps.resize(geom::ucm.GetNMS());
+
         SUCCESS(config::Info);
 
 	}

@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 03 Aug 2015 15:39:29
+// Last-modified: 03 Aug 2015 17:00:18
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -40,9 +40,7 @@ namespace llgCPU
         fnx.IFill(0);
         fny.IFill(0);
         fnz.IFill(0);
-        llg::Ts.resize(geom::ucm.GetNMS());
-        llg::dps.resize(geom::ucm.GetNMS());
-        llg::cps.resize(geom::ucm.GetNMS());
+        std::cout << "Resizing to " << geom::ucm.GetNMS() << std::endl;
 
         SUCCESS(config::Info);
         FIXOUT(config::Info,"Resizing llg (CPU) work arrays:" << std::flush);

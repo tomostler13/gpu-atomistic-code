@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 03 Aug 2015 15:31:07
+// Last-modified: 03 Aug 2015 17:14:06
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -348,7 +348,7 @@ void sim::laser_heating(int argc,char *argv[])
         if(t%spins::update==0)
         {
             util::calc_Ts();
-            ttmout << static_cast<double>(t)*llg::dt << "\t" << initT << "\t" << initT << std::endl;
+            ttmout << static_cast<double>(t)*llg::dt << "\t" << initT << "\t" << initT;
             for(unsigned int spec = 0 ; spec < geom::ucm.GetNMS() ; spec++)
             {
                 ttmout << "\t" << llg::Ts[spec];
@@ -399,7 +399,7 @@ void sim::laser_heating(int argc,char *argv[])
             }
 
         }
-        if(oits)
+        if(oits && opsf)
         {
             if(t%(spins::update*sf::sfupdate)==0)
             {
@@ -455,7 +455,7 @@ void sim::laser_heating(int argc,char *argv[])
         if(t%spins::update==0)
         {
             util::calc_Ts();
-            ttmout << static_cast<double>(t)*llg::dt << "\t" << initT << "\t" << initT << std::endl;
+            ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl;
             for(unsigned int spec = 0 ; spec < geom::ucm.GetNMS() ; spec++)
             {
                 ttmout << "\t" << llg::Ts[spec];
