@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 30 Jun 2015 12:18:58
+// Last-modified: 03 Aug 2015 15:33:57
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -193,6 +193,7 @@ namespace cullg
         CUDA_CALL(cudaFree(CHr));
         CUDA_CALL(cudaFree(Cspin));
         CUDA_CALL(cudaFree(Cespin));
+        CUDA_CALL(cudaFree(CDetFields));
         CUDA_CALL(cudaFree(Crand));
         CUDA_CALL(cudaFree(CH));
         CUDA_CALL(cudaFree(Cfn));
@@ -396,6 +397,7 @@ namespace cullg
         CUDA_CALL(cudaMalloc((void**)&CHDemag,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&CDetFields,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Crand,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Ck1udir,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&CH,3*geom::nspins*sizeof(float)));

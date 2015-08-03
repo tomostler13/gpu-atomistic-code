@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 06 Jun 2015 17:54:48
+// Last-modified: 03 Aug 2015 15:37:14
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -19,6 +19,7 @@
 namespace llg
 {
     double applied[3]={0,0,0},T,dt,rdt,gyro=1.76e11,muB=9.27e-24,kB=1.38e-23;
+    Array<double> Ts,dps,cps;
     Array<double> llgpf;
     std::string scm;
 

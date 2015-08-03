@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 06 Jun 2015 17:21:18
+// Last-modified: 03 Aug 2015 15:38:03
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -245,5 +245,30 @@ namespace util
         pvf << "</VTKFile>" << "\n";
         pvf.close();
     }
+    void calc_Ts()
+    {
+        for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
+        {
+            llg::Ts[s]=0.0;
+            llg::cps[s]=0.0;
+            llg::dps[s]=0.0;
+        }
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
+            const double h[3]={fields::Hx[i],fields::Hy[i],fields::Hz[i]};
+            const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
+            const double sdh=s[0]*h[0]+s[1]*h[1]+s[2]*h[2];
+            //get the species
+            unsigned int spec=geom::lu(i,3);
+            llg::cps[spec]+=sxh[0]*sxh[0]+sxh[1]*sxh[1]+sxh[2]*sxh[2];
+            llg::dps[spec]+=sdh;
+        }
+        for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
+        {
+            llg::Ts[s]=llg::muB*llg::cps[s]/(2.0*llg::kB*llg::dps[s]);
+        }
+    }
+
 
 }

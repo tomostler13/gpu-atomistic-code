@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 07 Jun 2015 15:13:17
+// Last-modified: 03 Aug 2015 15:07:41
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -84,7 +84,7 @@ namespace cuint
         }
     }
 
-    __global__ void CHeun2(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,double *Csigma,double *Cllgpf,double *Clambda,double *Ck1u,double *Ck1udir)
+    __global__ void CHeun2(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,double *Csigma,double *Cllgpf,double *Clambda,double *Ck1u,double *Ck1udir,double *CDetField)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -125,6 +125,7 @@ namespace cuint
             for(unsigned int j = 0 ; j < 3 ; j++)
             {
                 Cspin[3*i+j]=ps[j]*nf;
+                CDetField[3*i+j]=h[j]-lrn[j];
                 CH[3*i+j]=0.0;
             }
             //zero the CH array here

@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 08 Jun 2015 20:38:06
+// Last-modified: 03 Aug 2015 15:31:07
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -343,9 +343,18 @@ void sim::laser_heating(int argc,char *argv[])
         {
             util::calc_mag();
             util::output_mag(t);
-            ttmout << static_cast<double>(t)*llg::dt << "\t" << initT << "\t" << initT << std::endl;
         }
         llg::integrate(t);
+        if(t%spins::update==0)
+        {
+            util::calc_Ts();
+            ttmout << static_cast<double>(t)*llg::dt << "\t" << initT << "\t" << initT << std::endl;
+            for(unsigned int spec = 0 ; spec < geom::ucm.GetNMS() ; spec++)
+            {
+                ttmout << "\t" << llg::Ts[spec];
+            }
+            ttmout << std::endl;
+        }
     }
 
 
@@ -361,7 +370,7 @@ void sim::laser_heating(int argc,char *argv[])
         {
             util::calc_mag();
             util::output_mag(t);
-            ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl << std::endl;
+//            ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl << std::endl;
         }
         if(opsf==true)
         {
@@ -443,6 +452,16 @@ void sim::laser_heating(int argc,char *argv[])
             }//
         }//update time
         llg::integrate(t);
+        if(t%spins::update==0)
+        {
+            util::calc_Ts();
+            ttmout << static_cast<double>(t)*llg::dt << "\t" << initT << "\t" << initT << std::endl;
+            for(unsigned int spec = 0 ; spec < geom::ucm.GetNMS() ; spec++)
+            {
+                ttmout << "\t" << llg::Ts[spec];
+            }
+            ttmout << std::endl;
+        }
     }
     ttmout.close();
     if(ttmout.is_open())

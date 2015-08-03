@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 24 Jul 2015 11:01:49
+// Last-modified: 03 Aug 2015 15:32:20
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -196,7 +196,7 @@ namespace cullg
         {
             cufields::CSpMV_CSR_FourSpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj_jkl,Cadjncy_j,Cadjncy_k,Cadjncy_l,CH,Cespin);
         }
-        cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
+        cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CDetFields);
         if(t%spins::update==0)
         {
             //copy spin arrays back to CPU
@@ -209,6 +209,13 @@ namespace cullg
                 spins::Sy[i]=temp[3*i+1];
                 spins::Sz[i]=temp[3*i+2];
                 //				std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << "\t" << sqrt(spins::Sx[i]*spins::Sx[i] + spins::Sy[i]*spins::Sy[i] + spins::Sz[i]*spins::Sz[i])<< std::endl;
+            }
+            CUDA_CALL(cudaMemcpy(temp,CDetFields,3*geom::nspins*sizeof(double),cudaMemcpyDeviceToHost));
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                fields::Hx[i]=temp[3*i];
+                fields::Hy[i]=temp[3*i+1];
+                fields::Hz[i]=temp[3*i+2];
             }
             delete [] temp;
             temp=NULL;

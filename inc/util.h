@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 06 Jun 2015 17:21:01
+// Last-modified: 03 Aug 2015 15:28:03
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -122,6 +122,7 @@ namespace util
     void calc_mag();
     void output_mag(unsigned int);
     void init_output();
+    void calc_Ts();
 
 }
 #endif /*_UTIL_H_*/

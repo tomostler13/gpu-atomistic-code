@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 06 Jun 2015 19:09:53
+// Last-modified: 03 Aug 2015 15:33:27
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -36,7 +36,7 @@ namespace cullg
 
     //device pointers
     extern  float *Crand,*CH,*CHDemag,*Cmagmom;
-    extern  double *Cfn,*Csigma,*Clambda,*Cllgpf,*Cspin,*Cespin,*Ck1u,*Ck1udir;
+    extern  double *Cfn,*Csigma,*Clambda,*Cllgpf,*Cspin,*Cespin,*Ck1u,*Ck1udir,*CDetFields;
     //cufft plans
     extern cufftHandle SPc2c,FPc2c;
     //device pointers
