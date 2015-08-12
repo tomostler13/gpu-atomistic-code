@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 29 Nov 2014 11:40:48
+// Last-modified: 03 Aug 2015 16:51:22
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -26,6 +26,7 @@ namespace cufields
     __constant__ unsigned int K[3]={0,0,0},ZPDIM[3]={0,0,0};
     //DND = Diagonal number of off diagonals, ODND = off-diagonal number of off diagonals
     __constant__ unsigned int DND=0,ODND=0;
+    __constant__ double JQ=0.0;
 
     void copyConstData()
     {
@@ -34,9 +35,46 @@ namespace cufields
         cudaMemcpyToSymbol(ZPDIM,&geom::zpdim,3*sizeof(unsigned int));
         cudaMemcpyToSymbol(DND,&exch::diagnumdiag,sizeof(unsigned int));
         cudaMemcpyToSymbol(ODND,&exch::offdiagnumdiag,sizeof(unsigned int));
+        if(exch::inc4spin)
+        {
+            cudaMemcpyToSymbol(JQ,&exch::JQ(0),sizeof(double));
+        }
         config::Info << "Done" << std::endl;
     }
 
+    //calculate the four spin exchange and add to 
+    __global__ void CSpMV_CSR_FourSpin(unsigned int N,unsigned int *Cxadj_jkl,unsigned int *Cadjncy_j,unsigned int *Cadjncy_k,unsigned int *Cadjncy_l,float *CH,double *Cspin)
+    {
+        const int i = blockDim.x*blockIdx.x + threadIdx.x;
+        if(i<N)
+        {
+            float h[3]={0.0,0.0,0.0};
+            for(int q = Cxadj_jkl[i] ; q < Cxadj_jkl[i+1] ; q++)
+            {
+                unsigned int j = Cadjncy_j[q];
+                unsigned int k = Cadjncy_k[q];
+                unsigned int l = Cadjncy_l[q];
+                const double sj[3]={Cspin[3*j],Cspin[3*j+1],Cspin[3*j+2]};
+                const double sk[3]={Cspin[3*k],Cspin[3*k+1],Cspin[3*k+2]};
+                const double sl[3]={Cspin[3*l],Cspin[3*l+1],Cspin[3*l+2]};
+                const double skdotsl=sk[0]*sl[0]+sk[1]*sl[1]+sk[2]*sl[2];
+                const double sjdotsl=sj[0]*sl[0]+sj[1]*sl[1]+sj[2]*sl[2];
+                const double skdotsj=sk[0]*sj[0]+sk[1]*sj[1]+sk[2]*sj[2];
+                h[0]-=(JQ*(sj[0]*skdotsl+sk[0]*sjdotsl+sl[0]*skdotsj))/3.0;
+                h[1]-=(JQ*(sj[1]*skdotsl+sk[1]*sjdotsl+sl[1]*skdotsj))/3.0;
+                h[2]-=(JQ*(sj[2]*skdotsl+sk[2]*sjdotsl+sl[2]*skdotsj))/3.0;
+                /*if(i==100)
+                {
+                    //    printf("JQ=%4.6f\tFields=[%4.6f\t%4.6f\t%4.6f]\nNeigh\t%d\t%d\n",JQ,h[0],h[1],h[2],Cxadj_jkl[100],Cxadj_jkl[101]);
+                    printf("Neighbours\t%d\t%d\t%d\n",j,k,l);
+                }*/
+
+            }
+            CH[3*i]+=h[0];
+            CH[3*i+1]+=h[1];
+            CH[3*i+2]+=h[2];
+        }
+    }
 
     //perform the DIA matrix multiplication. Algorithm taken from:
     // Efficient Spart Matrix-Vector Multiplication on CUDA

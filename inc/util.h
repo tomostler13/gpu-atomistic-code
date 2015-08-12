@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 15 Dec 2014 11:21:09
+// Last-modified: 03 Aug 2015 15:28:03
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -111,6 +111,7 @@ namespace util
     extern Array2D<double> magx,magy,magz;
     extern Array3D<double> mag_species_x,mag_species_y,mag_species_z;
     extern Array2D<double> nspl;//number of spins per layer
+    extern double lx1,lx2,ly1,ly2,lz1,lz2;
     void fillfloat(int,double*,float*);
     void fillfloat(int,int,int,Array3D<fftw_complex>,Array3D<fftwf_complex>);
     void copy3vecto1(int,double*,double*,double*,double*);
@@ -121,6 +122,7 @@ namespace util
     void calc_mag();
     void output_mag(unsigned int);
     void init_output();
+    void calc_Ts();
 
 }
 #endif /*_UTIL_H_*/

@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 29 Nov 2014 11:12:04
+// Last-modified: 03 Aug 2015 15:33:57
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -124,7 +124,7 @@ namespace cullg
                                 {
                                     for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
                                     {
-                                        for(unsigned int k = 0 ; k < geom::zpdim[1]*geom::Nk[2] ; k++)
+                                        for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
                                         {
                                             for(unsigned int l = 0 ; l < 2 ; l++)
                                             {
@@ -150,6 +150,7 @@ namespace cullg
             {
                 Array5D<fftwf_complex> tempNkab;
                 tempNkab.resize(3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+                tempNkab.IFill(0);
                 for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                 {
                     for(unsigned int beta = 0 ; beta < 3 ; beta++)
@@ -158,7 +159,7 @@ namespace cullg
                         {
                             for(unsigned int j = 0 ; j < geom::zpdim[1]*geom::Nk[1] ; j++)
                             {
-                                for(unsigned int k = 0 ; k < geom::zpdim[1]*geom::Nk[2] ; k++)
+                                for(unsigned int k = 0 ; k < geom::zpdim[2]*geom::Nk[2] ; k++)
                                 {
                                     for(unsigned int l = 0 ; l < 2 ; l++)
                                     {
@@ -171,9 +172,9 @@ namespace cullg
                 }
                 //copy the FT'd interaction matrix to the card
                 CUDA_CALL(cudaMemcpy(CNk,tempNkab.ptr(),3*3*geom::zpdim[0]*geom::zpdim[1]*geom::zpdim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2]*sizeof(cufftComplex),cudaMemcpyHostToDevice));
-                intmat::dipNkab.clear();
+                //intmat::dipNkab.clear();
                 //clear the floating point holding arrays as well
-                tempNkab.clear();
+//                tempNkab.clear();
                 check_cuda_errors(__FILE__,__LINE__);
 
             }
@@ -192,6 +193,7 @@ namespace cullg
         CUDA_CALL(cudaFree(CHr));
         CUDA_CALL(cudaFree(Cspin));
         CUDA_CALL(cudaFree(Cespin));
+        CUDA_CALL(cudaFree(CDetFields));
         CUDA_CALL(cudaFree(Crand));
         CUDA_CALL(cudaFree(CH));
         CUDA_CALL(cudaFree(Cfn));
@@ -381,9 +383,21 @@ namespace cullg
             }
         }
 
+        if(exch::inc4spin)
+        {
+            CUDA_CALL(cudaMalloc((void**)&Cxadj_jkl,exch::xadj_j.size()*sizeof(unsigned int)));
+            CUDA_CALL(cudaMalloc((void**)&Cadjncy_j,exch::adjncy_j.size()*sizeof(unsigned int)));
+            CUDA_CALL(cudaMalloc((void**)&Cadjncy_k,exch::adjncy_k.size()*sizeof(unsigned int)));
+            CUDA_CALL(cudaMalloc((void**)&Cadjncy_l,exch::adjncy_l.size()*sizeof(unsigned int)));
+            CUDA_CALL(cudaMemcpy(Cxadj_jkl,exch::xadj_j.ptr(),exch::xadj_j.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(Cadjncy_j,exch::adjncy_j.ptr(),exch::adjncy_j.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(Cadjncy_k,exch::adjncy_k.ptr(),exch::adjncy_k.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(Cadjncy_l,exch::adjncy_l.ptr(),exch::adjncy_l.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
+        }
         CUDA_CALL(cudaMalloc((void**)&CHDemag,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&CDetFields,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Crand,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Ck1udir,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&CH,3*geom::nspins*sizeof(float)));

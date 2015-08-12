@@ -40,7 +40,8 @@ obj/sim.o \
 obj/mvt.o \
 obj/suscep.o \
 obj/matrix_conv.o \
-obj/matrix_mul_cpu.o
+obj/matrix_mul_cpu.o \
+obj/timeseries.o
 
 SWITCHOBJ= \
 obj/main.o \

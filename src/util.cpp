@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 15 Dec 2014 11:47:14
+// Last-modified: 03 Aug 2015 17:30:15
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -24,6 +24,7 @@ namespace util
 {
     std::ofstream ofs,sofs;
     Array2D<double> magx,magy,magz;
+    double lx1,ly1,lz1,lx2,ly2,lz2;
     Array3D<double> mag_species_x,mag_species_y,mag_species_z;
     Array2D<double> nspl;//number of spins per layer
     void inverse(double* A, int N)
@@ -244,5 +245,32 @@ namespace util
         pvf << "</VTKFile>" << "\n";
         pvf.close();
     }
+    void calc_Ts()
+    {
+        for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
+        {
+            llg::Ts[s]=0.0;
+            llg::cps[s]=0.0;
+            llg::dps[s]=0.0;
+        }
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
+            const double h[3]={fields::Hx[i],fields::Hy[i],fields::Hz[i]};
+            const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
+            const double sdh=s[0]*h[0]+s[1]*h[1]+s[2]*h[2];
+            //get the species
+            unsigned int spec=geom::lu(i,3);
+            double mm=geom::ucm.GetMu(i);
+            llg::cps[spec]+=mm*sxh[0]*sxh[0]+mm*sxh[1]*sxh[1]+mm*sxh[2]*sxh[2];
+            llg::dps[spec]+=sdh;
+        }
+        for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
+        {
+            llg::Ts[s]=llg::muB*llg::cps[s]/(2.0*llg::kB*llg::dps[s]);
+            //std::cout << geom::ucm.GetMu(s) << std::endl;
+        }
+    }
+
 
 }

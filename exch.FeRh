@@ -1,0 +1,159 @@
+exchange:
+{
+    //This is the exchange interaction with the largest number of shells
+    MaxShells=2;
+    FourSpin = true;
+    MaxQuartetPermutations = 32;
+    Scale = [ 1.0 , 1.0 , 1.0 ];
+};
+exchange_0_0:
+{
+    Num_Shells = 2;
+    //Units of energy
+    units = "joules";
+    Shell1Vec = [ 1.0 , 0.0 , 0.0 ];
+    NumInt1 = 6;
+    //Exchange Tensor First number is shell and second is row of tensor
+    J1_1 = [ 0.4e-21 , 0.000 , 0.000 ];
+    J1_2 = [ 0.000 , 0.4e-21 , 0.000 ];
+    J1_3 = [ 0.000 , 0.000 , 0.4e-21 ];
+    Shell2Vec = [ 1.0 , 1.0 , 0.0 ];
+    NumInt2 = 12;
+    J2_1 = [ 2.75e-21 , 0.000 , 0.000 ];
+    J2_2 = [ 0.000 , 2.75e-21 , 0.000 ];
+    J2_3 = [ 0.000 , 0.000 , 2.75e-21 ];
+};
+FourSpinExchange_0_0:
+{
+    NumPermutations = 32;
+    JQ=0.23e-21;
+    //These are the atom locations involved in each permutation of four spins
+    //first permutation
+    Permute1_1 = [ 0.0 , 0.0 , 1.0 ];
+    Permute1_2 = [ 1.0 , 0.0 , 0.0 ];
+    Permute1_3 = [ 0.0 , -1.0 , 0.0 ];
+    //second permutation
+    Permute2_1 = [ 0.0 , 0.0 , 1.0 ];
+    Permute2_2 = [ 0.0 , 1.0 , 0.0 ];
+    Permute2_3 = [ 1.0 , 0.0 , 0.0 ];
+
+    Permute3_1 = [ 0.0 , 0.0 , 1.0 ];
+    Permute3_2 = [ -1.0 , 0.0 , 0.0 ];
+    Permute3_3 = [ 0.0 , 1.0 , 0.0 ];
+
+    Permute4_1 = [ 0.0 , 0.0 , 1.0 ];
+    Permute4_2 = [ 0.0 , -1.0 , 0.0 ];
+    Permute4_3 = [ -1.0 , 0.0 , 0.0 ];
+
+    Permute5_1 = [ 0.0 , 0.0 , 1.0 ];
+    Permute5_2 = [ 1.0 , 0.0 , 1.0 ];
+    Permute5_3 = [ 0.0 , -1.0 , 1.0 ];
+
+    Permute6_1 = [ 0.0 , 0.0 , 1.0 ];
+    Permute6_2 = [ 0.0 , 1.0 , 1.0 ];
+    Permute6_3 = [ 1.0 , 0.0 , 1.0 ];
+
+    Permute7_1 = [ 0.0 , 0.0 , 1.0 ];
+    Permute7_2 = [ -1.0 , 0.0  , 1.0 ];
+    Permute7_3 = [ 0.0 , 1.0 , 1.0 ];
+
+    Permute8_1 = [ 0.0 , 0.0 , 1.0 ];
+    Permute8_2 = [ 0.0 , -1.0 , 1.0 ];
+    Permute8_3 = [ -1.0 , 0.0 , 1.0 ];
+
+    Permute9_1 = [ 0.0 , -1.0 , 1.0 ];
+    Permute9_2 = [ 1.0 , -1.0 , 0.0 ];
+    Permute9_3 = [ 0.0 , -1.0 , 0.0 ];
+
+    Permute10_1 = [ 1.0 , 0.0 , 1.0 ];
+    Permute10_2 = [ 1.0 , 1.0 , 0.0 ];
+    Permute10_3 = [ 1.0 , 0.0 , 0.0 ];
+
+    Permute11_1 = [ 0.0 , 1.0 , 1.0 ];
+    Permute11_2 = [ -1.0 , 1.0 , 0.0 ];
+    Permute11_3 = [ 0.0 , 1.0 , 0.0 ];
+
+    Permute12_1 = [ -1.0 , 0.0 , 1.0 ];
+    Permute12_2 = [ -1.0 , -1.0 , 0.0 ];
+    Permute12_3 = [ -1.0 , 0.0 , 0.0 ];
+
+    Permute13_1 = [ 1.0 , 0.0 , 0.0 ];
+    Permute13_2 = [ 1.0 , -1.0 , 0.0 ];
+    Permute13_3 = [ 1.0 , 0.0 , 1.0 ];
+
+    Permute14_1 = [ 0.0 , 1.0 , 0.0 ];
+    Permute14_2 = [ 1.0 , 1.0 , 0.0 ];
+    Permute14_3 = [ 0.0 , 1.0 , 1.0 ];
+
+    Permute15_1 = [ -1.0 , 0.0 , 0.0 ];
+    Permute15_2 = [ -1.0 , 1.0 , 0.0 ];
+    Permute15_3 = [ -1.0 , 0.0 , 1.0 ];
+
+    Permute16_1 = [ 0.0 , -1.0 , 0.0 ];
+    Permute16_2 = [ -1.0 , -1.0 , 0.0 ];
+    Permute16_3 = [ 0.0 , -1.0 , 1.0 ];
+
+    Permute17_1 = [ 1.0 , 0.0 , 0.0 ];
+    Permute17_2 = [ 0.0 , 0.0 , -1.0 ];
+    Permute17_3 = [ 0.0 , -1.0 , 0.0 ];
+
+    Permute18_1 = [ 0.0 , 1.0 , 0.0 ];
+    Permute18_2 = [ 0.0 , 0.0 , -1.0 ];
+    Permute18_3 = [ 1.0 , 0.0 , 0.0 ];
+
+    Permute19_1 = [ -1.0 , 0.0 , 0.0 ];
+    Permute19_2 = [ 0.0 , 0.0 , -1.0 ];
+    Permute19_3 = [ 0.0 , 1.0 , 0.0 ];
+
+    Permute20_1 = [ 0.0 , -1.0 , 0.0 ];
+    Permute20_2 = [ 0.0 , 0.0 , -1.0 ];
+    Permute20_3 = [ -1.0 , 0.0 , 0.0 ];
+
+    Permute21_1 = [ 1.0 , 0.0 , 0.0 ];
+    Permute21_2 = [ 1.0 , 0.0 , -1.0 ];
+    Permute21_3 = [ 1.0 , -1.0 , 0.0 ];
+
+    Permute22_1 = [ 0.0 , 1.0 , 0.0 ];
+    Permute22_2 = [ 0.0 , 1.0 , -1.0 ];
+    Permute22_3 = [ 1.0 , 1.0 , 0.0 ];
+
+    Permute23_1 = [ -1.0 , 0.0 , 0.0 ];
+    Permute23_2 = [ -1.0 , 0.0 , -1.0 ];
+    Permute23_3 = [ -1.0 , 1.0 , 0.0 ];
+
+    Permute24_1 = [ 0.0 , -1.0 , 0.0 ];
+    Permute24_2 = [ 0.0 , -1.0 , -1.0 ];
+    Permute24_3 = [ -1.0 , -1.0 , 0.0 ];
+
+    Permute25_1 = [ 1.0 , -1.0 , 0.0 ];
+    Permute25_2 = [ 0.0 , -1.0 , -1.0 ];
+    Permute25_3 = [ 0.0 , -1.0 , 0.0 ];
+
+    Permute26_1 = [ 1.0 , 1.0 , 0.0 ];
+    Permute26_2 = [ 1.0 , 0.0 , -1.0 ];
+    Permute26_3 = [ 1.0 , 0.0 , 0.0 ];
+
+    Permute27_1 = [ -1.0 , 1.0 , 0.0 ];
+    Permute27_2 = [ 0.0 , 1.0 , -1.0 ];
+    Permute27_3 = [ 0.0 , 1.0 , 0.0 ];
+
+    Permute28_1 = [ -1.0 , -1.0 , 0.0 ];
+    Permute28_2 = [ -1.0 , 0.0 , -1.0 ];
+    Permute28_3 = [ -1.0 , 0.0 , 0.0 ];
+
+    Permute29_1 = [ 0.0 , 0.0 , -1.0 ];
+    Permute29_2 = [ 0.0 , -1.0 , -1.0 ];
+    Permute29_3 = [ 1.0 , 0.0 , -1.0 ];
+
+    Permute30_1 = [ 0.0 , 0.0 , -1.0 ];
+    Permute30_2 = [ 1.0 , 0.0 , -1.0 ];
+    Permute30_3 = [ 0.0 , 1.0 , -1.0 ];
+
+    Permute31_1 = [ 0.0 , 0.0 , -1.0 ];
+    Permute31_2 = [ 0.0 , 1.0 , -1.0 ];
+    Permute31_3 = [ -1.0 , 0.0 , -1.0 ];
+
+    Permute32_1 = [ 0.0 , 0.0 , -1.0 ];
+    Permute32_2 = [ -1.0 , 0.0 , -1.0 ];
+    Permute32_3 = [ 0.0 , -1.0 , -1.0 ];
+};

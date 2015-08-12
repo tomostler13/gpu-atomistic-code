@@ -239,7 +239,7 @@ int main(int argc,char *argv[])
         for(unsigned int i = 0 ; i < nk ; i++)
         {
 
-            dataout << timein << "\t" << kvecs(i,0) << "\t" << kvecs(i,1) << "\t" << kvecs(i,2) << "\t" << S[i] << "\t" << S[i]/maxraw << "\t" << oS[i] << "\t" << oS[i]/maxsmooth << std::endl;
+            dataout << timein << "\t" << i << "\t" << kvecs(i,0) << "\t" << kvecs(i,1) << "\t" << kvecs(i,2) << "\t" << S[i] << "\t" << S[i]/maxraw << "\t" << oS[i] << "\t" << oS[i]/maxsmooth << std::endl;
         }
         dataout << std::endl << std::endl;
     }

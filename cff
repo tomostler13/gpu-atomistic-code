@@ -1,29 +1,28 @@
 OutputFile = "opf.dat";
-seed = 1359107200;
+seed = 1359107400;
 system:
 {
     //number of unit cells
-    dim = [ 3 , 3 , 3 ];
+    dim = [ 1 , 1 , 1 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="unit_cell_files/hcp.ucf";
+    unitcellfile="disordered.ucf";
     //Number of k-points in each direction
-    Nk = [ 2 , 6 , 2 ];
+    Nk = [ 50 , 50 , 50 ];
     //lattice constants
-    abc = [ 3.634e-10 , 6.294088e-10 , 5.803498e-10 ];
+    abc = [ 30.0e-9 , 30.0e-9 , 30.0e-9 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
-//    Exchange_method="hybrid";
+    //3 options. CSR (good for CPU). fft (good for single species). DIA (good for GPU)
     Exchange_method="CSR";
-//    Exchange_method="fft";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
     //If not then they are ignored.
     Off_Diagonals = FALSE;
     //Do you want to output the unit cell info to the log file?
-    log_unit_cell = TRUE;
+    log_unit_cell = FALSE;
     Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
 };
 exchange:
@@ -31,15 +30,16 @@ exchange:
     //Exchange reading method 
     //direct (by reading in all interactions directly)
     //permute (take a neighbour and calculate permutations)
-    exchmethod="direct";
-    OutputExchange=TRUE;
+    exchmethod="permute";
+    //Outputs the entire matrix of interations
+    OutputExchange=FALSE;
     //How are we to read in the exchange
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
-    exchfile="exchange_files/exch.hcp";
-    OutputExchangeMatrix=TRUE;
-    ExitAfterExchangeMatrix=TRUE;
+    exchfile="exch.fcc";
+    OutputExchangeMatrix=FALSE;
+    ExitAfterExchangeMatrix=FALSE;
     ReadExchangeMatrix=FALSE;
 };
 sf:
@@ -51,11 +51,10 @@ llg:
 {
     dt = 0.1e-15;
     applied = [ 0.0 , 0.0 , 0.0 ];
-    update=10;
+    update=40;
     MagnetizationCalculationMethod=0;
-    //If this flag is true then the magnetization is output
-    //independently of the MagnetizationCalculationMethod
     OutputMagnetization=TRUE;
+    SpinConfigMethod="file";
 };
 cuda:
 {
@@ -74,20 +73,23 @@ timeseries:
     RunTime = 250e-12;
     Temperature = 1.0;
     OutputIndividualTimeSeries = TRUE;
+    sim_type="laserheating";
 };
 laserheating:
 {
-    Gamma_e = 2.25e2;
+    Gamma_e = 700.0;
     Cl = 3.0e6;
     PumpTime = 50e-15;
     G_ep = 17.0e17;
     InitialTemperature=82.0;
-    EquilibrationTime = 15e-12;
-    RunTime = 30e-12;
-    MaxElectronTemperature = 1500.0;
+    EquilibrationTime = 5e-12;
+    RunTime = 15e-12;
+    PumpFluence = 1.42344e+22;
     CoolingTime = 300000.0e-12;
     NumPulses = 1;
     PulseDelays = [ 150e-15 ];
     PulseScale = [ 1.0 ];
-    OutputStructureFactor = TRUE;
+    OutputStructureFactor = FALSE;
+    OutputIndividualTimeSeries=TRUE;
 };
+

@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Nov 2014 13:34:50
+// Last-modified: 24 Jul 2015 13:29:34
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -109,24 +109,34 @@ int main(int argc,char *argv[])
     {
         sim::laser_heating(argc,argv);
     }
+    else if(sim::sim_type=="ramp_field")
+    {
+        sim::ramp_field(argc,argv);
+    }
+    else if(sim::sim_type=="thermal_hyst")
+    {
+        sim::thermal_hyst(argc,argv);
+    }
     else if(sim::sim_type=="quick")
     {
 
-        llg::T=1e-27;
+        llg::T=1.0;
         int counter=0;
         time_t now = time(0);
         char *dtime=ctime(&now);
         std::cout << "#Start time:\t" << dtime << std::endl;
-        for(unsigned int t = 0 ; t < 10000 ; t++)
+        for(unsigned int t = 0 ; t < 20000 ; t++)
         {
             if(t%spins::update==0)
             {
-                if(counter%10==0)
+                if(counter%100==0)
                 {
                     counter=0;
                 }
                 counter++;
                 util::calc_mag();
+                util::output_mag(t);
+                util::outputSpinsVTU(t);
                 std::cout << static_cast<double>(t)*llg::dt << "\t";
                 for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
                 {
@@ -137,8 +147,10 @@ int main(int argc,char *argv[])
 
             llg::integrate(t);
         }
+        util::outputSpinsVTU(-1);
         time_t nowe=time(0);
         char *dtimee=ctime(&nowe);
+        util::outputSpinsVTU(-1);
         std::cout << "#End time:\t" << dtimee << std::endl;
     }
     else

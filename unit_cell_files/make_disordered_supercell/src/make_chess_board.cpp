@@ -1,7 +1,7 @@
 // File: make_chess_board.cpp
 // Author:Tom Ostler
 // Created: 22 Nov 2014
-// Last-modified: 12 Dec 2014 18:42:36
+// Last-modified: 15 Dec 2014 18:01:00
 
 //The purpose of this section of code is to create a unit cell
 //file for use with the main program. The specific type of unit

@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 02 Dec 2014 14:39:41
+// Last-modified: 03 Aug 2015 17:40:31
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -17,6 +17,7 @@
 #include "../inc/cufields.h"
 #include "../inc/cuint.h"
 #include "../inc/llg.h"
+#include "../inc/exch.h"
 //Cuda headers
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -60,13 +61,27 @@ namespace cullg
                 //copy the spin data to the zero padded arrays
                 cufields::CdipCopySpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cspin,CSr,Ckx,Cky,Ckz,Cmagmom);
                 //copy the fields from the zero padded array to the demag field array
-                cufields::CdipCopyFields<<<zpblockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CHDemag,CHr,Ckx,Cky,Ckz);
+//                cufields::CdipCopyFields<<<zpblockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CHDemag,CHr,Ckx,Cky,Ckz);
                 //forward transform
                 spins_forward();
                 cufields::CdipFConv<<<zpblockspergrid,threadsperblock>>>(geom::zps,CNk,CHk,CSk);
                 fields_back();
                 cufields::CdipCopyFields<<<blockspergrid,threadsperblock>>>(geom::nspins,geom::zps,CHDemag,CHr,Ckx,Cky,Ckz);
+                
+                //copy spin arrays back to CPU
+                //FOR DEBUGGING THE DIPOLAR FIELD
+                    /*float *temp=NULL;
+                    temp = new float [3*geom::nspins];
+                    CUDA_CALL(cudaMemcpy(temp,CHDemag,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
+                    for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                    {
+                        std::cout << i << "\t" << temp[3*i] << "\t" << temp[3*i+1] << "\t" << temp[3*i+2] << std::endl;
+                    }
+                    exit(0);*/
+                
+
             }
+            
             if(config::exchm==1)//DIA
             {
                 cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
@@ -104,9 +119,23 @@ namespace cullg
                 }
             }
         }
-        check_cuda_errors(__FILE__,__LINE__);
+        //calcalute the four spin term?
+        if(exch::inc4spin)
+        {
+            cufields::CSpMV_CSR_FourSpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj_jkl,Cadjncy_j,Cadjncy_k,Cadjncy_l,CH,Cspin);//,CH,Cspin);
+        }
         //generate the random numbers
         CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
+/*            float *temp=NULL;
+            temp = new float [3*geom::nspins];
+            CUDA_CALL(cudaMemcpy(temp,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << temp[3*i] << "\t" << temp[3*i+1] << "\t" << temp[3*i+2] << std::endl;
+            }
+            delete [] temp;
+            temp=NULL;
+            exit(0);*/
         cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
         //in this case we are using the interaction matrix for both the exchange and the
         //dipole-dipole field so we might aswell update both at once
@@ -162,8 +191,12 @@ namespace cullg
                 }
             }
         }
-
-        cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
+        //calcalute the four spin term?
+        if(exch::inc4spin)
+        {
+            cufields::CSpMV_CSR_FourSpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj_jkl,Cadjncy_j,Cadjncy_k,Cadjncy_l,CH,Cespin);
+        }
+        cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CDetFields);
         if(t%spins::update==0)
         {
             //copy spin arrays back to CPU
@@ -176,6 +209,13 @@ namespace cullg
                 spins::Sy[i]=temp[3*i+1];
                 spins::Sz[i]=temp[3*i+2];
                 //				std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << "\t" << sqrt(spins::Sx[i]*spins::Sx[i] + spins::Sy[i]*spins::Sy[i] + spins::Sz[i]*spins::Sz[i])<< std::endl;
+            }
+            CUDA_CALL(cudaMemcpy(temp,CDetFields,3*geom::nspins*sizeof(double),cudaMemcpyDeviceToHost));
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                fields::Hx[i]=temp[3*i];
+                fields::Hy[i]=temp[3*i+1];
+                fields::Hz[i]=temp[3*i+2];
             }
             delete [] temp;
             temp=NULL;
@@ -236,6 +276,22 @@ namespace cullg
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Could not get device properties");
         }
+        FIXOUT(config::Info,"Selecting device:" << std::endl);
+        for(unsigned int i = 0 ; i < device_count ; i++)
+        {
+            std::stringstream sstr;
+            sstr << "Setting device " << i;
+            std::string str=sstr.str();
+            FIXOUT(config::Info,str << std::flush);
+            if(cudaSetDevice(device)!=cudaSuccess)
+            {
+                config::Info << "Failed" << std::endl;
+            }
+            else
+            {
+                config::Info << "Success" << std::endl;
+            }
+        }
         FIXOUT(config::Info,"Number of devices:" << device_count << std::endl);
         FIXOUT(config::Info,"Device selected:" << device << std::endl);
         FIXOUT(config::Info,"Device major.minor:" << deviceProp.major << "." << deviceProp.minor << std::endl);
@@ -266,6 +322,7 @@ namespace cullg
         unsigned long long int curandseed=config::seed;
         FIXOUT(config::Info,"Curand seed:" << curandseed << std::endl);
         //initialize the random number generator
+        check_cuda_errors(__FILE__,__LINE__);
         FIXOUT(config::Info,"Initializing curand random number generator" << std::flush);
         if((curandCreateGenerator(&gen,CURAND_RNG_PSEUDO_DEFAULT))!=CURAND_STATUS_SUCCESS)
         {
@@ -286,6 +343,11 @@ namespace cullg
             error::errMessage("CURAND failed to generate random number generator seeds");
         }
         check_cuda_errors(__FILE__,__LINE__);
+        if((cudaThreadSetLimit(cudaLimitStackSize,1024))!=cudaSuccess)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("CUDA ERROR: Failed to set thread limit");
+        }
 
         config::Info << "Done" << std::endl;
         FIXOUT(config::Info,"Checking for any cuda errors:" << std::flush);
