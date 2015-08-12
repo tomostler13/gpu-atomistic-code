@@ -1,7 +1,7 @@
 // File: ramp_field.cpp
 // Author: Tom Ostler
 // Created: 13 May 2015
-// Last-modified: 12 Aug 2015 10:55:41
+// Last-modified: 12 Aug 2015 11:27:51
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -67,7 +67,7 @@ void sim::ramp_field(int argc,char *argv[])
     ef[1]=setting["Field"][1];
     ef[2]=setting["Field"][2];
     //need to convert df to T per step
-    filestr=setting.lookupValue("OutputFilename",filestr);
+    errstatus=setting.lookupValue("OutputFilename",filestr);
     if(errstatus)
     {
         FIXOUT(config::Info,"Name of output file:" << filestr << std::endl);
@@ -90,7 +90,7 @@ void sim::ramp_field(int argc,char *argv[])
     {
         if(t%spins::update==0)
         {
-            util::calc_mag()
+            util::calc_mag();
             util::output_mag(t);
             ofs << static_cast<double>(t)*llg::dt << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2];
             for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)

@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 24 Jul 2015 13:29:34
+// Last-modified: 12 Aug 2015 11:20:52
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -109,7 +109,7 @@ int main(int argc,char *argv[])
     {
         sim::laser_heating(argc,argv);
     }
-    else if(sim::sim_type=="ramp_field")
+    else if(sim::sim_type=="fix_field")
     {
         sim::ramp_field(argc,argv);
     }
@@ -156,7 +156,8 @@ int main(int argc,char *argv[])
     else
     {
         error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Simulation not recognised. Options are: \n-Mvt\n-suscep\n-timeseries\n-laserheating\n-quick");
+        std::cout << sim::sim_type << std::endl;
+        error::errMessage("Simulation not recognised. Options are: \n-Mvt\n-suscep\n-timeseries\n-laserheating\n-fix_field\n-quick");
     }
     return(0);
 }
