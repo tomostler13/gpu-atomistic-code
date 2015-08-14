@@ -1,7 +1,7 @@
 // File: ramp_field.cpp
 // Author: Tom Ostler
 // Created: 13 May 2015
-// Last-modified: 14 Aug 2015 12:51:52
+// Last-modified: 14 Aug 2015 12:57:28
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -22,11 +22,10 @@
 #include "../inc/sf.h"
 void sim::ramp_field(int argc,char *argv[])
 {
-    double rt=0.0,et=0.0,ef[3]={0,0,0},rf[3]={0,0,0};
+    double et=0.0,ef[3]={0,0,0},rf[3]={0,0,0};
     //rf is a unit vector to specify the direction in which the field
     //is changed
-    //rts = run timesteps
-    unsigned int rts=0,ets=0,numint=0;
+    unsigned int ets=0,numint=0;
     std::string filestr;
     config::printline(config::Info);
     config::Info.width(45);config::Info << std::right << "*" << "**Field details***" << std::endl;
@@ -48,18 +47,7 @@ void sim::ramp_field(int argc,char *argv[])
     }
 
     libconfig::Setting &setting = config::cfg.lookup("field");
-    bool errstatus=false;setting.lookupValue("RunTime",rt);
-    if(errstatus)
-    {
-        FIXOUT(config::Info,"Run time:" << rt << " [s]" << std::endl);
-        rts=static_cast<unsigned int>((rt/llg::dt)+0.5);
-        FIXOUT(config::Info,"Number of timesteps for run:" << rts << std::endl);
-    }
-    else
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not read the run time. Setting field.RunTime (double) in seconds");
-    }
+    bool errstatus=false;
     if(setting.lookupValue("EquilTime",et))
     {
         FIXOUT(config::Info,"Equilibration time:" << et << std::endl);
@@ -156,7 +144,7 @@ void sim::ramp_field(int argc,char *argv[])
     {
         try
         {
-            fields[i]=setting["fields"][i];
+            fields[i]=setting["Fields"][i];
         }
         catch(const libconfig::SettingNotFoundException &snf)
         {
@@ -217,6 +205,32 @@ void sim::ramp_field(int argc,char *argv[])
         for(unsigned int i = 0 ; i < numint ; i++)
         {
             for(double F = fields[i] ; F < fields[i+1] ; F+=dF[i])
+            {
+                if(time_counter%spins::update==0)
+                {
+                    util::calc_mag();
+                    util::output_mag(time_counter);
+                    ofs << static_cast<double>(time_counter)*llg::dt << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2];
+                    for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+                    {
+                        ofs << "\t" << spins::mag(i,0) << "\t" << spins::mag(i,1) << "\t" << spins::mag(i,2);
+                    }
+                    ofs << std::endl;
+                    llg::applied[0]=F*rf[0];
+                    llg::applied[1]=F*rf[1];
+                    llg::applied[2]=F*rf[2];
+                }
+
+                llg::integrate(time_counter);
+                time_counter++;
+            }
+        }
+    }
+    if(rates[0]<0)//then we are decreasing field
+    {
+        for(unsigned int i = 0 ; i < numint ; i++)
+        {
+            for(double F = fields[i] ; F > fields[i+1] ; F+=dF[i])
             {
                 if(time_counter%spins::update==0)
                 {
