@@ -1,29 +1,29 @@
-OutputFile = "opf.dat";
+OutputFile = "SR.dat";
 seed = 1359107400;
 system:
 {
     //number of unit cells
-    dim = [ 1 , 1 , 1 ];
+    dim = [ 100 , 100 , 1 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="disordered.ucf";
+    unitcellfile="fcc.ucf";
     //Number of k-points in each direction
-    Nk = [ 50 , 50 , 50 ];
+    Nk = [ 2 , 2 , 1 ];
     //lattice constants
-    abc = [ 30.0e-9 , 30.0e-9 , 30.0e-9 ];
+    abc = [ 300e-9 , 300e-9 , 300e-9 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
     //3 options. CSR (good for CPU). fft (good for single species). DIA (good for GPU)
-    Exchange_method="CSR";
+    Exchange_method="fft";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
     //If not then they are ignored.
-    Off_Diagonals = FALSE;
+    Off_Diagonals = TRUE;
     //Do you want to output the unit cell info to the log file?
     log_unit_cell = FALSE;
-    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
+    Periodic_Boundaries = [ FALSE , FALSE , FALSE ];
 };
 exchange:
 {
@@ -44,7 +44,7 @@ exchange:
 };
 sf:
 {
-    Calculate=TRUE;
+    Calculate=FALSE;
     InputFile="sf.in";
 };
 llg:
@@ -54,7 +54,7 @@ llg:
     update=40;
     MagnetizationCalculationMethod=0;
     OutputMagnetization=TRUE;
-    SpinConfigMethod="file";
+    SpinConfigMethod="random";
 };
 cuda:
 {
@@ -62,8 +62,8 @@ cuda:
 };
 sim:
 {
-      sim_type = "MvT";
-//    sim_type = "quick";
+//      sim_type = "MvT";
+    sim_type = "quick";
 //    sim_type = "timeseries";
 //    sim_type="laserheating";
 };
@@ -92,4 +92,3 @@ laserheating:
     OutputStructureFactor = FALSE;
     OutputIndividualTimeSeries=TRUE;
 };
-

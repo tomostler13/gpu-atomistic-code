@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 29 Nov 2014 12:14:30
+// Last-modified: 13 Aug 2015 14:57:33
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -49,7 +49,7 @@ namespace intmat
         //Second is the species (j) that species (i) is interacting with
         //Third and fourth elements are the elements of the tensor
         //fifth, sixth and seventh are the space (reciprocal space) elements
-        if(config::exchm<99 && config::exchm>0)//the use the FFT for everything
+        if(config::exchm<99 && config::exchm>=0)//the use the FFT for everything
         {
             Nkab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
             Nrab.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);

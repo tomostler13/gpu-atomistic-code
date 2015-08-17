@@ -22,50 +22,50 @@ NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 
 
 # Objects
 OBJECTS= \
-obj_new/config.o \
-obj_new/config_glob.o \
-obj_new/error.o \
-obj_new/random.o \
-obj_new/geom_glob.o \
-obj_new/geom.o \
-obj_new/util.o \
-obj_new/util_mag.o \
-obj_new/intmat.o \
-obj_new/spins.o \
-obj_new/fields.o \
-obj_new/exch.o \
-obj_new/anis.o \
-obj_new/llgCPU.o \
-obj_new/maths.o \
-obj_new/sim.o \
-obj_new/mvt.o \
-obj_new/suscep.o \
-obj_new/matrix_conv.o \
-obj_new/matrix_mul_cpu.o \
-obj_new/sf.o \
-obj_new/sf_glob.o \
-obj_new/timeseries.o \
-obj_new/laser_heating.o \
-obj_new/exch_routines.o \
-obj_new/exch_determine_exchange_matrix.o \
-obj_new/exch_intmat.o \
-obj_new/exch_permute_Sp.o \
-obj_new/exch_direct_Sp.o \
-obj_new/exch_mapint_Sp.o \
-obj_new/ramp_field.o \
-obj_new/exch_read_4_spin.o \
-obj_new/thermal_hyst.o
+obj/config.o \
+obj/config_glob.o \
+obj/error.o \
+obj/random.o \
+obj/geom_glob.o \
+obj/geom.o \
+obj/util.o \
+obj/util_mag.o \
+obj/intmat.o \
+obj/spins.o \
+obj/fields.o \
+obj/exch.o \
+obj/anis.o \
+obj/llgCPU.o \
+obj/maths.o \
+obj/sim.o \
+obj/mvt.o \
+obj/suscep.o \
+obj/matrix_conv.o \
+obj/matrix_mul_cpu.o \
+obj/sf.o \
+obj/sf_glob.o \
+obj/timeseries.o \
+obj/laser_heating.o \
+obj/exch_routines.o \
+obj/exch_determine_exchange_matrix.o \
+obj/exch_intmat.o \
+obj/exch_permute_Sp.o \
+obj/exch_direct_Sp.o \
+obj/exch_mapint_Sp.o \
+obj/ramp_field.o \
+obj/exch_read_4_spin.o \
+obj/thermal_hyst.o
 
 SWITCHOBJ= \
-obj_new/main.o \
-obj_new/llg.o
+obj/main.o \
+obj/llg.o
 
 NVCCOBJ= \
-obj_new/cuda.o \
-obj_new/cuda_glob.o \
-obj_new/cuda_util.o \
-obj_new/cufields.o \
-obj_new/cuint.o
+obj/cuda.o \
+obj/cuda_glob.o \
+obj/cuda_util.o \
+obj/cufields.o \
+obj/cuint.o
 
 CUDA_OBJECTS=$(OBJECTS:.o=_cuda.o)
 NVCC_OBJECTS=$(NVCCOBJ:.o=_cuda.o)
@@ -80,9 +80,9 @@ gcc: $(OBJECTS) $(SWITCHOBJ)
 	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTS) $(SWITCHOBJ) $(STATIC_LINK) -o $(EXECUTABLE) $(LIBS)
 
 
-$(OBJECTS): obj_new/%.o: src/%.cpp
+$(OBJECTS): obj/%.o: src/%.cpp
 	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $<
-$(SWITCHOBJ): obj_new/%.o: src/%.cpp
+$(SWITCHOBJ): obj/%.o: src/%.cpp
 	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $<
 
 
@@ -90,20 +90,20 @@ $(SWITCHOBJ): obj_new/%.o: src/%.cpp
 gcc-cuda: $(SWITCH_OBJECTS) $(NVCC_OBJECTS) $(CUDA_OBJECTS)
 	$(NVCC) $(CUDA_OBJECTS) $(SWITCH_OBJECTS) $(NVCC_OBJECTS) $(STATIC_LINK) $(CUDALIBS) $(LIBS) -o $(EXECUTABLE) $(DEFS)
 
-$(CUDA_OBJECTS): obj_new/%_cuda.o: src/%.cpp
+$(CUDA_OBJECTS): obj/%_cuda.o: src/%.cpp
 	$(GCC) -c -o $@ $(GCC_FLAGS) $(DEFS) $<
 
-$(NVCC_OBJECTS) : obj_new/%_cuda.o: src/%.cu
+$(NVCC_OBJECTS) : obj/%_cuda.o: src/%.cu
 	$(NVCC) $(NVCC_FLAGS) $(CUDEFS) $(DEFS) -c $< $(CUDALIBS) $(LIBS) -o $@
 
-$(SWITCH_OBJECTS) : obj_new/%_cuda.o: src/%.cpp
+$(SWITCH_OBJECTS) : obj/%_cuda.o: src/%.cpp
 	$(NVCC) $(NVCC_FLAGS) $(CUDEFS) $(DEFS) -c $< $(CUDALIBS) $(LIBS) -o $@
 
 clean:
-	@rm -f obj_new/*.o
+	@rm -f obj/*.o
 
 purge:
-	@rm -f obj_new/*.o
+	@rm -f obj/*.o
 	@rm -f $(EXECUTABLE)
 
 tidy:	
