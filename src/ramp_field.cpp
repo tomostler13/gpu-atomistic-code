@@ -1,7 +1,7 @@
 // File: ramp_field.cpp
 // Author: Tom Ostler
 // Created: 13 May 2015
-// Last-modified: 24 Aug 2015 11:55:26
+// Last-modified: 24 Aug 2015 12:20:03
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -280,7 +280,7 @@ void sim::ramp_field(int argc,char *argv[])
             finalucf << geom::ucm.GetSublattice(i) << "\t";
             for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
             {
-                finalucf << geom::ucm.GetCoord(i,xyz) << "\t";
+                finalucf << geom::ucm.GetCoord(i,xyz)/static_cast<double>(geom::Nk[xyz]) << "\t";
             }
             finalucf << geom::ucm.GetMu(i) << "\t" << geom::ucm.GetDamping(i) << "\t" << geom::ucm.GetGamma(i) << "\t" << geom::ucm.GetElement(i) << "\t" << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << "\t" << geom::ucm.GetK1U(i) << "\t" << geom::ucm.GetK1UDir(i,0) << "\t" << geom::ucm.GetK1UDir(i,1) << "\t" << geom::ucm.GetK1UDir(i,2) << std::endl;
         }
