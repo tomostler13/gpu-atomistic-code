@@ -1,7 +1,7 @@
 // File: ramp_field.cpp
 // Author: Tom Ostler
 // Created: 13 May 2015
-// Last-modified: 24 Aug 2015 12:20:03
+// Last-modified: 24 Aug 2015 13:59:40
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -264,6 +264,8 @@ void sim::ramp_field(int argc,char *argv[])
             }
         }
     }
+    util::calc_mag();
+    util::output_mag(time_counter);
     if(ofsc)
     {
         std::ofstream finalucf("final_config.ucf");
