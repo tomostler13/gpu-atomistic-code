@@ -1,7 +1,7 @@
 // File: ramp_field.cpp
 // Author: Tom Ostler
 // Created: 13 May 2015
-// Last-modified: 14 Aug 2015 12:57:28
+// Last-modified: 24 Aug 2015 11:55:26
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -58,6 +58,18 @@ void sim::ramp_field(int argc,char *argv[])
     {
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("Could not read the setting field.EquilTime (double)");
+    }
+    bool ofsc=false;
+    if(!setting.lookupValue("OutputFinalSpinConfig",ofsc))
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not read whether you wanted to output the final spin config. field.OutputFinalSpinConfig (bool)");
+    }
+    FIXOUT(config::Info,"Output final spin configuration?:" << config::isTF(ofsc) << std::endl);
+    if(ofsc==true && geom::dim[0]*geom::dim[1]*geom::dim[2]>1)
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("The ouputting of the final spin config requires that the entire system is specified as a supercell (i.e. dim[3]={1,1,1};).");
     }
     if(setting.lookupValue("NumRateIntervals",numint))
     {
@@ -252,7 +264,33 @@ void sim::ramp_field(int argc,char *argv[])
             }
         }
     }
-
+    if(ofsc)
+    {
+        std::ofstream finalucf("final_config.ucf");
+        if(!finalucf.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not open file for outputting the final config file. The code will now attempt to output a vtu file that contains the information. This will have to be post processed.");
+            util::outputSpinsVTU(-1);
+        }
+        finalucf << geom::ucm.GetNMS() << std::endl;
+        finalucf << geom::ucm.NumAtomsUnitCell() << std::endl;
+        for(unsigned int i = 0 ; i < geom::ucm.NumAtomsUnitCell() ; i++)
+        {
+            finalucf << geom::ucm.GetSublattice(i) << "\t";
+            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+            {
+                finalucf << geom::ucm.GetCoord(i,xyz) << "\t";
+            }
+            finalucf << geom::ucm.GetMu(i) << "\t" << geom::ucm.GetDamping(i) << "\t" << geom::ucm.GetGamma(i) << "\t" << geom::ucm.GetElement(i) << "\t" << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << "\t" << geom::ucm.GetK1U(i) << "\t" << geom::ucm.GetK1UDir(i,0) << "\t" << geom::ucm.GetK1UDir(i,1) << "\t" << geom::ucm.GetK1UDir(i,2) << std::endl;
+        }
+        finalucf.close();
+        if(finalucf.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close final_config.ucf file");
+        }
+    }
     ofs.close();
     if(ofs.is_open())
     {

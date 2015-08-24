@@ -1,7 +1,7 @@
 system:
 {
-    seed=7823234;
-    dim = [ 20 ,20 , 20 ];
+    seed=2342342;
+    dim = [ 64 , 64 , 16 ];
     globdim = [ 1 , 1 , 1 ];
     nk = [ 2 , 2 , 2 ];
     nms = 2;
@@ -11,7 +11,7 @@ system:
     mu = [ 1.92 , 7.63 ];
     spin0 = [ 0.0 , 0.0 , 1.0 ];
     spin1 = [ 0.0 , 0.0 , -1.0 ];
-    D0 = [ 0.807243e-23 , 0.807243e-23 ];
+    D0 = [ 1.0e-24 , 1.0e-24 ];
     DVec0 = [ 0.0 , 0.0 , 1.0 ];
     DVec1 = [ 0.0 , 0.0 , 1.0 ];
     //Assuming that the system has two composition areas
