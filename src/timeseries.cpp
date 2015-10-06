@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 01 May 2015 08:15:38
+// Last-modified: 05 Oct 2015 12:37:51
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -294,56 +294,58 @@ void sim::timeseries(int argc,char *argv[])
                         kvout << s3d(kplu(i,0),kplu(i,1),kplu(i,2))[0] << "\t" << s3d(kplu(i,0),kplu(i,1),kplu(i,2))[1] << "\t";
                     }
                     kvout << std::endl;
-
-                    //output the info for each magnetic sublattice
-                    is3d.IFill(0);
-                    for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
+                    if(oits)
                     {
-                        //copy spin to 3D arrays and DO NOT apply unitary transforms
-                        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                        //output the info for each magnetic sublattice
+                        is3d.IFill(0);
+                        for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
                         {
-                            unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-                            //get the magnetic species number
-                            unsigned int ms=geom::lu(i,3);
-                            if(ms==s)//then output store the info for that magetic species
+                            //copy spin to 3D arrays and DO NOT apply unitary transforms
+                            for(unsigned int i = 0 ; i < geom::nspins ; i++)
                             {
-//                                is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i];
-//                                is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i];
-                                if(sf::qa[0]>1e-12)//quantization axis is x
+                                unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                                //get the magnetic species number
+                                unsigned int ms=geom::lu(i,3);
+                                if(ms==s)//then output store the info for that magetic species
                                 {
-                                    is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i]*sf::uo(ms,1);
-                                    is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
+                                    //                                is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i];
+                                    //                                is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i];
+                                    if(sf::qa[0]>1e-12)//quantization axis is x
+                                    {
+                                        is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i]*sf::uo(ms,1);
+                                        is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
+                                    }
+                                    else if(sf::qa[1]>1e-12)
+                                    {
+                                        is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
+                                        is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
+                                    }
+                                    else if(sf::qa[2]>1e-12)
+                                    {
+                                        is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
+                                        is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
+                                    }
                                 }
-                                else if(sf::qa[1]>1e-12)
+                                else
                                 {
-                                    is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
-                                    is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
-                                }
-                                else if(sf::qa[2]>1e-12)
-                                {
-                                    is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
-                                    is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
+                                    is3d(s,xyz[0],xyz[1],xyz[2])[0]=0.0;
+                                    is3d(s,xyz[0],xyz[1],xyz[2])[1]=0.0;
                                 }
                             }
-                            else
-                            {
-                                is3d(s,xyz[0],xyz[1],xyz[2])[0]=0.0;
-                                is3d(s,xyz[0],xyz[1],xyz[2])[1]=0.0;
-                            }
                         }
-                    }
-                    //execute the plan many (one for each species)
-                    fftw_execute(iftspins);
-                    for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
-                    {
-                        //output the time for completeness
-                        ikvout[s] << static_cast<double>(t-ets)*llg::dt << "\t";
-                        //loop over the k-points that we are interested in
-                        for(unsigned int i = 0 ; i < sf::nk ; i++)
+                        //execute the plan many (one for each species)
+                        fftw_execute(iftspins);
+                        for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
                         {
-                            ikvout[s] << is3d(s,kplu(i,0),kplu(i,1),kplu(i,2))[0] << "\t" << is3d(s,kplu(i,0),kplu(i,1),kplu(i,2))[1] << "\t";
+                            //output the time for completeness
+                            ikvout[s] << static_cast<double>(t-ets)*llg::dt << "\t";
+                            //loop over the k-points that we are interested in
+                            for(unsigned int i = 0 ; i < sf::nk ; i++)
+                            {
+                                ikvout[s] << is3d(s,kplu(i,0),kplu(i,1),kplu(i,2))[0] << "\t" << is3d(s,kplu(i,0),kplu(i,1),kplu(i,2))[1] << "\t";
+                            }
+                            ikvout[s] << std::endl;
                         }
-                        ikvout[s] << std::endl;
                     }
                 }
                 sample_counter++;
