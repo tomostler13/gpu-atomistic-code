@@ -1,7 +1,7 @@
 // File: exch_determine_exchange_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 04 Jun 2015 10:32:44
+// Last-modified: 06 Oct 2015 11:55:56
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the CSR neighbourlist
@@ -75,6 +75,10 @@ namespace exch
                             {
                                 J(s1,s2,i,j,k)*=2.179872172e-18; //now to milli
                                 J(s1,s2,i,j,k)*=1.0e-3;
+                            }
+                            else if(enerType=="Ry")
+                            {
+                                 J(s1,s2,i,j,k)*=2.179872172e-18;
                             }
                             else if(enerType=="eV")
                             {
