@@ -8,16 +8,15 @@ export LC_ALL=C
 # LIBS
 DEFS=-DNDEBUG
 CUDEFS=-DCUDA
-LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ -llapack #-lblas# -lconfig++
-STATIC_LINK=
+LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ #-llapack #-lblas# -lconfig++
 CPULIBS= -fopenmp -lpthread
-CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft -L/home/tao500/opt/libconfig-1.4.9/lib/
-STATIC_LINK=/home/tao500/opt/levmar-2.6/liblevmar.a /home/tao500/opt/libconfig-1.4.9/lib/.libs/libconfig++.a
+CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft -L/home/ulg/matnan/tostler/opt/libconfig-1.5/lib/
+STATIC_LINK=/home/ulg/matnan/tostler/opt/libconfig-1.5/lib/.libs/libconfig++.a /home/ulg/matnan/tostler/opt/lapack-3.5.0/liblapack.a /home/ulg/matnan/tostler/opt/lapack-3.5.0/librefblas.a
 OPT_LEVEL=-O3
-GCC_FLAGS= $(OPT_LEVEL) -I/home/tao500/opt/levmar-2.6/ -I/home/tao500/opt/libconfig-1.4.9/lib/
+GCC_FLAGS= $(OPT_LEVEL) -I/home/ulg/matnan/tostler/opt/libconfig-1.5/lib/
 #NVCC_FLAGS= -g $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 
 #NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_13,code=sm_13 -gencode=arch=compute_13,code=compute_13 -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_30,code=compute_30
-NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -I/home/tao500/opt/libconfig-1.4.9/lib/  -m64 -ccbin /usr/bin/g++ --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_30,code=compute_30
+NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -I/home/tao500/opt/libconfig-1.5/lib/  -m64 -ccbin /usr/bin/g++ --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_30,code=compute_30
 
 
 # Objects
@@ -41,7 +40,17 @@ obj/mvt.o \
 obj/suscep.o \
 obj/matrix_conv.o \
 obj/matrix_mul_cpu.o \
-obj/timeseries.o
+obj/timeseries.o \
+obj/laser_heating.o \
+obj/exch_routines.o \
+obj/exch_determine_exchange_matrix.o \
+obj/exch_intmat.o \
+obj/exch_permute_Sp.o \
+obj/exch_direct_Sp.o \
+obj/exch_mapint_Sp.o \
+obj/ramp_field.o \
+obj/exch_read_4_spin.o \
+obj/thermal_hyst.o
 
 SWITCHOBJ= \
 obj/main.o \
