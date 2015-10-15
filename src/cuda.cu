@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 14 Oct 2015 15:49:54
+// Last-modified: 15 Oct 2015 10:12:39
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -141,7 +141,7 @@ namespace cullg
         //dipole-dipole field so we might aswell update both at once
         if(config::exchm==0)
         {
-//            cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr,CHk,CSk);
+            cufields::CZero5DRSArrays<<<rsarzpblockspergrid,threadsperblock>>>(geom::zps*3*geom::ucm.GetNMS(),CHr,CSr,CHk,CSk);
             //copy the spin data to the zero padded arrays
             cufields::CCopySpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cespin,CSr,Ckx,Cky,Ckz,Cspec);
             //forward transform

@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Oct 2015 15:50:38
+// Last-modified: 15 Oct 2015 10:20:01
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -120,7 +120,7 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="quick")
     {
 
-        llg::T=400.0;
+        llg::T=0.01;
         int counter=0;
         time_t now = time(0);
         char *dtime=ctime(&now);
