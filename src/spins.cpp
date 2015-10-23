@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 06 Jun 2015 17:56:54
+// Last-modified: 23 Oct 2015 17:28:02
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -26,7 +26,11 @@ namespace spins
     Array4D<fftw_complex> hSk,hSr;
     Array4D<fftw_complex> dipSr;
     Array4D<fftw_complex> dipSk;
-
+    //Possible correlation functions
+    Array4D<double> Srx,Sry,Srz;
+    //Similarly for complex
+    Array4D<fftw_complex> Skx,Sky,Skz;
+    Array4D<fftw_complex> Cxx,Cxy,Cxz,Cyx,Cyy,Cyz,Czx,Czy,Czz;
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
     Array2D<double> mag;
     fftw_plan SP,dSP;

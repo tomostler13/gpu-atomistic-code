@@ -52,7 +52,8 @@ obj/exch_permute_Sp.o \
 obj/exch_direct_Sp.o \
 obj/exch_mapint_Sp.o \
 obj/util_mag.o \
-obj/exch_read_4_spin.o
+obj/exch_read_4_spin.o \
+obj/rscf.o
 
 SWITCHOBJ= \
 obj/main.o \

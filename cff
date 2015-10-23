@@ -3,18 +3,18 @@ seed = 1439812669;
 system:
 {
     //number of unit cells
-    dim = [ 50 , 50 , 1 ];
+    dim = [ 100 , 100 , 100 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
     unitcellfile="FeRh5nmFePt5nm.ucf";
     //Number of k-points in each direction
-    Nk = [ 2 , 2 , 56 ];
+    Nk = [ 1 , 1 , 1 ];
     //lattice constants
-    abc = [ 312.5e-12 , 312.5e-12 , 10e-9 ];
+    abc = [ 312.5e-12 , 312.5e-12 , 312.5e-12 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
-    Exchange_method="fft";
+    Exchange_method="CSR";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
@@ -35,7 +35,7 @@ exchange:
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
-    exchfile="FeRh5nmFePt5nm.exch";
+    exchfile="FeRh.exch";
     OutputExchangeMatrix=FALSE;
     ExitAfterExchangeMatrix=FALSE;
     ReadExchangeMatrix=FALSE;
@@ -48,15 +48,20 @@ sf:
 llg:
 {
     dt = 0.2e-15;
-    applied = [ 0.0 , 0.0 , 0.0 ];
-    update=100;
-    MagnetizationCalculationMethod=8;
+    applied = [ 0.0 , 0.0 , 1.0 ];
+    update=50;
+    MagnetizationCalculationMethod=0;
     OutputMagnetization=TRUE;
     //options are
     // - file - defined through the config file
     // - random - randomized before start of simulation
-    SpinConfigMethod="random";
+    SpinConfigMethod="chequer";
 
+};
+rscf:
+{
+    Calculate=TRUE;
+    InputFile="rscf.in";
 };
 cuda:
 {
@@ -65,6 +70,11 @@ cuda:
 sim:
 {
     sim_type="thermal_hyst";
+    sim_type="laser_heating";
+};
+laser_heating:
+{
+
 };
 thermal_hyst:
 {
