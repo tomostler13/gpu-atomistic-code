@@ -1,6 +1,6 @@
 // File: error.cpp
 // Author:Tom Ostler
-// Last-modified: 23 Oct 2015 17:36:44
+// Last-modified: 23 Oct 2015 17:45:51
 #include "../inc/error.h"
 #include <iostream>
 #include <cstdlib>
@@ -17,12 +17,12 @@ namespace error
         std::cerr << ". " << em << "***\n" << std::endl;
         exit(0);
     }
-    void errMessage(std::stringstream em)
+ /*   void errMessage(std::stringstream em)
     {
         std::string str=em.str();
-        std::cerr << ". " << str << "***\n" << std::endl;
+        std::cerr << ". " << str.c_str() << "***\n" << std::endl;
         exit(0);
-    }
+    }*/
     void errWarning(std::string em)
     {
         std::cerr << ". " << em << "***\n" << std::endl;

@@ -1,7 +1,7 @@
 // File: spins.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 23 Oct 2015 17:35:02
+// Last-modified: 25 Oct 2015 17:52:31
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -19,9 +19,10 @@ namespace spins
     extern Array5D<fftw_complex> Sr;
     extern Array4D<fftw_complex> dipSk,dipSr,hSr,hSk;
     extern Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
-    extern Array4D<double> Srx,Sry,Srz;
-    extern Array4D<fftw_complex> Skx,Sky,Skz;
-    extern Array4D<fftw_complex> Cxx,Cxy,Cxz,Cyx,Cyy,Cyz,Czx,Czy,Czz;
+    extern Array3D<double> Srx,Sry,Srz;
+    extern Array3D<fftw_complex> Skx,Sky,Skz;
+    extern Array3D<fftw_complex> Ckxx,Ckxy,Ckxz,Ckyx,Ckyy,Ckyz,Ckzx,Ckzy,Ckzz;
+    extern Array3D<double> Crxx,Crxy,Crxz,Cryx,Cryy,Cryz,Crzx,Crzy,Crzz;
     extern Array2D<double> mag;
     extern unsigned int update,mag_calc_method;
     extern bool output_mag,mapout;

@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 15 Oct 2015 10:20:01
+// Last-modified: 23 Oct 2015 18:05:26
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -24,6 +24,7 @@
 #include "../inc/sim.h"
 #include "../inc/llg.h"
 #include "../inc/sf.h"
+#include "../inc/rscf.h"
 #ifdef CUDA
 #include "../inc/cuda.h"
 #endif
@@ -86,6 +87,8 @@ int main(int argc,char *argv[])
     llg::initLLG(argc,argv);
     //Initialise the Dynamic structure factor calculation
     sf::initSF(argc,argv);
+    //initialise the real space correlation function calculations
+    rscf::initRSCF(argc,argv);
 
 #ifdef CUDA
     cullg::cuinit(argc,argv);

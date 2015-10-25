@@ -1,8 +1,8 @@
 // File: sf_glob.cpp
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
-// Created: 2 Nov 2014
-// Last-modified: 23 Oct 2015 17:33:45
+// Created: 23 Oct 2015
+// Last-modified: 25 Oct 2015 18:06:19
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -11,7 +11,9 @@
 #include "../inc/arrays.h"
 #include "../inc/unitcell.h"
 #include "../inc/spins.h"
+#include "../inc/rscf.h"
 #include <sstream>
+#include <fftw3.h>
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -26,8 +28,9 @@ namespace rscf
     bool ccf=false;
     //number of points
     unsigned int nr=0;
-    Array2D<bool> cab;
+    bool cab[3][3];
     Array2D<fftw_plan> rscfP;
+    fftw_plan SxP,SyP,SzP;
     Array2D<unsigned int> rpoints;
     void initRSCF(int argc,char *argv[])
     {
@@ -95,44 +98,142 @@ namespace rscf
                 exit(EXIT_FAILURE);
             }
             libconfig::Setting &nsetting = config::cfg.lookup("rscf");
-            cab.resize(3,3);
+            rscfP.resize(3,3);
             for(unsigned int i = 0 ; i < 3 ; i++)
             {
                 try
                 {
-                    cab(0,i)=nsetting["Cx_beta"][i];
+                    cab[0][i]=nsetting["Cx_beta"][i];
                 }
                 catch(const libconfig::SettingNotFoundException &snf)
                 {
                     error::errPreamble(__FILE__,__LINE__);
                     std::stringstream errsstr;
                     errsstr << "Setting not found exception caught. Setting " << snf.getPath();
-                    error::errMessage(errsstr);
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
                 }
                 try
                 {
-                    cab(1,i)=nsetting["Cy_beta"][i];
+                    cab[1][i]=nsetting["Cy_beta"][i];
                 }
                 catch(const libconfig::SettingNotFoundException &snf)
                 {
                     error::errPreamble(__FILE__,__LINE__);
                     std::stringstream errsstr;
-                    errsste << "Setting not found exception caught. Setting " << snf.getPath();
-                    error::errMessage(errsstr);
+                    errsstr << "Setting not found exception caught. Setting " << snf.getPath();
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
                 }
                 try
                 {
-                    cab(2,i)=nsetting["Cz_beta"][i];
+                    cab[2][i]=nsetting["Cz_beta"][i];
                 }
                 catch(const libconfig::SettingNotFoundException &snf)
                 {
                     error::errPreamble(__FILE__,__LINE__);
                     std::stringstream errsstr;
-                    errsste << "Setting not found exception caught. Setting " << snf.getPath();
-                    error::errMessage(errsstr);
+                    errsstr << "Setting not found exception caught. Setting " << snf.getPath();
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
                 }
             }
+            FIXOUTVEC(config::Info,"Elements of rscf to be calculated:",config::isTF(cab[0][0]),config::isTF(cab[0][1]),config::isTF(cab[0][2]));
+            FIXOUTVEC(config::Info,"",config::isTF(cab[1][0]),config::isTF(cab[1][1]),config::isTF(cab[1][2]));
+            FIXOUTVEC(config::Info,"",config::isTF(cab[2][0]),config::isTF(cab[2][1]),config::isTF(cab[2][2]));
 
+
+            //create the plans for the forward transform of the spins
+            bool inc[3]={false,false,false};
+            FIXOUT(config::Info,"Planning forward transforms of spin arrays for correlation function:" << std::flush);
+            if(cab[0][0]==true || cab[0][1]==true || cab[0][2]==true || cab[1][0]==true || cab[2][0]==true)
+            {
+                inc[0]=true;
+                spins::Srx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+                spins::Skx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                SxP=fftw_plan_dft_r2c_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Srx.ptr(),spins::Skx.ptr(),FFTW_ESTIMATE);
+            }
+            if(cab[1][0]==true || cab[1][1]==true || cab[1][2]==true || cab[0][1]==true || cab[2][1]==true)
+            {
+                inc[1]=true;
+                spins::Sky.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                spins::Sry.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+                SyP=fftw_plan_dft_r2c_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Sry.ptr(),spins::Sky.ptr(),FFTW_ESTIMATE);
+            }
+            if(cab[2][0]==true || cab[2][1]==true || cab[2][2]==true || cab[0][2]==true || cab[1][2]==true)
+            {
+                inc[2]=true;
+                spins::Skz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                spins::Srz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+                SzP=fftw_plan_dft_r2c_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Srz.ptr(),spins::Skz.ptr(),FFTW_ESTIMATE);
+            }
+            config::Info << "Done" << std::endl;
+            FIXOUT(config::Info,"Resizing Cr arrays and planning back transform of Sq . Sq*:" << std::flush);
+            if(cab[0][0])
+            {
+                //do an in-place transform
+                spins::Ckxx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                spins::Crxx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+
+                rscfP(0,0)=fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Ckxx.ptr(),spins::Crxx.ptr(),FFTW_ESTIMATE);
+            }
+            if(cab[0][1])
+            {
+                spins::Ckxy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                spins::Crxy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+
+                rscfP(0,1)=fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Ckxy.ptr(),spins::Crxy.ptr(),FFTW_ESTIMATE);
+            }
+            if(cab[0][2])
+            {
+                spins::Ckxz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                spins::Crxz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+
+                rscfP(0,2)=fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Ckxz.ptr(),spins::Crxz.ptr(),FFTW_ESTIMATE);
+            }
+            if(cab[1][0])
+            {
+                spins::Ckyx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                spins::Cryx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+
+                rscfP(1,0)=rscfP(1,0)=fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Ckyx.ptr(),spins::Cryx.ptr(),FFTW_ESTIMATE);
+            }
+            if(cab[1][1])
+            {
+                spins::Ckyy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                spins::Cryy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+
+                rscfP(1,1)=fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Ckyy.ptr(),spins::Cryy.ptr(),FFTW_ESTIMATE);
+            }
+            if(cab[1][2])
+            {
+                spins::Ckyz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                spins::Cryz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+
+                rscfP(1,2)=fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Ckyz.ptr(),spins::Cryz.ptr(),FFTW_ESTIMATE);
+            }
+            if(cab[2][0])
+            {
+                spins::Ckzx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                spins::Crzx.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+
+                rscfP(2,0)=fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Ckzx.ptr(),spins::Crzx.ptr(),FFTW_ESTIMATE);
+            }
+            if(cab[2][1])
+            {
+                spins::Ckzy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                spins::Crzy.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+
+                rscfP(2,1)=fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Ckzy.ptr(),spins::Crzy.ptr(),FFTW_ESTIMATE);
+            }
+            if(cab[2][2])
+            {
+                spins::Ckzz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::cplxdim);
+                spins::Crzz.resize(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
+
+                rscfP(2,2)=fftw_plan_dft_c2r_3d(geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2],spins::Ckzz.ptr(),spins::Crzz.ptr(),FFTW_ESTIMATE);
+            }
+            config::Info << "Done" << std::endl;
         }
     }
 }

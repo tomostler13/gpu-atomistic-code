@@ -3,11 +3,11 @@ seed = 1439812669;
 system:
 {
     //number of unit cells
-    dim = [ 100 , 100 , 100 ];
+    dim = [ 10 , 10 , 10 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="FeRh5nmFePt5nm.ucf";
+    unitcellfile="FeRh.ucf";
     //Number of k-points in each direction
     Nk = [ 1 , 1 , 1 ];
     //lattice constants
@@ -69,8 +69,8 @@ cuda:
 };
 sim:
 {
-    sim_type="thermal_hyst";
-    sim_type="laser_heating";
+    //sim_type="thermal_hyst";
+    sim_type="laserheating";
 };
 laser_heating:
 {
