@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 23 Oct 2015 18:05:26
+// Last-modified: 25 Oct 2015 20:00:03
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -89,7 +89,8 @@ int main(int argc,char *argv[])
     sf::initSF(argc,argv);
     //initialise the real space correlation function calculations
     rscf::initRSCF(argc,argv);
-
+    unsigned int temp=0;
+    rscf::calcRSCF(temp);
 #ifdef CUDA
     cullg::cuinit(argc,argv);
 #else

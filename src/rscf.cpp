@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 23 Oct 2015
-// Last-modified: 25 Oct 2015 19:48:27
+// Last-modified: 25 Oct 2015 19:58:58
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -404,6 +404,8 @@ namespace rscf
                 }
                 //perform back transform
                 fftw_execute(rscfP(0,0));
+                //output the correlation function
+                outputRSCF(Coxx,spins::Crxx,t);
             }
             if(cab[0][1])//Cxy
             {
@@ -423,6 +425,8 @@ namespace rscf
                 }
                 //perform back transform
                 fftw_execute(rscfP(0,1));
+                //output the correlation function
+                outputRSCF(Coxy,spins::Crxy,t);
             }
             if(cab[0][2])//Cxz
             {
@@ -442,6 +446,8 @@ namespace rscf
                 }
                 //perform back transform
                 fftw_execute(rscfP(0,2));
+                //output the correlation function
+                outputRSCF(Coxz,spins::Crxz,t);
             }
             if(cab[1][0])//Cyx
             {
@@ -461,6 +467,8 @@ namespace rscf
                 }
                 //perform back transform
                 fftw_execute(rscfP(1,0));
+                //output the correlation function
+                outputRSCF(Coyx,spins::Cryx,t);
             }
             if(cab[1][1])//Cyy
             {
@@ -480,6 +488,8 @@ namespace rscf
                 }
                 //perform back transform
                 fftw_execute(rscfP(1,1));
+                //output the correlation function
+                outputRSCF(Coyy,spins::Cryy,t);
             }
             if(cab[1][2])//Cyz
             {
@@ -499,6 +509,8 @@ namespace rscf
                 }
                 //perform back transform
                 fftw_execute(rscfP(1,2));
+                //output the correlation function
+                outputRSCF(Coyz,spins::Cryz,t);
             }
             if(cab[2][0])//Czx
             {
@@ -518,6 +530,8 @@ namespace rscf
                 }
                 //perform back transform
                 fftw_execute(rscfP(2,0));
+                //output the correlation function
+                outputRSCF(Cozx,spins::Crzx,t);
             }
             if(cab[2][1])//Czy
             {
@@ -537,6 +551,8 @@ namespace rscf
                 }
                 //perform back transform
                 fftw_execute(rscfP(2,1));
+                //output the correlation function
+                outputRSCF(Cozy,spins::Crzy,t);
             }
             if(cab[2][2])//Czz
             {
@@ -556,6 +572,8 @@ namespace rscf
                 }
                 //perform back transform
                 fftw_execute(rscfP(2,2));
+                //output the correlation function
+                outputRSCF(Cozz,spins::Crzz,t);
             }
 
 
@@ -583,5 +601,14 @@ namespace rscf
             //This should never be reached as error handling is dealt with within the function
             return(0);
         }
+    }
+    void outputRSCF(std::ofstream& ops,Array3D<double>& C,unsigned int t)
+    {
+        for(unsigned int i = 0 ; i < nr ; i++)
+        {
+            unsigned int xyz[3]={rpoints(i,0),rpoints(i,1),rpoints(i,2)};
+            ops << t << "\t" << i << "\t" << xyz[0] << "\t" << xyz[1] << "\t" << xyz[2] << "\t" << C(xyz[0],xyz[1],xyz[2]) << std::endl;
+        }
+        ops << std::endl << std::endl;
     }
 }
