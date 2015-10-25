@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 23 Oct 2015
-// Last-modified: 25 Oct 2015 19:58:58
+// Last-modified: 25 Oct 2015 21:44:57
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -39,6 +39,8 @@ namespace rscf
     Array2D<unsigned int> rpoints;
     bool inc[3]={false,false,false};
     std::ofstream Coxx,Coxy,Coxz,Coyx,Coyy,Coyz,Cozx,Cozy,Cozz;
+    //normalisation factor
+    double normfac=1.0;
     void initRSCF(int argc,char *argv[])
     {
         config::printline(config::Info);
@@ -90,6 +92,8 @@ namespace rscf
         if(ccf)
         {
             nzpcplxdim=(geom::dim[2]*geom::Nk[2]/2)+1;
+            normfac=(1./(static_cast<double>(geom::dim[0]*geom::dim[1]*geom::dim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2])))*(1./(static_cast<double>(geom::dim[0]*geom::dim[1]*geom::dim[2]*geom::Nk[0]*geom::Nk[1]*geom::Nk[2])));
+            FIXOUT(config::Info,"Normalisation for correlation function:" << 1/normfac << std::endl);
             try
             {
                 config::cfg.readFile(cffile.c_str());
@@ -607,7 +611,7 @@ namespace rscf
         for(unsigned int i = 0 ; i < nr ; i++)
         {
             unsigned int xyz[3]={rpoints(i,0),rpoints(i,1),rpoints(i,2)};
-            ops << t << "\t" << i << "\t" << xyz[0] << "\t" << xyz[1] << "\t" << xyz[2] << "\t" << C(xyz[0],xyz[1],xyz[2]) << std::endl;
+            ops << t << "\t" << i << "\t" << xyz[0] << "\t" << xyz[1] << "\t" << xyz[2] << "\t" << C(xyz[0],xyz[1],xyz[2])*normfac << std::endl;
         }
         ops << std::endl << std::endl;
     }

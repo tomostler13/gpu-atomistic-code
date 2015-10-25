@@ -55,7 +55,7 @@ llg:
     //options are
     // - file - defined through the config file
     // - random - randomized before start of simulation
-    SpinConfigMethod="file";
+    SpinConfigMethod="chequer";
 
 };
 rscf:
