@@ -11,9 +11,9 @@ DEFS=-DNDEBUG
 CUDEFS=-DCUDA
 #This part is hostname dependent (library paths etc)
 ifeq ($(HOSTNAME),anlaf.york.ac.uk)
-include anlaf.args
+include HostCompArg/anlaf.args
 else ifeq ($(HOSTNAME),wohlfarth.york.ac.uk)
-include wohlfarth.args
+include HostCompArg/wohlfarth.args
 endif
 
 include files.in
