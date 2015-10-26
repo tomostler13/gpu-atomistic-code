@@ -7,8 +7,8 @@ system:
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-//    unitcellfile="FeRh.ucf";
-    unitcellfile="sc.ucf";
+    unitcellfile="FeRh.ucf";
+//    unitcellfile="sc.ucf";
     //Number of k-points in each direction
     Nk = [ 1 , 1 , 1 ];
     //lattice constants
@@ -36,8 +36,8 @@ exchange:
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
-//    exchfile="FeRh.exch";
-    exchfile="sc.exch";
+    exchfile="FeRh.exch";
+//    exchfile="sc.exch";
     OutputExchangeMatrix=FALSE;
     ExitAfterExchangeMatrix=FALSE;
     ReadExchangeMatrix=FALSE;
