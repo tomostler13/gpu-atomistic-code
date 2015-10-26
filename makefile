@@ -16,6 +16,8 @@ else ifeq ($(HOSTNAME),wohlfarth.york.ac.uk)
 include HostCompArg/wohlfarth.args
 else ifeq ($(HOSTNAME),ecgberht
 include HostCompArg/ecgberht.args
+else ifeq ($(HOSTNAME),jimkirk)
+include HostCompArg/jimkirk.args
 endif
 
 include files.in
