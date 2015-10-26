@@ -1,5 +1,6 @@
 # Compilers
 SHELL:=/bin/bash
+HOSTNAME=$(shell hostname)
 GITINFO=-DGIT_SHA1='"$(shell git rev-parse HEAD)"' -DGITDIRTY='"$(shell git status -s | grep -v ? | wc -l)"'
 GCC=g++  -DCOMP='"GNU C++ Compiler $(shell g++ --version | head -n 1 | cut -b 5-)"' -DHOSTNAME='"$(shell hostname)"' ${GITINFO}
 NVCC=nvcc  -DCOMP='"NVIDIA C++ Compiler $(shell nvcc --version | tail -n 2 | head -n 1)"' -DHOSTNAME='"$(shell hostname)"' ${GITINFO}
@@ -8,63 +9,14 @@ export LC_ALL=C
 # LIBS
 DEFS=-DNDEBUG
 CUDEFS=-DCUDA
-LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ -lgfortran #-llapack #-lblas# -lconfig++
-CPULIBS= -fopenmp -lpthread -L/home/ulg/matnan/tostler/opt/libconfig-1.5/lib -L/usr/lib64
-CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft -L/home/ulg/matnan/tostler/opt/libconfig-1.5/lib/ -lgfortran
-STATIC_LINK=/home/ulg/matnan/tostler/opt/libconfig-1.5/lib/.libs/libconfig++.a /home/ulg/matnan/tostler/opt/lapack-3.5.0/liblapack.a /home/ulg/matnan/tostler/opt/lapack-3.5.0/librefblas.a
-OPT_LEVEL=-O3
-GCC_FLAGS= $(OPT_LEVEL) -I/home/ulg/matnan/tostler/opt/libconfig-1.5/lib/
-#NVCC_FLAGS= -g $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 
-#NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_13,code=sm_13 -gencode=arch=compute_13,code=compute_13 -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_30,code=compute_30
-NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -I/home/ulg/matnan/tostler/opt/libconfig-1.5/lib/  -m64 -ccbin /usr/bin/g++ --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_30,code=compute_30
+#This part is hostname dependent (library paths etc)
+ifeq ($(HOSTNAME),anlaf.york.ac.uk)
+include anlaf.args
+else ifeq ($(HOSTNAME),wohlfarth.york.ac.uk)
+include wohlfarth.args
+endif
 
-
-# Objects
-OBJECTS= \
-obj/config.o \
-obj/config_glob.o \
-obj/error.o \
-obj/random.o \
-obj/geom_glob.o \
-obj/geom.o \
-obj/util.o \
-obj/util_mag.o \
-obj/intmat.o \
-obj/spins.o \
-obj/fields.o \
-obj/exch.o \
-obj/anis.o \
-obj/llgCPU.o \
-obj/maths.o \
-obj/sim.o \
-obj/mvt.o \
-obj/suscep.o \
-obj/matrix_conv.o \
-obj/matrix_mul_cpu.o \
-obj/sf.o \
-obj/sf_glob.o \
-obj/timeseries.o \
-obj/laser_heating.o \
-obj/exch_routines.o \
-obj/exch_determine_exchange_matrix.o \
-obj/exch_intmat.o \
-obj/exch_permute_Sp.o \
-obj/exch_direct_Sp.o \
-obj/exch_mapint_Sp.o \
-obj/ramp_field.o \
-obj/exch_read_4_spin.o \
-obj/thermal_hyst.o
-
-SWITCHOBJ= \
-obj/main.o \
-obj/llg.o
-
-NVCCOBJ= \
-obj/cuda.o \
-obj/cuda_glob.o \
-obj/cuda_util.o \
-obj/cufields.o \
-obj/cuint.o
+include files.in
 
 CUDA_OBJECTS=$(OBJECTS:.o=_cuda.o)
 NVCC_OBJECTS=$(NVCCOBJ:.o=_cuda.o)
