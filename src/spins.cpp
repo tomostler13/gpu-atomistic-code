@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 25 Oct 2015 17:51:45
+// Last-modified: 26 Oct 2015 09:14:56
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -30,8 +30,8 @@ namespace spins
     Array3D<double> Srx,Sry,Srz;
     //Similarly for complex
     Array3D<fftw_complex> Skx,Sky,Skz;
-    Array3D<fftw_complex> Ckxx,Ckxy,Ckxz,Ckyx,Ckyy,Ckyz,Ckzx,Ckzy,Ckzz;
-    Array3D<double> Crxx,Crxy,Crxz,Cryx,Cryy,Cryz,Crzx,Crzy,Crzz;
+    Array3D<fftw_complex> Ckxx,Ckxy,Ckxz,Ckyx,Ckyy,Ckyz,Ckzx,Ckzy,Ckzz,Cksds;
+    Array3D<double> Crxx,Crxy,Crxz,Cryx,Cryy,Cryz,Crzx,Crzy,Crzz,Crsds;
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
     Array2D<double> mag;
     fftw_plan SP,dSP;

@@ -1,5 +1,6 @@
 rscf:
 {
+    CalcSdotS=true;
     Cx_beta = [ FALSE , FALSE , FALSE ];
     Cy_beta = [ FALSE , FALSE , FALSE ];
     Cz_beta = [ FALSE , FALSE , TRUE ];

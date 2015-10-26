@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 23 Oct 2015
-// Last-modified: 25 Oct 2015 21:44:57
+// Last-modified: 26 Oct 2015 09:37:43
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -34,11 +34,13 @@ namespace rscf
     unsigned int count=0;
     bool cab[3][3];
     Array2D<fftw_plan> rscfP;
-    fftw_plan SxP,SyP,SzP;
+    fftw_plan SxP,SyP,SzP,Csds;
     unsigned int nzpcplxdim=0;
     Array2D<unsigned int> rpoints;
-    bool inc[3]={false,false,false};
-    std::ofstream Coxx,Coxy,Coxz,Coyx,Coyy,Coyz,Cozx,Cozy,Cozz;
+    bool inc[3]={false,false,false},sdots=false;
+    //this stores if the spin arrays have been resized and planned (the FFT)
+    bool sresp[3]={false,false,false};
+    std::ofstream Coxx,Coxy,Coxz,Coyx,Coyy,Coyz,Cozx,Cozy,Cozz,Cosds;
     //normalisation factor
     double normfac=1.0;
     void initRSCF(int argc,char *argv[])
@@ -111,6 +113,15 @@ namespace rscf
             }
             libconfig::Setting &nsetting = config::cfg.lookup("rscf");
             rscfP.resize(3,3);
+            if(nsetting.lookupValue("CalcSdotS",sdots))
+            {
+                FIXOUT(config::Info,"Calculating S . S?" << config::isTF(sdots) << std::endl);
+            }
+            else
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not read setting rscf.CalcSdotS (bool)");
+            }
             for(unsigned int i = 0 ; i < 3 ; i++)
             {
                 try
@@ -164,6 +175,7 @@ namespace rscf
                 spins::Srx.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
                 spins::Skx.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
                 SxP=fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],spins::Srx.ptr(),spins::Skx.ptr(),FFTW_ESTIMATE);
+                sresp[0]=true;
             }
             if(cab[1][0]==true || cab[1][1]==true || cab[1][2]==true || cab[0][1]==true || cab[2][1]==true)
             {
@@ -171,6 +183,7 @@ namespace rscf
                 spins::Sky.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
                 spins::Sry.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
                 SyP=fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],spins::Sry.ptr(),spins::Sky.ptr(),FFTW_ESTIMATE);
+                sresp[1]=true;
             }
             if(cab[2][0]==true || cab[2][1]==true || cab[2][2]==true || cab[0][2]==true || cab[1][2]==true)
             {
@@ -178,9 +191,49 @@ namespace rscf
                 spins::Skz.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
                 spins::Srz.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
                 SzP=fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],spins::Srz.ptr(),spins::Skz.ptr(),FFTW_ESTIMATE);
+                sresp[2]=true;
+            }
+            if(sdots)
+            {
+                if(!sresp[0])
+                {
+                    inc[0]=true;
+                    spins::Srx.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+                    spins::Skx.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
+                    SxP=fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],spins::Srx.ptr(),spins::Skx.ptr(),FFTW_ESTIMATE);
+                    sresp[0]=true;
+                }
+                if(!sresp[1])
+                {
+                    inc[1]=true;
+                    spins::Sky.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
+                    spins::Sry.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+                    SyP=fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],spins::Sry.ptr(),spins::Sky.ptr(),FFTW_ESTIMATE);
+                    sresp[1]=true;
+                }
+                if(!sresp[2])
+                {
+                    inc[2]=true;
+                    spins::Skz.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
+                    spins::Srz.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+                    SzP=fftw_plan_dft_r2c_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],spins::Srz.ptr(),spins::Skz.ptr(),FFTW_ESTIMATE);
+                    sresp[2]=true;
+                }
             }
             config::Info << "Done" << std::endl;
             FIXOUT(config::Info,"Resizing Cr arrays and planning back transform of Sq . Sq*:" << std::flush);
+            if(sdots)
+            {
+                spins::Cksds.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],nzpcplxdim);
+                spins::Crsds.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+                Csds=fftw_plan_dft_c2r_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],spins::Cksds.ptr(),spins::Crsds.ptr(),FFTW_ESTIMATE);
+                Cosds.open("Csds.dat");
+                if(!Cosds.is_open())
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Could not open the file for writing the Csds correlation function.");
+                }
+            }
             if(cab[0][0])
             {
                 //do an in-place transform
@@ -350,6 +403,7 @@ namespace rscf
                 error::errPreamble(__FILE__,__LINE__);
                 error::errMessage("Could not read the update of the correlation function");
             }
+            atexit(cleanup);
         }
     }
 
@@ -579,6 +633,26 @@ namespace rscf
                 //output the correlation function
                 outputRSCF(Cozz,spins::Crzz,t);
             }
+            if(sdots)
+            {
+                for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+                {
+                    for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                    {
+                        for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                        {
+                            //Real part
+                            spins::Cksds(i,j,k)[0]=spins::Skx(i,j,k)[0]*spins::Skx(i,j,k)[0]+spins::Skx(i,j,k)[1]*spins::Skx(i,j,k)[1] + spins::Sky(i,j,k)[0]*spins::Sky(i,j,k)[0]+spins::Sky(i,j,k)[1]*spins::Sky(i,j,k)[1] + spins::Skz(i,j,k)[0]*spins::Skz(i,j,k)[0]+spins::Skz(i,j,k)[1]*spins::Skz(i,j,k)[1];
+                            //Complex part
+                            spins::Cksds(i,j,k)[1]=spins::Skx(i,j,k)[1]*spins::Skx(i,j,k)[0]-spins::Skx(i,j,k)[0]*spins::Skx(i,j,k)[1] + spins::Sky(i,j,k)[1]*spins::Sky(i,j,k)[0]-spins::Sky(i,j,k)[0]*spins::Sky(i,j,k)[1] + spins::Skz(i,j,k)[1]*spins::Skz(i,j,k)[0]-spins::Skz(i,j,k)[0]*spins::Skz(i,j,k)[1];
+                        }
+                    }
+                }
+                //perform back transform
+                fftw_execute(Csds);
+                //output the correlation function
+                outputRSCF(Cosds,spins::Crsds,t);
+            }
 
 
             count=0;
@@ -614,5 +688,19 @@ namespace rscf
             ops << t << "\t" << i << "\t" << xyz[0] << "\t" << xyz[1] << "\t" << xyz[2] << "\t" << C(xyz[0],xyz[1],xyz[2])*normfac << std::endl;
         }
         ops << std::endl << std::endl;
+    }
+
+    void cleanup()
+    {
+        Coxx.close();if(Coxx.is_open()){error::errPreamble(__FILE__,__LINE__);error::errWarning("Could not close Cxx.dat file");}
+        Coxy.close();if(Coxy.is_open()){error::errPreamble(__FILE__,__LINE__);error::errWarning("Could not close Cxy.dat file");}
+        Coxz.close();if(Coxz.is_open()){error::errPreamble(__FILE__,__LINE__);error::errWarning("Could not close Cxz.dat file");}
+        Coyx.close();if(Coyx.is_open()){error::errPreamble(__FILE__,__LINE__);error::errWarning("Could not close Cyx.dat file");}
+        Coyy.close();if(Coyy.is_open()){error::errPreamble(__FILE__,__LINE__);error::errWarning("Could not close Cyy.dat file");}
+        Coyz.close();if(Coyz.is_open()){error::errPreamble(__FILE__,__LINE__);error::errWarning("Could not close Cyz.dat file");}
+        Cozx.close();if(Cozx.is_open()){error::errPreamble(__FILE__,__LINE__);error::errWarning("Could not close Czx.dat file");}
+        Cozy.close();if(Cozy.is_open()){error::errPreamble(__FILE__,__LINE__);error::errWarning("Could not close Czy.dat file");}
+        Cozz.close();if(Cozz.is_open()){error::errPreamble(__FILE__,__LINE__);error::errWarning("Could not close Czz.dat file");}
+        Cosds.close();if(Cosds.is_open()){error::errPreamble(__FILE__,__LINE__);error::errWarning("Could not close Csds.dat file");}
     }
 }
