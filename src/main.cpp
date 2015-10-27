@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 15 Oct 2015 10:20:01
+// Last-modified: 26 Oct 2015 09:10:25
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -24,6 +24,7 @@
 #include "../inc/sim.h"
 #include "../inc/llg.h"
 #include "../inc/sf.h"
+#include "../inc/rscf.h"
 #ifdef CUDA
 #include "../inc/cuda.h"
 #endif
@@ -86,7 +87,10 @@ int main(int argc,char *argv[])
     llg::initLLG(argc,argv);
     //Initialise the Dynamic structure factor calculation
     sf::initSF(argc,argv);
-
+    //initialise the real space correlation function calculations
+    rscf::initRSCF(argc,argv);
+    //unsigned int temp=0;
+    //rscf::calcRSCF(temp);
 #ifdef CUDA
     cullg::cuinit(argc,argv);
 #else
@@ -120,18 +124,18 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="quick")
     {
 
-        llg::T=0.01;
+        llg::T=10.0;
         int counter=0;
         time_t now = time(0);
         char *dtime=ctime(&now);
         std::cout << "#Start time:\t" << dtime << std::endl;
-        for(unsigned int t = 0 ; t < 100000 ; t++)
+        for(unsigned int t = 0 ; t < 10000 ; t++)
         {
             if(t%spins::update==0)
             {
                 if(counter%100==0)
                 {
-                    util::outputSpinsVTU(t);
+                    //util::outputSpinsVTU(t);
                     counter=0;
                 }
                 counter++;
