@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 03 Aug 2015 17:00:45
+// Last-modified: 26 Oct 2015 14:43:40
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -9,6 +9,7 @@
 #include "../inc/geom.h"
 #include "../inc/spins.h"
 #include "../inc/util.h"
+#include "../inc/rscf.h"
 #include <cmath>
 #include <sstream>
 #include <string>
@@ -159,6 +160,10 @@ namespace llg
         #else
         llgCPU::llgCPU(t);
         #endif
+        if(t%spins::update==0)
+        {
+            rscf::calcRSCF(t);
+        }
 
     }
 }
