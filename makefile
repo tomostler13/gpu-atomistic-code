@@ -10,7 +10,7 @@ export LC_ALL=C
 DEFS=-DNDEBUG
 CUDEFS=-DCUDA
 #This part is hostname dependent (library paths etc)
-include make.args
+include host.args
 include files.in
 
 CUDA_OBJECTS=$(OBJECTS:.o=_cuda.o)
