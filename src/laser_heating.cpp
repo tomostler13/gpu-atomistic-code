@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 03 Aug 2015 17:14:06
+// Last-modified: 27 Oct 2015 15:12:18
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -20,6 +20,7 @@
 #include "../inc/llg.h"
 #include "../inc/sim.h"
 #include "../inc/sf.h"
+#include "../inc/rscf.h"
 //function prototype
 void CalcTe(double*,double*,double,unsigned int,double,double,double&,double&,double,double,double,double,double,double);
 void sim::laser_heating(int argc,char *argv[])
@@ -343,6 +344,7 @@ void sim::laser_heating(int argc,char *argv[])
         {
             util::calc_mag();
             util::output_mag(t);
+            rscf::calcRSCF(t);
         }
         llg::integrate(t);
         if(t%spins::update==0)
@@ -370,6 +372,7 @@ void sim::laser_heating(int argc,char *argv[])
         {
             util::calc_mag();
             util::output_mag(t);
+            rscf::calcRSCF(t);
 //            ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl << std::endl;
         }
         if(opsf==true)
