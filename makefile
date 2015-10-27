@@ -10,16 +10,7 @@ export LC_ALL=C
 DEFS=-DNDEBUG
 CUDEFS=-DCUDA
 #This part is hostname dependent (library paths etc)
-ifeq ($(HOSTNAME),anlaf.york.ac.uk)
-include HostCompArg/anlaf.args
-else ifeq ($(HOSTNAME),wohlfarth.york.ac.uk)
-include HostCompArg/wohlfarth.args
-else ifeq ($(HOSTNAME),ecgberht
-include HostCompArg/ecgberht.args
-else ifeq ($(HOSTNAME),jimkirk)
-include HostCompArg/jimkirk.args
-endif
-
+include make.args
 include files.in
 
 CUDA_OBJECTS=$(OBJECTS:.o=_cuda.o)
