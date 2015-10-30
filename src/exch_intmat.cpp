@@ -1,7 +1,7 @@
 // File: exch_interaction_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 29 Oct 2015 10:02:51
+// Last-modified: 29 Oct 2015 13:09:02
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the interaction matrices based
@@ -196,9 +196,30 @@ namespace exch
                     int lc[3]={0,0,0};
                     //std::cout << s1 << "\t" << s2 << "\t" << i << "\t" << exchvec(s1,s2,i,0) << std::endl;
                     //std::cout << evs[0] << std::endl;
-                    lc[0]=static_cast<unsigned int>(exchvec(s1,s2,i,0)*static_cast<double>(geom::Nk[0])*evs[0]+0.5);
-                    lc[1]=static_cast<unsigned int>(exchvec(s1,s2,i,1)*static_cast<double>(geom::Nk[1])*evs[1]+0.5);
-                    lc[2]=static_cast<unsigned int>(exchvec(s1,s2,i,2)*static_cast<double>(geom::Nk[2])*evs[2]+0.5);
+                    if(exchvec(s1,s2,i,0)>0)
+                    {
+                        lc[0]=static_cast<int>(exchvec(s1,s2,i,0)*evs[0]+0.5);
+                    }
+                    else
+                    {
+                        lc[0]=static_cast<int>(exchvec(s1,s2,i,0)*evs[0]-0.5);
+                    }
+                    if(exchvec(s1,s2,i,1)>0)
+                    {
+                        lc[1]=static_cast<int>(exchvec(s1,s2,i,1)*evs[1]+0.5);
+                    }
+                    else
+                    {
+                        lc[1]=static_cast<int>(exchvec(s1,s2,i,1)*evs[1]-0.5);
+                    }
+                    if(exchvec(s1,s2,i,2)>0)
+                    {
+                        lc[2]=static_cast<int>(exchvec(s1,s2,i,2)*evs[2]+0.5);
+                    }
+                    else
+                    {
+                        lc[2]=static_cast<int>(exchvec(s1,s2,i,2)*evs[2]-0.5);
+                    }
                     for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
                     {
                         //reference array
@@ -282,7 +303,7 @@ namespace exch
                     }//end of counter check if statement
                     */
                     counter=0;
-                    config::printline(config::Log);
+                    //config::printline(config::Log);
                 }//end of shell list loop
             }//end of s2 loop
         }//end of s1 loop
