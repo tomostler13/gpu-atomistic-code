@@ -8,4 +8,6 @@ else ifeq ($(HOSTNAME),jimkirk)
 include HostCompArg/jimkirk.args
 else ifeq ($(HOSTNAME),node001)
 include HostCompArg/vega.args
+else ifeq ($(HOSTNAME),hercules)
+include HostCompArg/herc.args
 endif
