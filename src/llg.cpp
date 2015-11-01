@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 26 Oct 2015 14:43:40
+// Last-modified: 27 Oct 2015 14:51:13
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -160,10 +160,6 @@ namespace llg
         #else
         llgCPU::llgCPU(t);
         #endif
-        if(t%spins::update==0)
-        {
-            rscf::calcRSCF(t);
-        }
 
     }
 }

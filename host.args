@@ -10,4 +10,6 @@ else ifeq ($(HOSTNAME),node001)
 include HostCompArg/vega.args
 else ifeq ($(HOSTNAME),hercules)
 include HostCompArg/herc.args
+else ifeq ($(HOSTNAME),dragon1-h1.umons.ac.be)
+include HostCompArg/dragon.args
 endif
