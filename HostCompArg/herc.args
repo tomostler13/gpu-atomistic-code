@@ -1,0 +1,7 @@
+LIBS= -lm  -lstdc++ -lgfortran -lfftw3 -lfftw3f #-llapack #-lblas# -lconfig++ -lfftw3 -lfftw3f 
+CPULIBS= -fopenmp -lpthread -L/home/tostler/opt/libconfig-1.5/lib -L/usr/lib64  
+CUDALIBS= -L/cluster/unamur/libraries/cuda/5.5.22/default/lib64 -lcurand -lcudart -lcufft -L/home/tostler/opt/libconfig-1.5/lib/ -lgfortran 
+STATIC_LINK=/home/tostler/opt/libconfig-1.5/lib/.libs/libconfig++.a /home/tostler/opt/lapack-3.5.0/liblapack.a /home/tostler/opt/lapack-3.5.0/librefblas.a 
+OPT_LEVEL=-O3
+GCC_FLAGS= $(OPT_LEVEL) -I/home/tostler/opt/libconfig-1.5/lib/ #-I/home/tostler/opt/fftw-3.3.4/api
+NVCC_FLAGS= $(OPT_LEVEL) -I/cluster/unamur/libraries/cuda/5.5.22/default/include -I/home/tostler/opt/libconfig-1.5/lib/  -m64 --compiler-bindir=/usr/bin/g++-4.8 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_30,code=compute_30

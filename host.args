@@ -1,0 +1,17 @@
+ifeq ($(HOSTNAME),anlaf.york.ac.uk)
+include HostCompArg/anlaf.args
+else ifeq ($(HOSTNAME),wohlfarth.york.ac.uk)
+include HostCompArg/wohlfarth.args
+else ifeq ($(HOSTNAME),ecgberht)
+include HostCompArg/ecgberht.args
+else ifeq ($(HOSTNAME),jimkirk)
+include HostCompArg/jimkirk.args
+else ifeq ($(HOSTNAME),node001)
+include HostCompArg/vega.args
+else ifeq ($(HOSTNAME),hercules)
+include HostCompArg/herc.args
+else ifeq ($(HOSTNAME),dragon1-h1.umons.ac.be)
+include HostCompArg/dragon.args
+else ifeq ($(HOSTNAME),lemaitre2.cism.ucl.ac.be)
+include HostCompArg/lemaitre.args
+endif

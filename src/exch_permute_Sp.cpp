@@ -1,7 +1,7 @@
 // File: exch_permute_Sp.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 05 Dec 2014 13:28:16
+// Last-modified: 14 Oct 2015 13:35:39
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // routines here take the exchange shell list and permute
@@ -79,92 +79,102 @@ namespace exch
                         //reference array
                         int rc[3]={lookup[wrap%3],lookup[(1+wrap)%3],lookup[(2+wrap)%3]};
                         int wc[3]={rc[0],rc[1],rc[2]};
-                        //change the signs of each element
-                        for(unsigned int a = 0 ; a < 2 ; a++)
+                        for(unsigned int swap = 0 ; swap < 2 ; swap++)
                         {
-                            for(unsigned int b = 0 ; b < 2 ; b++)
+                            if(swap==1)
                             {
-                                for(unsigned int c = 0 ; c < 2 ; c++)
+                                int el2=rc[1];
+                                int el3=rc[2];
+                                rc[2]=el2;
+                                rc[1]=el3;
+                            }
+                            //change the signs of each element
+                            for(unsigned int a = 0 ; a < 2 ; a++)
+                            {
+                                for(unsigned int b = 0 ; b < 2 ; b++)
                                 {
-                                    wc[0]=rc[0]*pow(-1,a+1);
-                                    wc[1]=rc[1]*pow(-1,b+1);
-                                    wc[2]=rc[2]*pow(-1,c+1);
-                                    int lookupvec[3]={wc[0]+mypos[0],wc[1]+mypos[1],wc[2]+mypos[2]};
-                                    unsigned int check_lookup=0;
-                                    for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                                    for(unsigned int c = 0 ; c < 2 ; c++)
                                     {
-                                        if(lookupvec[xyz]<0 && config::pbc[xyz]==true)
+                                        wc[0]=rc[0]*pow(-1,a+1);
+                                        wc[1]=rc[1]*pow(-1,b+1);
+                                        wc[2]=rc[2]*pow(-1,c+1);
+                                        int lookupvec[3]={wc[0]+mypos[0],wc[1]+mypos[1],wc[2]+mypos[2]};
+                                        unsigned int check_lookup=0;
+                                        for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
                                         {
-                                            lookupvec[xyz]=geom::dim[xyz]*geom::Nk[xyz]+lookupvec[xyz];
-                                            check_lookup++;
-                                        }
-                                        else if(lookupvec[xyz]>=geom::dim[xyz]*geom::Nk[xyz] && config::pbc[xyz]==true)
-                                        {
-                                            lookupvec[xyz]=lookupvec[xyz]-geom::dim[xyz]*geom::Nk[xyz];
-                                            check_lookup++;
-                                        }
-                                        else if(lookupvec[xyz]>=0 && lookupvec[xyz]<geom::dim[xyz]*geom::Nk[xyz])
-                                        {
-                                            check_lookup++;
-                                        }
-                                    }
-
-                                    //if check_lookup==3 then the lookup for the atom exists
-                                    if(check_lookup==3)//then we are array safe (i.e. should not seg fault) to look up the atom
-                                    {
-                                        //find the species of the neighbouring atom
-                                        unsigned int spec=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],1);
-                                        //check if we have assigned a J value to this interaction vector previously
-                                        //we also need to check that we are looking at the right species
-                                        if(check(lookupvec[0],lookupvec[1],lookupvec[2])==0 && spec==s1)
-                                        {
-                                            if((config::exchm>98 && lookupvec[0]!=mypos[0]) || config::exchm<99)
+                                            if(lookupvec[xyz]<0 && config::pbc[xyz]==true)
                                             {
-                                                unsigned int neigh=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],0);
-                                                //in this case we have not looked it up before
-
-
-
-                                                //This is the adjncy (neighbour lookup) in the CSR format
-                                                tadjncy.push_back(neigh);
-                                                //std::cout << tadjncy[adjncy_counter] << std::endl;
-                                                //std::cin.get();
-                                                tadjncy[adjncy_counter]=neigh;
-                                                adjncy_counter++;
-                                                //determine the diagonal
-                                                if(i>neigh)//then we are on the lower diagonal
-                                                {
-                                                    int tmp=i,count=0;
-                                                    while(neigh!=tmp){tmp--;count++;}
-                                                    checkdiag(geom::nspins-count)++;
-                                                }
-                                                else if(i==neigh)
-                                                {
-                                                    checkdiag[geom::nspins]++;
-                                                }
-                                                else if(i<neigh)
-                                                {
-                                                    int tmp=neigh,count=0;
-                                                    while(tmp!=i){tmp--;count++;}
-                                                    checkdiag[geom::nspins+count]++;
-                                                }
-                                                for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
-                                                {
-                                                    for(unsigned int beta = 0 ; beta < 3 ; beta++)
-                                                    {
-                                                        tdata[alpha][beta].push_back(J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(aiuc)*llg::muB));
-
-                                                    }
-                                                }
-                                                if(outputJ)
-                                                {
-                                                    opJ << i << "\t" << neigh << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << mypos[0] << "," << mypos[1] << "," << mypos[2] << " ] -> [ " << lookupvec[0] << "," << lookupvec[1] << "," << lookupvec[2] << " ]" << std::endl;
-                                                }
-                                                check(lookupvec[0],lookupvec[1],lookupvec[2])=1;//this should mean that we no longer look for a neighbour here to avoid double addition of exchange
+                                                lookupvec[xyz]=geom::dim[xyz]*geom::Nk[xyz]+lookupvec[xyz];
+                                                check_lookup++;
+                                            }
+                                            else if(lookupvec[xyz]>=geom::dim[xyz]*geom::Nk[xyz] && config::pbc[xyz]==true)
+                                            {
+                                                lookupvec[xyz]=lookupvec[xyz]-geom::dim[xyz]*geom::Nk[xyz];
+                                                check_lookup++;
+                                            }
+                                            else if(lookupvec[xyz]>=0 && lookupvec[xyz]<geom::dim[xyz]*geom::Nk[xyz])
+                                            {
+                                                check_lookup++;
                                             }
                                         }
-                                    }
 
+                                        //if check_lookup==3 then the lookup for the atom exists
+                                        if(check_lookup==3)//then we are array safe (i.e. should not seg fault) to look up the atom
+                                        {
+                                            //find the species of the neighbouring atom
+                                            unsigned int spec=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],1);
+                                            //check if we have assigned a J value to this interaction vector previously
+                                            //we also need to check that we are looking at the right species
+                                            if(check(lookupvec[0],lookupvec[1],lookupvec[2])==0 && spec==s1)
+                                            {
+                                                if((config::exchm>98 && lookupvec[0]!=mypos[0]) || config::exchm<99)
+                                                {
+                                                    unsigned int neigh=geom::coords(lookupvec[0],lookupvec[1],lookupvec[2],0);
+                                                    //in this case we have not looked it up before
+
+
+
+                                                    //This is the adjncy (neighbour lookup) in the CSR format
+                                                    tadjncy.push_back(neigh);
+                                                    //std::cout << tadjncy[adjncy_counter] << std::endl;
+                                                    //std::cin.get();
+                                                    tadjncy[adjncy_counter]=neigh;
+                                                    adjncy_counter++;
+                                                    //determine the diagonal
+                                                    if(i>neigh)//then we are on the lower diagonal
+                                                    {
+                                                        int tmp=i,count=0;
+                                                        while(neigh!=tmp){tmp--;count++;}
+                                                        checkdiag(geom::nspins-count)++;
+                                                    }
+                                                    else if(i==neigh)
+                                                    {
+                                                        checkdiag[geom::nspins]++;
+                                                    }
+                                                    else if(i<neigh)
+                                                    {
+                                                        int tmp=neigh,count=0;
+                                                        while(tmp!=i){tmp--;count++;}
+                                                        checkdiag[geom::nspins+count]++;
+                                                    }
+                                                    for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                                                    {
+                                                        for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                                        {
+                                                            tdata[alpha][beta].push_back(J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(aiuc)*llg::muB));
+
+                                                        }
+                                                    }
+                                                    if(outputJ)
+                                                    {
+                                                        opJ << i << "\t" << neigh << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << mypos[0] << "," << mypos[1] << "," << mypos[2] << " ] -> [ " << lookupvec[0] << "," << lookupvec[1] << "," << lookupvec[2] << " ]" << std::endl;
+                                                    }
+                                                    check(lookupvec[0],lookupvec[1],lookupvec[2])=1;//this should mean that we no longer look for a neighbour here to avoid double addition of exchange
+                                                }
+                                            }
+                                        }
+
+                                    }
                                 }
                             }
                         }

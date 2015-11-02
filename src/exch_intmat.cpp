@@ -1,7 +1,7 @@
 // File: exch_interaction_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 06 Oct 2015 14:10:22
+// Last-modified: 30 Oct 2015 10:10:35
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the interaction matrices based
@@ -117,17 +117,17 @@ namespace exch
                                                 //The format of the file that is read in is in Jxx. We want in our interaction
                                                 //matrix the DM vectors.
                                                 // Nxy = 1/2(Jyx-Jxy)
-                                                intmat::Nrab(s1,s2,0,1,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,1,0)-J(s1,s2,i,0,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                intmat::Nrab(s1,s2,0,1,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,0,1))/(geom::ucm.GetMuBase(s1)*llg::muB);
                                                 // Nxz = 1/2(Jxz-Jzx)
-                                                intmat::Nrab(s1,s2,0,2,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,0,2)-J(s1,s2,i,2,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                intmat::Nrab(s1,s2,0,2,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,0,2))/(geom::ucm.GetMuBase(s1)*llg::muB);
                                                 // Nyx = 1/2(Jxy-Jyx)
-                                                intmat::Nrab(s1,s2,1,0,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,0,1)-J(s1,s2,i,1,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                intmat::Nrab(s1,s2,1,0,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,1,0))/(geom::ucm.GetMuBase(s1)*llg::muB);
                                                 // Nyz = 1/2(Jzy-Jyz)
-                                                intmat::Nrab(s1,s2,1,2,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,2,1)-J(s1,s2,i,1,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                intmat::Nrab(s1,s2,1,2,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,1,2))/(geom::ucm.GetMuBase(s1)*llg::muB);
                                                 // Nzx = 1/2(Jzx - Jxz)
-                                                intmat::Nrab(s1,s2,2,0,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,2,0)-J(s1,s2,i,0,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                intmat::Nrab(s1,s2,2,0,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,2,0))/(geom::ucm.GetMuBase(s1)*llg::muB);
                                                 // Nzy = 1/2(Jyz-Jzy)
-                                                intmat::Nrab(s1,s2,2,1,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,1,2)-J(s1,s2,i,2,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                                intmat::Nrab(s1,s2,2,1,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,2,1))/(geom::ucm.GetMuBase(s1)*llg::muB);
 
                                                 config::Log << "[ " << J(s1,s2,i,0,0) << " , " << J(s1,s2,i,0,1) << " , " << J(s1,s2,i,0,2) << " ]" << std::endl;
                                                 config::Log << "[ " << J(s1,s2,i,1,0) << " , " << J(s1,s2,i,1,1) << " , " << J(s1,s2,i,1,2) << " ]\t (Joules)" << std::endl;
@@ -189,12 +189,35 @@ namespace exch
                 //adds the appropriate Jij to the appropriate interaction matrix
                 for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
                 {
-                    config::Log << "Shell " << shell_list(s1,s2) << " of " << numint(s1,s2,i) << std::endl;
+//                    config::Log << "Shell " << shell_list(s1,s2) << " of " << numint(s1,s2,i) << std::endl;
                     unsigned int counter=0;
                     int lc[3]={0,0,0};
-                    lc[0]=static_cast<unsigned int>(exchvec(s1,s2,i,0)*static_cast<double>(geom::Nk[0])*evs[0]+0.5);
-                    lc[1]=static_cast<unsigned int>(exchvec(s1,s2,i,1)*static_cast<double>(geom::Nk[1])*evs[1]+0.5);
-                    lc[2]=static_cast<unsigned int>(exchvec(s1,s2,i,2)*static_cast<double>(geom::Nk[2])*evs[2]+0.5);
+                    //std::cout << s1 << "\t" << s2 << "\t" << i << "\t" << exchvec(s1,s2,i,0) << std::endl;
+                    //std::cout << evs[0] << std::endl;
+                    if(exchvec(s1,s2,i,0)>0)
+                    {
+                        lc[0]=static_cast<int>(exchvec(s1,s2,i,0)*evs[0]+0.5);
+                    }
+                    else
+                    {
+                        lc[0]=static_cast<int>(exchvec(s1,s2,i,0)*evs[0]-0.5);
+                    }
+                    if(exchvec(s1,s2,i,1)>0)
+                    {
+                        lc[1]=static_cast<int>(exchvec(s1,s2,i,1)*evs[1]+0.5);
+                    }
+                    else
+                    {
+                        lc[1]=static_cast<int>(exchvec(s1,s2,i,1)*evs[1]-0.5);
+                    }
+                    if(exchvec(s1,s2,i,2)>0)
+                    {
+                        lc[2]=static_cast<int>(exchvec(s1,s2,i,2)*evs[2]+0.5);
+                    }
+                    else
+                    {
+                        lc[2]=static_cast<int>(exchvec(s1,s2,i,2)*evs[2]-0.5);
+                    }
                     for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
                     {
                         //reference array
@@ -239,17 +262,17 @@ namespace exch
                                             //The format of the file that is read in is in Jxx. We want in our interaction
                                             //matrix the DM vectors.
                                             // Nxy = 1/2(Jyx-Jxy)
-                                            intmat::Nrab(s1,s2,0,1,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,1,0)-J(s1,s2,i,0,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                            intmat::Nrab(s1,s2,0,1,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,1,0))/(geom::ucm.GetMuBase(s1)*llg::muB);
                                             // Nxz = 1/2(Jxz-Jzx)
-                                            intmat::Nrab(s1,s2,0,2,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,0,2)-J(s1,s2,i,2,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                            intmat::Nrab(s1,s2,0,2,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,0,2))/(geom::ucm.GetMuBase(s1)*llg::muB);
                                             // Nyx = 1/2(Jxy-Jyx)
-                                            intmat::Nrab(s1,s2,1,0,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,0,1)-J(s1,s2,i,1,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                            intmat::Nrab(s1,s2,1,0,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,1,0))/(geom::ucm.GetMuBase(s1)*llg::muB);
                                             // Nyz = 1/2(Jzy-Jyz)
-                                            intmat::Nrab(s1,s2,1,2,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,2,1)-J(s1,s2,i,1,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                            intmat::Nrab(s1,s2,1,2,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,1,2))/(geom::ucm.GetMuBase(s1)*llg::muB);
                                             // Nzx = 1/2(Jzx - Jxz)
-                                            intmat::Nrab(s1,s2,2,0,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,2,0)-J(s1,s2,i,0,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                            intmat::Nrab(s1,s2,2,0,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,2,0))/(geom::ucm.GetMuBase(s1)*llg::muB);
                                             // Nzy = 1/2(Jyz-Jzy)
-                                            intmat::Nrab(s1,s2,2,1,wc[0],wc[1],wc[2])[0]+=(0.5*(J(s1,s2,i,1,2)-J(s1,s2,i,2,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                            intmat::Nrab(s1,s2,2,1,wc[0],wc[1],wc[2])[0]+=(J(s1,s2,i,2,1))/(geom::ucm.GetMuBase(s1)*llg::muB);
 
                                             config::Log << "[ " << J(s1,s2,i,0,0) << " , " << J(s1,s2,i,0,1) << " , " << J(s1,s2,i,0,2) << " ]" << std::endl;
                                             config::Log << "[ " << J(s1,s2,i,1,0) << " , " << J(s1,s2,i,1,1) << " , " << J(s1,s2,i,1,2) << " ]\t (Joules)" << std::endl;
@@ -268,7 +291,7 @@ namespace exch
                             }//end of a loop
                         }//end of monolayer if statement
                     }//end of wrap loop
-                    if(counter!=numint(s1,s2,i))
+/*                    if(counter!=numint(s1,s2,i))
                     {
                         error::errPreamble(__FILE__,__LINE__);
                         std::stringstream sstr;
@@ -276,8 +299,9 @@ namespace exch
                         std::string str=sstr.str();
                         error::errMessage(str.c_str());
                     }//end of counter check if statement
+                    */
                     counter=0;
-                    config::printline(config::Log);
+                    //config::printline(config::Log);
                 }//end of shell list loop
             }//end of s2 loop
         }//end of s1 loop

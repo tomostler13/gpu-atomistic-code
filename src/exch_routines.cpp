@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 05 Jun 2015 20:13:57
+// Last-modified: 29 Oct 2015 10:08:04
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -120,6 +120,11 @@ namespace exch
         {
             GlobExch.lookupValue("MaxInteractions",max_int);
             GlobExch.lookupValue("TruncateExchange",cutexch);
+            evs.resize(3);
+            evs[0]=GlobExch["Scale"][0];
+            evs[1]=GlobExch["Scale"][1];
+            evs[2]=GlobExch["Scale"][2];
+            FIXOUTVEC(config::Info,"Scaling factor for exchange vectors:",evs[0],evs[1],evs[2]);
             FIXOUT(config::Info,"Truncate exchange?:" << config::isTF(cutexch) << std::endl);
             if(cutexch==true)
             {
@@ -857,7 +862,6 @@ namespace exch
         {
             directfft();
         }
-
 
         if(config::exchm>98)
         {
