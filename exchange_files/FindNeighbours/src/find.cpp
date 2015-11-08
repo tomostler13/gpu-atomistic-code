@@ -1,7 +1,7 @@
 // File: find.cpp
 // Author:Tom Ostler
 // Created: 08 Nov 2015
-// Last-modified: 08 Nov 2015 11:37:08
+// Last-modified: 08 Nov 2015 13:48:19
 
 //The purpose of this section of code is to read a unit cell and
 //replicate the unit cell out to the specified number in each direction.
@@ -85,7 +85,7 @@ int main(int argc,char *argv[])
         error::errMessage("Could not read the unit cell file. Setting system.UnitCellFile (string)");
     }
     //Get the number of grid points
-    for(unsigned int i = 0 ; i < 3 ; i++)
+    for(int i = 0 ; i < 3 ; i++)
     {
         try
         {
@@ -103,7 +103,7 @@ int main(int argc,char *argv[])
     FIXOUTVEC(Info,"Grid points:",Nk[0],Nk[1],Nk[2]);
 
     //Get the lattice constants for the distances
-    for(unsigned int i = 0 ; i < 3 ; i++)
+    for(int i = 0 ; i < 3 ; i++)
     {
         try
         {
@@ -121,7 +121,7 @@ int main(int argc,char *argv[])
     FIXOUTVEC(Info,"Lattice constants:",abc[0],abc[1],abc[2]);
 
     //Get the cut-off (in lattice constants)
-    for(unsigned int i = 0 ; i < 3 ; i++)
+    for(int i = 0 ; i < 3 ; i++)
     {
         try
         {
@@ -149,11 +149,13 @@ int main(int argc,char *argv[])
     nuc[2]=2*cd[2]+1;
     Array4D<int> coords;
     Array2D<int> lu;
+    Array3D<std::string> atstrings;
     //The last elements store the atom number, the species number
     //and the unit cell that it is part of and whether it is the
-    //central cell or not
+    //central cell or not (1 is in cuc and 0 is not)
     coords.resize(nuc[0]*Nk[0],nuc[1]*Nk[1],nuc[2]*Nk[2],4);
-    coords.IFill(0);
+    atstrings.resize(nuc[0]*Nk[0],nuc[1]*Nk[1],nuc[2]*Nk[2]);
+    coords.IFill(-1);
     std::ifstream ucfi;
     FIXOUT(Info,"Opening unit cell file:" << std::flush);
     ucfi.open(ucfs.c_str());
@@ -194,19 +196,24 @@ int main(int argc,char *argv[])
     //the total number of grid points for the lookup
     int ngp=nuc[0]*Nk[0]*nuc[1]*Nk[1]*nuc[2]*Nk[2];
     FIXOUT(Info,"Total number of grid points:" << ngp << std::endl);
-    //lookup returns the atomid, the species and the unit cell that it is in and whether it is in the central cell or not
-    lu.resize(ngp,4);
+    //lookup returns the global atom coords, the species and the unit cell that it is in and whether it is in the central cell or not
+    lu.resize(ngp,6);
     Array3D<int> uccoords;
     //The unit cell species
     Array3D<int> ucspec;
     Array<int> ucspeclu;
+    Array2D<int> uclu;
+    Array<std::string> ucstrlu;
+    ucstrlu.resize(nauc);
+    uclu.resize(nauc,3);
+    uclu.IFill(0);
     uccoords.resize(Nk[0],Nk[1],Nk[2]),
-    ucspec.resize(Nk[0],Nk[1],Nk[2]);
+        ucspec.resize(Nk[0],Nk[1],Nk[2]);
     ucspeclu.resize(nauc);
     uccoords.IFill(-1);
     ucspec.IFill(-1);
     Info << "================================================" << std::endl;
-    for(unsigned int i = 0 ; i < nauc ; i++)
+    for(int i = 0 ; i < nauc ; i++)
     {
         ucfi >> ucspeclu[i];
         double lc[3]={0,0,0};
@@ -220,13 +227,16 @@ int main(int argc,char *argv[])
         ic[1]=static_cast<int>(lc[1]*static_cast<double>(Nk[1])+0.5);
         ic[2]=static_cast<int>(lc[2]*static_cast<double>(Nk[2])+0.5);
         uccoords(ic[0],ic[1],ic[2])=i;
+        uclu(i,0)=ic[0];
+        uclu(i,1)=ic[1];
+        uclu(i,2)=ic[2];
         FIXOUTVEC(Info,"Integer coords:",ic[0],ic[1],ic[2]);
 
         //dump the rest of the information for now
         double dump;
         std::string sdump;
         ucfi >> dump >> dump >> dump;
-        ucfi >> sdump;
+        ucfi >> ucstrlu[i];
         ucfi >> dump >> dump >> dump >> dump >> dump >> dump >> dump;
     }
     Info << "================================================" << std::endl;
@@ -237,5 +247,149 @@ int main(int argc,char *argv[])
     cuc[2]=cd[2];
     FIXOUTVEC(Info,"Central unit cell coords:",cuc[0]+1,cuc[1]+1,cuc[2]+1);
     FIXOUTVEC(Info,"(C array) central unit cell:",cuc[0],cuc[1],cuc[2]);
+
+
+    //loop over the unit cells and place the atoms on the grid
+    int atom_counter=0;
+    //unit cell count
+    int uccount=0;
+    //debug - check the number of atoms in the central cell. Should be equal to nauc
+    int check=0;
+    //debug - check that an atom is not placed at the same mesh coordinate (duplicated atom)
+    Array3D<int> checkcoord;
+    checkcoord.resize(nuc[0]*Nk[0],nuc[1]*Nk[1],nuc[2]*Nk[2]);
+    checkcoord.IFill(0);
+    for(int i = 0 ; i < nuc[0] ; i++)
+    {
+        for(int j = 0 ; j < nuc[1] ; j++)
+        {
+            for(int k = 0 ; k < nuc[2] ; k++)
+            {
+                for(int aiuc = 0 ; aiuc < nauc ; aiuc++)
+                {
+                    int lc[3]={0,0,0};
+                    lc[0]=i*Nk[0]+uclu(aiuc,0);
+                    lc[1]=j*Nk[1]+uclu(aiuc,1);
+                    lc[2]=k*Nk[2]+uclu(aiuc,2);
+                    if(checkcoord(lc[0],lc[1],lc[2])==1)
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        std::stringstream sstr;
+                        //std::cerr << "\n" << atom_counter << "\t" << i << "\t" << j << "\t" << k << "\t" << lc[0] << "\t" << lc[1] << "\t" << lc[2] <<std::endl;
+                        //std::cerr << uclu(aiuc,0) << "\t" << uclu(aiuc,1) << "\t" << uclu(aiuc,2) << std::endl;
+                        //std::cerr << aiuc << "\t" << coords(lc[0],lc[1],lc[2],0) << std::endl;
+                        sstr << "A duplicate atom has been detected with coords (integer):\t" << i << " , " << j << " , " << k << std::endl;
+                        std::string str=sstr.str();
+                        error::errMessage(str);
+                    }
+
+                    coords(lc[0],lc[1],lc[2],0)=atom_counter;
+                    coords(lc[0],lc[1],lc[2],1)=ucspeclu[aiuc];
+                    coords(lc[0],lc[1],lc[2],2)=uccount;
+                    lu(atom_counter,0)=lc[0];
+                    lu(atom_counter,1)=lc[1];
+                    lu(atom_counter,2)=lc[2];
+                    lu(atom_counter,3)=ucspeclu[aiuc];
+                    lu(atom_counter,4)=uccount;
+                    atstrings(lc[0],lc[1],lc[2])=ucstrlu(aiuc);
+                    checkcoord(i,j,k)=true;
+                    //check if we are in the central unit cell
+                    if(i==cuc[0] && j==cuc[1] && k==cuc[2])
+                    {
+                        coords(lc[0],lc[1],lc[2],3)=1;
+                        lu(atom_counter,5)=1;
+                        check++;
+                    }
+                    checkcoord(lc[0],lc[1],lc[2])=1;
+                    atom_counter++;
+                }
+
+                uccount++;
+            }
+        }
+    }
+    if(check!=nauc)
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("The number of atoms in the central unit cell is not consistent");
+    }
+
+    //loop over all of the atoms in the (central) unit cell
+    for(int aiuc = 0 ; aiuc < nauc ; aiuc++)
+    {
+        std::stringstream sstr;
+        sstr << "atom" << aiuc << "_interactions.dat";
+        std::string str=sstr.str();
+        std::ofstream ofs(str.c_str());
+        if(!ofs.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            std::stringstream errsstr;
+            errsstr << "Could not open file for atom " << aiuc << " in the unit cell.";
+            std::string errstr=errsstr.str();
+            error::errMessage(errstr);
+        }
+
+        ofs << "#Atom i id - atom type (label) - neighbour j id - neigh atom type (label) - species i - species j - unit cell of i - unit cell of j - {integer coords of i} - {integer coords of j} - {real space interaction vector} - distance - {mesh interaction vector}" << std::endl;
+        //the current atom in the unit cell's position
+        int lc[3]={0,0,0};
+        lc[0]=cuc[0]*Nk[0]+uclu(aiuc,0);
+        lc[1]=cuc[1]*Nk[1]+uclu(aiuc,1);
+        lc[2]=cuc[2]*Nk[2]+uclu(aiuc,2);
+        //Get the atom number
+        int atid=coords(lc[0],lc[1],lc[2],0);
+        //check that indeed this atom is in the central unit cell.
+        //This is a little redundant but good for checking anyway
+        if(coords(lc[0],lc[1],lc[2],3)==0)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("This is a bug. The code is trying to look for the neighbours of an atom that is not in the central unit cell (this should not be allowed to happen).");
+        }
+        //loop over all of the atoms in the system up to the distance specified
+        //in the input file. Loop over space rather than atoms (less efficient
+        //this way but oh well).
+        for(int i = 0 ; i < nuc[0]*Nk[0] ; i++)
+        {
+            for(int j = 0 ; j < nuc[1]*Nk[1] ; j++)
+            {
+                for(int k = 0 ; k < nuc[2]*Nk[2] ; k++)
+                {
+                    //check first if the atom exists
+                    if(coords(i,j,k,0)>-1)
+                    {
+                        //another check that it is not the same atom (i.e. no self interaction)
+                        if(i==lc[0] && j==lc[1] && k==lc[2])
+                        {
+                            //then it is a self interaction and we should skip it
+                        }
+                        else
+                        {
+                            //calculate the lookup (in k-points)
+                            int luvec[3]={lc[0]-i,lc[1]-j,lc[2]-k};
+                            //convert that to real space
+                            double dluvec[3]={0,0,0};
+                            for(int xyz = 0 ; xyz < 3 ; xyz++)
+                            {
+                                dluvec[xyz]=abc[xyz]*static_cast<double>(luvec[xyz])/(static_cast<double>(Nk[xyz]));
+                            }//end of xyz loop
+                            //neighbour id
+                            int nid = coords(i,j,k,0);
+                            ofs << atid << "\t" << atstrings(lc[0],lc[1],lc[2]) << "\t" << nid << "\t" << atstrings(i,j,k) << "\t" << coords(lc[0],lc[1],lc[2],1) << "\t" << coords(i,j,k,1) << "\t" << coords(lc[0],lc[1],lc[2],2) << "\t" << coords(i,j,k,2) << "\t[ " << dluvec[0] << " , " << dluvec[1] << " , " << dluvec[2] << " ] " << sqrt(dluvec[0]*dluvec[0]+dluvec[1]*dluvec[1]+dluvec[2]*dluvec[2]) << "\t[ " << luvec[0] << " , " << luvec[1] << " , " << luvec[2] << " ]" << std::endl;
+                        }//end of self interaction check
+                    }//end of checking if atom exists check
+                }
+            }
+        }
+        ofs.close();
+        if(ofs.is_open())
+        {
+            std::stringstream errsstr;
+            errsstr << "Could not close output file for atom " << aiuc << " in the unit cell.";
+            std::string errstr=errsstr.str();
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage(errstr);
+        }
+//        exit(0);
+    }//aiuc
     return(0);
 }
