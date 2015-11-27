@@ -274,7 +274,7 @@ int main(int argc,char *argv[])
             {
                 if(speclu(l,0)==i &&  speclu(l,1)==j)
                 {
-                    opf << "\tInteraction" << loccount+1 << "Vec = [ " << vec(l,0)*ns[0] << " , " << vec(l,1)*ns[1] << " , " << vec(l,2)*ns[2] << " ];\n";
+                    opf << std::setprecision(10) << std::fixed << "\tInteraction" << loccount+1 << "Vec = [ " << vec(l,0)*ns[0] << " , " << vec(l,1)*ns[1] << " , " << vec(l,2)*ns[2] << " ];\n";
 
                     if(units=="eV")
                     {
