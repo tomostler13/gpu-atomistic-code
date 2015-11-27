@@ -1,7 +1,7 @@
 // File: thermal_hyst.cpp
 // Author: Tom Ostler
 // Created: 7th June 2015
-// Last-modified: 10 Nov 2015 13:36:28
+// Last-modified: 27 Nov 2015 19:01:51
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -48,6 +48,7 @@ void sim::thermal_hyst(int argc,char *argv[])
     }
     unsigned int numint=0,ets=0;
     double et=0;
+    unsigned int sof=0;
     libconfig::Setting &setting=config::cfg.lookup("thermal_hyst");
     if(!setting.lookupValue("OutputSpinConfig",outputSpinConfig))
     {
@@ -58,7 +59,7 @@ void sim::thermal_hyst(int argc,char *argv[])
     FIXOUT(config::Info,"Output spin config?:" << config::isTF(outputSpinConfig) << std::endl);
     if(outputSpinConfig)
     {
-        if(!setting.lookpValue("SpinOutputFreq",sof))
+        if(!setting.lookupValue("SpinOutputFreq",sof))
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("You selected to output the spin map but the code could not read the setting thermal_hyst.SpinOutputFreq (unsigned int)");
