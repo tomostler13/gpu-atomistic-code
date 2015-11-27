@@ -1,7 +1,7 @@
 // File: thermal_hyst.cpp
 // Author: Tom Ostler
 // Created: 7th June 2015
-// Last-modified: 10 Jun 2015 11:34:54
+// Last-modified: 10 Nov 2015 13:36:28
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -39,6 +39,7 @@ void sim::thermal_hyst(int argc,char *argv[])
         std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
         exit(EXIT_FAILURE);
     }
+    bool outputSpinConfig=false;
     bool checkset=config::cfg.exists("thermal_hyst");
     if(!checkset)
     {
@@ -48,6 +49,25 @@ void sim::thermal_hyst(int argc,char *argv[])
     unsigned int numint=0,ets=0;
     double et=0;
     libconfig::Setting &setting=config::cfg.lookup("thermal_hyst");
+    if(!setting.lookupValue("OutputSpinConfig",outputSpinConfig))
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not read the setting thermal_hyst.OutputSpinConfig (bool)");
+    }
+
+    FIXOUT(config::Info,"Output spin config?:" << config::isTF(outputSpinConfig) << std::endl);
+    if(outputSpinConfig)
+    {
+        if(!setting.lookpValue("SpinOutputFreq",sof))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("You selected to output the spin map but the code could not read the setting thermal_hyst.SpinOutputFreq (unsigned int)");
+        }
+        else
+        {
+            FIXOUT(config::Info,"Spin update (in units of spin update):" << sof << " [timesteps]" << std::endl);
+        }
+    }
     if(setting.lookupValue("EquilTime",et))
     {
         FIXOUT(config::Info,"Equilibration time:" << et << std::endl);
