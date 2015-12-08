@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 29 Oct 2015 10:07:47
+// Last-modified: 08 Dec 2015 20:21:58
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -65,7 +65,10 @@ int main(int argc,char *argv[])
     }
     //Read in the exchange matrix
     exch::initExch(argc,argv);
-
+    if(exch::eaem)
+    {
+        exit(EXIT_SUCCESS);
+    }
     //Now we have all of the terms in our interaction matrix, fourier transform the result
     if(config::dipm==0 && config::exchm==0)
     {

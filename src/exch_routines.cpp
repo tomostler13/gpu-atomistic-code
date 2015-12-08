@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 08 Dec 2015 15:35:58
+// Last-modified: 08 Dec 2015 20:21:34
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -51,6 +51,14 @@ namespace exch
         setting.lookupValue("OutputExchange",outputJ);
         setting.lookupValue("OutputExchangeMatrix",oem);
         setting.lookupValue("ReadExchangeMatrix",rem);
+
+        if(!setting.lookupValue("ExitAfterExchangeMatrix",eaem))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read whether you want to exit after outputting the exchange matrix. exchange.ExitAfterExchangeMatrix (bool)");
+        }
+
+        FIXOUT(config::Info,"Exit after outputting exchange matrix?:" << config::isTF(eaem) << std::endl);
         if(oem && rem)
         {
             error::errPreamble(__FILE__,__LINE__);
