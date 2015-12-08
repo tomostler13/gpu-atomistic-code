@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 27 Oct 2015 15:12:18
+// Last-modified: 08 Dec 2015 15:07:18
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -199,6 +199,44 @@ void sim::laser_heating(int argc,char *argv[])
     }
     config::Info << pulse_scale[num_pulses-1] << " ]" << std::endl;
 
+    bool outVTU=false;
+    double VTUstart=0.0;
+    unsigned int VTUupdate=0;
+    if(!setting.lookupValue("OutputSpinsVTU",outVTU))
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not read whether you want to output the spin configurations to VTU files. laserheating:OutputSpinsVTU (bool)");
+    }
+    else
+    {
+        FIXOUT(config::Info,"Output spin config to VTU?:" << config::isTF(outVTU) << std::endl);
+    }
+    if(outVTU)
+    {
+        //then read the parameters that it requires
+        if(setting.lookupValue("VTUUpdate",VTUupdate))
+        {
+            FIXOUT(config::Info,"VTU Update:" << VTUupdate << " [demag]" << std::endl);
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read the VTU update frequency. laserheating:VTUUpdate (int)");
+        }
+        if(setting.lookupValue("VTUOutputStart",VTUstart))
+        {
+            FIXOUT(config::Info,"Start of output of VTU files:" << VTUstart << " [s]" << std::endl);
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read the start time of the VTU file output. laserheating:VTUOutputStart (double)");
+        }
+    }
+
+
+
+
     FIXOUT(config::Info,"Planning FFT for spin map:" << std::flush);
     //This array stores the spin map in real space
     Array3D<fftw_complex> s3d;
@@ -337,14 +375,32 @@ void sim::laser_heating(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("Could not open ttm file (ttm.dat)");
     }
-
+    //counter for outputting of VTU files
+    int VTUcount=0;
     for(unsigned int t = 0 ; t < ets ; t++)
     {
         if(t%spins::update==0)
         {
             util::calc_mag();
             util::output_mag(t);
+            //This should really have an option to output less regularly
             rscf::calcRSCF(t);
+        }
+        if(t%spins::update==0)
+        {
+            if(VTUcount==VTUupdate)
+            {
+                if(static_cast<double>(t)*llg::dt >= VTUstart)
+                {
+                    util::outputSpinsVTU(t);
+                }
+                //restart the counter
+                VTUcount=0;
+            }
+            else
+            {
+                VTUcount++;
+            }
         }
         llg::integrate(t);
         if(t%spins::update==0)
@@ -374,6 +430,22 @@ void sim::laser_heating(int argc,char *argv[])
             util::output_mag(t);
             rscf::calcRSCF(t);
 //            ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl << std::endl;
+        }
+        if(t%spins::update==0)
+        {
+            if(VTUcount==VTUupdate)
+            {
+                if(static_cast<double>(t)*llg::dt >= VTUstart)
+                {
+                    util::outputSpinsVTU(t);
+                }
+                //restart the counter
+                VTUcount=0;
+            }
+            else
+            {
+                VTUcount++;
+            }
         }
         if(opsf==true)
         {
