@@ -3,16 +3,16 @@ seed = 1439812669;
 system:
 {
     //number of unit cells
-    dim = [ 10 , 10 , 10 ];
+    dim = [ 4 , 4 , 1 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="FeRh.ucf";
+    unitcellfile="N_8.ucf";
 //    unitcellfile="sc.ucf";
     //Number of k-points in each direction
-    Nk = [ 1 , 1 , 1 ];
+    Nk = [ 1 , 1 , 32 ];
     //lattice constants
-    abc = [ 312.5e-12 , 312.5e-12 , 312.5e-12 ];
+    abc = [ 300e-12 , 300e-12 , 0.0000000096 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
     Exchange_method="CSR";

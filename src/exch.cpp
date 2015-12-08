@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 29 Oct 2015 10:07:58
+// Last-modified: 08 Dec 2015 16:16:27
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -68,7 +68,7 @@ namespace exch
                     if(!ipem.is_open())
                     {
                         error::errPreamble(__FILE__,__LINE__);
-                        error::errMessage("You requested to read in a CSR exchange matrix but it does not exist. Check it is called csr_exch_mag.dat");
+                        error::errMessage("You requested to read in a CSR exchange matrix but it does not exist. Check it is called csr_exch_mat.dat");
                     }
                     unsigned int lns=0,adjsize;
                     ipem >> lns;
