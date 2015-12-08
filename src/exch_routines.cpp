@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 29 Oct 2015 10:08:04
+// Last-modified: 08 Dec 2015 15:35:58
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -163,7 +163,7 @@ namespace exch
             if(config::exchm==2)
             {
                 exchpermute();
-                //output the spare matrix
+                //output the sparse matrix
                 if(oem)
                 {
                     if(config::offdiag==false)

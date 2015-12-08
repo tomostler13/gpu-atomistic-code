@@ -1,7 +1,7 @@
 // File: exch_read_4_spin.cpp
 // Author: Tom Ostler
 // Created: 03 June 2015
-// Last-modified: 04 Jul 2015 15:19:14
+// Last-modified: 08 Dec 2015 15:53:31
 // If the 4 spin terms are included the routines
 // in this source file will be called. It reads
 // permutations of the quartets. It then mallocs
@@ -156,13 +156,15 @@ namespace exch
         Array<unsigned int> countq;
         countq.resize(geom::nspins);
         countq.IFill(0);
-        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        if(!rem)
         {
-            xadj_j[xadj_counter]=adjncy_count_j;
-            unsigned int sl=geom::sublattice(i);
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                xadj_j[xadj_counter]=adjncy_count_j;
+                unsigned int sl=geom::sublattice(i);
 
-            //store i's position
-            int mypos[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                //store i's position
+                int mypos[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
 
                 for(unsigned int q = 0 ; q < numquart(sl) ; q++)
                 {
@@ -261,31 +263,121 @@ namespace exch
                         }
                     }//end of check of sum of check_lookup equal to 9
                 }//end of q loop
-            xadj_counter++;
+                xadj_counter++;
 
-        config::Log << "spin " << i << " has " << countq[i] << " quartets" << std::endl;
-        }//end of i loop
-        xadj_j[geom::nspins]=adjncy_count_j;
-        FIXOUT(config::Info,"Total number of quartets:" << totquartets << std::endl);
-        FIXOUT(config::Info,"Total number of missing quartets:" << missingquartets << std::endl);
-        adjncy_j.resize(adjncy_count_j);
-        adjncy_k.resize(adjncy_count_k);
-        adjncy_l.resize(adjncy_count_l);
-        for(unsigned int i = 0 ; i < adjncy_count_j ; i++)
-        {
-            adjncy_j[i]=tempadjncy_j[i];
+                config::Log << "spin " << i << " has " << countq[i] << " quartets" << std::endl;
+            }//end of i loop
+            xadj_j[geom::nspins]=adjncy_count_j;
+            FIXOUT(config::Info,"Total number of quartets:" << totquartets << std::endl);
+            FIXOUT(config::Info,"Total number of missing quartets:" << missingquartets << std::endl);
+            adjncy_j.resize(adjncy_count_j);
+            adjncy_k.resize(adjncy_count_k);
+            adjncy_l.resize(adjncy_count_l);
+            for(unsigned int i = 0 ; i < adjncy_count_j ; i++)
+            {
+                adjncy_j[i]=tempadjncy_j[i];
+            }
+            for(unsigned int i = 0 ; i < adjncy_count_k ; i++)
+            {
+                adjncy_k[i]=tempadjncy_k[i];
+            }
+            for(unsigned int i = 0 ; i < adjncy_count_l ; i++)
+            {
+                adjncy_l[i]=tempadjncy_l[i];
+            }
         }
-        for(unsigned int i = 0 ; i < adjncy_count_k ; i++)
+        else
         {
-            adjncy_k[i]=tempadjncy_k[i];
-        }
-        for(unsigned int i = 0 ; i < adjncy_count_l ; i++)
-        {
-            adjncy_l[i]=tempadjncy_l[i];
-        }
+            std::ifstream ipem("4spin_csr_exch_mat.dat");
+            if(!ipem.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("You requested to read in a CSR exchange matrix but it does not exist. Check it is called 4spin_csr_exch_mat.dat");
+            }
+            unsigned int lns=0,adjsize;
+            ipem >> lns;
+            ipem >> adjsize;
+            if(lns!=geom::nspins)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("The number of spins (first line) in the CSR input file is not consistent with the system size you have generated. (First check failed)");
+            }
+            if(adjsize < 1)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("The size of adjncy (neighbour list) is zero. (Second check failed)");
+            }
 
+            FIXOUT(config::Info,"4spin -> Size of xadj read as:" << lns+1 << std::endl);
+
+            FIXOUT(config::Info,"4spin -> Resizing and filling xadj array:" << std::flush);
+            xadj_j.resize(geom::nspins+1);
+            xadj_j.IFill(0);
+            //read the xadj array
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                ipem >> xadj_j[i];
+            }
+            ipem >> xadj_j[geom::nspins];
+            SUCCESS(config::Info);
+            FIXOUT(config::Info,"4spin -> Size of adjncy array read as:" << adjsize << std::endl);
+            FIXOUT(config::Info,"4spin -> Resizing and filling adjncy arrays:" << std::flush);
+            adjncy_j.resize(adjsize);adjncy_j.IFill(0);
+            adjncy_k.resize(adjsize);adjncy_k.IFill(0);
+            adjncy_l.resize(adjsize);adjncy_l.IFill(0);
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                for(unsigned int j = xadj_j[i] ; j < xadj_j[i+1] ; j++)
+                {
+                    if(j > adjncy_j.size())
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("Stopping a seg fault. There is an error in the xadj lookup (adjncy would seg fault). (Third check failed)");
+                    }
+                    ipem >> adjncy_j[j] >> adjncy_k[j] >> adjncy_l[j];
+                }
+            }
+            ipem.close();
+            if(ipem.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not close the 4spin_csr_exch_mat.dat file.");
+            }
+        }
         FIXOUT(config::Info,"Four Spin -> size of adjncy_j:" << adjncy_j.size() << std::endl);
         FIXOUT(config::Info,"Four Spin -> size of adjncy_k:" << adjncy_k.size() << std::endl);
         FIXOUT(config::Info,"Four Spin -> size of adjncy_l:" << adjncy_l.size() << std::endl);
+        if(oem)
+        {
+            FIXOUT(config::Info,"Outputting 4 spin exchange matrix:" << std::flush);
+            std::ofstream opem("4spin_csr_exch_mat.dat");
+            if(!opem.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open file for outputting the 4spin csr matrix.");
+            }
+            opem << geom::nspins << std::endl;
+            opem << adjncy_j.size() << std::endl;
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                opem << xadj_j[i] << "\t";
+            }
+            opem << xadj_j[geom::nspins] << std::endl;
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                for(unsigned int j = xadj_j[i] ; j < xadj_j[i+1] ; j++)
+                {
+                    opem << adjncy_j[j] << "\t" << adjncy_k[j] << "\t" << adjncy_l[j] << "\t";
+                }
+            }
+            opem.close();
+            if(opem.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not close the file for outputting the 4spin CSR exchange matrix.");
+            }
+            config::Info << "Done" << std::endl;
+        }
+
     }//end of void setup4spinCSR function
 }
