@@ -1,7 +1,7 @@
 // File: exch_permute_Sp.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 14 Oct 2015 13:35:39
+// Last-modified: 15 Dec 2015 18:57:58
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // routines here take the exchange shell list and permute
@@ -74,6 +74,7 @@ namespace exch
                     unsigned int lookup[3]={static_cast<unsigned int>(exchvec(sl,s1,shell,0)*evs[0]*static_cast<double>(geom::Nk[0])+0.5),
                         static_cast<unsigned int>(exchvec(sl,s1,shell,1)*evs[1]*static_cast<double>(geom::Nk[1])+0.5),
                         static_cast<unsigned int>(exchvec(sl,s1,shell,2)*evs[2]*static_cast<double>(geom::Nk[2])+0.5)};
+//                        std::cout << "atom = " << i << " spec = " << s1 << " shell = " << shell << " lookup = " << lookup[0] << "\t" << lookup[1] << "\t" << lookup[2] << std::endl;
                     for(unsigned int wrap = 0 ; wrap < 3 ; wrap++)
                     {
                         //reference array
@@ -99,6 +100,7 @@ namespace exch
                                         wc[1]=rc[1]*pow(-1,b+1);
                                         wc[2]=rc[2]*pow(-1,c+1);
                                         int lookupvec[3]={wc[0]+mypos[0],wc[1]+mypos[1],wc[2]+mypos[2]};
+                                        //std::cout << lookupvec[0] << "\t" << lookupvec[1] << "\t" << lookupvec[2] << std::endl;
                                         unsigned int check_lookup=0;
                                         for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
                                         {

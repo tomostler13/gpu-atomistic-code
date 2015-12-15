@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 08 Dec 2015 15:07:18
+// Last-modified: 15 Dec 2015 20:05:47
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -28,6 +28,9 @@ void sim::laser_heating(int argc,char *argv[])
     bool opsf=false;//OutPut Structure Factor info
     unsigned int ets = 0 , rts = 0 , num_pulses=0;
     double et = 0.0 , rt = 0.0 , gamma_e = 0.0 , Cl = 0.0 , G_ep = 0.0 , Pump_Time = 0.0 , ct = 0.0 , pumpfluence = 0 , initT = 0.0;
+    unsigned int nfv=0;
+    Array2D<double> field_val;
+    Array<double> field_times;
     config::printline(config::Info);
     config::Info.width(45);config::Info << std::right << "*" << "**Laser Heating Simulation details***" << std::endl;
     try
@@ -234,6 +237,57 @@ void sim::laser_heating(int argc,char *argv[])
         }
     }
 
+    if(setting.lookupValue("NumFieldValues",nfv))
+    {
+        FIXOUT(config::Info,"Number of field values:" << nfv << std::endl);
+    }
+    else
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not read the number of field values. laserheating.NumFieldValues (int)");
+    }
+    field_val.resize(nfv,3);
+    field_times.resize(nfv+1);
+    field_val.IFill(0);field_times.IFill(0);
+    for(unsigned int i = 0 ; i < nfv ; i++)
+    {
+        try
+        {
+            field_times[i+1]=setting["FieldTimes"][i];
+        }
+        catch(const libconfig::SettingNotFoundException &snf)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            std::stringstream errsstr;
+            errsstr << "Setting not found exception caught. Setting " << snf.getPath();
+            std::string errstr=errsstr.str();
+            error::errMessage(errstr);
+        }
+        std::stringstream sstr;
+        sstr << "Field info -> value " << i+1 << " UP TO time " << field_times[i+1];
+        std::string str=sstr.str();
+        std::stringstream fsstr;
+        fsstr << "FieldVal" << i+1;
+        std::string fstr=fsstr.str();
+        for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+        {
+
+            try
+            {
+                field_val(i,xyz)=setting[fstr.c_str()][xyz];
+            }
+            catch(const libconfig::SettingNotFoundException &snf)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                std::stringstream errsstr;
+                errsstr << "Setting not found exception caught. Setting " << snf.getPath();
+                std::string errstr=errsstr.str();
+                error::errMessage(errstr);
+            }
+        }
+        FIXOUTVEC(config::Info,str,field_val(i,0),field_val(i,1),field_val(i,2));
+    }
+    config::Info << std::endl;
 
 
 
@@ -377,8 +431,21 @@ void sim::laser_heating(int argc,char *argv[])
     }
     //counter for outputting of VTU files
     int VTUcount=0;
+    //which field value are we on?
+    int fv=0;
+    //original field
+    const double of[3]={llg::applied[0],llg::applied[1],llg::applied[2]};
     for(unsigned int t = 0 ; t < ets ; t++)
     {
+        const double realtime=static_cast<double>(t)*llg::dt;
+        if(realtime >= field_times[fv] && realtime <= field_times[fv+1])
+        {
+            llg::applied[0]=of[0]+field_val(fv,0);
+            llg::applied[1]=of[1]+field_val(fv,1);
+            llg::applied[2]=of[2]+field_val(fv,2);
+            fv++;
+        }
+        std::cout << realtime << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
         if(t%spins::update==0)
         {
             util::calc_mag();
@@ -421,6 +488,15 @@ void sim::laser_heating(int argc,char *argv[])
     double Te=initT,Tl=initT;
     for(unsigned int t = ets ; t < ets+rts ; t++)
     {
+        const double realtime=static_cast<double>(t)*llg::dt;
+        if(realtime >= field_times[fv] && realtime <= field_times[fv+1])
+        {
+            llg::applied[0]=of[0]+field_val(fv,0);
+            llg::applied[1]=of[1]+field_val(fv,1);
+            llg::applied[2]=of[2]+field_val(fv,2);
+            fv++;
+        }
+        std::cout << realtime << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
         unsigned int nt=t-ets;
         CalcTe(pulse_scale,pulse_delays,static_cast<double>(nt)*llg::dt,num_pulses,Pump_Time,pumpfluence,Te,Tl,G_ep,Cl,gamma_e,llg::dt,initT,ct);
         llg::T=Te;
