@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 15 Dec 2015 20:10:37
+// Last-modified: 16 Dec 2015 13:05:13
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -284,27 +284,17 @@ namespace spins
         {
 
             int mycoords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-            std::cout << geom::coords(mycoords[0],mycoords[1],mycoords[2],1)<< std::endl;
-            if(geom::coords(mycoords[0],mycoords[1],mycoords[2],1)==0)
-            {
-                if((mycoords[0]+mycoords[1]+mycoords[2])%2==0)
-                {//then we are on sublattice A
-                    spins::Sx[i]=0.0;
-                    spins::Sy[i]=0.0;
-                    spins::Sz[i]=1.0;
-                }
-                else
-                {//then we are on sublattice B
-                    spins::Sx[i]=0.0;
-                    spins::Sy[i]=0.0;
-                    spins::Sz[i]=-1.0;
-                }
-            }
-            else
-            {
+            if((mycoords[0]+mycoords[1]+mycoords[2])%2==0)
+            {//then we are on sublattice A
                 spins::Sx[i]=0.0;
                 spins::Sy[i]=0.0;
                 spins::Sz[i]=1.0;
+            }
+            else
+            {//then we are on sublattice B
+                spins::Sx[i]=0.0;
+                spins::Sy[i]=0.0;
+                spins::Sz[i]=-1.0;
             }
         }
     }
@@ -320,7 +310,7 @@ namespace spins
         }
         std::string *initm=NULL;
         initm = new std::string [geom::ucm.GetNMS()];
-        std::cout << "Number of species = " << geom::ucm.GetNMS() << std::endl;
+        //std::cout << "Number of species = " << geom::ucm.GetNMS() << std::endl;
         for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
         {
             double chequergridscale[3]={0,0,0};
@@ -384,14 +374,14 @@ namespace spins
                     int mycoords[3]={static_cast<int>(static_cast<double>(geom::lu(spin,0))*chequergridscale[0]+0.5),static_cast<int>(static_cast<double>(geom::lu(spin,1))*chequergridscale[1]+0.5),static_cast<int>(static_cast<double>(geom::lu(spin,2))*chequergridscale[2]+0.5)};
                     if((mycoords[0]+mycoords[1]+mycoords[2])%2==0)
                     {//then we are on sublattice A
-                    std::cout << "Sublattice A " << mycoords[0] << "\t" << mycoords[1] << "\t" << mycoords[2] << std::endl;
+                    //std::cout << "Sublattice A " << mycoords[0] << "\t" << mycoords[1] << "\t" << mycoords[2] << std::endl;
                         spins::Sx[spin]=0.0;
                         spins::Sy[spin]=0.0;
                         spins::Sz[spin]=1.0;
                     }
                     else
                     {//then we are on sublattice B
-                    std::cout << "Sublattice B " << mycoords[0] << "\t" << mycoords[1] << "\t" << mycoords[2] << std::endl;
+                    //std::cout << "Sublattice B " << mycoords[0] << "\t" << mycoords[1] << "\t" << mycoords[2] << std::endl;
                         spins::Sx[spin]=0.0;
                         spins::Sy[spin]=0.0;
                         spins::Sz[spin]=-1.0;
