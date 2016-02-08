@@ -1,7 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 08 Feb 2016 15:04:40
+// Last-modified: 08 Feb 2016 15:55:41
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
@@ -424,11 +424,24 @@ namespace util
                     error::errMessage("Could not open magnetization file for discretising magnetization (disc_mag.dat)\nMostly likely the disk is full or write permissions are not possible.");
                 }
             }
-            magdisc.resize(magDiscSize[0],magDiscSize[1],magDiscSize[2],3);
-            magdisc.IFill(0);
-            nd.resize(magDiscSize[0],magDiscSize[1],magDiscSize[2]);
-            nd.IFill(0);
             maxcx=0,maxcy=0,maxcz=0;
+
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                int kx=geom::lu(i,0);
+                int ky=geom::lu(i,1);
+                int kz=geom::lu(i,2);
+                int cx=static_cast<int>(static_cast<double>(kx)/static_cast<double>(magDiscSize[0]));
+                int cy=static_cast<int>(static_cast<double>(ky)/static_cast<double>(magDiscSize[1]));
+                int cz=static_cast<int>(static_cast<double>(kz)/static_cast<double>(magDiscSize[2]));
+                if(cx>maxcx){maxcx=cx;}
+                if(cy>maxcy){maxcy=cy;}
+                if(cz>maxcz){maxcz=cz;}
+            }
+            magdisc.resize(maxcx+1,maxcy+1,maxcz+1,3);
+            magdisc.IFill(0);
+            nd.resize(maxcx+1,maxcy+1,maxcz+1);
+            nd.IFill(0);
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
             {
                 int kx=geom::lu(i,0);
@@ -437,9 +450,6 @@ namespace util
                 int cx=static_cast<int>(static_cast<double>(kx)/magDiscSize[0]);
                 int cy=static_cast<int>(static_cast<double>(ky)/magDiscSize[1]);
                 int cz=static_cast<int>(static_cast<double>(kz)/magDiscSize[2]);
-                if(cx>maxcx){maxcx=cx;}
-                if(cy>maxcy){maxcy=cy;}
-                if(cz>maxcz){maxcz=cz;}
                 nd(cx,cy,cz)++;
             }
             FIXOUTVEC(config::Info,"Number of cells in each direction for disc mag:",maxcx,maxcy,maxcz);

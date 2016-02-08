@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 08 Feb 2016 14:24:51
+// Last-modified: 08 Feb 2016 15:23:10
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -57,7 +57,15 @@ namespace llg
         FIXOUT(config::Info,"Timestep:" << dt << " seconds" << std::endl);
         rdt=dt*gyro;
 		FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
-        setting.lookupValue("MagnetizationCalculationMethod:",spins::mag_calc_method);
+        if(!setting.lookupValue("MagnetizationCalculationMethod:",spins::mag_calc_method))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read method for calculating magnetization (llg:MagnetizationCalculationMethod)");
+        }
+        else
+        {
+            FIXOUT(config::Info,"Magnetization calculatioin method:" << spins::mag_calc_method << std::endl);
+        }
         if(spins::mag_calc_method==9)
         {
             util::magDiscSize.resize(3);
@@ -116,7 +124,7 @@ namespace llg
             }
         }
         setting.lookupValue("OutputMagnetization",spins::output_mag);
-        FIXOUT(config::Info,"Initializing output of magnetization:" << std::flush);
+        FIXOUT(config::Info,"Initializing output of magnetization:" << std::endl);
         if(setting.lookupValue("SpinConfigMethod",scm))
         {
             FIXOUT(config::Info,"How are spins initially configured?:" << scm << std::endl);
@@ -148,7 +156,7 @@ namespace llg
             error::errMessage("Could not read the method for applying the initial spin config. Setting llg.SpinConfigMethod (string)");
         }
         util::init_output();
-        SUCCESS(config::Info);
+
         if(geom::ucm.NumAtomsUnitCell() > 5)
         {
             config::openLogFile();
