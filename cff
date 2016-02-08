@@ -55,6 +55,12 @@ llg:
     applied = [ 0.0 , 0.0 , -1.0 ];
     update=100;
     MagnetizationCalculationMethod=8;
+    //in mesh points
+    NoMagDisc = [ 10 , 10 , 10 ];
+    //options are "single" or "vtu"
+    //single means the data is output in a 7 column format, time - x - y - z - mx - my - mz
+    //vtu means the data for each time-step is output in vtu format for reading with paraview
+    DiscOutputFormat="vtu";
     OutputMagnetization=TRUE;
     //options are
     // - file - defined through the config file

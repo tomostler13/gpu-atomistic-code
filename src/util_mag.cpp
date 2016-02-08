@@ -1,13 +1,14 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 12 Aug 2015 10:25:27
+// Last-modified: 08 Feb 2016 15:04:40
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
 #include "../inc/llg.h"
 #include "../inc/arrays.h"
 #include "../inc/fields.h"
+#include "../inc/defines.h"
 #include "../inc/spins.h"
 #include "../inc/intmat.h"
 #include "../inc/geom.h"
@@ -39,6 +40,7 @@ namespace util
         // 6 - output the layer resolved magnetization as a function of y (reduced)
         // 7 - output the layer resolved magnetization as a function of z (reduced)
         // 8 - Neel vector for a checkerboard AFM
+        // 9 - Average over a number of cells in space (x,y,z)
         if(spins::mag_calc_method==0 || spins::output_mag==true)
         {
             spins::mag.IFill(0);
@@ -175,6 +177,37 @@ namespace util
                 lx2=lx2/(static_cast<double>(geom::nspins)*0.5);
                 ly2=ly2/(static_cast<double>(geom::nspins)*0.5);
                 lz2=lz2/(static_cast<double>(geom::nspins)*0.5);
+            }
+            else if(spins::mag_calc_method==9)
+            {
+                magdisc.IFill(0);
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    int kx=geom::lu(i,0);
+                    int ky=geom::lu(i,1);
+                    int kz=geom::lu(i,2);
+                    int cx=static_cast<int>(static_cast<double>(kx)/magDiscSize[0]);
+                    int cy=static_cast<int>(static_cast<double>(ky)/magDiscSize[1]);
+                    int cz=static_cast<int>(static_cast<double>(kz)/magDiscSize[2]);
+                    magdisc(cx,cy,cz,0)+=spins::Sx[i];
+                    magdisc(cx,cy,cz,1)+=spins::Sy[i];
+                    magdisc(cx,cy,cz,2)+=spins::Sz[i];
+                }
+                for(unsigned int cx = 0 ; cx < maxcx ; cx++)
+                {
+                    for(unsigned int cy = 0 ; cy < maxcy ; cy++)
+                    {
+                        for(unsigned int cz = 0 ; cz < maxcz ; cz++)
+                        {
+                            const double oonspc=1./(static_cast<double>(nd(cx,cy,cz)));
+                            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                            {
+                                magdisc(cx,cy,cz,xyz)*=oonspc;
+                            }
+                        }
+                    }
+                }
+
             }
             else
             {
@@ -380,6 +413,37 @@ namespace util
             sofs << "#time - z - mx_A - my_A - mz_A - mx_B - my_B - mz_B" << std::endl;
 
         }
+        else if(spins::mag_calc_method==9)
+        {
+            if(disOutForm=="single")
+            {
+                sofs.open("disc_mag.dat");
+                if(!sofs.is_open())
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Could not open magnetization file for discretising magnetization (disc_mag.dat)\nMostly likely the disk is full or write permissions are not possible.");
+                }
+            }
+            magdisc.resize(magDiscSize[0],magDiscSize[1],magDiscSize[2],3);
+            magdisc.IFill(0);
+            nd.resize(magDiscSize[0],magDiscSize[1],magDiscSize[2]);
+            nd.IFill(0);
+            maxcx=0,maxcy=0,maxcz=0;
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                int kx=geom::lu(i,0);
+                int ky=geom::lu(i,1);
+                int kz=geom::lu(i,2);
+                int cx=static_cast<int>(static_cast<double>(kx)/magDiscSize[0]);
+                int cy=static_cast<int>(static_cast<double>(ky)/magDiscSize[1]);
+                int cz=static_cast<int>(static_cast<double>(kz)/magDiscSize[2]);
+                if(cx>maxcx){maxcx=cx;}
+                if(cy>maxcy){maxcy=cy;}
+                if(cz>maxcz){maxcz=cz;}
+                nd(cx,cy,cz)++;
+            }
+            FIXOUTVEC(config::Info,"Number of cells in each direction for disc mag:",maxcx,maxcy,maxcz);
+        }
     }
     void output_mag(unsigned int t)
     {
@@ -564,6 +628,33 @@ namespace util
             const double timeid=static_cast<double>(t)*llg::dt;
             sofs << timeid << "\t" << lx1 << "\t" << ly1 << "\t" << lz1 << "\t" << lx2 << "\t" << ly2 << "\t" << lz2 << std::endl;
         }
+        else if(spins::mag_calc_method==9)
+        {
+            if(disOutForm=="single")
+            {
+                const double timeid=static_cast<double>(t)*llg::dt;
+                for(unsigned int cx = 0 ; cx < maxcx ; cx++)
+                {
+                    for(unsigned int cy = 0 ; cy < maxcy ; cy++)
+                    {
+                        for(unsigned int cz = 0 ; cz < maxcz ; cz++)
+                        {
+                            sofs << timeid << "\t" << cx << "\t" << cy << "\t" << cz << "\t" << magdisc(cx,cy,cz,0) << "\t" << magdisc(cx,cy,cz,1) << "\t" << magdisc(cx,cy,cz,2) << std::endl;
+                        }
+                    }
+                }
+            }
+            else if(disOutForm=="vtu")
+            {
+                outputDiscVTU(t);
+            }
+            else
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Method for outputting the discrete magnetization is not recognised. Check flag llg:DiscOutputFormat");
+            }
+        }
+
     }
 
 
