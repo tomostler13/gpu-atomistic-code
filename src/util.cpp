@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Feb 2016 15:05:21
+// Last-modified: 08 Feb 2016 20:36:00
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -214,14 +214,14 @@ namespace util
         pvf << "<?xml version=\"1.0\"?>" << "\n";
         pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
         pvf << "<UnstructuredGrid>" << "\n";
-        pvf << "<Piece NumberOfPoints=\""<<maxcx*maxcy*maxcz<<"\"  NumberOfCells=\"1\">" << "\n";
+        pvf << "<Piece NumberOfPoints=\""<<(maxcx+1)*(maxcy+1)*(maxcz+1)<<"\"  NumberOfCells=\"1\">" << "\n";
         pvf << "<PointData Scalar=\"Spin\">" << "\n";
         pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
-        for(unsigned int i = 0 ; i < maxcx ; i++)
+        for(unsigned int i = 0 ; i < maxcx+1 ; i++)
         {
-            for(unsigned int j = 0 ; j < maxcy ; j++)
+            for(unsigned int j = 0 ; j < maxcy+1 ; j++)
             {
-                for(unsigned int k = 0 ; k < maxcz ; k++)
+                for(unsigned int k = 0 ; k < maxcz+1 ; k++)
                 {
                     pvf << magdisc(i,j,k,0) << "\t" << magdisc(i,j,k,1) << "\t" << magdisc(i,j,k,2) << "\n";
                 }
@@ -233,11 +233,11 @@ namespace util
         pvf << "</CellData>" << "\n";
         pvf << "<Points>" << "\n";
         pvf << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
-        for(unsigned int i = 0 ; i < maxcx ; i++)
+        for(unsigned int i = 0 ; i < maxcx+1 ; i++)
         {
-            for(unsigned int j = 0 ; j < maxcy ; j++)
+            for(unsigned int j = 0 ; j < maxcy+1 ; j++)
             {
-                for(unsigned int k = 0 ; k < maxcz ; k++)
+                for(unsigned int k = 0 ; k < maxcz+1 ; k++)
                 {
                     pvf << static_cast<double>(i) << "\t" << static_cast<double>(j) << "\t" << static_cast<double>(k) << std::endl;
                 }

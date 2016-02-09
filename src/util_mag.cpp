@@ -1,7 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 08 Feb 2016 15:55:41
+// Last-modified: 09 Feb 2016 08:59:31
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
@@ -186,18 +186,18 @@ namespace util
                     int kx=geom::lu(i,0);
                     int ky=geom::lu(i,1);
                     int kz=geom::lu(i,2);
-                    int cx=static_cast<int>(static_cast<double>(kx)/magDiscSize[0]);
-                    int cy=static_cast<int>(static_cast<double>(ky)/magDiscSize[1]);
-                    int cz=static_cast<int>(static_cast<double>(kz)/magDiscSize[2]);
+                    int cx=static_cast<int>(static_cast<double>(kx)/static_cast<double>(magDiscSize[0]));
+                    int cy=static_cast<int>(static_cast<double>(ky)/static_cast<double>(magDiscSize[1]));
+                    int cz=static_cast<int>(static_cast<double>(kz)/static_cast<double>(magDiscSize[2]));
                     magdisc(cx,cy,cz,0)+=spins::Sx[i];
                     magdisc(cx,cy,cz,1)+=spins::Sy[i];
                     magdisc(cx,cy,cz,2)+=spins::Sz[i];
                 }
-                for(unsigned int cx = 0 ; cx < maxcx ; cx++)
+                for(unsigned int cx = 0 ; cx < maxcx+1 ; cx++)
                 {
-                    for(unsigned int cy = 0 ; cy < maxcy ; cy++)
+                    for(unsigned int cy = 0 ; cy < maxcy+1 ; cy++)
                     {
-                        for(unsigned int cz = 0 ; cz < maxcz ; cz++)
+                        for(unsigned int cz = 0 ; cz < maxcz+1 ; cz++)
                         {
                             const double oonspc=1./(static_cast<double>(nd(cx,cy,cz)));
                             for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
@@ -447,12 +447,22 @@ namespace util
                 int kx=geom::lu(i,0);
                 int ky=geom::lu(i,1);
                 int kz=geom::lu(i,2);
-                int cx=static_cast<int>(static_cast<double>(kx)/magDiscSize[0]);
-                int cy=static_cast<int>(static_cast<double>(ky)/magDiscSize[1]);
-                int cz=static_cast<int>(static_cast<double>(kz)/magDiscSize[2]);
+                int cx=static_cast<int>(static_cast<double>(kx)/static_cast<double>(magDiscSize[0]));
+                int cy=static_cast<int>(static_cast<double>(ky)/static_cast<double>(magDiscSize[1]));
+                int cz=static_cast<int>(static_cast<double>(kz)/static_cast<double>(magDiscSize[2]));
                 nd(cx,cy,cz)++;
             }
-            FIXOUTVEC(config::Info,"Number of cells in each direction for disc mag:",maxcx,maxcy,maxcz);
+            FIXOUTVEC(config::Info,"Number of cells in each direction for disc mag:",maxcx+1,maxcy+1,maxcz+1);
+            for(unsigned int i = 0 ; i < maxcx+1 ; i++)
+            {
+                for(unsigned int j = 0 ; j < maxcy+1 ; j++)
+                {
+                    for(unsigned int k = 0 ; k < maxcz+1 ; k++)
+                    {
+                        std::cout << i << "\t" << j << "\t" << k << "\t" << nd(i,j,k) << std::endl;
+                    }
+                }
+            }
         }
     }
     void output_mag(unsigned int t)
@@ -643,11 +653,11 @@ namespace util
             if(disOutForm=="single")
             {
                 const double timeid=static_cast<double>(t)*llg::dt;
-                for(unsigned int cx = 0 ; cx < maxcx ; cx++)
+                for(unsigned int cx = 0 ; cx < maxcx+1 ; cx++)
                 {
-                    for(unsigned int cy = 0 ; cy < maxcy ; cy++)
+                    for(unsigned int cy = 0 ; cy < maxcy+1 ; cy++)
                     {
-                        for(unsigned int cz = 0 ; cz < maxcz ; cz++)
+                        for(unsigned int cz = 0 ; cz < maxcz+1 ; cz++)
                         {
                             sofs << timeid << "\t" << cx << "\t" << cy << "\t" << cz << "\t" << magdisc(cx,cy,cz,0) << "\t" << magdisc(cx,cy,cz,1) << "\t" << magdisc(cx,cy,cz,2) << std::endl;
                         }
