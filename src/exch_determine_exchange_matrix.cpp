@@ -1,7 +1,7 @@
 // File: exch_determine_exchange_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 09 Oct 2015 17:25:31
+// Last-modified: 09 Feb 2016 13:24:12
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the CSR neighbourlist
@@ -23,10 +23,13 @@
 #include <sstream>
 namespace exch
 {
+    unsigned int maxNoSpecInt;
     void get_exch_permute(int argc,char *argv[])
     {
         //first read the exchange constants
         J.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3,3);
+        Array2D<unsigned int> maxNoInt;
+        maxNoInt.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS());maxNoInt.IFill(0);
         for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
         {
             for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
@@ -55,6 +58,7 @@ namespace exch
                     exchset.lookupValue(nistr.c_str(),numint(s1,s2,i));
                     config::Info << "Shell " << i+1;
                     FIXOUT(config::Info," number of interactions:" << numint(s1,s2,i) << std::endl);
+                    maxNoInt(s1,s2)+=numint(s1,s2,i);
                     for(unsigned int j = 0 ; j < 3 ; j++)
                     {
                         exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
@@ -105,8 +109,13 @@ namespace exch
                     config::Info << std::endl;
 
                 }
+                if(maxNoInt(s1,s2)>maxNoSpecInt)
+                {
+                    maxNoSpecInt=maxNoInt(s1,s2);
+                }
             }
         }
+        FIXOUT(config::Info,"Max number of interactions a given spin can have is:" << maxNoSpecInt << std::endl);
     }
     void get_exch_direct(int argc,char *argv[])
     {

@@ -1,7 +1,7 @@
 // File: exch_permute_Sp.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 15 Dec 2015 18:57:58
+// Last-modified: 09 Feb 2016 13:41:21
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // routines here take the exchange shell list and permute
@@ -39,20 +39,37 @@ namespace exch
         //temporary arrays in format to store the adjncy as we don't know
         //how big it is before hand
         std::vector<unsigned int> tadjncy;
+        tadjncy.resize(geom::nspins*maxNoSpecInt);
         std::vector< std::vector< std::vector< double > > > tdata;
         tdata.resize(3);
         tdata[0].resize(3);
         tdata[1].resize(3);
         tdata[2].resize(3);
+        for(unsigned int alpha=0;alpha<3;alpha++)
+        {
+            for(unsigned int beta=0;beta<3;beta++)
+            {
+                tdata[alpha][beta].resize(geom::nspins*maxNoSpecInt);
+            }
+        }
         unsigned int adjcount=0;
         xadj.resize(geom::nspins+1);
         xadj.IFill(0);
         xadj[0]=0;
         unsigned int xadj_counter=0,adjncy_counter=0;
+        Array3D<unsigned int> check;
+        check.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
 
+        std::cout << "Finding neighbours via permutation" << std::flush;
+        double count=0.0;
         //loop over the spins and find the neighbours
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
+            if(100.0*static_cast<double>(i)/static_cast<double>(geom::nspins)>=count)
+            {
+                std::cout << "..." << count << "%" << std::flush;
+                count+=10.0;
+            }
             xadj[xadj_counter]=adjncy_counter;
             //what is my species (or sublattice)
             unsigned sl=geom::sublattice(i);
@@ -62,8 +79,6 @@ namespace exch
             //store atom i's position
             int mypos[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
 
-            Array3D<unsigned int> check;
-            check.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
             check.IFill(0);
 
             //this is a loop over the species.
@@ -137,7 +152,7 @@ namespace exch
 
 
                                                     //This is the adjncy (neighbour lookup) in the CSR format
-                                                    tadjncy.push_back(neigh);
+                                                    //tadjncy.push_back(neigh);
                                                     //std::cout << tadjncy[adjncy_counter] << std::endl;
                                                     //std::cin.get();
                                                     tadjncy[adjncy_counter]=neigh;
@@ -163,7 +178,7 @@ namespace exch
                                                     {
                                                         for(unsigned int beta = 0 ; beta < 3 ; beta++)
                                                         {
-                                                            tdata[alpha][beta].push_back(J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(aiuc)*llg::muB));
+                                                            tdata[alpha][beta][adjncy_counter-1]=J(sl,spec,shell,alpha,beta)/(geom::ucm.GetMu(aiuc)*llg::muB);
 
                                                         }
                                                     }
@@ -186,6 +201,7 @@ namespace exch
             }
             xadj_counter++;
         }
+        std::cout << "...Done" << std::endl;
         int diagcount=0;
         for(unsigned int i = 0 ; i < 2*geom::nspins-1 ; i++)
         {
