@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Feb 2016 20:36:00
+// Last-modified: 09 Feb 2016 10:01:44
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
