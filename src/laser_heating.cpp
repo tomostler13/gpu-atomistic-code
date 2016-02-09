@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 15 Dec 2015 20:05:47
+// Last-modified: 09 Feb 2016 09:14:01
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -445,7 +445,7 @@ void sim::laser_heating(int argc,char *argv[])
             llg::applied[2]=of[2]+field_val(fv,2);
             fv++;
         }
-        std::cout << realtime << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
+        //std::cout << realtime << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
         if(t%spins::update==0)
         {
             util::calc_mag();
@@ -496,7 +496,7 @@ void sim::laser_heating(int argc,char *argv[])
             llg::applied[2]=of[2]+field_val(fv,2);
             fv++;
         }
-        std::cout << realtime << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
+        //std::cout << realtime << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
         unsigned int nt=t-ets;
         CalcTe(pulse_scale,pulse_delays,static_cast<double>(nt)*llg::dt,num_pulses,Pump_Time,pumpfluence,Te,Tl,G_ep,Cl,gamma_e,llg::dt,initT,ct);
         llg::T=Te;

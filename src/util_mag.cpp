@@ -1,7 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 09 Feb 2016 08:59:31
+// Last-modified: 09 Feb 2016 09:30:41
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
@@ -181,6 +181,8 @@ namespace util
             else if(spins::mag_calc_method==9)
             {
                 magdisc.IFill(0);
+                //double summz=0.0;
+                //double sumdmz=0.0;
                 for(unsigned int i = 0 ; i < geom::nspins ; i++)
                 {
                     int kx=geom::lu(i,0);
@@ -192,7 +194,9 @@ namespace util
                     magdisc(cx,cy,cz,0)+=spins::Sx[i];
                     magdisc(cx,cy,cz,1)+=spins::Sy[i];
                     magdisc(cx,cy,cz,2)+=spins::Sz[i];
+                //    summz+=spins::Sz[i];
                 }
+                //std::cout << summz << std::endl;
                 for(unsigned int cx = 0 ; cx < maxcx+1 ; cx++)
                 {
                     for(unsigned int cy = 0 ; cy < maxcy+1 ; cy++)
@@ -204,9 +208,14 @@ namespace util
                             {
                                 magdisc(cx,cy,cz,xyz)*=oonspc;
                             }
+
+                            //sumdmz+=magdisc(cx,cy,cz,2);
                         }
                     }
                 }
+                //std::cout << sumdmz << std::endl;
+                //std::cin.get();
+
 
             }
             else
@@ -453,7 +462,7 @@ namespace util
                 nd(cx,cy,cz)++;
             }
             FIXOUTVEC(config::Info,"Number of cells in each direction for disc mag:",maxcx+1,maxcy+1,maxcz+1);
-            for(unsigned int i = 0 ; i < maxcx+1 ; i++)
+/*            for(unsigned int i = 0 ; i < maxcx+1 ; i++)
             {
                 for(unsigned int j = 0 ; j < maxcy+1 ; j++)
                 {
@@ -462,7 +471,7 @@ namespace util
                         std::cout << i << "\t" << j << "\t" << k << "\t" << nd(i,j,k) << std::endl;
                     }
                 }
-            }
+            }*/
         }
     }
     void output_mag(unsigned int t)

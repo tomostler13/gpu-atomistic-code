@@ -1,17 +1,17 @@
 OutputFile = "opf.dat";
-seed = 1450127657;
+seed = 1455011540;
 system:
 {
     //number of unit cells
-    dim = [ 25 , 25 , 1 ];
+    dim = [ 24 , 24 , 24 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="FeRh1.875e-09FePt2.30769e-09.ucf";
+    unitcellfile="FeRh.ucf";
     //Number of k-points in each direction
-    Nk = [ 4 , 4 , 56 ];
+    Nk = [ 1 , 1 , 1 ];
     //lattice constants
-    abc = [ 625e-12 , 625e-12 , 4.18269e-09 ];
+    abc = [ 300e-12 , 300e-12 , 300e-12 ];
     //do we include the dipole-dipole calculation?
     include_dipole = FALSE;
     Exchange_method="CSR";
@@ -30,42 +30,40 @@ exchange:
     //direct (by reading in all interactions directly)
     //permute (take a neighbour and calculate permutations)
     exchmethod="permute";
-    OutputExchange=TRUE;
+    OutputExchange=FALSE;
     //How are we to read in the exchange
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
-    exchfile="FeRh1.875e-09FePt2.30769e-09.exch";
-    OutputExchangeMatrix=FALSE;
+    exchfile="FeRh.exch";
+    OutputExchangeMatrix=TRUE;
     ExitAfterExchangeMatrix=FALSE;
     ReadExchangeMatrix=FALSE;
+};
+rscf:
+{
+    Calculate=TRUE;
+    InputFile="FeRh.rscf";
 };
 sf:
 {
     Calculate=FALSE;
     InputFile="sf.in";
 };
-rscf:
-{
-    Calculate=FALSE;
-};
 llg:
 {
     dt = 0.2e-15;
-    applied = [ 0.0 , 0.0 , -1.0 ];
+    applied = [ 0.0 , 0.0 , 0.5 ];
     update=100;
-    MagnetizationCalculationMethod=8;
-    //in mesh points
-    NoMagDisc = [ 10 , 10 , 10 ];
-    //options are "single" or "vtu"
-    //single means the data is output in a 7 column format, time - x - y - z - mx - my - mz
-    //vtu means the data for each time-step is output in vtu format for reading with paraview
+    MagnetizationCalculationMethod=9;
+    NoMagDisc=[ 4 , 4 , 4 ];
     DiscOutputFormat="vtu";
     OutputMagnetization=TRUE;
     //options are
     // - file - defined through the config file
     // - random - randomized before start of simulation
-    SpinConfigMethod="file";
+    SpinConfigMethod="random";
+
 };
 cuda:
 {
@@ -77,9 +75,9 @@ sim:
 };
 laserheating:
 {
-    EquilibrationTime = 20e-12;
-    RunTime = 150e-12;
-    InitialTemperature = 100.0;
+    EquilibrationTime = 0e-12;
+    RunTime = 0.1e-12;
+    InitialTemperature = 300.0;
     OutputIndividualTimeSeries = TRUE;
     Cl = 4.54e1;
     PumpTime = 100e-15;
@@ -87,14 +85,17 @@ laserheating:
     G_ep = 1.05e12;
     //Joules/mol/K^2
     Gamma_e = 3.5e-3;
-    CoolingTime = 3000.0e-12;
+    CoolingTime = 3000000.0e-12;
     OutputStructureFactor = FALSE;
-    PumpFluence = 80.0e15;
+    PumpFluence = 25.0e15;
     NumPulses = 1;
     PulseDelays = [ 300e-15 ];
     PulseScale = [ 1.0 ];
+    NumFieldValues=1;
+    FieldTimes = [ 11e-12 ];
+    FieldVal1 = [ 0.0 , 0.0 , 0.0 ];
     OutputSpinsVTU=TRUE;
-    VTUUpdate=10;
-    VTUOutputStart=15e-12;
+    VTUUpdate=1;
+    VTUOutputStart=0.0;
 
 };
