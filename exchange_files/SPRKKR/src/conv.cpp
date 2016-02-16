@@ -113,6 +113,7 @@ int main(int argc,char *argv[])
             error::errMessage("The number of atoms is not correct.");
         }
         ifs >> naps[i];
+        logf << "Number of atoms at site " << i+1 << " = " << naps[i] << std::endl;
         if(i>0)
         {
             if(naps[i]!=naps[i-1])
@@ -139,7 +140,7 @@ int main(int argc,char *argv[])
         {
             ifs >> numbers(i,j) >> comp(i,j);
             //for debugging
-            //std::cout << "\t" << numbers(i,j) << "\t" << comp(i,j);
+            logf << "\t" << numbers(i,j) << "\t" << comp(i,j) << std::endl;
         }
         //for debugging
         //std::cout << std::endl;
@@ -174,9 +175,9 @@ int main(int argc,char *argv[])
         }
     }
     FIXOUT(logf,"Total number of interactions:" << totnoint << std::endl);
-    FIXOUT(logf,"Maximum number of interactions between any two species:" << totnoint/(naps[0]*naps[0]) << std::endl);
+    FIXOUT(logf,"Maximum number of interactions between any two species:" << totnoint/(numsite*naps[0]) << std::endl);
     //Maximum interactions should be an integer (i.e. the same number for each species)
-    double tmi=static_cast<double>(totnoint)/static_cast<double>(naps[0]*naps[0]);
+    double tmi=static_cast<double>(totnoint)/static_cast<double>(numsite*naps[0]);
     if(isInteger(tmi)==0)
     {
         FIXOUT(logf,"Number of interactions between any two species was found to be an integer:" << "Continuing" << std::endl);
@@ -225,9 +226,9 @@ int main(int argc,char *argv[])
         int IQ=-1,IT=-1,JQ=-1,JT=-1;
         ifs >> inst >> sdump >> IQ >> sdump >> sdump >> IT >> sdump >> sdump >> JQ >> sdump >> sdump >> JT;
         //species of i
-        speci=IT%naps[0];
+        speci=(IT+1)%naps[0];
         //species of j
-        specj=JT%naps[0];
+        specj=(JT+1)%naps[0];
         std::getline(ifs,sdump);
         std::getline(ifs,sdump);std::getline(ifs,sdump);
         double x,y,z,dist,JRy,JeV;
@@ -268,33 +269,44 @@ int main(int argc,char *argv[])
             std::string str=sstr.str();
             opf << str << std::endl;
             opf << "{\n\tNum_Interactions = " << mi << ";\n\tunits = \"" << units << "\";\n";
+            std::stringstream opfsstr;
+            opfsstr << "rJ_" << i << "_" << j << ".dat";
+            std::string opfstr=opfsstr.str();
+            std::ofstream raw(opfstr.c_str());
             //now output the interaction between each species
             //loop over all of the read interactions and check if they are between each species
-            for(unsigned int l = 0 ; l < totnoint ; l++)
+            for(unsigned int l = 0 ; l < totnoint/2 ; l++)
             {
-                if(speclu(l,0)==i &&  speclu(l,1)==j)
+//            std::cout << "l= " << l << "\tlocout = " << loccount << std::endl;
+                //if(l<mi)
                 {
-                    opf << std::setprecision(10) << std::fixed << "\tInteraction" << loccount+1 << "Vec = [ " << vec(l,0)*ns[0] << " , " << vec(l,1)*ns[1] << " , " << vec(l,2)*ns[2] << " ];\n";
-
-                    if(units=="eV")
+                    if(speclu(l,0)==i &&  speclu(l,1)==j)
                     {
-                        opf << "\tJ" << loccount+1 << "_1 = [ " << JijeV(l)*scaleJ << " , 0.0000 , 0.0000 ];\n";
-                        opf << "\tJ" << loccount+1 << "_2 = [ 0.0000 , " << JijeV(l)*scaleJ << " , 0.0000 ];\n";
-                        opf << "\tJ" << loccount+1 << "_3 = [ 0.0000 , 0.0000 , " << JijeV(l)*scaleJ << " ];\n";
-                    }
-                    else if(units=="Ry")
-                    {
-                        opf << "\tJ" << loccount+1 << "_1 = [ " << JijRy(l)*scaleJ << " , 0.0000 , 0.0000 ];\n";
-                        opf << "\tJ" << loccount+1 << "_2 = [ 0.0000 , " << JijRy(l)*scaleJ << " , 0.0000 ];\n";
-                        opf << "\tJ" << loccount+1 << "_3 = [ 0.0000 , 0.0000 , " << JijRy(l)*scaleJ << " ];\n";
-                    }
-                    loccount++;
+                        opf << std::setprecision(10) << std::fixed << "\tInteraction" << loccount+1 << "Vec = [ " << vec(l,0)*ns[0] << " , " << vec(l,1)*ns[1] << " , " << vec(l,2)*ns[2] << " ];\n";
 
+                        if(units=="eV")
+                        {
+                            opf << "\tJ" << loccount+1 << "_1 = [ " << JijeV(l)*scaleJ << " , 0.0000 , 0.0000 ];\n";
+                            opf << "\tJ" << loccount+1 << "_2 = [ 0.0000 , " << JijeV(l)*scaleJ << " , 0.0000 ];\n";
+                            opf << "\tJ" << loccount+1 << "_3 = [ 0.0000 , 0.0000 , " << JijeV(l)*scaleJ << " ];\n";
+                        }
+                        else if(units=="Ry")
+                        {
+                            opf << "\tJ" << loccount+1 << "_1 = [ " << JijRy(l)*scaleJ << " , 0.0000 , 0.0000 ];\n";
+                            opf << "\tJ" << loccount+1 << "_2 = [ 0.0000 , " << JijRy(l)*scaleJ << " , 0.0000 ];\n";
+                            opf << "\tJ" << loccount+1 << "_3 = [ 0.0000 , 0.0000 , " << JijRy(l)*scaleJ << " ];\n";
+                        }
+                        raw << vec(l,0)*ns[0] << "\t" << vec(l,1)*ns[1] << "\t" << vec(l,2)*ns[2] << "\t" << JijeV(l)*scaleJ << std::endl;
+                        loccount++;
+
+                    }
                 }
             }
+            raw.close();
             if(loccount!=mi)
             {
                 error::errPreamble(__FILE__,__LINE__);
+//                std::cout <<"\n"<< loccount << "\t" << mi << "\t" << totnoint << std::endl;
                 error::errMessage("Inconsistency in the number of interactions found");
             }
             opf << "};\n";
