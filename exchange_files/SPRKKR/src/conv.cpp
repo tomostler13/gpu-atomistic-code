@@ -226,9 +226,9 @@ int main(int argc,char *argv[])
         int IQ=-1,IT=-1,JQ=-1,JT=-1;
         ifs >> inst >> sdump >> IQ >> sdump >> sdump >> IT >> sdump >> sdump >> JQ >> sdump >> sdump >> JT;
         //species of i
-        speci=(IT+1)%naps[0];
+        speci=IT%naps[0];
         //species of j
-        specj=(JT+1)%naps[0];
+        specj=JT%naps[0];
         std::getline(ifs,sdump);
         std::getline(ifs,sdump);std::getline(ifs,sdump);
         double x,y,z,dist,JRy,JeV;

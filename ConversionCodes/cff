@@ -1,0 +1,15 @@
+conv:
+{
+    NumberSpin=1560896
+    NCellsOut = [ 4 , 4 , 4 ];
+    NCellsIn = [ 116 , 116 , 116 ];
+    Nk = [ 1 , 1 , 1 ];
+    abc = [ 300e-12 , 300e-12 , 300e-12 ];
+    InputFilenameBase = "spinmap_";
+    StartTime = 149500;
+    EndTime = 149500;
+    dTime = 100;
+//    6
+//    6
+//    16
+};
