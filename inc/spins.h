@@ -1,7 +1,7 @@
 // File: spins.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 26 Oct 2015 09:15:07
+// Last-modified: 16 Mar 2016 11:58:38
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -35,6 +35,8 @@ namespace spins
     void dipeFFTForward();
     void setSpinsConfig();
     void setSpinsRandom();
-    void setSpinsChequer();
+    void setSpinsChequerX();
+    void setSpinsChequerY();
+    void setSpinsChequerZ();
 }
 #endif /*_SPINS_H_*/
