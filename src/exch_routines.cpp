@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 05 Jun 2015 20:13:57
+// Last-modified: 16 Mar 2016 11:15:05
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -181,7 +181,7 @@ namespace exch
                         {
                             for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
                             {
-                                opem << adjncy[j] << "\t" << dataxx[j] << "\t" << datayy[j] << "\t" << datazz[j] << "\t";
+                                opem << std::setprecision(16) << adjncy[j] << "\t" << dataxx[j] << "\t" << datayy[j] << "\t" << datazz[j] << "\t";
                             }
                         }
                         opem.close();
