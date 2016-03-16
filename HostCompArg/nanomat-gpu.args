@@ -1,0 +1,9 @@
+# Compilers
+LIBS= -lm  -lstdc++ -llapack -lblas# -lconfig++
+STATIC_LINK=
+CPULIBS= -fopenmp -lpthread
+CUDALIBS= -L/usr/local/cuda/lib64/ -lcurand -lcudart -lcufft
+STATIC_LINK=/usr/lib/x86_64-linux-gnu/libconfig++.a /opt/fftw-3.3.4/.libs/libfftw3.a /opt/fftw-3.3.4/.libs/libfftw3f.a
+OPT_LEVEL=-O3
+GCC_FLAGS= $(OPT_LEVEL) -I/opt/fftw-3.3.4/include/
+NVCC_FLAGS= $(OPT_LEVEL) -I/usr/local/cuda/include -I/usr/include -I/opt/fftw-3.3.4/include -m64 -ccbin /usr/bin/g++-4.4 --ptxas-options=-v -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_30,code=compute_30
