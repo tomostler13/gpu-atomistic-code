@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 12 May 2016 18:28:32
+// Last-modified: 12 May 2016 18:32:19
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -36,7 +36,7 @@ namespace exch
     Array5D<double> J;
     Array4D<double> fsq;
     Array<int> Interface;
-    std::string enerType;
+    std::string enerType,exchMatFN;
     bool outputJ,oem=false,rem=false,cutexch=false,inc4spin=false,eaem=false;
     //cut off of exchange in m
     double rcut=1.0;
