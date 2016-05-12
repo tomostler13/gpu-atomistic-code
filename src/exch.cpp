@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 16 Mar 2016 11:17:56
+// Last-modified: 08 Apr 2016 11:31:20
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -36,7 +36,7 @@ namespace exch
     Array5D<double> J;
     Array4D<double> fsq;
     Array<int> Interface;
-    std::string enerType;
+    std::string enerType,exchMatFN;
     bool outputJ,oem=false,rem=false,cutexch=false,inc4spin=false;
     //cut off of exchange in m
     double rcut=1.0;
@@ -64,11 +64,11 @@ namespace exch
             {
                 if(config::exchm==2)
                 {
-                    std::ifstream ipem("csr_exch_mat.dat");
+                    std::ifstream ipem(exchMatFN.c_str());
                     if(!ipem.is_open())
                     {
                         error::errPreamble(__FILE__,__LINE__);
-                        error::errMessage("You requested to read in a CSR exchange matrix but it does not exist. Check it is called csr_exch_mag.dat");
+                        error::errMessage("You requested to read in a CSR exchange matrix but it could not be opened, check that it exists.");
                     }
                     unsigned int lns=0,adjsize;
                     ipem >> lns;

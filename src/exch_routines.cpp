@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 16 Mar 2016 11:15:05
+// Last-modified: 08 Apr 2016 11:27:46
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -58,6 +58,18 @@ namespace exch
         }
         FIXOUT(config::Info,"Output the exchange matrix in the current format:" << config::isTF(oem) << std::endl);
         FIXOUT(config::Info,"Read the exchange matrix:" << config::isTF(rem) << std::endl);
+        if(rem)
+        {
+            if(setting.lookupValue("ExchangeMatrixFilename",exchMatFN))
+            {
+                FIXOUT(config::Info,"Exchange matrix filename:" << exchMatFN << std::endl);
+            }
+            else
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Error reading filename for csr exchange matrix. Check setting exchange.csrMatrixName");
+            }
+        }
         FIXOUT(config::Info,"Output of exchange matrix (mostly for visualization how diagonal it is):" << config::isTF(outputJ) << std::endl);
         if(readMethod=="thisfile")
         {
