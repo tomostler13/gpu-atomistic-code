@@ -30,13 +30,15 @@ int main(int argc,char *argv[])
     //0 - no window
     //1 - generalized hamming
     unsigned int windowi=0;
-    if(argc<3)
+    if(argc<5)
     {
-        std::cerr << "Error: You must give a file and the width in Hz as paramters." << std::endl;
+        std::cerr << "Error: You must give a file, the width in Hz as paramters and a min and max frequency for finding the max amplitude." << std::endl;
         exit(0);
     }
     std::string infofile=argv[1];
     double width=atof(argv[2]);
+    double fcutl=atof(argv[3]);
+    double fcutu=atof(argv[4]);
     std::ofstream Info;
     Info.open("info.dat");
     if(!Info.is_open())
@@ -44,7 +46,7 @@ int main(int argc,char *argv[])
         std::cerr << "Error: Could not open the information (output) file." << std::endl;
         exit(0);
     }
-    if(argc < 4)
+    if(argc < 6)
     {
         FIXOUT(Info,"You have chosen no time window" << std::endl);
     }
@@ -52,14 +54,22 @@ int main(int argc,char *argv[])
     {
         FIXOUT(Info,"You have chosen the window:" << window << std::endl);
     }
-    if(argc > 4)
+
+    FIXOUT(Info,"Lower frequency cut off:" << fcutl << " [rad/s]" << std::endl);
+    FIXOUT(Info,"Upper frequency cut off:" << fcutu << " [rad/s]" << std::endl);
+    if(fcutl>fcutu)
+    {
+        std::cerr << "Lower frequency cut-off cannot be larger than the upper cut-off" << std::endl;
+        exit(0);
+    }
+    if(argc > 6)
     {
 
-        window=argv[3];
+        window=argv[5];
         if(window=="hamm")
         {
             windowi=1;
-            if(argc > 4 && argc < 6)
+            if(argc > 6 && argc < 8)
             {
                 std::cerr << "You have specified a windowing function the use of a generalized hamming window without providing alpha and beta" << std::endl;
                 std::cerr << "Usage: ./timeseries <file> <window> <params>" << std::endl;
@@ -67,8 +77,8 @@ int main(int argc,char *argv[])
             }
             else
             {
-                hammalpha=atof(argv[4]);
-                hammbeta=atof(argv[5]);
+                hammalpha=atof(argv[5]);
+                hammbeta=atof(argv[6]);
                 FIXOUT(Info,"Hamm alpha:" << hammalpha << std::endl);
                 FIXOUT(Info,"Hamm beta:" << hammbeta << std::endl);
             }
@@ -238,12 +248,12 @@ int main(int argc,char *argv[])
         unsigned int maxsmoothindex=0;
         for(unsigned int w = 0 ; w < num_samples/2 ; w++)
         {
-            if(res(w)>maxsmooth)
+            if(res(w)>maxsmooth && static_cast<double>(w)*2*M_PI/(static_cast<double>(num_samples)*dt) > fcutl && static_cast<double>(w)*2*M_PI/(static_cast<double>(num_samples)*dt) < fcutu)
             {
                 maxsmooth=res(w);
                 maxsmoothindex=w;
             }
-            if(ores(w)>maxraw)
+            if(ores(w)>maxraw && w>1 && static_cast<double>(w)*2*M_PI/(static_cast<double>(num_samples)*dt) > fcutl && static_cast<double>(w)*2*M_PI/(static_cast<double>(num_samples)*dt) < fcutu)
             {
                 maxraw=ores(w);
                 maxrawindex=w;

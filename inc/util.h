@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 03 Aug 2015 15:28:03
+// Last-modified: 08 Feb 2016 15:03:51
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -10,6 +10,7 @@
 #include "../inc/array.h"
 #include "../inc/array2d.h"
 #include "../inc/array3d.h"
+#include "../inc/array4d.h"
 #ifndef _UTIL_H_
 #define _UTIL_H_
 namespace util
@@ -110,6 +111,11 @@ namespace util
     double reduceArrayDouble(Array<double>,unsigned int);
     extern Array2D<double> magx,magy,magz;
     extern Array3D<double> mag_species_x,mag_species_y,mag_species_z;
+    extern Array4D<double> magdisc;
+    extern Array3D<unsigned int> nd;
+    extern Array<unsigned int> magDiscSize;
+    extern unsigned int maxcx,maxcy,maxcz;
+    extern std::string disOutForm;
     extern Array2D<double> nspl;//number of spins per layer
     extern double lx1,lx2,ly1,ly2,lz1,lz2;
     void fillfloat(int,double*,float*);
@@ -119,6 +125,7 @@ namespace util
     void copy3vecto1(int,Array<double>,Array<double>,Array<double>,double*);
     std::string exec(char*);
     void outputSpinsVTU(unsigned int);
+    void outputDiscVTU(unsigned int);
     void calc_mag();
     void output_mag(unsigned int);
     void init_output();

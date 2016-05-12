@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 16 Mar 2016 11:58:21
+// Last-modified: 12 May 2016 18:27:46
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -57,9 +57,74 @@ namespace llg
         FIXOUT(config::Info,"Timestep:" << dt << " seconds" << std::endl);
         rdt=dt*gyro;
 		FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
-        setting.lookupValue("MagnetizationCalculationMethod:",spins::mag_calc_method);
+        if(!setting.lookupValue("MagnetizationCalculationMethod:",spins::mag_calc_method))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read method for calculating magnetization (llg:MagnetizationCalculationMethod)");
+        }
+        else
+        {
+            FIXOUT(config::Info,"Magnetization calculatioin method:" << spins::mag_calc_method << std::endl);
+        }
+        if(spins::mag_calc_method==9)
+        {
+            util::magDiscSize.resize(3);
+            util::magDiscSize.IFill(0);
+            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+            {
+                try
+                {
+                    util::magDiscSize[xyz]=setting["NoMagDisc"][xyz];
+                }
+                catch(const libconfig::SettingNotFoundException &snf)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "Setting not found exception caught. Setting " << snf.getPath();
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
+                }
+            }
+            FIXOUTVEC(config::Info,"Number of intervals for calculating discrete magnetization:",util::magDiscSize[0],util::magDiscSize[1],util::magDiscSize[2]);
+
+            double fractpart,intpart;
+
+            double no_kpx_pd=static_cast<double>(geom::dim[0]*geom::Nk[0])/static_cast<double>(util::magDiscSize[0]);
+            fractpart=std::modf(no_kpx_pd,&intpart);
+            if(fabs(fractpart)>1e-12)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                printf ("No. points per discretization cell %f = %f + %f (the fractional part is bigger than 1e-12) \n", no_kpx_pd, intpart, fractpart);
+                error::errMessage("Error in discretization (in x). At the moment the code requires a perfect number of points so that geom::dim*geom::Nk/magDiscSize is EXACTLY an integer (to an accuracy of 1e-12).");
+            }
+            double no_kpy_pd=static_cast<double>(geom::dim[1]*geom::Nk[1])/static_cast<double>(util::magDiscSize[1]);
+            fractpart=std::modf(no_kpy_pd,&intpart);
+            if(fabs(fractpart)>1e-12)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                printf ("No. points per discretization cell %f = %f + %f (the fractional part is bigger than 1e-12) \n", no_kpy_pd, intpart, fractpart);
+                error::errMessage("Error in discretization (in y). At the moment the code requires a perfect number of points so that geom::dim*geom::Nk/magDiscSize is EXACTLY an integer (to an accuracy of 1e-12).");
+            }
+            double no_kpz_pd=static_cast<double>(geom::dim[2]*geom::Nk[2])/static_cast<double>(util::magDiscSize[2]);
+            fractpart=std::modf(no_kpz_pd,&intpart);
+            if(fabs(fractpart)>1e-12)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Error in discretization (in z). At the moment the code requires a perfect number of points so that geom::dim*geom::Nk/magDiscSize is EXACTLY an integer (to an accuracy of 1e-12).");
+                printf ("No. points per discretization cell %f = %f + %f (the fractional part is bigger than 1e-12) \n", no_kpz_pd, intpart, fractpart);
+            }
+            if(setting.lookupValue("DiscOutputFormat",util::disOutForm))
+            {
+                FIXOUT(config::Info,"Output format for mag disc output (MagnetizationCalculationMethod):" << util::disOutForm << std::endl);
+            }
+            else
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not read the DiscOutputFormat (llg:DiscOutputFormat (string))");
+            }
+        }
         setting.lookupValue("OutputMagnetization",spins::output_mag);
-        FIXOUT(config::Info,"Initializing output of magnetization:" << std::flush);
+        FIXOUT(config::Info,"Initializing output of magnetization:" << std::endl);
         if(setting.lookupValue("SpinConfigMethod",scm))
         {
             FIXOUT(config::Info,"How are spins initially configured?:" << scm << std::endl);
@@ -83,6 +148,10 @@ namespace llg
             {
                 spins::setSpinsChequerZ();
             }
+            else if(scm=="species")
+            {
+                spins::setSpinsSpecies(setting);
+            }
             else
             {
                 error::errPreamble(__FILE__,__LINE__);
@@ -95,7 +164,7 @@ namespace llg
             error::errMessage("Could not read the method for applying the initial spin config. Setting llg.SpinConfigMethod (string)");
         }
         util::init_output();
-        SUCCESS(config::Info);
+
         if(geom::ucm.NumAtomsUnitCell() > 5)
         {
             config::openLogFile();

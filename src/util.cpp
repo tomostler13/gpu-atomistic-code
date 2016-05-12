@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 16 Mar 2016 10:12:39
+// Last-modified: 12 May 2016 17:50:53
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -26,6 +26,11 @@ namespace util
     Array2D<double> magx,magy,magz;
     double lx1,ly1,lz1,lx2,ly2,lz2;
     Array3D<double> mag_species_x,mag_species_y,mag_species_z;
+    Array<unsigned int> magDiscSize;
+    Array4D<double> magdisc;
+    std::string disOutForm;
+    unsigned int maxcx=0,maxcy=0,maxcz=0;
+    Array3D<unsigned int> nd;
     Array2D<double> nspl;//number of spins per layer
     void inverse(double* A, int N)
     {
@@ -193,6 +198,69 @@ namespace util
 		pclose(pipe);
 		return result;
 	}
+    void outputDiscVTU(unsigned int t)
+    {
+        std::stringstream pvss;
+        std::string pv="discmap";
+        pvss << pv << "_" << t << ".vtu";
+        std::string pvs = pvss.str();
+        std::ofstream pvf(pvs.c_str());
+        if(!pvf.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open file for writing paraview files");
+        }
+
+        pvf << "<?xml version=\"1.0\"?>" << "\n";
+        pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
+        pvf << "<UnstructuredGrid>" << "\n";
+        pvf << "<Piece NumberOfPoints=\""<<(maxcx+1)*(maxcy+1)*(maxcz+1)<<"\"  NumberOfCells=\"1\">" << "\n";
+        pvf << "<PointData Scalar=\"Spin\">" << "\n";
+        pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+        for(unsigned int i = 0 ; i < maxcx+1 ; i++)
+        {
+            for(unsigned int j = 0 ; j < maxcy+1 ; j++)
+            {
+                for(unsigned int k = 0 ; k < maxcz+1 ; k++)
+                {
+                    pvf << magdisc(i,j,k,0) << "\t" << magdisc(i,j,k,1) << "\t" << magdisc(i,j,k,2) << "\n";
+                }
+            }
+        }
+        pvf << "</DataArray>" << "\n";
+        pvf << "</PointData>" << "\n";
+        pvf << "<CellData>" << "\n";
+        pvf << "</CellData>" << "\n";
+        pvf << "<Points>" << "\n";
+        pvf << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+        for(unsigned int i = 0 ; i < maxcx+1 ; i++)
+        {
+            for(unsigned int j = 0 ; j < maxcy+1 ; j++)
+            {
+                for(unsigned int k = 0 ; k < maxcz+1 ; k++)
+                {
+                    pvf << static_cast<double>(i) << "\t" << static_cast<double>(j) << "\t" << static_cast<double>(k) << std::endl;
+                }
+            }
+        }
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Points>" << "\n";
+        pvf << "<Cells>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Cells>" << "\n";
+        pvf << "</Piece>" << "\n";
+        pvf << "</UnstructuredGrid>" << "\n";
+        pvf << "</VTKFile>" << "\n";
+        pvf.close();
+    }
     void outputSpinsVTU(unsigned int t)
     {
         std::stringstream pvss;

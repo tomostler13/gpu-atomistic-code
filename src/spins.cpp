@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 16 Mar 2016 11:59:30
+// Last-modified: 12 May 2016 18:27:38
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -337,6 +337,107 @@ namespace spins
                 spins::Sz[i]=-1.0;
             }
         }
+    }
+    void setSpinsSpecies(libconfig::Setting& setting)
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            //initialise all spins to zero and at the end check that
+            //their modulus is NOT 0
+            spins::Sx[i]=0.0;
+            spins::Sy[i]=0.0;
+            spins::Sz[i]=0.0;
+        }
+        std::string *initm=NULL;
+        initm = new std::string [geom::ucm.GetNMS()];
+        //std::cout << "Number of species = " << geom::ucm.GetNMS() << std::endl;
+        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+        {
+            double chequergridscale[3]={0,0,0};
+            std::stringstream sstr;
+            sstr << "SublatticeInit" << i+1;
+            std::string str=sstr.str();
+            if(setting.lookupValue(str.c_str(),initm[i]))
+            {
+                if(initm[i]!="chequer" && initm[i]!="uniformz")
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "You have chosen a value for spin initialisation (read as " << initm[i] << " ) on a sublattice by sublattice basis that is not recognised. So far the only ones implemented are: chequer and uniformz";
+                    std::string errstr=errsstr.str();
+
+                    error::errMessage(errstr.c_str());
+                }
+                FIXOUT(config::Info,str << initm[i] << std::endl);
+                if(initm[i]=="chequer")
+                {
+                    std::stringstream gsstr;
+                    gsstr << "ChequerGridScale" << i+1;
+                    std::string gstr=gsstr.str();
+                    for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                    {
+                        try
+                        {
+                            chequergridscale[xyz]=setting[gstr.c_str()][xyz];
+                        }
+                        catch(const libconfig::SettingNotFoundException &snf)
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            std::stringstream errsstr;
+                            errsstr << "Setting not found exception caught. Setting " << snf.getPath();
+                            std::string errstr=errsstr.str();
+                            error::errMessage(errstr);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                std::stringstream errsstr;
+                errsstr << "Could not read the initialisation method for sublattice " << i+1 << ". llg.SublatticeInit (std::string)";
+                std::string errstr=errsstr.str();
+                error::errMessage(errstr.c_str());
+            }
+            for(unsigned int spin = 0 ; spin < geom::nspins ; spin++)
+            {
+                if(initm[i]=="uniformz" && geom::lu(spin,3)==i)
+                {
+                    spins::Sx[spin]=0;
+                    spins::Sy[spin]=0;
+                    spins::Sz[spin]=1.0;
+//                    std::cout << "Spin " << spin << " is species " << i << std::endl;
+                }
+                else if(initm[i]=="chequer" && geom::lu(spin,3)==i)
+                {
+//                    std::cout << "Spin " << spin << " is species " << i << std::endl;
+                    int mycoords[3]={static_cast<int>(static_cast<double>(geom::lu(spin,0))*chequergridscale[0]+0.5),static_cast<int>(static_cast<double>(geom::lu(spin,1))*chequergridscale[1]+0.5),static_cast<int>(static_cast<double>(geom::lu(spin,2))*chequergridscale[2]+0.5)};
+                    if((mycoords[0]+mycoords[1]+mycoords[2])%2==0)
+                    {//then we are on sublattice A
+                    //std::cout << "Sublattice A " << mycoords[0] << "\t" << mycoords[1] << "\t" << mycoords[2] << std::endl;
+                        spins::Sx[spin]=0.0;
+                        spins::Sy[spin]=0.0;
+                        spins::Sz[spin]=1.0;
+                    }
+                    else
+                    {//then we are on sublattice B
+                    //std::cout << "Sublattice B " << mycoords[0] << "\t" << mycoords[1] << "\t" << mycoords[2] << std::endl;
+                        spins::Sx[spin]=0.0;
+                        spins::Sy[spin]=0.0;
+                        spins::Sz[spin]=-1.0;
+                    }
+                }
+            }
+        }
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            if(sqrt(spins::Sx[i]*spins::Sx[i]+spins::Sy[i]*spins::Sy[i]+spins::Sz[i]*spins::Sz[i])<1e-10)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Error in spin initialisation, found a spin with zero modulus (all should have a value of 1)");
+            }
+        }
+
     }
 
 }

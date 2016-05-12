@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 08 Apr 2016 11:27:46
+// Last-modified: 12 May 2016 18:27:54
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -51,6 +51,14 @@ namespace exch
         setting.lookupValue("OutputExchange",outputJ);
         setting.lookupValue("OutputExchangeMatrix",oem);
         setting.lookupValue("ReadExchangeMatrix",rem);
+
+        if(!setting.lookupValue("ExitAfterExchangeMatrix",eaem))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read whether you want to exit after outputting the exchange matrix. exchange.ExitAfterExchangeMatrix (bool)");
+        }
+
+        FIXOUT(config::Info,"Exit after outputting exchange matrix?:" << config::isTF(eaem) << std::endl);
         if(oem && rem)
         {
             error::errPreamble(__FILE__,__LINE__);
@@ -132,6 +140,11 @@ namespace exch
         {
             GlobExch.lookupValue("MaxInteractions",max_int);
             GlobExch.lookupValue("TruncateExchange",cutexch);
+            evs.resize(3);
+            evs[0]=GlobExch["Scale"][0];
+            evs[1]=GlobExch["Scale"][1];
+            evs[2]=GlobExch["Scale"][2];
+            FIXOUTVEC(config::Info,"Scaling factor for exchange vectors:",evs[0],evs[1],evs[2]);
             FIXOUT(config::Info,"Truncate exchange?:" << config::isTF(cutexch) << std::endl);
             if(cutexch==true)
             {
@@ -170,7 +183,7 @@ namespace exch
             if(config::exchm==2)
             {
                 exchpermute();
-                //output the spare matrix
+                //output the sparse matrix
                 if(oem)
                 {
                     if(config::offdiag==false)
@@ -869,7 +882,6 @@ namespace exch
         {
             directfft();
         }
-
 
         if(config::exchm>98)
         {
