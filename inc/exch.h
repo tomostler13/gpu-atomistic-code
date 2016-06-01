@@ -1,7 +1,7 @@
 // File: exch.h
 // Author:Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 12 May 2016 18:29:41
+// Last-modified: 01 Jun 2016 11:34:26
 #ifndef _EXCH_H_
 #define _EXCH_H_
 #include <string>
@@ -23,7 +23,7 @@ namespace exch
     extern Array<int> Interface;
     extern unsigned int num_shells,diagnumdiag,offdiagnumdiag,max_shells,max_int,max_4s;
     extern unsigned int maxNoSpecInt;
-    extern bool outputJ,oem,rem,cutexch,inc4spin,eaem;
+    extern bool outputJ,oem,rem,rem4s,cutexch,inc4spin,eaem;
     extern double rcut;
     extern std::string readMethod,readFile,method,enerType,exchMatFN;
     void initExch(int argc,char *argv[]);

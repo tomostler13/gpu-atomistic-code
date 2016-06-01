@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 12 May 2016 18:27:54
+// Last-modified: 01 Jun 2016 11:36:59
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -51,6 +51,15 @@ namespace exch
         setting.lookupValue("OutputExchange",outputJ);
         setting.lookupValue("OutputExchangeMatrix",oem);
         setting.lookupValue("ReadExchangeMatrix",rem);
+        if(!setting.lookupValue("ReadExchangeMatrix4Spin",rem4s))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read whether you want to read the four spin CSR matrix.");
+        }
+        else
+        {
+            FIXOUT(config::Info,"Reading 4 spin exchange matrix?:" << config::isTF(rem4s) << std::endl);
+        }
 
         if(!setting.lookupValue("ExitAfterExchangeMatrix",eaem))
         {
