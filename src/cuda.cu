@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 15 Oct 2015 10:12:39
+// Last-modified: 16 Mar 2016 11:19:24
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -131,7 +131,7 @@ namespace cullg
             CUDA_CALL(cudaMemcpy(temp,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
             {
-                std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << temp[3*i] << "\t" << temp[3*i+1] << "\t" << temp[3*i+2] << std::endl;
+                std::cout << std::setprecision(10) << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << temp[3*i] << "\t" << temp[3*i+1] << "\t" << temp[3*i+2] << std::endl;
             }
             delete [] temp;
             temp=NULL;
@@ -208,7 +208,7 @@ namespace cullg
                 spins::Sx[i]=temp[3*i];
                 spins::Sy[i]=temp[3*i+1];
                 spins::Sz[i]=temp[3*i+2];
-                //				std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << "\t" << sqrt(spins::Sx[i]*spins::Sx[i] + spins::Sy[i]*spins::Sy[i] + spins::Sz[i]*spins::Sz[i])<< std::endl;
+//                				std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << "\t" << sqrt(spins::Sx[i]*spins::Sx[i] + spins::Sy[i]*spins::Sy[i] + spins::Sz[i]*spins::Sz[i])<< std::endl;
             }
             CUDA_CALL(cudaMemcpy(temp,CDetFields,3*geom::nspins*sizeof(double),cudaMemcpyDeviceToHost));
             for(unsigned int i = 0 ; i < geom::nspins ; i++)

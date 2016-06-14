@@ -1,7 +1,7 @@
 // File: exch_read_4_spin.cpp
 // Author: Tom Ostler
 // Created: 03 June 2015
-// Last-modified: 08 Dec 2015 15:53:31
+// Last-modified: 01 Jun 2016 11:36:27
 // If the 4 spin terms are included the routines
 // in this source file will be called. It reads
 // permutations of the quartets. It then mallocs
@@ -156,7 +156,7 @@ namespace exch
         Array<unsigned int> countq;
         countq.resize(geom::nspins);
         countq.IFill(0);
-        if(!rem)
+        if(!rem4s)
         {
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
             {

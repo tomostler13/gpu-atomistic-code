@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 08 Dec 2015 20:21:34
+// Last-modified: 01 Jun 2016 11:36:59
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -51,6 +51,15 @@ namespace exch
         setting.lookupValue("OutputExchange",outputJ);
         setting.lookupValue("OutputExchangeMatrix",oem);
         setting.lookupValue("ReadExchangeMatrix",rem);
+        if(!setting.lookupValue("ReadExchangeMatrix4Spin",rem4s))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read whether you want to read the four spin CSR matrix.");
+        }
+        else
+        {
+            FIXOUT(config::Info,"Reading 4 spin exchange matrix?:" << config::isTF(rem4s) << std::endl);
+        }
 
         if(!setting.lookupValue("ExitAfterExchangeMatrix",eaem))
         {
@@ -66,6 +75,18 @@ namespace exch
         }
         FIXOUT(config::Info,"Output the exchange matrix in the current format:" << config::isTF(oem) << std::endl);
         FIXOUT(config::Info,"Read the exchange matrix:" << config::isTF(rem) << std::endl);
+        if(rem)
+        {
+            if(setting.lookupValue("ExchangeMatrixFilename",exchMatFN))
+            {
+                FIXOUT(config::Info,"Exchange matrix filename:" << exchMatFN << std::endl);
+            }
+            else
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Error reading filename for csr exchange matrix. Check setting exchange.csrMatrixName");
+            }
+        }
         FIXOUT(config::Info,"Output of exchange matrix (mostly for visualization how diagonal it is):" << config::isTF(outputJ) << std::endl);
         if(readMethod=="thisfile")
         {
@@ -194,7 +215,7 @@ namespace exch
                         {
                             for(unsigned int j = xadj[i] ; j < xadj[i+1] ; j++)
                             {
-                                opem << adjncy[j] << "\t" << dataxx[j] << "\t" << datayy[j] << "\t" << datazz[j] << "\t";
+                                opem << std::setprecision(16) << adjncy[j] << "\t" << dataxx[j] << "\t" << datayy[j] << "\t" << datazz[j] << "\t";
                             }
                         }
                         opem.close();

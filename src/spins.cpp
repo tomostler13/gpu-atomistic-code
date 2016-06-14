@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 16 Dec 2015 13:05:13
+// Last-modified: 12 May 2016 18:27:38
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -278,7 +278,47 @@ namespace spins
             Sz[i]=1.0-2.0*s;
         }
     }
-    void setSpinsChequer()
+    void setSpinsChequerX()
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+
+            int mycoords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            if((mycoords[0]+mycoords[1]+mycoords[2])%2==0)
+            {//then we are on sublattice A
+                spins::Sx[i]=1.0;
+                spins::Sy[i]=0.0;
+                spins::Sz[i]=0.0;
+            }
+            else
+            {//then we are on sublattice B
+                spins::Sx[i]=-1.0;
+                spins::Sy[i]=0.0;
+                spins::Sz[i]=0.0;
+            }
+        }
+    }
+    void setSpinsChequerY()
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+
+            int mycoords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            if((mycoords[0]+mycoords[1]+mycoords[2])%2==0)
+            {//then we are on sublattice A
+                spins::Sx[i]=0.0;
+                spins::Sy[i]=1.0;
+                spins::Sz[i]=0.0;
+            }
+            else
+            {//then we are on sublattice B
+                spins::Sx[i]=0.0;
+                spins::Sy[i]=-1.0;
+                spins::Sz[i]=0.0;
+            }
+        }
+    }
+    void setSpinsChequerZ()
     {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {

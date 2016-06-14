@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 09 Dec 2015 09:49:04
+// Last-modified: 01 Jun 2016 11:34:37
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -36,8 +36,8 @@ namespace exch
     Array5D<double> J;
     Array4D<double> fsq;
     Array<int> Interface;
-    std::string enerType;
-    bool outputJ,oem=false,rem=false,cutexch=false,inc4spin=false,eaem=false;
+    std::string enerType,exchMatFN;
+    bool outputJ,oem=false,rem=false,rem4s,cutexch=false,inc4spin=false,eaem=false;
     //cut off of exchange in m
     double rcut=1.0;
     std::string readMethod,readFile,method;
@@ -64,7 +64,7 @@ namespace exch
             {
                 if(config::exchm==2)
                 {
-                    std::ifstream ipem("csr_exch_mat.dat");
+                    std::ifstream ipem(exchMatFN.c_str());
                     if(!ipem.is_open())
                     {
                         error::errPreamble(__FILE__,__LINE__);
@@ -89,12 +89,18 @@ namespace exch
                     FIXOUT(config::Info,"Resizing and filling xadj array:" << std::flush);
                     xadj.resize(geom::nspins+1);
                     xadj.IFill(0);
+
+//                    std::ofstream cstr("check.mat");
+//                    cstr << lns << std::endl;
+//                    cstr << adjsize << std::endl;
                     //read the xadj array
                     for(unsigned int i = 0 ; i < geom::nspins ; i++)
                     {
                         ipem >> xadj[i];
+//                        cstr << xadj[i] << "\t";
                     }
                     ipem >> xadj[geom::nspins];
+//                    cstr << xadj[geom::nspins] << std::endl;
                     SUCCESS(config::Info);
                     FIXOUT(config::Info,"Size of adjncy array read as:" << adjsize << std::endl);
                     FIXOUT(config::Info,"Resizing and filling adjncy array:" << std::flush);
@@ -111,9 +117,11 @@ namespace exch
                                 error::errPreamble(__FILE__,__LINE__);
                                 error::errMessage("Stopping a seg fault. There is an error in the xadj lookup (adjncy would seg fault). (Third check failed)");
                             }
-                            ipem >> adjncy[j] >> dataxx[j] >> datayy[j] >> datazz[j];
+                            ipem >> std::setprecision(16) >> adjncy[j] >> dataxx[j] >> datayy[j] >> datazz[j];
+                            //cstr << adjncy[j] << "\t" << dataxx[j] << "\t" << datayy[j] << "\t" << datazz[j] << "\t";
                         }
                     }
+//                    cstr.close();
                     ipem.close();
                     if(ipem.is_open())
                     {

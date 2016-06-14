@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 08 Feb 2016 15:23:10
+// Last-modified: 12 May 2016 18:27:46
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -136,9 +136,17 @@ namespace llg
             {
                 spins::setSpinsConfig();
             }
-            else if(scm=="chequer")
+            else if(scm=="chequerx")
             {
-                spins::setSpinsChequer();
+                spins::setSpinsChequerX();
+            }
+            else if(scm=="chequery")
+            {
+                spins::setSpinsChequerY();
+            }
+            else if(scm=="chequerz")
+            {
+                spins::setSpinsChequerZ();
             }
             else if(scm=="species")
             {
