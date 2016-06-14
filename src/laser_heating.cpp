@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 14 Jun 2016 12:58:04
+// Last-modified: 14 Jun 2016 13:09:39
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -476,7 +476,7 @@ void sim::laser_heating(int argc,char *argv[])
             ttmout << static_cast<double>(t)*llg::dt << "\t" << initT << "\t" << initT;
             for(unsigned int spec = 0 ; spec < geom::ucm.GetNMS() ; spec++)
             {
-                ttmout << llg::cps(spec) << "\t" << llg::dps(spec) << "\t" << llg::Ts[spec];
+                ttmout << "\t" << llg::cps(spec) << "\t" << llg::dps(spec) << "\t" << llg::Ts[spec];
             }
             ttmout << std::endl;
         }
@@ -609,7 +609,7 @@ void sim::laser_heating(int argc,char *argv[])
             ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl;
             for(unsigned int spec = 0 ; spec < geom::ucm.GetNMS() ; spec++)
             {
-                ttmout << llg::cps(spec) << "\t" << llg::dps(spec) << "\t" << llg::Ts[spec];
+                ttmout << "\t" << llg::cps(spec) << "\t" << llg::dps(spec) << "\t" << llg::Ts[spec];
             }
             ttmout << std::endl;
         }
