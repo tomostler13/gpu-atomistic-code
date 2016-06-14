@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 2 Nov 2014
-// Last-modified: 21 Apr 2015 09:47:10
+// Last-modified: 14 Jun 2016 13:42:35
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -24,7 +24,7 @@ namespace sf
 {
     //calculate the sf?
     bool csf=false;
-    //The number of K-points we are
+    //The number of points we are
     //interested in
     unsigned int nk=0;
     //Ry and Rz are 3D rotation matrices and uo is the unitary operation
@@ -143,9 +143,9 @@ namespace sf
         if(errstatus==false)
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not read the number of K-points (sf:NumberKPoints (integer))");
+            error::errMessage("Could not read the number of mesh-points (sf:NumberKPoints (integer))");
         }
-        FIXOUT(config::Info,"Number of K-points:" << nk << std::endl);
+        FIXOUT(config::Info,"Number of mesh-points:" << nk << std::endl);
         kpoints.resize(nk,3);
         for(unsigned int i = 0 ; i < nk ; i++)
         {

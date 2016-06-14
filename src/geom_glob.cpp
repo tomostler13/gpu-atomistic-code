@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 09 Dec 2014 19:57:02
+// Last-modified: 14 Jun 2016 13:39:10
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -31,7 +31,7 @@ namespace geom
     //The a,b and c values (i.e. lattice constants)
     Array<double> abc,mu,gamma,lambda,llgpf,sigma,rx,ry,rz;
     Array<unsigned int> sublattice;
-    //Number of K points
+    //Number of mesh points
     Array<unsigned int> Nk;
     //lookup array. Give atom number and return coordinates
     Array2D<int> lu,zplu;
@@ -94,7 +94,7 @@ namespace geom
         abc.resize(3);
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
-            Nk[i]=setting["Nk"][i];
+            Nk[i]=setting["Nm"][i];
             abc[i]=setting["abc"][i];
         }
 

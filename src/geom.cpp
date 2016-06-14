@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 26 Mar 2015 14:18:48
+// Last-modified: 14 Jun 2016 13:40:18
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -37,7 +37,7 @@ namespace geom
         mu.resize(nspins);gamma.resize(nspins);lambda.resize(nspins);sigma.resize(nspins);llgpf.resize(nspins);rx.resize(nspins);ry.resize(nspins);rz.resize(nspins);sublattice.resize(nspins);
         //resize the anisotropy arrays
         anis::k1u.resize(nspins);anis::k1udir.resize(nspins,3);
-        FIXOUTVEC(config::Info,"Number of K-points:",Nk[0],Nk[1],Nk[2]);
+        FIXOUTVEC(config::Info,"Number of mesh-points:",Nk[0],Nk[1],Nk[2]);
         FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
         //For real to complex (or c2r) transforms we can save computation
         //by exploiting half dim size of this type of transform
@@ -54,7 +54,7 @@ namespace geom
         {
             zps*=(2*dim[i]*Nk[i]);
         }
-        //The point of this array is to number each k-point and assign it a value on the k-point
+        //The point of this array is to number each mesh-point and assign it a value on the mesh-point
         //mesh. The reason is so that when we do the convolution on the GPU we can look up the
         //correct array elements
         zplu.resize(zps,3);
@@ -190,7 +190,7 @@ namespace geom
                         // The real space position is equal to
                         // r_x = ((k_x+i*N_{k,x})/N_{k,x})*lattice constant_x
                         // where k_x is the location of the atom in the unit cell
-                        // N_{k,x} is the number of k-points in the x direction
+                        // N_{k,x} is the number of mesh-points in the x direction
                         // This can of course be generalised the each direction
 
                         rx[atom_counter]=((ucm.GetCoord(t,0)+static_cast<double>(i*Nk[0]))/static_cast<double>(Nk[0]))*abc[0];
