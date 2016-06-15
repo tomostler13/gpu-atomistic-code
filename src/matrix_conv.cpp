@@ -1,7 +1,7 @@
 //File matrix_conv.cpp
 // Author: Tom Ostler
 // Created: 07 Oct 2014
-// Last-modified: 10 Oct 2014 15:48:32
+// Last-modified: 15 Jun 2016 11:31:33
 // The routines within this file convert a 2D matrix to
 // a number of formats depending on the routine used. The
 // return structures depend on the storage format
@@ -262,8 +262,8 @@ namespace matconv
         tdatazx.clear();tdatazy.clear();
     }
 
-    // This calculate the diagonal offsets for the DIA format
-    // and determine the data.
+    // This calculates the diagonal offsets for the DIA format
+    // and determines the data.
     // The first arguement is the array to store the offsets
     // The second is the J matrix (4 dimensions because it
     // represents all elements of the interactio matrix).

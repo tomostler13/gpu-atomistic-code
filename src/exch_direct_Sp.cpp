@@ -1,7 +1,7 @@
 // File: exch_direct_Sp.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 05 Dec 2014 19:48:21
+// Last-modified: 15 Jun 2016 11:26:31
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // routines here take the exchange list of interaction
@@ -232,6 +232,37 @@ std::cout << J(sl,spec2,shell,0,0)/(geom::ucm.GetMu(aiuc)*llg::muB);
                 adjncy[i]=tadjncy[i];
                 dataxx[i]=tdata[0][0][i];
                 datayy[i]=tdata[1][1][i];
+                datazz[i]=tdata[2][2][i];
+            }
+            //clear the temporary arrays to free up memory
+            tdata.clear();
+            tadjncy.clear();
+            FIXOUT(config::Info,"Size of xadj (CSR offsets):\t" << xadj.size() << std::endl);
+            FIXOUT(config::Info,"Size of adjncy (CSR list):\t" << adjncy.size() << std::endl);
+        }
+        else if(config::offdiag==true)
+        {
+            adjncy.resize(adjncy_counter);
+            dataxx.resize(adjncy_counter);
+            dataxy.resize(adjncy_counter);
+            dataxz.resize(adjncy_counter);
+            datayx.resize(adjncy_counter);
+            datayy.resize(adjncy_counter);
+            datayz.resize(adjncy_counter);
+            datazx.resize(adjncy_counter);
+            datazy.resize(adjncy_counter);
+            datazz.resize(adjncy_counter);
+            for(unsigned int i = 0 ; i < adjncy_counter ; i++)
+            {
+                adjncy[i]=tadjncy[i];
+                dataxx[i]=tdata[0][0][i];
+                dataxy[i]=tdata[0][1][i];
+                dataxz[i]=tdata[0][2][i];
+                datayx[i]=tdata[1][0][i];
+                datayy[i]=tdata[1][1][i];
+                datayz[i]=tdata[1][2][i];
+                datazx[i]=tdata[2][0][i];
+                datazy[i]=tdata[2][1][i];
                 datazz[i]=tdata[2][2][i];
             }
             //clear the temporary arrays to free up memory
