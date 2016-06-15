@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 03 Aug 2015 17:00:18
+// Last-modified: 15 Jun 2016 12:12:24
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -86,26 +86,35 @@ namespace llgCPU
         //then we call the DIA SpMV multiplication
         if(config::exchm==1)
         {
-            matmul::spmv_dia_diag(geom::nspins,exch::diagnumdiag,exch::diagoffset,exch::dataxx,exch::datayy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
-            if(config::offdiag==true)
+            if(config::offdiag==false)
             {
-                matmul::spmv_dia_offdiag(geom::nspins,exch::offdiagnumdiag,exch::offdiagoffset,exch::dataxy,exch::dataxz,exch::datayx,exch::datayz,exch::datazx,exch::datazy,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
+            matmul::spmv_dia_diag(geom::nspins,exch::diagnumdiag,exch::diagoffset,exch::dataxx,exch::datayy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
+            }
+            else if(config::offdiag==true)
+            {
+                matmul::spmv_dia_offdiag(geom::nspins,exch::offdiagnumdiag,exch::offdiagoffset,exch::dataxx,exch::dataxy,exch::dataxz,exch::datayx,exch::datayy,exch::datayz,exch::datazx,exch::datazy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
             }
         }
         else if(config::exchm==2)
         {
-            matmul::spmv_csr_diag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::datayy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
+            if(config::offdiag==false)
+            {
+                matmul::spmv_csr_diag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::datayy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
+            }
             if(config::offdiag==true)
             {
-                matmul::spmv_csr_offdiag();
+                matmul::spmv_csr_offdiag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::dataxy,exch::dataxz,exch::datayx,exch::datayy,exch::datayz,exch::datazx,exch::datazy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
             }
         }
         else if(config::exchm>98)
         {
-            matmul::spmv_csr_diag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::datayy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
-            if(config::offdiag==true)
+            if(config::offdiag==false)
             {
-                matmul::spmv_csr_offdiag();
+                matmul::spmv_csr_diag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::datayy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
+            }
+            else if(config::offdiag==true)
+            {
+                matmul::spmv_csr_offdiag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::dataxy,exch::dataxz,exch::datayx,exch::datayy,exch::datayz,exch::datazx,exch::datazy,exch::datazz,spins::Sx,spins::Sy,spins::Sz,fields::Hx,fields::Hy,fields::Hz);
             }
         }
         //FOR DEBUGGING THE FIELD
@@ -215,18 +224,24 @@ namespace llgCPU
         //then we call the DIA SpMV multiplication
         if(config::exchm==1)
         {
-            matmul::spmv_dia_diag(geom::nspins,exch::diagnumdiag,exch::diagoffset,exch::dataxx,exch::datayy,exch::datazz,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
-            if(config::offdiag==true)
+            if(config::offdiag==false)
             {
-                matmul::spmv_dia_offdiag(geom::nspins,exch::offdiagnumdiag,exch::offdiagoffset,exch::dataxy,exch::dataxz,exch::datayx,exch::datayz,exch::datazx,exch::datazy,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
+                matmul::spmv_dia_diag(geom::nspins,exch::diagnumdiag,exch::diagoffset,exch::dataxx,exch::datayy,exch::datazz,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
+            }
+            else if(config::offdiag==true)
+            {
+                matmul::spmv_dia_offdiag(geom::nspins,exch::offdiagnumdiag,exch::offdiagoffset,exch::dataxx,exch::dataxy,exch::dataxz,exch::datayx,exch::datayy,exch::datayz,exch::datazx,exch::datazy,exch::datazz,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
             }
         }
         else if(config::exchm==2)
         {
-            matmul::spmv_csr_diag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::datayy,exch::datazz,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
-            if(config::offdiag==true)
+            if(config::offdiag==false)
             {
-                matmul::spmv_csr_offdiag();
+                matmul::spmv_csr_diag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::datayy,exch::datazz,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
+            }
+            else if(config::offdiag==true)
+            {
+                matmul::spmv_csr_offdiag(geom::nspins,exch::xadj,exch::adjncy,exch::dataxx,exch::dataxy,exch::dataxz,exch::datayx,exch::datayy,exch::datayz,exch::datazx,exch::datazy,exch::datazz,spins::eSx,spins::eSy,spins::eSz,fields::Hx,fields::Hy,fields::Hz);
             }
         }
         if(exch::inc4spin)

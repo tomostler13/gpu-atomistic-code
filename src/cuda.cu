@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 16 Mar 2016 11:19:24
+// Last-modified: 15 Jun 2016 12:02:12
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -84,17 +84,24 @@ namespace cullg
             
             if(config::exchm==1)//DIA
             {
-                cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
-                if(config::offdiag)
+                if(!config::offdiag)
                 {
-
+                    cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
+                }
+                else if(config::offdiag)
+                {
+                    cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cspin,CHDemag,CH);
                 }
             }
             else if(config::exchm==2)//CSR
             {
-                cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
-                if(config::offdiag)
+                if(!config::offdiag)
                 {
+                    cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
+                }
+                else if(config::offdiag)
+                {
+                    cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cspin,CHDemag,CH);
                 }
             }
 
@@ -104,18 +111,24 @@ namespace cullg
 
             if(config::exchm==1)//DIA
             {
-                cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
-
-                if(config::offdiag)
+                if(!config::offdiag)
                 {
-
+                    cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
+                }
+                else if(config::offdiag)
+                {
+                    cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cspin,CHDemag,CH);
                 }
             }
             else if(config::exchm==2)//CSR
             {
-                cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
-                if(config::offdiag)
+                if(!config::offdiag)
                 {
+                    cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
+                }
+                else if(config::offdiag)
+                {
+                    cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cspin,CHDemag,CH);
                 }
             }
         }
@@ -158,17 +171,24 @@ namespace cullg
             //we don't want to update the dipole field here
             if(config::exchm==1)//DIA
             {
-                cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                if(config::offdiag)
+                if(!config::offdiag)
                 {
-
+                    cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
+                }
+                else if(config::offdiag)
+                {
+                    cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
                 }
             }
             else if(config::exchm==2)//CSR
             {
-                cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
                 if(config::offdiag)
                 {
+                    cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
+                }
+                else if(config::offdiag)
+                {
+                    cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
                 }
             }
 
@@ -177,17 +197,24 @@ namespace cullg
         {
             if(config::exchm==1)//DIA
             {
-                cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                if(config::offdiag)
+                if(!config::offdiag)
                 {
-
+                    cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
+                }
+                else if(config::offdiag)
+                {
+                    cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
                 }
             }
             else if(config::exchm==2)//CSR
             {
-                cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                if(config::offdiag)
+                if(!config::offdiag)
                 {
+                    cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
+                }
+                else if(config::offdiag)
+                {
+                    cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
                 }
             }
         }
