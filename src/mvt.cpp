@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 08 Jun 2015 20:54:33
+// Last-modified: 22 Jun 2016 14:06:42
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -95,6 +95,7 @@ void sim::MvT(int argc,char *argv[])
                 {
                     util::calc_mag();
                     util::output_mag(t);
+                    util::outputSpinsVTU(t);
                 }
             }
             //have all the magnetization converged?
