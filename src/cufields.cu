@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 15 Jun 2016 12:05:26
+// Last-modified: 23 Jun 2016 16:22:24
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -210,6 +210,13 @@ namespace cufields
             {
                 unsigned int neigh=adjncy[n];
                 float val[3][3] = {{dataxx[n],dataxy[n],dataxz[n]},{datayx[n],datayy[n],datayz[n]},{datazx[n],datazy[n],datazz[n]}};
+                /*if(i==0)
+                {
+                    printf("%d\n%d\n",i,neigh);
+                    printf("%4.10f\t%4.10f\t%4.10f\n",val[0][0],val[0][1],val[0][2]);
+                    printf("%4.10f\t%4.10f\t%4.10f\n",val[1][0],val[1][1],val[1][2]);
+                    printf("%4.10f\t%4.10f\t%4.10f\n\n",val[2][0],val[2][1],val[2][2]);
+                }*/
                 for(unsigned int co = 0 ; co < 3 ; co++)
                 {
                     for(unsigned int ro = 0 ; ro < 3 ; ro++)

@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 12 May 2016 18:27:46
+// Last-modified: 23 Jun 2016 15:50:46
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -151,6 +151,10 @@ namespace llg
             else if(scm=="species")
             {
                 spins::setSpinsSpecies(setting);
+            }
+            else if(scm=="vampire")
+            {
+                spins::setSpinsVampire(setting);
             }
             else
             {
