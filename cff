@@ -3,7 +3,7 @@ seed = 1455011540;
 system:
 {
     //number of unit cells
-    dim = [ 135 , 135 , 135 ];
+    dim = [ 35 , 35 , 35 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
@@ -42,7 +42,7 @@ exchange:
 };
 rscf:
 {
-    Calculate=TRUE;
+    Calculate=FALSE;
     InputFile="FeRh.rscf";
 };
 sf:
@@ -56,7 +56,7 @@ llg:
     applied = [ 0.0 , 0.0 , 0.5 ];
     update=100;
     MagnetizationCalculationMethod=9;
-    NoMagDisc=[ 4 , 4 , 4 ];
+    NoMagDisc=[ 5 , 5 , 5 ];
     DiscOutputFormat="vtu";
     OutputMagnetization=TRUE;
     //options are
@@ -76,7 +76,7 @@ sim:
 laserheating:
 {
     EquilibrationTime = 0e-12;
-    RunTime = 0.0e-12;
+    RunTime = 15.0e-12;
     InitialTemperature = 300.0;
     OutputIndividualTimeSeries = TRUE;
     Cl = 4.54e1;

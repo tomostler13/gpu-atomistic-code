@@ -6,7 +6,7 @@ rscf:
     Cz_beta = [ FALSE , FALSE , TRUE ];
     //update is in units of the llg update (magnetization output)
     Update=1;
-    NumberPoints = 100;
+    NumberPoints = 35;
     Ri_Minus_Rj_0 = [ 0 , 0 , 0 ];
     Ri_Minus_Rj_1 = [ 0 , 0 , 1 ];
     Ri_Minus_Rj_2 = [ 0 , 0 , 2 ];
