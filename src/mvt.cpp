@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 22 Jun 2016 14:06:42
+// Last-modified: 24 Jun 2016 14:24:47
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -71,6 +71,7 @@ void sim::MvT(int argc,char *argv[])
     }
     util::RunningStat *MS=new util::RunningStat[geom::ucm.GetNMS()];
     util::ofs << "#The magnetization is output into indices for each temperature and depending on the output method" << std::endl;
+    unsigned int globt=0.0;
     if(dT>0.0)
     {
         //temperature loop
@@ -91,11 +92,12 @@ void sim::MvT(int argc,char *argv[])
             for(unsigned int t = 0 ; t < eminrts ; t++)
             {
                 llg::integrate(t);
+                globt++;
                 if(t%spins::update==0)
                 {
                     util::calc_mag();
                     util::output_mag(t);
-                    util::outputSpinsVTU(t);
+                    util::outputSpinsVTU(globt);
                 }
             }
             //have all the magnetization converged?
@@ -103,10 +105,12 @@ void sim::MvT(int argc,char *argv[])
             for(unsigned int t = eminrts ; t < eminrts+mrts ; t++)
             {
                 llg::integrate(t);
+                globt++;
                 if(t%spins::update==0)
                 {
                     util::calc_mag();
                     util::output_mag(t);
+                    util::outputSpinsVTU(globt);
 
                     /*                if(t>int(10e-12/llg::dt))
                                       {*/
@@ -165,10 +169,12 @@ void sim::MvT(int argc,char *argv[])
             for(unsigned int t = 0 ; t < eminrts ; t++)
             {
                 llg::integrate(t);
+                globt++;
                 if(t%spins::update==0)
                 {
                     util::calc_mag();
                     util::output_mag(t);
+                    util::outputSpinsVTU(globt);
                 }
             }
             //have all the magnetization converged?
@@ -176,10 +182,12 @@ void sim::MvT(int argc,char *argv[])
             for(unsigned int t = eminrts ; t < eminrts+mrts ; t++)
             {
                 llg::integrate(t);
+                globt++;
                 if(t%spins::update==0)
                 {
                     util::calc_mag();
                     util::output_mag(t);
+                    util::outputSpinsVTU(globt);
 
                     /*                if(t>int(10e-12/llg::dt))
                                       {*/
