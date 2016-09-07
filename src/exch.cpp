@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 01 Jun 2016 11:34:37
+// Last-modified: 07 Sep 2016 15:19:33
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -59,6 +59,10 @@ namespace exch
             else if(method=="mapint" && rem==false)
             {
                 mapint(argc,argv);
+            }
+            else if(method=="unitcell")
+            {
+                //unitcell(argc,argv);
             }
             else if(rem)//then the interaction matrix has already been calculated and we just have to read it
             {

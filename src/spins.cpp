@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 12 May 2016 18:27:38
+// Last-modified: 23 Jun 2016 16:22:36
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -438,6 +438,53 @@ namespace spins
             }
         }
 
+    }
+    void setSpinsVampire(libconfig::Setting& setting)
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            //initialise all spins to zero and at the end check that
+            //their modulus is NOT 0
+            spins::Sx[i]=0.0;
+            spins::Sy[i]=0.0;
+            spins::Sz[i]=0.0;
+        }
+        std::ifstream ifs("vampire.in");
+        std::string dump;
+        if(!ifs.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Cannot read the vampire spin config file, check it is called vampire.in");
+        }
+        else
+        {
+            //get rid of the first line
+            std::getline(ifs,dump);
+        }
+        for(unsigned int k = 0 ; k < geom::dim[2] ; k++)
+        {
+            for(unsigned int j = 0 ; j < geom::dim[1] ; j++)
+            {
+                for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
+                {
+                    for(unsigned int t = 0 ; t < geom::ucm.NumAtomsUnitCell() ; t++)
+                    {
+                        //get the atom number
+                        int an=geom::coords(i*geom::Nk[0]+geom::ucm.GetCoord(t,0),j*geom::Nk[1]+geom::ucm.GetCoord(t,1),k*geom::Nk[2]+geom::ucm.GetCoord(t,2),0);
+                        if(an<0)
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            error::errMessage("There is an inconsistency between the input (vampire) unit cell/dimensions and your input.");
+                        }
+                        //vampire outputs each atom in the unit cell so you have to check
+                        //that the order is
+
+                        ifs >> dump >> dump >> dump >> dump >> spins::Sx[an] >> spins::Sy[an] >> spins::Sz[an];
+//                        std::cout << spins::Sx[an] << "\t" << spins::Sy[an] << "\t" << spins::Sz[an] << std::endl;
+                    }
+                }
+            }
+        }
     }
 
 }

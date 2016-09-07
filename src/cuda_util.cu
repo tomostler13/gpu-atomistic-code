@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 03 Aug 2015 15:33:57
+// Last-modified: 23 Jun 2016 13:45:45
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -356,9 +356,11 @@ namespace cullg
                 CUDA_CALL(cudaMemcpy(Cdzz,temp,exch::datazz.size()*sizeof(float),cudaMemcpyHostToDevice));
                 if(config::offdiag==true)
                 {
-                    if(!(exch::dataxy.size()==exch::dataxz.size()==exch::datayx.size()==exch::datayz.size()==exch::datazx.size()==exch::datazy.size()))
+                    unsigned int arsize=exch::dataxy.size();
+                    if(!(exch::dataxy.size()==arsize && exch::dataxz.size()==arsize && exch::datayx.size()==arsize && exch::datayz.size()==arsize && exch::datazx.size()==arsize && exch::datazy.size()==arsize))
                     {
                         error::errPreamble(__FILE__,__LINE__);
+                    //    std::cout << exch::dataxy.size() << "\t"<< exch::dataxz.size() << "\t"<< exch::datayx.size() << "\t"<< exch::datayz.size() << "\t"<< exch::datazx.size() << "\t"<< exch::datazy.size() << std::endl;
                         error::errMessage("Size of the off diagonal exchange components (in DIA format) are not of the same length.");
                     }
                     CUDA_CALL(cudaMalloc((void**)&Cdxy,exch::dataxy.size()*sizeof(float)));
