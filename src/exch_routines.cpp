@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 01 Jun 2016 11:36:59
+// Last-modified: 07 Sep 2016 15:19:25
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -165,6 +165,10 @@ namespace exch
             exchvec.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_int,3);
             shell_list.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS());
             numint.IFill(0);exchvec.IFill(0);shell_list.IFill(0);
+        }
+        else if(method=="unitcell")
+        {
+            GlobExch.lookupValue("MaxInteractions",max_int);
         }
         if(inc4spin)
         {

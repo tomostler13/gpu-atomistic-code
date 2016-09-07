@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 09 Dec 2014 19:57:02
+// Last-modified: 07 Sep 2016 16:03:54
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -23,6 +23,8 @@ namespace geom
     unsigned int dim[3]={0,0,0};
     //zero pad size (in unit cells)
     unsigned int zpdim[3]={0,0,0};
+    //primitive vector
+    Array2D<double> rprim;
     //For r2c transform the final dimension must be zpdim[2]/2+1
     unsigned int cplxdim=0;
     //number of spins, zeropad size
@@ -43,6 +45,7 @@ namespace geom
     //instance of the unit cell
     unitCellMembers ucm;
     bool logunit=false;
+    Array4D<unsigned int> atnolu;
 
     void readconfig(int argc,char *argv[])
     {
@@ -66,6 +69,7 @@ namespace geom
         }
         FIXOUT(config::Info,"Dipole fields included?" << config::isTF(config::inc_dip) << std::endl);
 
+        rprim.resize(3,3);rprim.IFill(0);
         libconfig::Setting &setting = config::cfg.lookup("system");
         //do we want to write the unit cell info to the log file?
         setting.lookupValue("log_unit_cell",logunit);
@@ -80,6 +84,34 @@ namespace geom
         std::string ucf;
         //get the string for opening the unit cell file
         setting.lookupValue("unitcellfile",ucf);
+        //read rprim
+        for(unsigned int i = 0 ; i < 3 ; i++)
+        {
+
+            double magrprim=0.0;
+            std::stringstream sstr;
+            sstr << "rprim" << i+1;
+            std::string str=sstr.str();
+            for(unsigned int j = 0 ; j < 3 ; j++)
+            {
+                try
+                {
+                    rprim(i,j)=setting[str.c_str()][j];
+                    magrprim+=rprim(i,j)*rprim(i,j);
+                }
+                catch(const libconfig::SettingNotFoundException &snf)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Error reading rprim, check and restart");
+                }
+            }
+            if(fabs(magrprim-1.0)>1e-6)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("rprim not normalised");
+            }
+            FIXOUTVEC(config::Info,str.c_str(),rprim(i,0),rprim(i,1),rprim(i,2));
+        }
         FIXOUT(config::Info,"Unit cell information file:" << ucf << std::endl);
         //stream for reading unit cell file
         std::ifstream ucfi(ucf.c_str());
@@ -104,6 +136,9 @@ namespace geom
         FIXOUT(config::Info,"Number of atoms in the unit cell:" << nauc << std::endl);
         //initialize an instance of the unit cell class
         ucm.init(nauc,nms);
+        //now we know the unit cell size and the dimensions (how many unit cells in each direction) we can allocate atnolu
+        atnolu.resize(dim[0],dim[1],dim[2],nauc);
+        atnolu.IFill(0);
         unsigned int errcheck=0;//for a bit of error checking from unit cell class
         //loop over the atoms in the unit cell and set the properties in the class (ucm)
         for(unsigned int i = 0 ; i < nauc ; i++)
@@ -117,6 +152,7 @@ namespace geom
             //get the position of this atom in the unit cell
             double c[3]={0,0,0};
             ucfi >> c[0] >> c[1] >> c[2];
+            ucm.SetXred(c[0],c[1],c[2],i);
             //set the position vector
             ucm.SetPosVec(static_cast<unsigned int>(c[0]*Nk[0]+0.5),static_cast<unsigned int>(c[1]*Nk[1]+0.5),static_cast<unsigned int>(c[2]*Nk[2]+0.5),i);
 
