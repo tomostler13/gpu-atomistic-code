@@ -3,7 +3,7 @@ seed = 1455011540;
 system:
 {
     //number of unit cells
-    dim = [ 4 , 4 , 4 ];
+    dim = [ 3 , 3 , 3 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
@@ -47,13 +47,13 @@ exchange:
     //direct (by reading in all interactions directly)
     //permute (take a neighbour and calculate permutations)
     exchmethod="unitcell";
-    OutputExchange=FALSE;
+    OutputExchange=TRUE;
     //How are we to read in the exchange
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
     exchfile="BiFeO3.exch";
-    OutputExchangeMatrix=FALSE;
+    OutputExchangeMatrix=TRUE;
     ExitAfterExchangeMatrix=FALSE;
     ReadExchangeMatrix=FALSE;
     ReadExchangeMatrix4Spin=FALSE;
@@ -89,7 +89,18 @@ cuda:
 };
 sim:
 {
-    sim_type="quick";
+    sim_type="MvT";
+};
+mvt:
+{
+    lower_temp=0.1;
+    upper_temp=0.5;
+    temp_step=1.0;
+    mean_tolerance=1e-5;
+    variance_tolerance=1e-5;
+    MaxRunTime=30e-12;
+    MinRunTime=1e-12;
+    MvTFile="MvT.dat";
 };
 laserheating:
 {

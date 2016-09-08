@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Sep 2016 15:54:20
+// Last-modified: 08 Sep 2016 20:57:21
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -196,10 +196,18 @@ namespace geom
                         // where k_x is the location of the atom in the unit cell
                         // N_{k,x} is the number of mesh-points in the x direction
                         // This can of course be generalised the each direction
+                        double xred[3]={ucm.GetXred(t,0),ucm.GetXred(t,1),ucm.GetXred(t,2)};
 
-                        rx[atom_counter]=((ucm.GetCoord(t,0)+static_cast<double>(i*Nk[0]))/static_cast<double>(Nk[0]))*abc[0];
-                        ry[atom_counter]=((ucm.GetCoord(t,1)+static_cast<double>(j*Nk[1]))/static_cast<double>(Nk[1]))*abc[1];
-                        rz[atom_counter]=((ucm.GetCoord(t,2)+static_cast<double>(k*Nk[2]))/static_cast<double>(Nk[2]))*abc[2];
+                        double xcart[3]={0,0,0};
+                        xcart[0]=(xred[0]+double(i))*rprim(0,0)+(xred[1]+double(j))*rprim(1,0)+(xred[2]+double(k))*rprim(2,0);
+                        xcart[1]=(xred[0]+double(i))*rprim(0,1)+(xred[1]+double(j))*rprim(1,1)+(xred[2]+double(k))*rprim(2,1);
+                        xcart[2]=(xred[0]+double(i))*rprim(0,2)+(xred[1]+double(j))*rprim(1,2)+(xred[2]+double(k))*rprim(2,2);
+                        //rx[atom_counter]=((ucm.GetCoord(t,0)+static_cast<double>(i*Nk[0]))/static_cast<double>(Nk[0]))*abc[0];
+                        //ry[atom_counter]=((ucm.GetCoord(t,1)+static_cast<double>(j*Nk[1]))/static_cast<double>(Nk[1]))*abc[1];
+                        //rz[atom_counter]=((ucm.GetCoord(t,2)+static_cast<double>(k*Nk[2]))/static_cast<double>(Nk[2]))*abc[2];
+                        rx[atom_counter]=xcart[0];
+                        ry[atom_counter]=xcart[1];
+                        rz[atom_counter]=xcart[2];
                         atnolu(i,j,k,t)=atom_counter;
                         atom_counter++;
 
@@ -230,40 +238,9 @@ namespace geom
         //sloc << "#This file contains the positions of the magnetic species and their type" << std::endl;
         //sloc << "# Element - x [A] - y [A] - z[A]" << std::endl;
         sloc << nspins << "\n\n";
-        /*for(unsigned int i = 0 ; i < nspins; i++)
+        for(unsigned int i = 0 ; i < nspins; i++)
         {
-            sloc << ucm.GetElement(lu(i,4)) << "\t" << rx[i]/1e-10 << "\t" << ry[i]/1e-10 << "\t" << rz[i]/1e-10 << std::endl;
-        }*/
-        for(unsigned int i = 0 ; i < dim[0] ; i++)
-        {
-            for(unsigned int j = 0 ; j < dim[1] ; j++)
-            {
-                for(unsigned int k = 0 ; k < dim[2] ; k++)
-                {
-/*                    double T1[3]={double(i)*rprim(0,0),double(i)*rprim(0,1),double(i)*rprim(0,2)};
-                    double T2[3]={double(j)*rprim(1,0),double(j)*rprim(1,1),double(j)*rprim(1,2)};
-                    double T3[3]={double(k)*rprim(2,0),double(k)*rprim(2,1),double(k)*rprim(2,2)};*/
-
-                    for(unsigned int t = 0 ; t < ucm.NumAtomsUnitCell() ; t++)
-                    {
-                        double xred[3]={ucm.GetXred(t,0),ucm.GetXred(t,1),ucm.GetXred(t,2)};
-
-                        double xcart[3]={0,0,0};
-                        xcart[0]=(xred[0]+double(i))*rprim(0,0)+(xred[1]+double(j))*rprim(1,0)+(xred[2]+double(k))*rprim(2,0);
-                        xcart[1]=(xred[0]+double(i))*rprim(0,1)+(xred[1]+double(j))*rprim(1,1)+(xred[2]+double(k))*rprim(2,1);
-                        xcart[2]=(xred[0]+double(i))*rprim(0,2)+(xred[1]+double(j))*rprim(1,2)+(xred[2]+double(k))*rprim(2,2);
-
-                        sloc << ucm.GetElement(t) << "\t" << xcart[0] << "\t" << xcart[1] << "\t" << xcart[2] << std::endl;
-//                        sloc << ucm.GetElement(t) << "\t" << (rprim(0,0)*abc[0]*xred[0] + rprim(0,1)*abc[0]*xred[1] + rprim(0,2)*abc[0]*xred[2])/1e-10 << "\t" << (rprim(1,0)*abc[1]*xred[0] + rprim(1,1)*abc[1]*xred[1] + rprim(1,2)*abc[1]*xred[2])/1e-10 << "\t" << (rprim(2,0)*abc[2]*xred[0] + rprim(2,1)*abc[2]*xred[1] + rprim(2,2)*abc[2]*xred[2])/1e-10 << std::endl;
-/*                        sloc << ucm.GetElement(t) << "\t";
-                        sloc << (double(i)*rprim(0,0)+double(j)*rprim(1,0)+double(k)*rprim(2,0)+xred[0]*(rprim(0,0)) << "\t";
-                        sloc << (double(i)*rprim(0,1)+double(j)*rprim(1,1)+double(k)*rprim(2,1)+xred[1]) << "\t";
-                        sloc << (double(i)*rprim(0,2)+double(j)*rprim(1,2)+double(k)*rprim(2,2)+xred[2]) << std::endl;*/
-                        //sloc << ucm.GetElement(t) << "\t" << rprim(0,0)*xred[0] + rprim(1,0)*xred[1] + rprim(2,0)*xred[2] << "\t" << rprim(0,1)*xred[0] + rprim(1,1)*xred[1] + rprim(2,1)*xred[2] << "\t" << rprim(0,2)*xred[0] + rprim(1,2)*xred[1] + rprim(2,2)*xred[2] << std::endl;
-                        //sloc << ucm.GetElement(t) << "\t" << rprim(0,0)*(xred[0]+double(i)) + rprim(0,1)*(xred[1]+double(j)) + rprim(0,2)*(xred[2]+double(k)) << "\t" << rprim(1,0)*(xred[0]+double(i)) + rprim(1,1)*(xred[1]+double(j)) + rprim(1,2)*(xred[2]+double(k)) << "\t" << rprim(2,0)*(xred[0]+double(i)) + rprim(2,1)*(xred[1]+double(j)) + rprim(2,2)*(xred[2]+double(k)) << std::endl;
-                    }
-                }
-            }
+            sloc << ucm.GetElement(lu(i,4)) << "\t" << rx[i] << "\t" << ry[i] << "\t" << rz[i] << std::endl;
         }
         sloc.close();
         if(sloc.is_open())
