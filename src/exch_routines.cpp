@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 07 Sep 2016 15:19:25
+// Last-modified: 08 Sep 2016 10:34:49
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -45,12 +45,35 @@ namespace exch
             exit(EXIT_FAILURE);
         }
         libconfig::Setting &setting = config::cfg.lookup("exchange");
-        setting.lookupValue("exchmethod",method);
-        FIXOUT(config::Info,"Method to read in exchange:" << method << std::endl);
-        setting.lookupValue("exchinput",readMethod);
-        setting.lookupValue("OutputExchange",outputJ);
-        setting.lookupValue("OutputExchangeMatrix",oem);
-        setting.lookupValue("ReadExchangeMatrix",rem);
+        if(setting.lookupValue("exchmethod",method))
+        {
+            FIXOUT(config::Info,"Method to read in exchange:" << method << std::endl);
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read exchange method (exchange.method (string)), check your config file.");
+        }
+        if(!setting.lookupValue("exchinput",readMethod))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read exchange.exchinput (string)");
+        }
+        if(!setting.lookupValue("OutputExchange",outputJ))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read exchange.OutputExchange (bool)");
+        }
+        if(!setting.lookupValue("OutputExchangeMatrix",oem))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read whether to output the exchange matrix (exchange.OutputExchange (bool))");
+        }
+        if(!setting.lookupValue("ReadExchangeMatrix",rem))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not determine whether exchange matrix should be read (exchange.ReadExchangeMatrix (bool))");
+        }
         if(!setting.lookupValue("ReadExchangeMatrix4Spin",rem4s))
         {
             error::errPreamble(__FILE__,__LINE__);
@@ -97,7 +120,7 @@ namespace exch
             FIXOUT(config::Info,"Reading exchange interactions from:" << "external file" << std::endl);
             setting.lookupValue("exchfile",readFile);
             FIXOUT(config::Info,"File:" << readFile << std::endl);
-            if(method=="permute" || method=="direct" || method=="mapint")
+            if(method=="permute" || method=="direct" || method=="mapint" || method=="unitcell")
             {
                 try
                 {

@@ -1,7 +1,7 @@
 // File: exch_mapint_Sp.cpp
 // Author: Tom Ostler
 // Created: 19 March 2015
-// Last-modified: 15 Jun 2016 11:27:12
+// Last-modified: 08 Sep 2016 11:06:09
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // routines here take the exchange vectors (on the integer
@@ -268,9 +268,5 @@ namespace exch
             FIXOUT(config::Info,"Size of adjncy (CSR list):\t" << adjncy.size() << std::endl);
         }
     }
-
-
-
-
 
 }

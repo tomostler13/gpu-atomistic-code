@@ -32,7 +32,8 @@ obj/exch_mapint_Sp.o \
 obj/ramp_field.o \
 obj/exch_read_4_spin.o \
 obj/thermal_hyst.o \
-obj/rscf.o
+obj/rscf.o \
+obj/exch_unitcell.o
 
 SWITCHOBJ= \
 obj/main.o \

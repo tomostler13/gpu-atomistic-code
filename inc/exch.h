@@ -1,7 +1,7 @@
 // File: exch.h
 // Author:Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 01 Jun 2016 11:34:26
+// Last-modified: 08 Sep 2016 11:55:30
 #ifndef _EXCH_H_
 #define _EXCH_H_
 #include <string>
@@ -34,7 +34,9 @@ namespace exch
     void permute(int argc,char *argv[]);
     void direct(int argc,char *argv[]);
     void mapint(int argc,char *argv[]);
+    void unitcell(int argc,char *argv[]);
     void get_exch_permute(int argc,char *argv[]);
+    void get_exch_unitcell(int argc,char *argv[]);
     void get_exch_direct(int argc,char *argv[]);
     void get_exch_mapint(int argc,char *argv[]);
     void hybrid();
@@ -44,6 +46,7 @@ namespace exch
     void exchpermute();
     void exchdirect();
     void exchmapint();
+    void exchunitcell();
     void setup4SpinCSR();
 }
 #endif /*_EXCH_H_*/

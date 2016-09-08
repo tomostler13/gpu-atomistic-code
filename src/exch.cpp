@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 07 Sep 2016 15:19:33
+// Last-modified: 08 Sep 2016 10:38:35
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -62,7 +62,7 @@ namespace exch
             }
             else if(method=="unitcell")
             {
-                //unitcell(argc,argv);
+                unitcell(argc,argv);
             }
             else if(rem)//then the interaction matrix has already been calculated and we just have to read it
             {

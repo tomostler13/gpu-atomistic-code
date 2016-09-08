@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 07 Sep 2016 20:35:26
+// Last-modified: 08 Sep 2016 16:29:47
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -25,6 +25,8 @@ namespace geom
     unsigned int zpdim[3]={0,0,0};
     //primitive vector
     Array2D<double> rprim;
+    //angdeg
+    Array<double> angdeg;
     //For r2c transform the final dimension must be zpdim[2]/2+1
     unsigned int cplxdim=0;
     //number of spins, zeropad size
@@ -70,6 +72,7 @@ namespace geom
         FIXOUT(config::Info,"Dipole fields included?" << config::isTF(config::inc_dip) << std::endl);
 
         rprim.resize(3,3);rprim.IFill(0);
+        //angdeg.resize(3);angdeg.IFill(0);
         libconfig::Setting &setting = config::cfg.lookup("system");
         //do we want to write the unit cell info to the log file?
         setting.lookupValue("log_unit_cell",logunit);
@@ -80,6 +83,13 @@ namespace geom
             zpdim[i]=2*dim[i];
         }
         FIXOUT(config::Info,"Dimensions (unit cells):" << "[ " << dim[0] << " , " << dim[1] << " , " << dim[2] << " ]" << std::endl);
+        Nk.resize(3);
+        abc.resize(3);
+        for(unsigned int i = 0 ; i < 3 ; i++)
+        {
+            Nk[i]=setting["Nm"][i];
+            abc[i]=setting["abc"][i];
+        }
         //string for holding the information about the unit cell file (we do not need global scope here)
         std::string ucf;
         //get the string for opening the unit cell file
@@ -88,7 +98,7 @@ namespace geom
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
 
-            double magrprim=0.0;
+            //double magrprim=0.0;
             std::stringstream sstr;
             sstr << "rprim" << i+1;
             std::string str=sstr.str();
@@ -97,7 +107,8 @@ namespace geom
                 try
                 {
                     rprim(i,j)=setting[str.c_str()][j];
-                    magrprim+=rprim(i,j)*rprim(i,j);
+                    rprim(i,j)*=(abc[i]/1e-10);
+                    //magrprim+=rprim(i,j)*rprim(i,j);
                 }
                 catch(const libconfig::SettingNotFoundException &snf)
                 {
@@ -105,13 +116,32 @@ namespace geom
                     error::errMessage("Error reading rprim, check and restart");
                 }
             }
-            if(fabs(magrprim-1.0)>1e-6)
-            {
-                error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("rprim not normalised");
-            }
             FIXOUTVEC(config::Info,str.c_str(),rprim(i,0),rprim(i,1),rprim(i,2));
         }
+        /*angdeg[0]=57.8457;
+        angdeg[1]=57.8457;
+        angdeg[2]=57.8457;
+        rprim(0,0)=1.0;
+        rprim(0,1)=cos(angdeg[2]*M_PI/180.0);
+        rprim(1,1)=sin(angdeg[2]*M_PI/180.0);
+        rprim(0,2)=cos(angdeg[1]*M_PI/180.0);
+        rprim(1,2)=(cos(angdeg[0]*M_PI/180.0)-rprim(0,1)*rprim(0,2))/rprim(1,1);
+        rprim(2,2)=sqrt(1.0-rprim(0,2)*rprim(0,2)-rprim(1,2)*rprim(1,2));
+
+        //rescale
+        rprim(0,0)*=(abc[0]/1e-10);
+        rprim(0,1)*=(abc[0]/1e-10);
+        rprim(0,2)*=(abc[0]/1e-10);
+        rprim(1,0)*=(abc[1]/1e-10);
+        rprim(1,1)*=(abc[1]/1e-10);
+        rprim(1,2)*=(abc[1]/1e-10);
+        rprim(2,0)*=(abc[2]/1e-10);
+        rprim(2,1)*=(abc[2]/1e-10);
+        rprim(2,2)*=(abc[2]/1e-10);
+
+        FIXOUTVEC(config::Info,"rprim1:",rprim(0,0),rprim(0,1),rprim(0,2));
+        FIXOUTVEC(config::Info,"rprim2:",rprim(1,0),rprim(1,1),rprim(1,2));
+        FIXOUTVEC(config::Info,"rprim3:",rprim(2,0),rprim(2,1),rprim(2,2));*/
         FIXOUT(config::Info,"Unit cell information file:" << ucf << std::endl);
         //stream for reading unit cell file
         std::ifstream ucfi(ucf.c_str());
@@ -122,13 +152,7 @@ namespace geom
         }
 
         ucfi >> nms;
-        Nk.resize(3);
-        abc.resize(3);
-        for(unsigned int i = 0 ; i < 3 ; i++)
-        {
-            Nk[i]=setting["Nm"][i];
-            abc[i]=setting["abc"][i];
-        }
+
 
         FIXOUT(config::Info,"Number of magnetic species (sublattices):" << nms << std::endl);
         unsigned int nauc=0;

@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 07 Sep 2016 20:35:35
+// Last-modified: 08 Sep 2016 15:54:20
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -179,8 +179,8 @@ namespace geom
                         spec_counter[ucm.GetSublattice(t)]++;
                         lu(atom_counter,4)=t;
                         lu(atom_counter,5)=i;
-                        lu(atom_counter,6)=i;
-                        lu(atom_counter,7)=i;
+                        lu(atom_counter,6)=j;
+                        lu(atom_counter,7)=k;
                         //1D arrays
                         sublattice[atom_counter]=ucm.GetSublattice(t);
                         gamma[atom_counter]=ucm.GetGamma(t);
@@ -230,7 +230,7 @@ namespace geom
         //sloc << "#This file contains the positions of the magnetic species and their type" << std::endl;
         //sloc << "# Element - x [A] - y [A] - z[A]" << std::endl;
         sloc << nspins << "\n\n";
-/*        for(unsigned int i = 0 ; i < nspins; i++)
+        /*for(unsigned int i = 0 ; i < nspins; i++)
         {
             sloc << ucm.GetElement(lu(i,4)) << "\t" << rx[i]/1e-10 << "\t" << ry[i]/1e-10 << "\t" << rz[i]/1e-10 << std::endl;
         }*/
@@ -240,31 +240,27 @@ namespace geom
             {
                 for(unsigned int k = 0 ; k < dim[2] ; k++)
                 {
-                    double T1[3]={double(i)*rprim(0,0),double(i)*rprim(0,1),double(i)*rprim(0,2)};
+/*                    double T1[3]={double(i)*rprim(0,0),double(i)*rprim(0,1),double(i)*rprim(0,2)};
                     double T2[3]={double(j)*rprim(1,0),double(j)*rprim(1,1),double(j)*rprim(1,2)};
-                    double T3[3]={double(k)*rprim(2,0),double(k)*rprim(2,1),double(k)*rprim(2,2)};
+                    double T3[3]={double(k)*rprim(2,0),double(k)*rprim(2,1),double(k)*rprim(2,2)};*/
 
                     for(unsigned int t = 0 ; t < ucm.NumAtomsUnitCell() ; t++)
                     {
                         double xred[3]={ucm.GetXred(t,0),ucm.GetXred(t,1),ucm.GetXred(t,2)};
 
                         double xcart[3]={0,0,0};
-/*                        for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
-                        {
-                            for(unsigned int beta = 0 ; beta < 3 ; beta++)
-                            {
-                               xcart[alpha]+=rprim(alpha,beta)*abc[beta]+ucm.GetXred(t,beta);
-                            }
+                        xcart[0]=(xred[0]+double(i))*rprim(0,0)+(xred[1]+double(j))*rprim(1,0)+(xred[2]+double(k))*rprim(2,0);
+                        xcart[1]=(xred[0]+double(i))*rprim(0,1)+(xred[1]+double(j))*rprim(1,1)+(xred[2]+double(k))*rprim(2,1);
+                        xcart[2]=(xred[0]+double(i))*rprim(0,2)+(xred[1]+double(j))*rprim(1,2)+(xred[2]+double(k))*rprim(2,2);
 
                         sloc << ucm.GetElement(t) << "\t" << xcart[0] << "\t" << xcart[1] << "\t" << xcart[2] << std::endl;
-                        }*/
-
 //                        sloc << ucm.GetElement(t) << "\t" << (rprim(0,0)*abc[0]*xred[0] + rprim(0,1)*abc[0]*xred[1] + rprim(0,2)*abc[0]*xred[2])/1e-10 << "\t" << (rprim(1,0)*abc[1]*xred[0] + rprim(1,1)*abc[1]*xred[1] + rprim(1,2)*abc[1]*xred[2])/1e-10 << "\t" << (rprim(2,0)*abc[2]*xred[0] + rprim(2,1)*abc[2]*xred[1] + rprim(2,2)*abc[2]*xred[2])/1e-10 << std::endl;
-                        sloc << ucm.GetElement(t) << "\t";
-                        sloc << (double(i)*rprim(0,0)+double(j)*rprim(1,0)+double(k)*rprim(2,0)+xred[0])*abc[0]/1e-10 << "\t";
-                        sloc << (double(i)*rprim(0,1)+double(j)*rprim(1,1)+double(k)*rprim(2,1)+xred[1])*abc[1]/1e-10 << "\t";
-                        sloc << (double(i)*rprim(0,2)+double(j)*rprim(1,2)+double(k)*rprim(2,2)+xred[2])*abc[2]/1e-10 << std::endl;
-//                        sloc << ucm.GetElement(t) << "\t" << (T1[0]*abc[0]*xred[0] + T1[1]*abc[0]*xred[1] + T1[2]*abc[0]*xred[2])/1e-10 << "\t" << (T2[0]*abc[1]*xred[0] + T2[1]*abc[1]*xred[1] + T2[2]*abc[1]*xred[2])/1e-10 << "\t" << (T3[0]*abc[2]*xred[0] + T2[1]*abc[2]*xred[1] + T3[2]*abc[2]*xred[2])/1e-10 << std::endl;
+/*                        sloc << ucm.GetElement(t) << "\t";
+                        sloc << (double(i)*rprim(0,0)+double(j)*rprim(1,0)+double(k)*rprim(2,0)+xred[0]*(rprim(0,0)) << "\t";
+                        sloc << (double(i)*rprim(0,1)+double(j)*rprim(1,1)+double(k)*rprim(2,1)+xred[1]) << "\t";
+                        sloc << (double(i)*rprim(0,2)+double(j)*rprim(1,2)+double(k)*rprim(2,2)+xred[2]) << std::endl;*/
+                        //sloc << ucm.GetElement(t) << "\t" << rprim(0,0)*xred[0] + rprim(1,0)*xred[1] + rprim(2,0)*xred[2] << "\t" << rprim(0,1)*xred[0] + rprim(1,1)*xred[1] + rprim(2,1)*xred[2] << "\t" << rprim(0,2)*xred[0] + rprim(1,2)*xred[1] + rprim(2,2)*xred[2] << std::endl;
+                        //sloc << ucm.GetElement(t) << "\t" << rprim(0,0)*(xred[0]+double(i)) + rprim(0,1)*(xred[1]+double(j)) + rprim(0,2)*(xred[2]+double(k)) << "\t" << rprim(1,0)*(xred[0]+double(i)) + rprim(1,1)*(xred[1]+double(j)) + rprim(1,2)*(xred[2]+double(k)) << "\t" << rprim(2,0)*(xred[0]+double(i)) + rprim(2,1)*(xred[1]+double(j)) + rprim(2,2)*(xred[2]+double(k)) << std::endl;
                     }
                 }
             }
