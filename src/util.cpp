@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 12 May 2016 17:50:53
+// Last-modified: 08 Sep 2016 20:17:32
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -292,7 +292,7 @@ namespace util
         pvf << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
-            pvf << static_cast<double>(geom::lu(i,0))*geom::abc[0] << "\t" << static_cast<double>(geom::lu(i,1))*geom::abc[1] << "\t" << static_cast<double>(geom::lu(i,2))*geom::abc[2] << "\n";
+            pvf << geom::rx[i] << "\t" << geom::ry[i] << "\t" << geom::rz[i] << "\n";
         }
 
         pvf << "</DataArray>" << "\n";

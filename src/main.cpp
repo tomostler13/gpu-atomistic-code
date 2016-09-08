@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Dec 2015 20:21:58
+// Last-modified: 08 Sep 2016 20:14:53
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -127,12 +127,12 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="quick")
     {
 
-        llg::T=10.0;
+        llg::T=0.1;
         int counter=0;
         time_t now = time(0);
         char *dtime=ctime(&now);
         std::cout << "#Start time:\t" << dtime << std::endl;
-        for(unsigned int t = 0 ; t < 10000 ; t++)
+        for(unsigned int t = 0 ; t < 100000 ; t++)
         {
             if(t%spins::update==0)
             {
