@@ -1,7 +1,7 @@
 // File: exch_determine_exchange_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 08 Sep 2016 10:04:19
+// Last-modified: 08 Sep 2016 19:23:06
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the CSR neighbourlist
@@ -38,6 +38,7 @@ namespace exch
                 sstr_int << "exchange" << "_" << s1 << "_" << s2;
                 std::string str_int = sstr_int.str();
                 libconfig::Setting &exchset = exchcfg.lookup(str_int.c_str());
+
                 if(exchset.lookupValue("Num_Interactions",shell_list(s1,s2)))
                 {
                     FIXOUT(config::Info,"Reading information for:" << shell_list(s1,s2) << " interactions" << std::endl);
@@ -52,13 +53,14 @@ namespace exch
                 }
                 if(exchset.lookupValue("units",enerType))
                 {
-                    FIXOUT(config::Info,"Units:" << enerType);
+                    FIXOUT(config::Info,"Units:" << enerType << std::endl);
                 }
                 else
                 {
                     error::errPreamble(__FILE__,__LINE__);
                     error::errMessage("Error reading energy type, check your exchange file.");
                 }
+
                 for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
                 {
                     std::stringstream evsstr;
@@ -81,47 +83,57 @@ namespace exch
                             std::string errstr=errsstr.str();
                             error::errMessage(errstr);
                         }
-                        FIXOUTVEC(config::Info,"Unit cell vector:",exchvec(s1,s2,i,0),exchvec(s1,s2,i,1),exchvec(s1,s2,i,2));
-                        for(unsigned int j = 0 ; j < 3 ; j++)
+                    }
+                    FIXOUTVEC(config::Info,"Unit cell vector:",exchvec(s1,s2,i,0),exchvec(s1,s2,i,1),exchvec(s1,s2,i,2));
+                    for(unsigned int j = 0 ; j < 3 ; j++)
+                    {
+                        std::stringstream Jsstr;
+                        Jsstr << "J" << i+1 << "_" << j+1;
+                        std::string Jstr;
+                        Jstr=Jsstr.str();
+                        for(unsigned int k = 0 ; k < 3 ; k++)
                         {
-
-                            std::stringstream Jsstr;
-                            Jsstr << "J" << i+1 << "_" << j+1;
-                            std::string Jstr;
-                            Jstr=Jsstr.str();
-                            for(unsigned int k = 0 ; k < 3 ; k++)
+                            try
                             {
                                 J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
-                                if(enerType=="mRy")
-                                {
-                                    J(s1,s2,i,j,k)*=2.179872172e-18; //now to milli
-                                    J(s1,s2,i,j,k)*=1.0e-3;
-                                }
-                                else if(enerType=="eV")
-                                {
-                                    J(s1,s2,i,j,k)*=1.602176565e-19;
-                                }
-                                else if(enerType=="meV")
-                                {
-                                    J(s1,s2,i,j,k)*=1.602176565e-22;
-                                }
-                                else if(enerType=="J" || enerType=="Joules" || enerType=="joules")
-                                {
-                                    //do nothing
-                                }
-                                else if(enerType=="Ry")
-                                {
-                                    J(s1,s2,i,j,k)*=2.179872172e-18;
-                                }
-                                else
-                                {
-                                    error::errPreamble(__FILE__,__LINE__);
-                                    error::errMessage("Units of exchange energy not recognised");
-                                }
-
                             }
-                            FIXOUTVEC(config::Info,Jstr,J(s1,s2,i,j,0),J(s1,s2,i,j,1),J(s1,s2,i,j,2));
+                            catch(const libconfig::SettingNotFoundException &snf)
+                            {
+                                std::stringstream errsstr;
+                                errsstr << "Could not exchange interaction number " << i+1 << " tensor components " << j << " and " << k << ", for interaction between species " << s1 << " and " << s2 << " (" << snf.getPath() << ")";
+                                std::string errstr=errsstr.str();
+                                error::errPreamble(__FILE__,__LINE__);
+                                error::errMessage(errstr);
+                            }
+                            if(enerType=="mRy")
+                            {
+                                J(s1,s2,i,j,k)*=2.179872172e-18; //now to milli
+                                J(s1,s2,i,j,k)*=1.0e-3;
+                            }
+                            else if(enerType=="eV")
+                            {
+                                J(s1,s2,i,j,k)*=1.602176565e-19;
+                            }
+                            else if(enerType=="meV")
+                            {
+                                J(s1,s2,i,j,k)*=1.602176565e-22;
+                            }
+                            else if(enerType=="J" || enerType=="Joules" || enerType=="joules")
+                            {
+                                //do nothing
+                            }
+                            else if(enerType=="Ry")
+                            {
+                                J(s1,s2,i,j,k)*=2.179872172e-18;
+                            }
+                            else
+                            {
+                                error::errPreamble(__FILE__,__LINE__);
+                                error::errMessage("Units of exchange energy not recognised");
+                            }
+
                         }
+                        FIXOUTVEC(config::Info,Jstr,J(s1,s2,i,j,0),J(s1,s2,i,j,1),J(s1,s2,i,j,2));
                     }
                 }
             }

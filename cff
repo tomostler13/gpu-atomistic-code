@@ -3,13 +3,13 @@ seed = 1455011540;
 system:
 {
     //number of unit cells
-    dim = [ 2 , 2 , 2 ];
+    dim = [ 4 , 4 , 4 ];
     //The unit cell file
     //This file gives all of the information
     //on the locations of the magnetic system
-    unitcellfile="BiFeO3_Conv.ucf";
+    //unitcellfile="BiFeO3_Conv.ucf";
     //unitcellfile="fcc.ucf";
-    //unitcellfile="OnlyFe_Conv.ucf";
+    unitcellfile="FeOnly_Conv.ucf";
     //unitcellfile="sc.ucf";
     //Number of grid-points in each direction
     Nm = [ 1 , 1 , 1 ];
@@ -52,7 +52,7 @@ exchange:
     //- thisfile (read from the config file)
     //- extfile (read from an external file)
     exchinput="extfile";
-    exchfile="exch_uc_sc.exch";
+    exchfile="BiFeO3.exch";
     OutputExchangeMatrix=FALSE;
     ExitAfterExchangeMatrix=FALSE;
     ReadExchangeMatrix=FALSE;
