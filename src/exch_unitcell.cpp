@@ -1,7 +1,7 @@
 // File: exch_unitcell.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 08 Sep 2016 21:03:05
+// Last-modified: 09 Sep 2016 12:42:35
 // This routine determines the exchange matrix for the unitcell method
 #include "../inc/arrays.h"
 #include "../inc/error.h"
@@ -327,6 +327,7 @@ namespace exch
                     }
                     //std::cout << "Unit Cell Lookup (before)" << lookup[0] << "\t" << lookup[1] << "\t" << lookup[2] << std::endl;
                     int lookupvec[3]={lookup[0]+ucc[0],lookup[1]+ucc[1],lookup[2]+ucc[2]};
+                    int cluv[3]={lookupvec[0],lookupvec[1],lookupvec[2]};
                     unsigned int check_lookup=0;
                     for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
                     {
@@ -346,6 +347,8 @@ namespace exch
                         }
                     }
                     //std::cout << "Unit Cell Lookup " << lookupvec[0] << "\t" << lookupvec[1] << "\t" << lookupvec[2] << std::endl;
+
+                    //std::cin.get();
                     if(check_lookup==3)
                     {
                         unsigned int neighid=geom::atnolu(lookupvec[0],lookupvec[1],lookupvec[2],s1);
@@ -378,7 +381,41 @@ namespace exch
                         }
                         if(outputJ)
                         {
-                            opJ << i << "\t" << neighid << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << geom::rx[i] << "," << geom::ry[i] << "," << geom::rz[i] << " ] -> [ " << geom::rx[neighid] << "," << geom::ry[neighid] << "," << geom::rz[neighid] << " ]" << std::endl;
+                            const double ci[3]={geom::rx[i],geom::ry[i],geom::rz[i]};
+                            double cj[3]={geom::rx[neighid],geom::ry[neighid],geom::rz[neighid]};
+
+                            /*if(cluv[0]<0){cj[0]=cj[0]-static_cast<double>((geom::dim[0]-1)*geom::abc[0]/1e-10);}
+                            if(cluv[1]<0){cj[1]=cj[1]-static_cast<double>((geom::dim[1]-1)*geom::abc[1]/1e-10);}*/
+                            if(cluv[2]<0)
+                            {
+                                std::cout << "B "<< cluv[2] << "\t" << ci[2] << "\t" << cj[2] << std::endl;
+                                //cj[0]=cj[0]-static_cast<double>(geom::dim[0])*geom::rprim(0,0);
+                                //cj[1]=cj[1]-static_cast<double>(geom::dim[1])*geom::rprim(0,1);
+//                                cj[0]=cj[0]+static_cast<double>(geom::dim[2]+1)*geom::rprim(2,0);
+//                                cj[1]=cj[1]+static_cast<double>(geom::dim[2]+1)*geom::rprim(2,1);
+//                                cj[2]=cj[2]+static_cast<double>(geom::dim[2]+1)*geom::rprim(2,2);
+                            }
+                            /*if(cluv[0]>(geom::dim[0]-1))
+                            {
+                                //std::cout << cluv[0] << std::endl;
+                                cj[0]=cj[0]+static_cast<double>((geom::dim[0]-1)*geom::abc[0]/1e-10);
+                            }
+                            if(cluv[1]>(geom::dim[1]-1))
+                            {
+                                //std::cout << cluv[1] << "\t" << cj[1] << std::endl;
+                                cj[1]=cj[1]+static_cast<double>((geom::dim[1]-1)*geom::abc[1]/1e-10);
+                            }*/
+                            if(cluv[2]>(geom::dim[2]-1))
+                            {
+                                //std::cout << cluv[2] << std::endl;
+                                std::cout << cluv[2] << "\t" << ci[2] << "\t" << cj[2] << std::endl;
+                                //cj[2]=cj[2]+static_cast<double>((geom::dim[2]-1)*geom::abc[2]/1e-10);
+//                                cj[0]=cj[0]-static_cast<double>(geom::dim[2])*geom::rprim(2,0);
+//                                cj[1]=cj[1]-static_cast<double>(geom::dim[2])*geom::rprim(2,1);
+//                                cj[2]=cj[2]-static_cast<double>(geom::dim[2])*geom::rprim(2,2);
+                            }
+                            const double dist=sqrt((ci[0]-cj[0])*(ci[0]-cj[0])+(ci[1]-cj[1])*(ci[1]-cj[1])+(ci[2]-cj[2])*(ci[2]-cj[2]));
+                            opJ << i << "\t" << neighid << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << ci[0] << "," << ci[1] << "," << ci[2] << " ] -> [ " << cj[0] << "," << cj[1] << "," << cj[2] << " ]" << "\t" << dist << std::endl;
                         }
                     }
                 }

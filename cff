@@ -39,7 +39,7 @@ system:
     Off_Diagonals = FALSE;
     //Do you want to output the unit cell info to the log file?
     log_unit_cell = TRUE;
-    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
+    Periodic_Boundaries = [ FALSE , FALSE , TRUE ];
 };
 exchange:
 {

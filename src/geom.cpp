@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Sep 2016 20:57:21
+// Last-modified: 09 Sep 2016 11:53:11
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -240,7 +240,7 @@ namespace geom
         sloc << nspins << "\n\n";
         for(unsigned int i = 0 ; i < nspins; i++)
         {
-            sloc << ucm.GetElement(lu(i,4)) << "\t" << rx[i] << "\t" << ry[i] << "\t" << rz[i] << std::endl;
+            sloc << "\"" << i << "\"\t" << ucm.GetElement(lu(i,4)) << "\t" << rx[i] << "\t" << ry[i] << "\t" << rz[i] << std::endl;
         }
         sloc.close();
         if(sloc.is_open())
