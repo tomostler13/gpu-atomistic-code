@@ -1,62 +1,19 @@
-OutputFile = "opf.dat";
-Seed = 1455011540;
 system:
 {
     //number of unit cells
     dim = [ 3 , 3 , 3 ];
-    //The unit cell file
-    //This file gives all of the information
-    //on the locations of the magnetic system
-    //unitcellfile="BiFeO3_Conv.ucf";
-    //unitcellfile="fcc.ucf";
-    unitcellfile="FeOnly_Conv.ucf";
-    //unitcellfile="sc.ucf";
-    //Number of grid-points in each direction
-    Nm = [ 1 , 1 , 1 ];
-    //lattice constants
-    //abc = [ 5.790118071e-10 , 5.790118071e-10 , 5.790118071e-10 ];
+    Unitcellfile="FeOnly_Conv.ucf";
     abc = [ 5.722e-10 , 5.722e-10 , 5.722e-10 ];
-//abc = [ 2e-10 , 2e-10 , 2e-10 ];
     rprim1 = [ 5.6883853177e-1 , 0.0000000000 , 8.2244922322e-1  ];
     rprim2 = [ -2.8441926588e-1 , 4.9262861916e-1 ,  8.2244922322e-1 ];
     rprim3 = [ -2.8441926588e-1 , -4.9262861916e-1 , 8.2244922322e-1 ];
-    //angdeg = [ 57.8457 , 57.8457 , 57.8457 ];
-//                            O   Fe   Bi   Xx
-    //rprim1 = [ 0.0 , 0.7071067814 , 0.7071067814 ];
-//rprim2 = [ 0.7071067814 , 0.0 , 0.7071067814 ];
-//rprim3 = [ 0.7071067814 , 0.7071067814 , 0.0 ];
-//rprim1 = [ 1.0 , 0.0 , 0.0 ];
-//rprim2 = [ 0.0 , 1.0 , 0.0 ];
-//rprim3 = [ 0.0 , 0.0 , 1.0 ];
-
-    //do we include the dipole-dipole calculation?
     Include_dipole = FALSE;
-    Exchange_method="CSR";
-    Dipole_method="fft";
-    //if the exchange method is a sparse matrix multiplication
-    //then you can specify if you have off-diagonal terms or not.
-    //If not then they are ignored.
-    Off_diagonals = FALSE;
-    //Do you want to output the unit cell info to the log file?
-    Log_unit_cell = TRUE;
     Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
 };
 exchange:
 {
-    //Exchange reading method 
-    //direct (by reading in all interactions directly)
-    //permute (take a neighbour and calculate permutations)
-    exchmethod="unitcell";
-    OutputExchange=TRUE;
-    //How are we to read in the exchange
-    //- thisfile (read from the config file)
-    //- extfile (read from an external file)
-    exchinput="extfile";
-    exchfile="BiFeO3.exch";
-    OutputExchangeMatrix=TRUE;
-    ExitAfterExchangeMatrix=FALSE;
-    ReadExchangeMatrix=FALSE;
-    ReadExchangeMatrix4Spin=FALSE;
+    Read_exch_method="unitcell";
+    Exchfile="BiFeO3.exch";
 };
 rscf:
 {

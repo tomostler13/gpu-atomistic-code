@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Sep 2016 11:53:11
+// Last-modified: 10 Sep 2016 14:22:00
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -77,9 +77,23 @@ namespace geom
             if(i < 5)
             {
                 FIXOUT(config::Info,"Unit cell atom:" << i << std::endl);
+                double xred[3]={geom::ucm.GetXred(i,0),geom::ucm.GetXred(i,1),geom::ucm.GetXred(i,2)};
                 FIXOUT(config::Info,"Element:" << ucm.GetElement(i) << std::endl);
-                FIXOUTVEC(config::Info,"Positions [real space]:",ucm.GetCoord(i,0)/static_cast<double>(Nk[0]),ucm.GetCoord(i,1)/static_cast<double>(Nk[1]),ucm.GetCoord(i,2)/static_cast<double>(Nk[2]));
-                FIXOUTVEC(config::Info,"Positions [k-lattice]:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
+                double ci[3]={0,0,0};
+                ci[0]=(xred[0]*geom::rprim(0,0)+xred[1]*geom::rprim(1,0)+xred[2]*geom::rprim(2,0));
+                ci[1]=(xred[0]*geom::rprim(0,1)+xred[1]*geom::rprim(1,1)+xred[2]*geom::rprim(2,1));
+                ci[2]=(xred[0]*geom::rprim(0,2)+xred[1]*geom::rprim(1,2)+xred[2]*geom::rprim(2,2));
+                if(rprimset)
+                {
+                    FIXOUTVEC(config::Info,"Positions [cart]:",ci[0],ci[1],ci[2]);
+                    FIXOUTVEC(config::Info,"xred:",xred[0],xred[1],xred[2]);
+                }
+                if(Nkset)
+                {
+
+                    FIXOUTVEC(config::Info,"Positions [real space]:",ucm.GetCoord(i,0)/static_cast<double>(Nk[0]),ucm.GetCoord(i,1)/static_cast<double>(Nk[1]),ucm.GetCoord(i,2)/static_cast<double>(Nk[2]));
+                    FIXOUTVEC(config::Info,"Positions [k-lattice]:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
+                }
                 FIXOUT(config::Info,"Part of sublattice:" << ucm.GetSublattice(i) << std::endl);
                 FIXOUT(config::Info,"Damping:" << ucm.GetDamping(i) << std::endl);
                 FIXOUT(config::Info,"Gyromagnetic ratio:" << ucm.GetGamma(i) << " [gamma_free]" << std::endl);
@@ -92,9 +106,23 @@ namespace geom
             if(ucm.NumAtomsUnitCell() > 5 && logunit)
             {
                 FIXOUT(config::Log,"Unit cell atom:" << i << std::endl);
-                FIXOUT(config::Log,"Element:" << ucm.GetElement(i) << std::endl);
-                FIXOUTVEC(config::Log,"Positions [real space]:",ucm.GetCoord(i,0)/static_cast<double>(Nk[0]),ucm.GetCoord(i,1)/static_cast<double>(Nk[1]),ucm.GetCoord(i,2)/static_cast<double>(Nk[2]));
-                FIXOUTVEC(config::Log,"Positions [k-lattice]:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
+                double xred[3]={geom::ucm.GetXred(i,0),geom::ucm.GetXred(i,1),geom::ucm.GetXred(i,2)};
+                FIXOUT(config::Info,"Element:" << ucm.GetElement(i) << std::endl);
+                double ci[3]={0,0,0};
+                ci[0]=(xred[0]*geom::rprim(0,0)+xred[1]*geom::rprim(1,0)+xred[2]*geom::rprim(2,0));
+                ci[1]=(xred[0]*geom::rprim(0,1)+xred[1]*geom::rprim(1,1)+xred[2]*geom::rprim(2,1));
+                ci[2]=(xred[0]*geom::rprim(0,2)+xred[1]*geom::rprim(1,2)+xred[2]*geom::rprim(2,2));
+                if(rprimset)
+                {
+                    FIXOUTVEC(config::Info,"Positions [cart]:",ci[0],ci[1],ci[2]);
+                    FIXOUTVEC(config::Info,"xred:",xred[0],xred[1],xred[2]);
+                }
+                if(Nkset)
+                {
+
+                    FIXOUTVEC(config::Info,"Positions [real space]:",ucm.GetCoord(i,0)/static_cast<double>(Nk[0]),ucm.GetCoord(i,1)/static_cast<double>(Nk[1]),ucm.GetCoord(i,2)/static_cast<double>(Nk[2]));
+                    FIXOUTVEC(config::Info,"Positions [k-lattice]:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
+                }
                 FIXOUT(config::Log,"Part of sublattice:" << ucm.GetSublattice(i) << std::endl);
                 FIXOUT(config::Log,"Damping:" << ucm.GetDamping(i) << std::endl);
                 FIXOUT(config::Log,"Gyromagnetic ratio:" << ucm.GetGamma(i) << " [gamma_free]" << std::endl);
@@ -139,14 +167,20 @@ namespace geom
         //the 3 bits of information:
         // 0 - the magnetic atom number
         // 1 - the magnetic species type
-        coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2],2);
+        if(Nkset)
+        {
+            coords.resize(zpdim[0]*Nk[0],zpdim[1]*Nk[1],zpdim[2]*Nk[2],2);
+        }
         //IF element 0 has the following numbers
         //-2 THEN here corresponds to empty k-mesh point
         //-1 THEN corresponds to an empty k-mesh point but with an imaginary atom
 
 
         //there for the determination of the interaction matrix
-        coords.IFill(-2);
+        if(Nkset)
+        {
+            coords.IFill(-2);
+        }
         std::ofstream sloc("structure.xyz");
         if(sloc.is_open()!=true)
         {
@@ -170,12 +204,15 @@ namespace geom
                     for(unsigned int t = 0 ; t < ucm.NumAtomsUnitCell() ; t++)
                     {
                         double ri[3]={0,0,0};
-                        coords(i*Nk[0]+ucm.GetCoord(t,0),j*Nk[1]+ucm.GetCoord(t,1),k*Nk[2]+ucm.GetCoord(t,2),0)=atom_counter;
-                        coords(i*Nk[0]+ucm.GetCoord(t,0),j*Nk[1]+ucm.GetCoord(t,1),k*Nk[2]+ucm.GetCoord(t,2),1)=ucm.GetSublattice(t);
-                        lu(atom_counter,0)=i*Nk[0]+ucm.GetCoord(t,0);
-                        lu(atom_counter,1)=j*Nk[1]+ucm.GetCoord(t,1);
-                        lu(atom_counter,2)=k*Nk[2]+ucm.GetCoord(t,2);
-                        lu(atom_counter,3)=ucm.GetSublattice(t);
+                        if(Nkset)
+                        {
+                            coords(i*Nk[0]+ucm.GetCoord(t,0),j*Nk[1]+ucm.GetCoord(t,1),k*Nk[2]+ucm.GetCoord(t,2),0)=atom_counter;
+                            coords(i*Nk[0]+ucm.GetCoord(t,0),j*Nk[1]+ucm.GetCoord(t,1),k*Nk[2]+ucm.GetCoord(t,2),1)=ucm.GetSublattice(t);
+                            lu(atom_counter,0)=i*Nk[0]+ucm.GetCoord(t,0);
+                            lu(atom_counter,1)=j*Nk[1]+ucm.GetCoord(t,1);
+                            lu(atom_counter,2)=k*Nk[2]+ucm.GetCoord(t,2);
+                            lu(atom_counter,3)=ucm.GetSublattice(t);
+                        }
                         spec_counter[ucm.GetSublattice(t)]++;
                         lu(atom_counter,4)=t;
                         lu(atom_counter,5)=i;

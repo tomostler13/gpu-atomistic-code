@@ -1,7 +1,7 @@
 // File: exch_unitcell.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 10 Sep 2016 12:20:43
+// Last-modified: 10 Sep 2016 14:15:50
 // This routine determines the exchange matrix for the unitcell method
 #include "../inc/arrays.h"
 #include "../inc/error.h"
@@ -386,7 +386,6 @@ namespace exch
                             double cj[3]={0.0,0.0,0.0};
                             double realpos[3]={0,0,0};
                             double xred[3]={geom::ucm.GetXred(s1,0),geom::ucm.GetXred(s1,1),geom::ucm.GetXred(s1,2)};
-                            double xredi[3]={geom::ucm.GetXred(aiuc,0),geom::ucm.GetXred(aiuc,1),geom::ucm.GetXred(aiuc,2)};
                             //std::cout << xred[0] << "\t" << xred[1] << "\t" << xred[2] << std::endl;
                             //std::cout << xredi[0] << "\t" << xredi[1] << "\t" << xredi[2] << std::endl;
                             cj[0]=(xred[0]+static_cast<double>(cluv[0]))*geom::rprim(0,0)+(xred[1]+static_cast<double>(cluv[1]))*geom::rprim(1,0)+(xred[2]+static_cast<double>(cluv[2]))*geom::rprim(2,0);

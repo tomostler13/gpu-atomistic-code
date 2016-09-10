@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 15 Jun 2016 12:02:12
+// Last-modified: 10 Sep 2016 14:04:51
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -388,7 +388,6 @@ namespace cullg
         setup_fourier_transform();
         config::Info << "Done" << std::endl;
         config::printline(config::Info);
-        config::Info << "NVIDIA-SMI output:\n" << util::exec("nvidia-smi");
         //__constant__ memory only have .cu scope therefore to use the variables 
         //the variables have to be declared in each .cu file and the variables initialized.
         cuint::copyConstData();

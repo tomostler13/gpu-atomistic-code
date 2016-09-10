@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 10 Sep 2016 13:04:59
+// Last-modified: 10 Sep 2016 14:01:46
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -108,8 +108,8 @@ namespace config
             if(!setting.lookupValue("Dipole_method",dipmeth))
             {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errWarning("Dipole calculation method not set, setting system.DipoleCalculation (string), defaulting to brute force (slow).");
-                dipmeth="brute_fource";
+                error::errWarning("Dipole calculation method not set, setting system.DipoleCalculation (string), defaulting to fft.");
+                dipmeth="fft";
             }
         }
         //read whether we want PBC's or not
@@ -156,11 +156,6 @@ namespace config
         if(dipmeth=="fft")
         {
             dipm=0;
-        }
-        else
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Dipole interaction method (Dipole_method) not recognized, please select either fft or brute force");
         }
         summ=dipm+exchm;
         //check if you are using a sparse matrix multiplication (somewhere)

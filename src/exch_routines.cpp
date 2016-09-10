@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 10 Sep 2016 13:36:54
+// Last-modified: 10 Sep 2016 14:11:18
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -86,7 +86,7 @@ namespace exch
         if(!setting.lookupValue("ExitAfterExchangeMatrix",eaem))
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not read whether you want to exit after outputting the exchange matrix. exchange.ExitAfterExchangeMatrix (bool), defaulting to false.");
+            error::errWarning("Could not read whether you want to exit after outputting the exchange matrix. exchange.ExitAfterExchangeMatrix (bool), defaulting to false.");
             eaem=false;
         }
         FIXOUT(config::Info,"Exit after outputting exchange matrix?:" << config::isTF(eaem) << std::endl);
@@ -111,13 +111,13 @@ namespace exch
         }
         FIXOUT(config::Info,"Output of exchange matrix:" << config::isTF(outputJ) << std::endl);
         FIXOUT(config::Info,"Reading exchange interactions from:" << "external file" << std::endl);
-        if(!setting.lookupValue("exchfile",readFile))
+        if(!setting.lookupValue("Exchfile",readFile))
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("You must specify an exchange file.");
         }
         FIXOUT(config::Info,"File:" << readFile << std::endl);
-        if(method=="permute" || method=="direct" || method=="mapint" || method=="unitcell")
+        if(method=="permute" || method=="mapint" || method=="unitcell")
         {
             try
             {
@@ -140,10 +140,10 @@ namespace exch
         if(!GlobExch.lookupValue("FourSpin",inc4spin))
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not read if you want to include the four spin term (exchange.FourSpin (bool), defaulting to false.");
+            error::errWarning("Could not read if you want to include the four spin term (exchange.FourSpin (bool), defaulting to false.");
         }
         FIXOUT(config::Info,"Include four spin term?:" << config::isTF(inc4spin) << std::endl);
-        if(method=="permute" || method=="direct")
+        if(method=="permute")
         {
             if(!GlobExch.lookupValue("MaxShells",max_shells))
             {

@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 10 Sep 2016 13:14:10
+// Last-modified: 10 Sep 2016 14:21:10
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -116,6 +116,10 @@ namespace geom
             {
                 Nkset=false;
             }
+            else
+            {
+                Nkset=true;
+            }
             if(config::exchmeth=="fft" || config::dipmeth=="fft")
             {
                 error::errPreamble(__FILE__,__LINE__);
@@ -146,7 +150,7 @@ namespace geom
         //read rprim
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
-            int count=3;
+            int count=9;
             //double magrprim=0.0;
             std::stringstream sstr;
             sstr << "rprim" << i+1;
@@ -168,6 +172,14 @@ namespace geom
                     std::string errstr=errsstr.str();
                     error::errWarning(errstr);
                 }
+            }
+            if(count<9)
+            {
+                rprimset=false;
+            }
+            else
+            {
+                rprimset=true;
             }
             FIXOUTVEC(config::Info,str.c_str(),rprim(i,0),rprim(i,1),rprim(i,2));
         }
