@@ -1,7 +1,8 @@
+Seed = 123123123;
 system:
 {
     //number of unit cells
-    dim = [ 3 , 3 , 3 ];
+    dim = [ 30 , 30 , 30 ];
     Unitcellfile="FeOnly_Conv.ucf";
     abc = [ 5.722e-10 , 5.722e-10 , 5.722e-10 ];
     rprim1 = [ 5.6883853177e-1 , 0.0000000000 , 8.2244922322e-1  ];
@@ -14,16 +15,6 @@ exchange:
 {
     Read_exch_method="unitcell";
     Exchfile="BiFeO3.exch";
-};
-rscf:
-{
-    Calculate=FALSE;
-    InputFile="FeRh.rscf";
-};
-sf:
-{
-    Calculate=FALSE;
-    InputFile="sf.in";
 };
 llg:
 {
@@ -47,7 +38,8 @@ cuda:
 sim:
 {
 //    sim_type="MvT";
-    sim_type="quick";
+//    sim_type="quick";
+    sim_type="laserheating";
 };
 mvt:
 {
@@ -63,9 +55,8 @@ mvt:
 laserheating:
 {
     EquilibrationTime = 0e-12;
-    RunTime = 15.0e-12;
+    RunTime = 1.0e-12;
     InitialTemperature = 300.0;
-    OutputIndividualTimeSeries = TRUE;
     Cl = 4.54e1;
     PumpTime = 100e-15;
     //J/mol/K/s
@@ -73,16 +64,8 @@ laserheating:
     //Joules/mol/K^2
     Gamma_e = 3.5e-3;
     CoolingTime = 3000000.0e-12;
-    OutputStructureFactor = FALSE;
     PumpFluence = 25.0e15;
     NumPulses = 1;
     PulseDelays = [ 300e-15 ];
-    PulseScale = [ 1.0 ];
-    NumFieldValues=1;
-    FieldTimes = [ 11e-12 ];
-    FieldVal1 = [ 0.0 , 0.0 , 0.0 ];
-    OutputSpinsVTU=TRUE;
-    VTUUpdate=1;
-    VTUOutputStart=0.0;
 
 };

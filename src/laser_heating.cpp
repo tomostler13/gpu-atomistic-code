@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 10 Sep 2016 16:01:47
+// Last-modified: 10 Sep 2016 17:23:35
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -99,7 +99,7 @@ void sim::laser_heating(int argc,char *argv[])
     if(setting.lookupValue("OutputIndividualTimeSeries",oits))
     {
         FIXOUT(config::Info,"Outputting individual ssf's for each species?:" << config::isTF(oits) << std::endl);
-        if(!geom::Nkset)
+        if(geom::Nkset==false && oits==true)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Can't presently calculate the ssf without specifying mesh.");
@@ -108,7 +108,7 @@ void sim::laser_heating(int argc,char *argv[])
     else
     {
         error::errWarnPreamble(__FILE__,__LINE__);
-        error::errMessage("Outputting of invididual time series not set. Defaulting to false.");
+        error::errWarning("Outputting of invididual time series not set. Defaulting to false.");
         oits=false;
     }
     if(setting.lookupValue("Cl",Cl))
@@ -160,7 +160,7 @@ void sim::laser_heating(int argc,char *argv[])
     }
     if(setting.lookupValue("OutputStructureFactor",opsf))
     {
-        if(!geom::Nkset)
+        if(geom::Nkset==false && opsf==true)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("You cannot output the structure factor without setting mesh points Nm");
@@ -180,7 +180,8 @@ void sim::laser_heating(int argc,char *argv[])
         error::errWarnPreamble(__FILE__,__LINE__);
         error::errWarning("Could not read the state of the outputting of the structure factor (laserheating:OutputStructureFactor (bool)). Defaulting to false.");
     }
-    if(!setting.lookupValue("PumpFluence",pumpfluence))
+
+    if(setting.lookupValue("PumpFluence",pumpfluence))
     {
         FIXOUT(config::Info,"Laser power:" << pumpfluence << std::endl);
     }
@@ -268,12 +269,11 @@ void sim::laser_heating(int argc,char *argv[])
     unsigned int VTUupdate=0;
     if(!setting.lookupValue("OutputSpinsVTU",outVTU))
     {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not read whether you want to output the spin configurations to VTU files. laserheating:OutputSpinsVTU (bool), defaulting to false.");
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not read whether you want to output the spin configurations to VTU files. laserheating:OutputSpinsVTU (bool), defaulting to false.");
         outVTU=false;
     }
     FIXOUT(config::Info,"Output spin config to VTU?:" << config::isTF(outVTU) << std::endl);
-
     if(outVTU)
     {
         //then read the parameters that it requires
@@ -304,7 +304,6 @@ void sim::laser_heating(int argc,char *argv[])
         giveField=false;
     }
     FIXOUT(config::Info,"Vary field?:" << config::isTF(giveField) << std::endl);
-
     if(giveField)
     {
         if(setting.lookupValue("NumFieldValues",nfv))
@@ -366,19 +365,30 @@ void sim::laser_heating(int argc,char *argv[])
     //this is the same as s3d except that it is for calculating the structure factor for each magnetic species
     Array4D<fftw_complex> is3d;
     fftw_plan ftspins,iftspins;
-    std::ofstream kvout("kvec.dat"),kvinfo("kvecinfo.dat");
+    std::ofstream kvout,kvinfo;
     Array2D<unsigned int> kplu;
     //we are declaring these on the heap because with clang 6.0 (at least)
     //the declaration on the stack is not allowed. I didn't manage to work
     //out why this is the case.
     std::ofstream *ikvinfo,*ikvout;
 
-
     if(sf::csf)
     {
         FIXOUT(config::Info,"Planning FFT for spin map:" << std::flush);
         s3d.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
         s3d.IFill(0);
+        kvout.open("kvec.dat");
+        if(!kvout.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open kvec.dat");
+        }
+        kvinfo.open("kvecinfo.dat");
+        if(!kvinfo.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open kvecinfo.dat");
+        }
         //plan an in-place transform
         fftw_set_timelimit(300);
         ftspins=fftw_plan_dft_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],s3d.ptr(),s3d.ptr(),FFTW_FORWARD,FFTW_PATIENT);
@@ -497,11 +507,16 @@ void sim::laser_heating(int argc,char *argv[])
             }
         }
     }
+
     std::ofstream ttmout("ttm.dat");
     if(!ttmout.is_open())
     {
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("Could not open ttm file (ttm.dat)");
+    }
+    else
+    {
+        ttmout << "#Time [s] - Te [K] - Tl [K] - Ts_1 - Ts_2.... - Ts_Nspec" << std::endl;
     }
     //counter for outputting of VTU files
     int VTUcount=0;
@@ -512,12 +527,21 @@ void sim::laser_heating(int argc,char *argv[])
     for(unsigned int t = 0 ; t < ets ; t++)
     {
         const double realtime=static_cast<double>(t)*llg::dt;
-        if(realtime >= field_times[fv] && realtime <= field_times[fv+1])
+        if(giveField)
         {
-            llg::applied[0]=of[0]+field_val(fv,0);
-            llg::applied[1]=of[1]+field_val(fv,1);
-            llg::applied[2]=of[2]+field_val(fv,2);
-            fv++;
+            if(realtime >= field_times[fv] && realtime <= field_times[fv+1])
+            {
+                llg::applied[0]=of[0]+field_val(fv,0);
+                llg::applied[1]=of[1]+field_val(fv,1);
+                llg::applied[2]=of[2]+field_val(fv,2);
+                fv++;
+            }
+        }
+        else
+        {
+            llg::applied[0]=of[0];
+            llg::applied[1]=of[1];
+            llg::applied[2]=of[2];
         }
         //std::cout << realtime << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
         if(t%spins::update==0)
@@ -529,7 +553,7 @@ void sim::laser_heating(int argc,char *argv[])
         }
         if(t%spins::update==0)
         {
-            if(VTUcount==VTUupdate)
+            if(VTUcount==static_cast<int>(VTUupdate))
             {
                 if(static_cast<double>(t)*llg::dt >= VTUstart)
                 {
@@ -550,7 +574,8 @@ void sim::laser_heating(int argc,char *argv[])
             ttmout << static_cast<double>(t)*llg::dt << "\t" << initT << "\t" << initT;
             for(unsigned int spec = 0 ; spec < geom::ucm.GetNMS() ; spec++)
             {
-                ttmout << "\t" << llg::cps(spec) << "\t" << llg::dps(spec) << "\t" << llg::Ts[spec];
+//                ttmout << "\t" << llg::cps(spec) << "\t" << llg::dps(spec) << "\t" << llg::Ts[spec];
+                ttmout << "\t" << llg::Ts[spec];
             }
             ttmout << std::endl;
         }
@@ -563,12 +588,21 @@ void sim::laser_heating(int argc,char *argv[])
     for(unsigned int t = ets ; t < ets+rts ; t++)
     {
         const double realtime=static_cast<double>(t)*llg::dt;
-        if(realtime >= field_times[fv] && realtime <= field_times[fv+1])
+        if(giveField)
         {
-            llg::applied[0]=of[0]+field_val(fv,0);
-            llg::applied[1]=of[1]+field_val(fv,1);
-            llg::applied[2]=of[2]+field_val(fv,2);
-            fv++;
+            if(realtime >= field_times[fv] && realtime <= field_times[fv+1])
+            {
+                llg::applied[0]=of[0]+field_val(fv,0);
+                llg::applied[1]=of[1]+field_val(fv,1);
+                llg::applied[2]=of[2]+field_val(fv,2);
+                fv++;
+            }
+        }
+        else
+        {
+            llg::applied[0]=of[0];
+            llg::applied[1]=of[1];
+            llg::applied[2]=of[2];
         }
         //std::cout << realtime << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
         unsigned int nt=t-ets;
@@ -579,11 +613,10 @@ void sim::laser_heating(int argc,char *argv[])
             util::calc_mag();
             util::output_mag(t);
             rscf::calcRSCF(t);
-//            ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl << std::endl;
         }
         if(t%spins::update==0)
         {
-            if(VTUcount==VTUupdate)
+            if(VTUcount==static_cast<int>(VTUupdate))
             {
                 if(static_cast<double>(t)*llg::dt >= VTUstart)
                 {
@@ -635,31 +668,8 @@ void sim::laser_heating(int argc,char *argv[])
                     {
                         unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
                         unsigned int ms=geom::lu(i,3);
-                        if(ms==s)
-                        {
-/*                            if(sf::qa[0]>1e-12)//quantization axis is x
-                            {
-                                is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i]*sf::uo(ms,1);
-                                is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
-                            }
-                            else if(sf::qa[1]>1e-12)
-                            {
-                                is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
-                                is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sz[i]*sf::uo(ms,2);
-                            }
-                            else if(sf::qa[2]>1e-12)
-                            {
-                                is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
-                                is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
-                            }
-                            else
-                            {
-                                is3d(s,xyz[0],xyz[1],xyz[2])[0]=0.0;
-                                is3d(s,xyz[0],xyz[1],xyz[2])[1]=0.0;
-                            }*/
-                            is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
-                            is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
-                        }
+                        is3d(s,xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
+                        is3d(s,xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
                     }//spin loop
                 }//species loop
                 fftw_execute(iftspins);
@@ -683,7 +693,8 @@ void sim::laser_heating(int argc,char *argv[])
             ttmout << static_cast<double>(t)*llg::dt << "\t" << Te << "\t" << Tl;
             for(unsigned int spec = 0 ; spec < geom::ucm.GetNMS() ; spec++)
             {
-                ttmout << "\t" << llg::cps(spec) << "\t" << llg::dps(spec) << "\t" << llg::Ts[spec];
+//                ttmout << "\t" << llg::cps(spec) << "\t" << llg::dps(spec) << "\t" << llg::Ts[spec];
+                ttmout << "\t" << llg::Ts[spec];
             }
             ttmout << std::endl;
         }
@@ -694,58 +705,61 @@ void sim::laser_heating(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errWarning("Could not close the ttm file (ttm.dat)");
     }
-    kvinfo.close();
-    if(kvinfo.is_open())
+    if(sf::csf)
     {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errWarning("Could not close kvinfo.dat.");
-    }
-    kvout.close();
-    if(kvout.is_open())
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errWarning("Could not close kvec.dat.");
-    }
-    if(oits)
-    {
-        for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
-        {
-            if(ikvout[s].is_open())
-            {
-                ikvout[s].close();
-                if(ikvout[s].is_open())
-                {
-                    std::stringstream sstr;
-                    sstr << "Could not close the data file for species "  << s;
-                    std::string str=sstr.str();
-                    error::errPreamble(__FILE__,__LINE__);
-                    error::errWarning(str);
-                }
-            }
-            if(ikvinfo[s].is_open())
-            {
-                ikvinfo[s].close();
-                if(ikvinfo[s].is_open())
-                {
-                    std::stringstream sstr;
-                    sstr << "Could not close the info file for species "  << s;
-                    std::string str=sstr.str();
-                    error::errPreamble(__FILE__,__LINE__);
-                    error::errWarning(str);
-                }
-            }
-        }
-        try
-        {
-            delete [] ikvinfo;
-            ikvinfo=NULL;
-            delete [] ikvout;
-            ikvout=NULL;
-        }
-        catch(...)
+        kvinfo.close();
+        if(kvinfo.is_open())
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errWarning("Could not delete at least one of the species dependent info or data k-vec files.");
+            error::errWarning("Could not close kvinfo.dat.");
+        }
+        kvout.close();
+        if(kvout.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close kvec.dat.");
+        }
+        if(oits)
+        {
+            for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
+            {
+                if(ikvout[s].is_open())
+                {
+                    ikvout[s].close();
+                    if(ikvout[s].is_open())
+                    {
+                        std::stringstream sstr;
+                        sstr << "Could not close the data file for species "  << s;
+                        std::string str=sstr.str();
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errWarning(str);
+                    }
+                }
+                if(ikvinfo[s].is_open())
+                {
+                    ikvinfo[s].close();
+                    if(ikvinfo[s].is_open())
+                    {
+                        std::stringstream sstr;
+                        sstr << "Could not close the info file for species "  << s;
+                        std::string str=sstr.str();
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errWarning(str);
+                    }
+                }
+            }
+            try
+            {
+                delete [] ikvinfo;
+                ikvinfo=NULL;
+                delete [] ikvout;
+                ikvout=NULL;
+            }
+            catch(...)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not delete at least one of the species dependent info or data k-vec files.");
+            }
         }
     }
 }

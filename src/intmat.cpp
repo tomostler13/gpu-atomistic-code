@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 10 Sep 2016 16:35:37
+// Last-modified: 10 Sep 2016 16:36:27
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -321,7 +321,7 @@ namespace intmat
                         int lc[3]={i,j,k};
                         int tc[3]={lc[0],lc[1],lc[2]};
                         //check if we have a single layer on any dimension
-                        if((abs(tc[0]>0) && checkmonolayer[0]==true) || (abs(tc[1]>0) && checkmonolayer[1]==true) || (abs(tc[2]>0) && checkmonolayer[2]==true) )
+                        if((abs(tc[0])>0 && checkmonolayer[0]==true) || (abs(tc[1])>0 && checkmonolayer[1]==true) || (abs(tc[2])>0 && checkmonolayer[2]==true) )
                         {
                             //don't add anything to the interaction matrix
                         }

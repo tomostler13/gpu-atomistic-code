@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 10 Sep 2016 16:03:42
+// Last-modified: 10 Sep 2016 16:49:42
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -111,9 +111,9 @@ namespace geom
             catch(const libconfig::SettingNotFoundException &snf)
             {
                 count--;
-                error::errPreamble(__FILE__,__LINE__);
+                error::errWarnPreamble(__FILE__,__LINE__);
                 std::stringstream errsstr;
-                errsstr << "Setting not found exception caught. Setting " << snf.getPath();
+                errsstr << "Setting not found exception caught. Setting " << snf.getPath() << " element " << i;
                 std::string errstr=errsstr.str();
                 error::errWarning(errstr);
             }

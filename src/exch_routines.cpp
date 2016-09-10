@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 10 Sep 2016 14:11:18
+// Last-modified: 10 Sep 2016 17:00:32
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -56,25 +56,25 @@ namespace exch
         }
         if(!setting.lookupValue("OutputExchange",outputJ))
         {
-            error::errPreamble(__FILE__,__LINE__);
+            error::errWarnPreamble(__FILE__,__LINE__);
             error::errWarning("Could not read exchange.OutputExchange (bool), defaulting to false.");
             outputJ=false;
         }
         if(!setting.lookupValue("OutputExchangeMatrix",oem))
         {
-            error::errPreamble(__FILE__,__LINE__);
+            error::errWarnPreamble(__FILE__,__LINE__);
             error::errWarning("Could not read whether to output the exchange matrix (exchange.OutputExchange (bool), defaulting to false.)");
             oem=false;
         }
         if(!setting.lookupValue("ReadExchangeMatrix",rem))
         {
-            error::errPreamble(__FILE__,__LINE__);
+            error::errWarnPreamble(__FILE__,__LINE__);
             error::errWarning("Could not determine whether exchange matrix should be read (exchange.ReadExchangeMatrix (bool)), defaulting to false.");
             rem=false;
         }
         if(!setting.lookupValue("ReadExchangeMatrix4Spin",rem4s))
         {
-            error::errPreamble(__FILE__,__LINE__);
+            error::errWarnPreamble(__FILE__,__LINE__);
             error::errWarning("Could not read whether you want to read the four spin CSR matrix. Defaulting to false.");
             rem4s=false;
         }
@@ -85,7 +85,7 @@ namespace exch
 
         if(!setting.lookupValue("ExitAfterExchangeMatrix",eaem))
         {
-            error::errPreamble(__FILE__,__LINE__);
+            error::errWarnPreamble(__FILE__,__LINE__);
             error::errWarning("Could not read whether you want to exit after outputting the exchange matrix. exchange.ExitAfterExchangeMatrix (bool), defaulting to false.");
             eaem=false;
         }
@@ -139,7 +139,7 @@ namespace exch
         libconfig::Setting &GlobExch = exchcfg.lookup("exchange");
         if(!GlobExch.lookupValue("FourSpin",inc4spin))
         {
-            error::errPreamble(__FILE__,__LINE__);
+            error::errWarnPreamble(__FILE__,__LINE__);
             error::errWarning("Could not read if you want to include the four spin term (exchange.FourSpin (bool), defaulting to false.");
         }
         FIXOUT(config::Info,"Include four spin term?:" << config::isTF(inc4spin) << std::endl);
@@ -169,7 +169,7 @@ namespace exch
             }
             if(!GlobExch.lookupValue("TruncateExchange",cutexch))
             {
-                error::errPreamble(__FILE__,__LINE__);
+                error::errWarnPreamble(__FILE__,__LINE__);
                 error::errWarning("Could not read if you wanted to trucate the interaction range (exchange.TruncateExchange (bool)). Defaulting to false");
                 cutexch=false;
             }
@@ -277,7 +277,7 @@ namespace exch
                         opem.close();
                         if(opem.is_open())
                         {
-                            error::errPreamble(__FILE__,__LINE__);
+                            error::errWarnPreamble(__FILE__,__LINE__);
                             error::errWarning("Could not close the file for outputting the CSR exchange matrix.");
                         }
 
@@ -356,7 +356,7 @@ namespace exch
                             opem.close();
                             if(opem.is_open())
                             {
-                                error::errPreamble(__FILE__,__LINE__);
+                                error::errWarnPreamble(__FILE__,__LINE__);
                                 error::errWarning("Could not close the file for outputting the DIA exchange matrix.");
                             }
                         }
@@ -517,7 +517,7 @@ namespace exch
                         opem.close();
                         if(opem.is_open())
                         {
-                            error::errPreamble(__FILE__,__LINE__);
+                            error::errWarnPreamble(__FILE__,__LINE__);
                             error::errWarning("Could not close the file for outputting the CSR exchange matrix.");
                         }
 
@@ -596,7 +596,7 @@ namespace exch
                             opem.close();
                             if(opem.is_open())
                             {
-                                error::errPreamble(__FILE__,__LINE__);
+                                error::errWarnPreamble(__FILE__,__LINE__);
                                 error::errWarning("Could not close the file for outputting the DIA exchange matrix.");
                             }
                         }

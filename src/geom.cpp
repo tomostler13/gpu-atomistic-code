@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Sep 2016 14:22:00
+// Last-modified: 10 Sep 2016 17:21:48
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -211,8 +211,9 @@ namespace geom
                             lu(atom_counter,0)=i*Nk[0]+ucm.GetCoord(t,0);
                             lu(atom_counter,1)=j*Nk[1]+ucm.GetCoord(t,1);
                             lu(atom_counter,2)=k*Nk[2]+ucm.GetCoord(t,2);
-                            lu(atom_counter,3)=ucm.GetSublattice(t);
                         }
+
+                        lu(atom_counter,3)=ucm.GetSublattice(t);
                         spec_counter[ucm.GetSublattice(t)]++;
                         lu(atom_counter,4)=t;
                         lu(atom_counter,5)=i;

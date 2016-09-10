@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Sep 2016 16:33:12
+// Last-modified: 10 Sep 2016 17:22:10
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -335,6 +335,7 @@ namespace util
         }
         for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
         {
+
             llg::Ts(s)=llg::muB*llg::cps(s)/(2.0*llg::kB*llg::dps(s));
             //std::cout << geom::ucm.GetMu(s) << std::endl;
         }

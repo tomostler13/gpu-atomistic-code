@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 23 Oct 2015
-// Last-modified: 10 Sep 2016 16:02:55
+// Last-modified: 10 Sep 2016 16:53:13
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -416,246 +416,249 @@ namespace rscf
 
     void calcRSCF(unsigned int t)
     {
-        //first copy the spin info to the real space arrays
-        if(inc[0])
+        if(ccf)
         {
-            spins::Skx.IFill(0);
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            //first copy the spin info to the real space arrays
+            if(inc[0])
             {
-                unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-                spins::Srx(xyz[0],xyz[1],xyz[2])=spins::Sx[i];
-            }
-            fftw_execute(SxP);
-        }
-        if(inc[1])
-        {
-            spins::Sky.IFill(0);
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
-            {
-                unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-                spins::Sry(xyz[0],xyz[1],xyz[2])=spins::Sy[i];
-            }
-            fftw_execute(SyP);
-        }
-        if(inc[2])
-        {
-            spins::Skz.IFill(0);
-            for(unsigned int i = 0 ; i < geom::nspins ; i++)
-            {
-                unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
-                spins::Srz(xyz[0],xyz[1],xyz[2])=spins::Sz[i];
-            }
-            fftw_execute(SzP);
-        }
-        //Perform the Sq_alpha . Sq_beta*
-        if(cab[0][0])
-        {
-            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
-            {
-                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                spins::Skx.IFill(0);
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
                 {
-                    for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                    unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                    spins::Srx(xyz[0],xyz[1],xyz[2])=spins::Sx[i];
+                }
+                fftw_execute(SxP);
+            }
+            if(inc[1])
+            {
+                spins::Sky.IFill(0);
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                    spins::Sry(xyz[0],xyz[1],xyz[2])=spins::Sy[i];
+                }
+                fftw_execute(SyP);
+            }
+            if(inc[2])
+            {
+                spins::Skz.IFill(0);
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                    spins::Srz(xyz[0],xyz[1],xyz[2])=spins::Sz[i];
+                }
+                fftw_execute(SzP);
+            }
+            //Perform the Sq_alpha . Sq_beta*
+            if(cab[0][0])
+            {
+                for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+                {
+                    for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
                     {
-                        //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
-                        //Real part
-                        spins::Ckxx(i,j,k)[0]=spins::Skx(i,j,k)[0]*spins::Skx(i,j,k)[0]+spins::Skx(i,j,k)[1]*spins::Skx(i,j,k)[1];
-                        //Complex part
-                        spins::Ckxx(i,j,k)[1]=spins::Skx(i,j,k)[1]*spins::Skx(i,j,k)[0]-spins::Skx(i,j,k)[0]*spins::Skx(i,j,k)[1];
+                        for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                        {
+                            //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
+                            //Real part
+                            spins::Ckxx(i,j,k)[0]=spins::Skx(i,j,k)[0]*spins::Skx(i,j,k)[0]+spins::Skx(i,j,k)[1]*spins::Skx(i,j,k)[1];
+                            //Complex part
+                            spins::Ckxx(i,j,k)[1]=spins::Skx(i,j,k)[1]*spins::Skx(i,j,k)[0]-spins::Skx(i,j,k)[0]*spins::Skx(i,j,k)[1];
+                        }
                     }
                 }
+                //perform back transform
+                fftw_execute(rscfP(0,0));
+                //output the correlation function
+                outputRSCF(Coxx,spins::Crxx,t);
             }
-            //perform back transform
-            fftw_execute(rscfP(0,0));
-            //output the correlation function
-            outputRSCF(Coxx,spins::Crxx,t);
-        }
-        if(cab[0][1])//Cxy
-        {
-            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            if(cab[0][1])//Cxy
             {
-                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
                 {
-                    for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                    for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
                     {
-                        //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
-                        //Real part
-                        spins::Ckxy(i,j,k)[0]=spins::Skx(i,j,k)[0]*spins::Sky(i,j,k)[0]+spins::Skx(i,j,k)[1]*spins::Sky(i,j,k)[1];
-                        //Complex part
-                        spins::Ckxy(i,j,k)[1]=spins::Skx(i,j,k)[1]*spins::Sky(i,j,k)[0]-spins::Skx(i,j,k)[0]*spins::Sky(i,j,k)[1];
+                        for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                        {
+                            //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
+                            //Real part
+                            spins::Ckxy(i,j,k)[0]=spins::Skx(i,j,k)[0]*spins::Sky(i,j,k)[0]+spins::Skx(i,j,k)[1]*spins::Sky(i,j,k)[1];
+                            //Complex part
+                            spins::Ckxy(i,j,k)[1]=spins::Skx(i,j,k)[1]*spins::Sky(i,j,k)[0]-spins::Skx(i,j,k)[0]*spins::Sky(i,j,k)[1];
+                        }
                     }
                 }
+                //perform back transform
+                fftw_execute(rscfP(0,1));
+                //output the correlation function
+                outputRSCF(Coxy,spins::Crxy,t);
             }
-            //perform back transform
-            fftw_execute(rscfP(0,1));
-            //output the correlation function
-            outputRSCF(Coxy,spins::Crxy,t);
-        }
-        if(cab[0][2])//Cxz
-        {
-            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            if(cab[0][2])//Cxz
             {
-                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
                 {
-                    for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                    for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
                     {
-                        //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
-                        //Real part
-                        spins::Ckxz(i,j,k)[0]=spins::Skx(i,j,k)[0]*spins::Skz(i,j,k)[0]+spins::Skx(i,j,k)[1]*spins::Skz(i,j,k)[1];
-                        //Complex part
-                        spins::Ckxz(i,j,k)[1]=spins::Skx(i,j,k)[1]*spins::Skz(i,j,k)[0]-spins::Skx(i,j,k)[0]*spins::Skz(i,j,k)[1];
+                        for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                        {
+                            //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
+                            //Real part
+                            spins::Ckxz(i,j,k)[0]=spins::Skx(i,j,k)[0]*spins::Skz(i,j,k)[0]+spins::Skx(i,j,k)[1]*spins::Skz(i,j,k)[1];
+                            //Complex part
+                            spins::Ckxz(i,j,k)[1]=spins::Skx(i,j,k)[1]*spins::Skz(i,j,k)[0]-spins::Skx(i,j,k)[0]*spins::Skz(i,j,k)[1];
+                        }
                     }
                 }
+                //perform back transform
+                fftw_execute(rscfP(0,2));
+                //output the correlation function
+                outputRSCF(Coxz,spins::Crxz,t);
             }
-            //perform back transform
-            fftw_execute(rscfP(0,2));
-            //output the correlation function
-            outputRSCF(Coxz,spins::Crxz,t);
-        }
-        if(cab[1][0])//Cyx
-        {
-            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            if(cab[1][0])//Cyx
             {
-                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
                 {
-                    for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                    for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
                     {
-                        //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
-                        //Real part
-                        spins::Ckyx(i,j,k)[0]=spins::Sky(i,j,k)[0]*spins::Skx(i,j,k)[0]+spins::Sky(i,j,k)[1]*spins::Skx(i,j,k)[1];
-                        //Complex part
-                        spins::Ckyx(i,j,k)[1]=spins::Sky(i,j,k)[1]*spins::Skx(i,j,k)[0]-spins::Sky(i,j,k)[0]*spins::Skx(i,j,k)[1];
+                        for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                        {
+                            //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
+                            //Real part
+                            spins::Ckyx(i,j,k)[0]=spins::Sky(i,j,k)[0]*spins::Skx(i,j,k)[0]+spins::Sky(i,j,k)[1]*spins::Skx(i,j,k)[1];
+                            //Complex part
+                            spins::Ckyx(i,j,k)[1]=spins::Sky(i,j,k)[1]*spins::Skx(i,j,k)[0]-spins::Sky(i,j,k)[0]*spins::Skx(i,j,k)[1];
+                        }
                     }
                 }
+                //perform back transform
+                fftw_execute(rscfP(1,0));
+                //output the correlation function
+                outputRSCF(Coyx,spins::Cryx,t);
             }
-            //perform back transform
-            fftw_execute(rscfP(1,0));
-            //output the correlation function
-            outputRSCF(Coyx,spins::Cryx,t);
-        }
-        if(cab[1][1])//Cyy
-        {
-            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            if(cab[1][1])//Cyy
             {
-                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
                 {
-                    for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                    for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
                     {
-                        //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
-                        //Real part
-                        spins::Ckyy(i,j,k)[0]=spins::Sky(i,j,k)[0]*spins::Sky(i,j,k)[0]+spins::Sky(i,j,k)[1]*spins::Sky(i,j,k)[1];
-                        //Complex part
-                        spins::Ckyy(i,j,k)[1]=spins::Sky(i,j,k)[1]*spins::Sky(i,j,k)[0]-spins::Sky(i,j,k)[0]*spins::Sky(i,j,k)[1];
+                        for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                        {
+                            //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
+                            //Real part
+                            spins::Ckyy(i,j,k)[0]=spins::Sky(i,j,k)[0]*spins::Sky(i,j,k)[0]+spins::Sky(i,j,k)[1]*spins::Sky(i,j,k)[1];
+                            //Complex part
+                            spins::Ckyy(i,j,k)[1]=spins::Sky(i,j,k)[1]*spins::Sky(i,j,k)[0]-spins::Sky(i,j,k)[0]*spins::Sky(i,j,k)[1];
+                        }
                     }
                 }
+                //perform back transform
+                fftw_execute(rscfP(1,1));
+                //output the correlation function
+                outputRSCF(Coyy,spins::Cryy,t);
             }
-            //perform back transform
-            fftw_execute(rscfP(1,1));
-            //output the correlation function
-            outputRSCF(Coyy,spins::Cryy,t);
-        }
-        if(cab[1][2])//Cyz
-        {
-            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            if(cab[1][2])//Cyz
             {
-                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
                 {
-                    for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                    for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
                     {
-                        //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
-                        //Real part
-                        spins::Ckyz(i,j,k)[0]=spins::Sky(i,j,k)[0]*spins::Skz(i,j,k)[0]+spins::Sky(i,j,k)[1]*spins::Skz(i,j,k)[1];
-                        //Complex part
-                        spins::Ckyz(i,j,k)[1]=spins::Sky(i,j,k)[1]*spins::Skz(i,j,k)[0]-spins::Sky(i,j,k)[0]*spins::Skz(i,j,k)[1];
+                        for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                        {
+                            //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
+                            //Real part
+                            spins::Ckyz(i,j,k)[0]=spins::Sky(i,j,k)[0]*spins::Skz(i,j,k)[0]+spins::Sky(i,j,k)[1]*spins::Skz(i,j,k)[1];
+                            //Complex part
+                            spins::Ckyz(i,j,k)[1]=spins::Sky(i,j,k)[1]*spins::Skz(i,j,k)[0]-spins::Sky(i,j,k)[0]*spins::Skz(i,j,k)[1];
+                        }
                     }
                 }
+                //perform back transform
+                fftw_execute(rscfP(1,2));
+                //output the correlation function
+                outputRSCF(Coyz,spins::Cryz,t);
             }
-            //perform back transform
-            fftw_execute(rscfP(1,2));
-            //output the correlation function
-            outputRSCF(Coyz,spins::Cryz,t);
-        }
-        if(cab[2][0])//Czx
-        {
-            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            if(cab[2][0])//Czx
             {
-                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
                 {
-                    for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                    for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
                     {
-                        //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
-                        //Real part
-                        spins::Ckzx(i,j,k)[0]=spins::Skz(i,j,k)[0]*spins::Skx(i,j,k)[0]+spins::Skz(i,j,k)[1]*spins::Skx(i,j,k)[1];
-                        //Complex part
-                        spins::Ckzx(i,j,k)[1]=spins::Skz(i,j,k)[1]*spins::Skx(i,j,k)[0]-spins::Skz(i,j,k)[0]*spins::Skx(i,j,k)[1];
+                        for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                        {
+                            //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
+                            //Real part
+                            spins::Ckzx(i,j,k)[0]=spins::Skz(i,j,k)[0]*spins::Skx(i,j,k)[0]+spins::Skz(i,j,k)[1]*spins::Skx(i,j,k)[1];
+                            //Complex part
+                            spins::Ckzx(i,j,k)[1]=spins::Skz(i,j,k)[1]*spins::Skx(i,j,k)[0]-spins::Skz(i,j,k)[0]*spins::Skx(i,j,k)[1];
+                        }
                     }
                 }
+                //perform back transform
+                fftw_execute(rscfP(2,0));
+                //output the correlation function
+                outputRSCF(Cozx,spins::Crzx,t);
             }
-            //perform back transform
-            fftw_execute(rscfP(2,0));
-            //output the correlation function
-            outputRSCF(Cozx,spins::Crzx,t);
-        }
-        if(cab[2][1])//Czy
-        {
-            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            if(cab[2][1])//Czy
             {
-                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
                 {
-                    for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                    for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
                     {
-                        //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
-                        //Real part
-                        spins::Ckzy(i,j,k)[0]=spins::Skz(i,j,k)[0]*spins::Sky(i,j,k)[0]+spins::Skz(i,j,k)[1]*spins::Sky(i,j,k)[1];
-                        //Complex part
-                        spins::Ckzy(i,j,k)[1]=spins::Skz(i,j,k)[1]*spins::Sky(i,j,k)[0]-spins::Skz(i,j,k)[0]*spins::Sky(i,j,k)[1];
+                        for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                        {
+                            //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
+                            //Real part
+                            spins::Ckzy(i,j,k)[0]=spins::Skz(i,j,k)[0]*spins::Sky(i,j,k)[0]+spins::Skz(i,j,k)[1]*spins::Sky(i,j,k)[1];
+                            //Complex part
+                            spins::Ckzy(i,j,k)[1]=spins::Skz(i,j,k)[1]*spins::Sky(i,j,k)[0]-spins::Skz(i,j,k)[0]*spins::Sky(i,j,k)[1];
+                        }
                     }
                 }
+                //perform back transform
+                fftw_execute(rscfP(2,1));
+                //output the correlation function
+                outputRSCF(Cozy,spins::Crzy,t);
             }
-            //perform back transform
-            fftw_execute(rscfP(2,1));
-            //output the correlation function
-            outputRSCF(Cozy,spins::Crzy,t);
-        }
-        if(cab[2][2])//Czz
-        {
-            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            if(cab[2][2])//Czz
             {
-                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
                 {
-                    for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                    for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
                     {
-                        //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
-                        //Real part
-                        spins::Ckzz(i,j,k)[0]=spins::Skz(i,j,k)[0]*spins::Skz(i,j,k)[0]+spins::Skz(i,j,k)[1]*spins::Skz(i,j,k)[1];
-                        //Complex part
-                        spins::Ckzz(i,j,k)[1]=spins::Skz(i,j,k)[1]*spins::Skz(i,j,k)[0]-spins::Skz(i,j,k)[0]*spins::Skz(i,j,k)[1];
+                        for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                        {
+                            //S_{\alpha} \cdot S_{\beta}^{*} = (S_{\alpha}^r+i S_{\alpha}^c) \cdot (S_{\beta}^r-i S_{\beta}^c) = S_{\alpha}^r S_{\beta}^r + S_{\alpha}^c S_{\beta}^c + i(S_{\alpha}^c S_{\beta}^r - S_{\alpha}^r S_{\beta}^c)
+                            //Real part
+                            spins::Ckzz(i,j,k)[0]=spins::Skz(i,j,k)[0]*spins::Skz(i,j,k)[0]+spins::Skz(i,j,k)[1]*spins::Skz(i,j,k)[1];
+                            //Complex part
+                            spins::Ckzz(i,j,k)[1]=spins::Skz(i,j,k)[1]*spins::Skz(i,j,k)[0]-spins::Skz(i,j,k)[0]*spins::Skz(i,j,k)[1];
+                        }
                     }
                 }
+                //perform back transform
+                fftw_execute(rscfP(2,2));
+                //output the correlation function
+                outputRSCF(Cozz,spins::Crzz,t);
             }
-            //perform back transform
-            fftw_execute(rscfP(2,2));
-            //output the correlation function
-            outputRSCF(Cozz,spins::Crzz,t);
-        }
-        if(sdots)
-        {
-            for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
+            if(sdots)
             {
-                for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
+                for(unsigned int i = 0 ; i < geom::dim[0]*geom::Nk[0] ; i++)
                 {
-                    for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                    for(unsigned int j = 0 ; j < geom::dim[1]*geom::Nk[1] ; j++)
                     {
-                        //Real part
-                        spins::Cksds(i,j,k)[0]=spins::Skx(i,j,k)[0]*spins::Skx(i,j,k)[0]+spins::Skx(i,j,k)[1]*spins::Skx(i,j,k)[1] + spins::Sky(i,j,k)[0]*spins::Sky(i,j,k)[0]+spins::Sky(i,j,k)[1]*spins::Sky(i,j,k)[1] + spins::Skz(i,j,k)[0]*spins::Skz(i,j,k)[0]+spins::Skz(i,j,k)[1]*spins::Skz(i,j,k)[1];
-                        //Complex part
-                        spins::Cksds(i,j,k)[1]=spins::Skx(i,j,k)[1]*spins::Skx(i,j,k)[0]-spins::Skx(i,j,k)[0]*spins::Skx(i,j,k)[1] + spins::Sky(i,j,k)[1]*spins::Sky(i,j,k)[0]-spins::Sky(i,j,k)[0]*spins::Sky(i,j,k)[1] + spins::Skz(i,j,k)[1]*spins::Skz(i,j,k)[0]-spins::Skz(i,j,k)[0]*spins::Skz(i,j,k)[1];
+                        for(unsigned int k = 0 ; k < nzpcplxdim ; k++)
+                        {
+                            //Real part
+                            spins::Cksds(i,j,k)[0]=spins::Skx(i,j,k)[0]*spins::Skx(i,j,k)[0]+spins::Skx(i,j,k)[1]*spins::Skx(i,j,k)[1] + spins::Sky(i,j,k)[0]*spins::Sky(i,j,k)[0]+spins::Sky(i,j,k)[1]*spins::Sky(i,j,k)[1] + spins::Skz(i,j,k)[0]*spins::Skz(i,j,k)[0]+spins::Skz(i,j,k)[1]*spins::Skz(i,j,k)[1];
+                            //Complex part
+                            spins::Cksds(i,j,k)[1]=spins::Skx(i,j,k)[1]*spins::Skx(i,j,k)[0]-spins::Skx(i,j,k)[0]*spins::Skx(i,j,k)[1] + spins::Sky(i,j,k)[1]*spins::Sky(i,j,k)[0]-spins::Sky(i,j,k)[0]*spins::Sky(i,j,k)[1] + spins::Skz(i,j,k)[1]*spins::Skz(i,j,k)[0]-spins::Skz(i,j,k)[0]*spins::Skz(i,j,k)[1];
+                        }
                     }
                 }
+                //perform back transform
+                fftw_execute(Csds);
+                //output the correlation function
+                outputRSCF(Cosds,spins::Crsds,t);
             }
-            //perform back transform
-            fftw_execute(Csds);
-            //output the correlation function
-            outputRSCF(Cosds,spins::Crsds,t);
         }
     }
     std::string conv(unsigned int c)
