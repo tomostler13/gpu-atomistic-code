@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 14 Jun 2016 13:09:39
+// Last-modified: 10 Sep 2016 16:01:47
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -50,22 +50,38 @@ void sim::laser_heating(int argc,char *argv[])
     }
 
     libconfig::Setting &setting = config::cfg.lookup("laserheating");
-    bool errstatus=setting.lookupValue("EquilibrationTime",et);
-    if(errstatus)
+    if(setting.lookupValue("EquilibrationTime",et))
     {
         FIXOUT(config::Info,"Equilibration time:" << et << " [s]" << std::endl);
         ets=static_cast<unsigned int>((et/llg::dt)+0.5);
         FIXOUT(config::Info,"Number of equilibration timesteps:" << ets << std::endl);
     }
-    errstatus=setting.lookupValue("RunTime",rt);
-    if(errstatus)
+    else
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Equilibration time could not be read. Using default value of 50ps.");
+        et=50e-12;
+        FIXOUT(config::Info,"Equilibration time (default):" << et << " [s]" << std::endl);
+        ets=static_cast<unsigned int>((et/llg::dt)+0.5);
+        FIXOUT(config::Info,"Number of equilibration timesteps (default):" << ets << std::endl);
+    }
+
+    if(setting.lookupValue("RunTime",rt))
     {
         FIXOUT(config::Info,"Run time:" << rt << " [s]" << std::endl);
         rts=static_cast<unsigned int>((rt/llg::dt)+0.5);
         FIXOUT(config::Info,"Number of timesteps for run:" << rts << std::endl);
     }
-    errstatus=setting.lookupValue("InitialTemperature",initT);
-    if(errstatus)
+    else
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Run time could not be read. Using default value of 50ps.");
+        rt=50e-12;
+        FIXOUT(config::Info,"Run time (default):" << rt << " [s]" << std::endl);
+        rts=static_cast<unsigned int>((rt/llg::dt)+0.5);
+        FIXOUT(config::Info,"Number of timesteps for run (default):" << rts << std::endl);
+    }
+    if(setting.lookupValue("InitialTemperature",initT))
     {
         if(initT<1e-5)
         {
@@ -83,14 +99,19 @@ void sim::laser_heating(int argc,char *argv[])
     if(setting.lookupValue("OutputIndividualTimeSeries",oits))
     {
         FIXOUT(config::Info,"Outputting individual ssf's for each species?:" << config::isTF(oits) << std::endl);
+        if(!geom::Nkset)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Can't presently calculate the ssf without specifying mesh.");
+        }
     }
     else
     {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not read setting laser_heating.OutputIndividualTimeSeries (bool)");
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errMessage("Outputting of invididual time series not set. Defaulting to false.");
+        oits=false;
     }
-    errstatus=setting.lookupValue("Cl",Cl);
-    if(errstatus)
+    if(setting.lookupValue("Cl",Cl))
     {
         FIXOUT(config::Info,"Lattice specific heat:" << Cl << std::endl);
     }
@@ -99,8 +120,7 @@ void sim::laser_heating(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("Could not read lattice specific heat (laserheating:Cl (double))");
     }
-    errstatus = setting.lookupValue("PumpTime",Pump_Time);
-    if(errstatus)
+    if(setting.lookupValue("PumpTime",Pump_Time))
     {
         FIXOUT(config::Info,"Laser pump time (width):" << Pump_Time << " [s]" << std::endl);
     }
@@ -109,8 +129,7 @@ void sim::laser_heating(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("Could not read laser pump time (laserheating:PumpTime (double)).");
     }
-    errstatus = setting.lookupValue("G_ep",G_ep);
-    if(errstatus)
+    if(setting.lookupValue("G_ep",G_ep))
     {
         FIXOUT(config::Info,"Electron-phonon coupling constant:" << G_ep << std::endl);
     }
@@ -120,8 +139,7 @@ void sim::laser_heating(int argc,char *argv[])
         error::errMessage("Could not read the electron-phonon coupling constant (laserheating:G_ep (double)).");
     }
 
-    errstatus = setting.lookupValue("Gamma_e",gamma_e);
-    if(errstatus)
+    if(setting.lookupValue("Gamma_e",gamma_e))
     {
         FIXOUT(config::Info,"gamma_e (Ce(Te)=gamma_e*Te):" << gamma_e << std::endl);
     }
@@ -130,19 +148,23 @@ void sim::laser_heating(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("Could not read the gamma_e (Ce(T)=gamma_e*Te) (laserheating:Gamma_e (double))");
     }
-    errstatus = setting.lookupValue("CoolingTime",ct);
-    if(errstatus)
+    if(setting.lookupValue("CoolingTime",ct))
     {
         FIXOUT(config::Info,"Cooling time:" << ct << " [s]" << std::endl);
     }
     else
     {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not read the cooling time (laserheating:CoolingTime (double))");
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not read the cooling time (laserheating:CoolingTime (double)). Defaulting to a long time 3000e-9.");
+        ct=3000e-9;
     }
-    errstatus = setting.lookupValue("OutputStructureFactor",opsf);
-    if(errstatus)
+    if(setting.lookupValue("OutputStructureFactor",opsf))
     {
+        if(!geom::Nkset)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("You cannot output the structure factor without setting mesh points Nm");
+        }
         FIXOUT(config::Info,"Output the information for the structure factor?" << config::isTF(opsf) << std::endl);
         if(opsf)
         {
@@ -155,11 +177,10 @@ void sim::laser_heating(int argc,char *argv[])
     }
     else
     {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not read the state of the outputting of the structure factor (laserheating:OutputStructureFactor (bool))");
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not read the state of the outputting of the structure factor (laserheating:OutputStructureFactor (bool)). Defaulting to false.");
     }
-    errstatus = setting.lookupValue("PumpFluence",pumpfluence);
-    if(errstatus)
+    if(!setting.lookupValue("PumpFluence",pumpfluence))
     {
         FIXOUT(config::Info,"Laser power:" << pumpfluence << std::endl);
     }
@@ -168,8 +189,7 @@ void sim::laser_heating(int argc,char *argv[])
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("Could not read the pump fluence (laserheating:PumpFluence (double))");
     }
-    errstatus = setting.lookupValue("NumPulses",num_pulses);
-    if(errstatus)
+    if(setting.lookupValue("NumPulses",num_pulses))
     {
         FIXOUT(config::Info,"Number of pulses:" << num_pulses << std::endl);
     }
@@ -183,7 +203,18 @@ void sim::laser_heating(int argc,char *argv[])
     FIXOUT(config::Info,"Pulse delays:"<< "[ " << std::flush);
     for(unsigned int i = 0 ; i < num_pulses ; i++)
     {
-        pulse_delays[i]=setting["PulseDelays"][i];
+        try
+        {
+            pulse_delays[i]=setting["PulseDelays"][i];
+        }
+        catch(const libconfig::SettingNotFoundException &snf)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            std::stringstream errsstr;
+            errsstr << "Setting not found exception caught. Setting " << snf.getPath() << " must be set.";
+            std::string errstr=errsstr.str();
+            error::errMessage(errstr);
+        }
         if(i<(num_pulses-1))
         {
             config::Info << pulse_delays[i] << " , ";
@@ -191,29 +222,58 @@ void sim::laser_heating(int argc,char *argv[])
     }
     config::Info << pulse_delays[num_pulses-1] << " ]" << std::endl;
     double pulse_scale[num_pulses];
-    FIXOUT(config::Info,"Pulse scaling factors:"<< "[ " << std::flush);
-    for(unsigned int i = 0 ; i < num_pulses ; i++)
+    bool scale_pulses=false;
+    if(setting.lookupValue("ScalePulses",scale_pulses))
     {
-        pulse_scale[i]=setting["PulseScale"][i];
-        if(i<(num_pulses-1))
+        FIXOUT(config::Info,"Scale pulses?:" << config::isTF(scale_pulses) << std::endl);
+    }
+    else
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not read if you wanted to scale the pulses, defaulting to false.");
+    }
+    if(scale_pulses)
+    {
+        FIXOUT(config::Info,"Pulse scaling factors:"<< "[ " << std::flush);
+        for(unsigned int i = 0 ; i < num_pulses ; i++)
         {
-            config::Info << pulse_scale[i] << " , ";
+            try
+            {
+                pulse_scale[i]=setting["PulseScale"][i];
+            }
+            catch(const libconfig::SettingNotFoundException &snf)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                std::stringstream errsstr;
+                errsstr << "Setting not found exception caught. Setting " << snf.getPath() << "\nYou have requested to scale the pulses but not provided a setting.";
+                std::string errstr=errsstr.str();
+                error::errMessage(errstr);
+            }
+            if(i<(num_pulses-1))
+            {
+                config::Info << pulse_scale[i] << " , ";
+            }
+        }
+        config::Info << pulse_scale[num_pulses-1] << " ]" << std::endl;
+    }
+    else
+    {
+        for(unsigned int i = 0 ; i < num_pulses ; i++)
+        {
+            pulse_scale[i]=1.0;
         }
     }
-    config::Info << pulse_scale[num_pulses-1] << " ]" << std::endl;
-
     bool outVTU=false;
     double VTUstart=0.0;
     unsigned int VTUupdate=0;
     if(!setting.lookupValue("OutputSpinsVTU",outVTU))
     {
         error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not read whether you want to output the spin configurations to VTU files. laserheating:OutputSpinsVTU (bool)");
+        error::errMessage("Could not read whether you want to output the spin configurations to VTU files. laserheating:OutputSpinsVTU (bool), defaulting to false.");
+        outVTU=false;
     }
-    else
-    {
-        FIXOUT(config::Info,"Output spin config to VTU?:" << config::isTF(outVTU) << std::endl);
-    }
+    FIXOUT(config::Info,"Output spin config to VTU?:" << config::isTF(outVTU) << std::endl);
+
     if(outVTU)
     {
         //then read the parameters that it requires
@@ -236,45 +296,34 @@ void sim::laser_heating(int argc,char *argv[])
             error::errMessage("Could not read the start time of the VTU file output. laserheating:VTUOutputStart (double)");
         }
     }
+    bool giveField=false;
+    if(!setting.lookupValue("VaryField",giveField))
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not read if you want to vary the field (laser_heating.VaryField (bool), defaulting to false.");
+        giveField=false;
+    }
+    FIXOUT(config::Info,"Vary field?:" << config::isTF(giveField) << std::endl);
 
-    if(setting.lookupValue("NumFieldValues",nfv))
+    if(giveField)
     {
-        FIXOUT(config::Info,"Number of field values:" << nfv << std::endl);
-    }
-    else
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not read the number of field values. laserheating.NumFieldValues (int)");
-    }
-    field_val.resize(nfv,3);
-    field_times.resize(nfv+1);
-    field_val.IFill(0);field_times.IFill(0);
-    for(unsigned int i = 0 ; i < nfv ; i++)
-    {
-        try
+        if(setting.lookupValue("NumFieldValues",nfv))
         {
-            field_times[i+1]=setting["FieldTimes"][i];
+            FIXOUT(config::Info,"Number of field values:" << nfv << std::endl);
         }
-        catch(const libconfig::SettingNotFoundException &snf)
+        else
         {
             error::errPreamble(__FILE__,__LINE__);
-            std::stringstream errsstr;
-            errsstr << "Setting not found exception caught. Setting " << snf.getPath();
-            std::string errstr=errsstr.str();
-            error::errMessage(errstr);
+            error::errMessage("Could not read the number of field values. laserheating.NumFieldValues (int)");
         }
-        std::stringstream sstr;
-        sstr << "Field info -> value " << i+1 << " UP TO time " << field_times[i+1];
-        std::string str=sstr.str();
-        std::stringstream fsstr;
-        fsstr << "FieldVal" << i+1;
-        std::string fstr=fsstr.str();
-        for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+        field_val.resize(nfv,3);
+        field_times.resize(nfv+1);
+        field_val.IFill(0);field_times.IFill(0);
+        for(unsigned int i = 0 ; i < nfv ; i++)
         {
-
             try
             {
-                field_val(i,xyz)=setting[fstr.c_str()][xyz];
+                field_times[i+1]=setting["FieldTimes"][i];
             }
             catch(const libconfig::SettingNotFoundException &snf)
             {
@@ -284,142 +333,167 @@ void sim::laser_heating(int argc,char *argv[])
                 std::string errstr=errsstr.str();
                 error::errMessage(errstr);
             }
+            std::stringstream sstr;
+            sstr << "Field info -> value " << i+1 << " UP TO time " << field_times[i+1];
+            std::string str=sstr.str();
+            std::stringstream fsstr;
+            fsstr << "FieldVal" << i+1;
+            std::string fstr=fsstr.str();
+            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+            {
+
+                try
+                {
+                    field_val(i,xyz)=setting[fstr.c_str()][xyz];
+                }
+                catch(const libconfig::SettingNotFoundException &snf)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "Setting not found exception caught. Setting " << snf.getPath();
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
+                }
+            }
+            FIXOUTVEC(config::Info,str,field_val(i,0),field_val(i,1),field_val(i,2));
         }
-        FIXOUTVEC(config::Info,str,field_val(i,0),field_val(i,1),field_val(i,2));
+        config::Info << std::endl;
     }
-    config::Info << std::endl;
 
-
-
-    FIXOUT(config::Info,"Planning FFT for spin map:" << std::flush);
+    //declarations for the correlation function (may not be malloced)
     //This array stores the spin map in real space
     Array3D<fftw_complex> s3d;
     //this is the same as s3d except that it is for calculating the structure factor for each magnetic species
     Array4D<fftw_complex> is3d;
-    s3d.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
-    s3d.IFill(0);
-    fftw_plan ftspins;
-    //plan an in-place transform
-    fftw_set_timelimit(60);
-    ftspins=fftw_plan_dft_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],s3d.ptr(),s3d.ptr(),FFTW_FORWARD,FFTW_PATIENT);
-    SUCCESS(config::Info);
-    fftw_plan iftspins;
-    if(oits)
-    {
-        FIXOUT(config::Info,"Planning FFT for individual species:" << std::flush);
-        is3d.resize(geom::ucm.GetNMS(),geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
-        is3d.IFill(0);
-        int rank=3;
-        const int n[3] = {geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]};
-        int howmany=geom::ucm.GetNMS();
-        int idist=n[0]*n[1]*n[2],odist=n[0]*n[1]*n[2];
-        int istride=1,ostride=1;
-        const int *inembed=n,*onembed=n;
-        iftspins=fftw_plan_many_dft(rank,n,howmany,is3d.ptr(),inembed,istride,idist,is3d.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
-        SUCCESS(config::Info);
-    }
+    fftw_plan ftspins,iftspins;
     std::ofstream kvout("kvec.dat"),kvinfo("kvecinfo.dat");
-    if(!kvout.is_open())
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not open file for outputting PSD for a k-vector.");
-    }
-    if(!kvinfo.is_open())
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not open file for outputting information on S(q,t).");
-    }
-    //output the sampling information
-    kvinfo << "#datafile\t" << "kvec.dat" << std::endl;
-    kvinfo << "#dim\t" << geom::dim[0] << "\t" << geom::dim[1] << "\t" << geom::dim[2] << std::endl;
-    kvinfo << "#kpointdim\t" << geom::dim[0]*geom::Nk[0] << "\t" << geom::dim[1]*geom::Nk[1] << "\t" << geom::dim[2]*geom::Nk[2] << std::endl;
-    kvinfo << "#NumberKPoints\t" << sf::nk << std::endl;
     Array2D<unsigned int> kplu;
-    kplu.resize(sf::nk,3);
-    for(unsigned int k = 0 ; k < sf::nk ; k++)
-    {
-        int kvec[3]={static_cast<int>(sf::kpoints(k,0)),static_cast<int>(sf::kpoints(k,1)),static_cast<int>(sf::kpoints(k,2))};
-        for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
-        {
-            if(kvec[xyz]<0)
-            {
-                kplu(k,xyz)=kvec[xyz]+geom::dim[xyz]*geom::Nk[xyz];
-            }
-            else
-            {
-                kplu(k,xyz)=kvec[xyz];
-            }
-        }
-        kvinfo << "#kvector " << k << " = " << kvec[0] << "\t" << kvec[1] << "\t" << kvec[2] << std::endl;;
-        kvinfo << "#lookupkvector " << k << " = " << kplu(k,0) << "\t" << kplu(k,1) << "\t" << kplu(k,2) << std::endl;
-    }
     //we are declaring these on the heap because with clang 6.0 (at least)
     //the declaration on the stack is not allowed. I didn't manage to work
     //out why this is the case.
     std::ofstream *ikvinfo,*ikvout;
 
-    //if we are outputting each (magnetic) sublattice time series then we need to open geom::ucm.GetNMS() files
-    if(oits)
+
+    if(sf::csf)
     {
-        try
+        FIXOUT(config::Info,"Planning FFT for spin map:" << std::flush);
+        s3d.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+        s3d.IFill(0);
+        //plan an in-place transform
+        fftw_set_timelimit(300);
+        ftspins=fftw_plan_dft_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],s3d.ptr(),s3d.ptr(),FFTW_FORWARD,FFTW_PATIENT);
+        SUCCESS(config::Info);
+        if(oits)
         {
-            ikvinfo = new std::ofstream [geom::ucm.GetNMS()];
-            ikvout = new std::ofstream [geom::ucm.GetNMS()];
+            FIXOUT(config::Info,"Planning FFT for individual species:" << std::flush);
+            is3d.resize(geom::ucm.GetNMS(),geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+            is3d.IFill(0);
+            int rank=3;
+            const int n[3] = {geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]};
+            int howmany=geom::ucm.GetNMS();
+            int idist=n[0]*n[1]*n[2],odist=n[0]*n[1]*n[2];
+            int istride=1,ostride=1;
+            const int *inembed=n,*onembed=n;
+            iftspins=fftw_plan_many_dft(rank,n,howmany,is3d.ptr(),inembed,istride,idist,is3d.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
+            SUCCESS(config::Info);
         }
-        catch(...)
+        if(!kvout.is_open())
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not create the array std::ofstream instances on the heap (one for each species).");
+            error::errMessage("Could not open file for outputting PSD for a k-vector.");
         }
-
-        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+        if(!kvinfo.is_open())
         {
-            std::stringstream sstr;
-            sstr << "kvecinfo_spec_" << i << ".dat";
-            std::string str=sstr.str();
-            ikvinfo[i].open(str.c_str());
-            if(!ikvinfo[i].is_open())
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open file for outputting information on S(q,t).");
+        }
+        //output the sampling information
+        kvinfo << "#datafile\t" << "kvec.dat" << std::endl;
+        kvinfo << "#dim\t" << geom::dim[0] << "\t" << geom::dim[1] << "\t" << geom::dim[2] << std::endl;
+        kvinfo << "#kpointdim\t" << geom::dim[0]*geom::Nk[0] << "\t" << geom::dim[1]*geom::Nk[1] << "\t" << geom::dim[2]*geom::Nk[2] << std::endl;
+        kvinfo << "#NumberKPoints\t" << sf::nk << std::endl;
+
+        kplu.resize(sf::nk,3);
+        for(unsigned int k = 0 ; k < sf::nk ; k++)
+        {
+            int kvec[3]={static_cast<int>(sf::kpoints(k,0)),static_cast<int>(sf::kpoints(k,1)),static_cast<int>(sf::kpoints(k,2))};
+            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
             {
-                sstr.str("");
-                sstr << "Could not open file for outputting info for k-vectors for magnetic species " << i;
-                str=sstr.str();
+                if(kvec[xyz]<0)
+                {
+                    kplu(k,xyz)=kvec[xyz]+geom::dim[xyz]*geom::Nk[xyz];
+                }
+                else
+                {
+                    kplu(k,xyz)=kvec[xyz];
+                }
+            }
+            kvinfo << "#kvector " << k << " = " << kvec[0] << "\t" << kvec[1] << "\t" << kvec[2] << std::endl;;
+            kvinfo << "#lookupkvector " << k << " = " << kplu(k,0) << "\t" << kplu(k,1) << "\t" << kplu(k,2) << std::endl;
+        }
+        //if we are outputting each (magnetic) sublattice time series then we need to open geom::ucm.GetNMS() files
+        if(oits)
+        {
+            try
+            {
+                ikvinfo = new std::ofstream [geom::ucm.GetNMS()];
+                ikvout = new std::ofstream [geom::ucm.GetNMS()];
+            }
+            catch(...)
+            {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errMessage(str);
+                error::errMessage("Could not create the array std::ofstream instances on the heap (one for each species).");
             }
 
-            sstr.str("");
-            sstr << "kvec_spec_" << i << ".dat";
-            str=sstr.str();
-            ikvout[i].open(str.c_str());
-            if(!ikvout[i].is_open())
+            for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
             {
-                sstr.str("");
-                sstr << "File kvec_spec_" << i << ".dat could not be opened.";
-                str=sstr.str();
-                error::errPreamble(__FILE__,__LINE__);
-                error::errMessage(str);
-            }
-            //output the sampling information
-            ikvinfo[i]<< "#datafile\t" << str << std::endl;
-            ikvinfo[i]<< "#dim\t" << geom::dim[0] << "\t" << geom::dim[1] << "\t" << geom::dim[2] << std::endl;
-            ikvinfo[i]<< "#kpointdim\t" << geom::dim[0]*geom::Nk[0] << "\t" << geom::dim[1]*geom::Nk[1] << "\t" << geom::dim[2]*geom::Nk[2] << std::endl;
-            ikvinfo[i]<< "#NumberKPoints\t" << sf::nk << std::endl;
-            for(unsigned int k = 0 ; k < sf::nk ; k++)
-            {
-                int kvec[3]={static_cast<int>(sf::kpoints(k,0)),static_cast<int>(sf::kpoints(k,1)),static_cast<int>(sf::kpoints(k,2))};
-                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                std::stringstream sstr;
+                sstr << "kvecinfo_spec_" << i << ".dat";
+                std::string str=sstr.str();
+                ikvinfo[i].open(str.c_str());
+                if(!ikvinfo[i].is_open())
                 {
-                    if(kvec[xyz]<0)
-                    {
-                        kplu(k,xyz)=kvec[xyz]+geom::dim[xyz]*geom::Nk[xyz];
-                    }
-                    else
-                    {
-                        kplu(k,xyz)=kvec[xyz];
-                    }
+                    sstr.str("");
+                    sstr << "Could not open file for outputting info for k-vectors for magnetic species " << i;
+                    str=sstr.str();
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage(str);
                 }
-                ikvinfo[i] << "#kvector " << k << " = " << kvec[0] << "\t" << kvec[1] << "\t" << kvec[2] << std::endl;;
-                ikvinfo[i] << "#lookupkvector " << k << " = " << kplu(k,0) << "\t" << kplu(k,1) << "\t" << kplu(k,2) << std::endl;
+
+                sstr.str("");
+                sstr << "kvec_spec_" << i << ".dat";
+                str=sstr.str();
+                ikvout[i].open(str.c_str());
+                if(!ikvout[i].is_open())
+                {
+                    sstr.str("");
+                    sstr << "File kvec_spec_" << i << ".dat could not be opened.";
+                    str=sstr.str();
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage(str);
+                }
+                //output the sampling information
+                ikvinfo[i]<< "#datafile\t" << str << std::endl;
+                ikvinfo[i]<< "#dim\t" << geom::dim[0] << "\t" << geom::dim[1] << "\t" << geom::dim[2] << std::endl;
+                ikvinfo[i]<< "#kpointdim\t" << geom::dim[0]*geom::Nk[0] << "\t" << geom::dim[1]*geom::Nk[1] << "\t" << geom::dim[2]*geom::Nk[2] << std::endl;
+                ikvinfo[i]<< "#NumberKPoints\t" << sf::nk << std::endl;
+                for(unsigned int k = 0 ; k < sf::nk ; k++)
+                {
+                    int kvec[3]={static_cast<int>(sf::kpoints(k,0)),static_cast<int>(sf::kpoints(k,1)),static_cast<int>(sf::kpoints(k,2))};
+                    for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                    {
+                        if(kvec[xyz]<0)
+                        {
+                            kplu(k,xyz)=kvec[xyz]+geom::dim[xyz]*geom::Nk[xyz];
+                        }
+                        else
+                        {
+                            kplu(k,xyz)=kvec[xyz];
+                        }
+                    }
+                    ikvinfo[i] << "#kvector " << k << " = " << kvec[0] << "\t" << kvec[1] << "\t" << kvec[2] << std::endl;;
+                    ikvinfo[i] << "#lookupkvector " << k << " = " << kplu(k,0) << "\t" << kplu(k,1) << "\t" << kplu(k,2) << std::endl;
+                }
             }
         }
     }

@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 10 Sep 2016 14:21:10
+// Last-modified: 10 Sep 2016 16:03:42
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -75,7 +75,12 @@ namespace geom
         //angdeg.resize(3);angdeg.IFill(0);
         libconfig::Setting &setting = config::cfg.lookup("system");
         //do we want to write the unit cell info to the log file?
-        setting.lookupValue("Log_unit_cell",logunit);
+        if(!setting.lookupValue("Log_unit_cell",logunit))
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not read if you want to log the entire unit cell or not. Defaulting to false.");
+            logunit=false;
+        }
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
             //number of unit cells in each direction

@@ -1,7 +1,7 @@
 // File: exch_determine_exchange_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 10 Sep 2016 13:38:32
+// Last-modified: 10 Sep 2016 16:02:07
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the CSR neighbourlist
@@ -57,8 +57,8 @@ namespace exch
                 }
                 else
                 {
-                    error::errPreamble(__FILE__,__LINE__);
-                    error::errMessage("Error reading energy type, check your exchange file.");
+                    error::errWarnPreamble(__FILE__,__LINE__);
+                    error::errWarning("Could not read energy type, defaulting to joules, you should check this!");
                 }
 
                 for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
@@ -156,10 +156,21 @@ namespace exch
                 sstr_int << "exchange" << "_" << s1 << "_" << s2;
                 std::string str_int=sstr_int.str();
                 libconfig::Setting &exchset = exchcfg.lookup(str_int.c_str());
-                exchset.lookupValue("Num_Shells",shell_list(s1,s2));
+                if(!exchset.lookupValue("Num_Shells",shell_list(s1,s2)))
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "Could not read number of shells between species " << s1 << " and " << s2 << ", check your exchange file." << std::endl;
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
+                }
                 FIXOUT(config::Info,"Reading exchange information for:" << shell_list(s1,s2) << " shells" << std::endl);
                 //Read the units of the exchange energy and scale appropriately to Joules
-                exchset.lookupValue("units",enerType);
+                if(!exchset.lookupValue("units",enerType))
+                {
+                    error::errWarnPreamble(__FILE__,__LINE__);
+                    error::errWarning("Could not read energy type, defaulting to joules, you should check this!");
+                }
                 FIXOUT(config::Info,"Units of exchange:" << enerType << std::endl);
 
                 for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
@@ -170,13 +181,30 @@ namespace exch
                     nistr=nisstr.str();
                     evsstr << "Shell" << i+1 << "Vec";
                     evstr=evsstr.str();
-                    exchset.lookupValue(nistr.c_str(),numint(s1,s2,i));
+                    if(!exchset.lookupValue(nistr.c_str(),numint(s1,s2,i)))
+                    {
+                        std::stringstream errsstr;
+                        errsstr << "Could not read the exchange vector between species " << s1 << " and " << s2 << " (shell " << i << ")";
+                        std::string errstr=errsstr.str();
+                        error::errMessage(errstr);
+                    }
                     config::Info << "Shell " << i+1;
                     FIXOUT(config::Info," number of interactions:" << numint(s1,s2,i) << std::endl);
                     maxNoInt(s1,s2)+=numint(s1,s2,i);
                     for(unsigned int j = 0 ; j < 3 ; j++)
                     {
-                        exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
+                        try
+                        {
+                            exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
+                        }
+                        catch(const libconfig::SettingNotFoundException &snf)
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            std::stringstream errsstr;
+                            errsstr << "Could not read vector for interaction number, " << i+1 << " check your exchange file.";
+                            std::string errstr=errsstr.str();
+                            error::errMessage(errstr);
+                        }
                     }
                     FIXOUTVEC(config::Info,"Vectors:",exchvec(s1,s2,i,0),exchvec(s1,s2,i,1),exchvec(s1,s2,i,2));
                     config::Info << std::endl;
@@ -189,7 +217,18 @@ namespace exch
                         Jstr=Jsstr.str();
                         for(unsigned int k = 0 ; k < 3 ; k++)
                         {
-                            J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
+                            try
+                            {
+                                J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
+                            }
+                            catch(const libconfig::SettingNotFoundException &snf)
+                            {
+                                error::errPreamble(__FILE__,__LINE__);
+                                std::stringstream errsstr;
+                                errsstr << "Could not read exchange for interaction between species " << s1 << " and " << s2 << " (shell " << i << ", element of tensor (" << j << "," << k << ") check your config file.";
+                                std::string errstr=errsstr.str();
+                                error::errMessage(errstr);
+                            }
                             if(enerType=="mRy")
                             {
                                 J(s1,s2,i,j,k)*=2.179872172e-18; //now to milli
@@ -251,11 +290,28 @@ namespace exch
 
                 //If the interactions are "direct" then the array shell_list actually stores the total number
                 //of interactions for the interaction between species s1 and s2
-                exchset.lookupValue("Num_Interactions",shell_list(s1,s2));
+                if(exchset.lookupValue("Num_Interactions",shell_list(s1,s2)))
+                {
+                    FIXOUT(config::Info,"Reading information for:" << shell_list(s1,s2) << " interactions" << std::endl);
+                }
+                else
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "Could not read the number of interactions between species " << s1 << " and " << s2;
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
+                }
+                if(exchset.lookupValue("units",enerType))
+                {
+                    FIXOUT(config::Info,"Units:" << enerType << std::endl);
+                }
+                else
+                {
+                    error::errWarnPreamble(__FILE__,__LINE__);
+                    error::errWarning("Could not read energy type, defaulting to joules, you should check this!");
+                }
 
-                FIXOUT(config::Info,"Reading information for:" << shell_list(s1,s2) << " interactions" << std::endl);
-
-                exchset.lookupValue("units",enerType);
                 for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
                 {
                     std::stringstream evsstr;
@@ -266,7 +322,18 @@ namespace exch
                     //get the vector for interaction i
                     for(unsigned int j = 0 ; j < 3 ; j++)
                     {
-                        exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
+                        try
+                        {
+                            exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
+                        }
+                        catch(const libconfig::SettingNotFoundException &snf)
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            std::stringstream errsstr;
+                            errsstr << "Could not read vector for interaction number, " << i+1 << " check your exchange file.";
+                            std::string errstr=errsstr.str();
+                            error::errMessage(errstr);
+                        }
 
                     }
                     config::Info << "Interaction " << i << " ";
@@ -280,7 +347,19 @@ namespace exch
                         Jstr=Jsstr.str();
                         for(unsigned int k = 0 ; k < 3 ; k++)
                         {
-                            J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
+                            try
+                            {
+                                J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
+                            }
+                            catch(const libconfig::SettingNotFoundException &snf)
+                            {
+                                std::stringstream errsstr;
+                                errsstr << "Could not exchange interaction number " << i+1 << " tensor components " << j << " and " << k << ", for interaction between species " << s1 << " and " << s2 << " (" << snf.getPath() << ")";
+                                std::string errstr=errsstr.str();
+                                error::errPreamble(__FILE__,__LINE__);
+                                error::errMessage(errstr);
+                            }
+
                             if(enerType=="mRy")
                             {
                                 J(s1,s2,i,j,k)*=2.179872172e-18; //now to milli

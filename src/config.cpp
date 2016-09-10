@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 10 Sep 2016 14:01:46
+// Last-modified: 10 Sep 2016 14:25:53
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -47,13 +47,13 @@ namespace config
         std::string iffstr;
         if(!cfg.lookupValue("OutputFile",iffstr))
         {
-            error::errPreamble(__FILE__,__LINE__);
+            error::errWarnPreamble(__FILE__,__LINE__);
             error::errWarning("Could not read the name of the output file, setting OutputFile (string), defaulting to opf.dat");
             iffstr="opf.dat";
         }
         if(!cfg.lookupValue("Seed",seed))
         {
-            error::errPreamble(__FILE__,__LINE__);
+            error::errWarnPreamble(__FILE__,__LINE__);
             error::errWarning("Could not read the random number seed, setting Seed (unsigned int), defaulting to 12345");
             seed=12345;
         }
@@ -73,7 +73,7 @@ namespace config
         Info.width(75);Info << std::left << "Run Date/time:" << dtime << std::flush;
 		if(GITDIRTY!="0")
 		{
-			error::errPreamble(__FILE__,__LINE__);
+			error::errWarnPreamble(__FILE__,__LINE__);
 			error::errWarning("Warning: Your git build is dirty, you should not use this code for production");
 			FIXOUT(Info,"Git SHA:" << GIT_SHA1 << ", Dirty" << std::endl);
 		}
@@ -99,7 +99,7 @@ namespace config
         FIXOUT(config::Info,"Dipole fields included?" << config::isTF(config::inc_dip) << std::endl);
         if(!setting.lookupValue("Exchange_method",exchmeth))
         {
-            error::errPreamble(__FILE__,__LINE__);
+            error::errWarnPreamble(__FILE__,__LINE__);
             error::errWarning("Exchange calculation method not set, setting system.Exchange_method (string), options: CSR, fft, DIA. Defaulting to CSR.");
             exchmeth="CSR";
         }
@@ -107,7 +107,7 @@ namespace config
         {
             if(!setting.lookupValue("Dipole_method",dipmeth))
             {
-                error::errPreamble(__FILE__,__LINE__);
+                error::errWarnPreamble(__FILE__,__LINE__);
                 error::errWarning("Dipole calculation method not set, setting system.DipoleCalculation (string), defaulting to fft.");
                 dipmeth="fft";
             }
@@ -164,7 +164,7 @@ namespace config
         {
             if(!setting.lookupValue("Off_diagonals",offdiag))
             {
-                error::errPreamble(__FILE__,__LINE__);
+                error::errWarnPreamble(__FILE__,__LINE__);
                 error::errWarning("Setting system.Off_diagonals (bool) not set, defaulting to false.");
             }
             FIXOUT(config::Info,"Include off-diagonals in sparse matrix multiplication?:" << config::isTF(offdiag) << std::endl);

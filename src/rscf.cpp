@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 23 Oct 2015
-// Last-modified: 27 Oct 2015 15:15:15
+// Last-modified: 10 Sep 2016 16:02:55
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -45,8 +45,6 @@ namespace rscf
     double normfac=1.0;
     void initRSCF(int argc,char *argv[])
     {
-        config::printline(config::Info);
-        config::Info.width(45);config::Info << std::right << "*" << "**Correlation function details***" << std::endl;
         try
         {
             config::cfg.readFile(argv[1]);
@@ -62,6 +60,15 @@ namespace rscf
             std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
             exit(EXIT_FAILURE);
         }
+        if(!config::cfg.exists("rscf"))
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("No rscf setting found, will not calculate.");
+            return;
+        }
+        config::printline(config::Info);
+        config::Info.width(45);config::Info << std::right << "*" << "**Correlation function details***" << std::endl;
+
         bool errstatus=false;
         std::string cffile;
         libconfig::Setting &setting = config::cfg.lookup("rscf");
