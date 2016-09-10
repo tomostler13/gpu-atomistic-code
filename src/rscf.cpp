@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 23 Oct 2015
-// Last-modified: 10 Sep 2016 16:53:13
+// Last-modified: 10 Sep 2016 18:45:22
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -69,12 +69,9 @@ namespace rscf
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Correlation function details***" << std::endl;
 
-        bool errstatus=false;
         std::string cffile;
         libconfig::Setting &setting = config::cfg.lookup("rscf");
-        errstatus=setting.lookupValue("Calculate",ccf);
-        //do some error handling
-        if(errstatus==false)
+        if(!setting.lookupValue("Calculate",ccf))
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Could not read whether the correlation function calculation is selected.");
@@ -87,8 +84,7 @@ namespace rscf
                 //we do not need to any more processing of the dsf information
                 return;
             }
-            errstatus=setting.lookupValue("InputFile",cffile);
-            if(errstatus==false)
+            if(!setting.lookupValue("InputFile",cffile))
             {
                 error::errPreamble(__FILE__,__LINE__);
                 error::errMessage("You specified the use of the real space correlation function calculation, however you have to speficy an input file (rscf:InputFile) in the config file.");
