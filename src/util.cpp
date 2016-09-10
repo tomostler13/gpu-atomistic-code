@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Sep 2016 20:17:32
+// Last-modified: 10 Sep 2016 16:33:12
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -42,8 +42,8 @@ namespace util
         dgetrf_(&N,&N,A,&N,IPIV,&INFO);
         dgetri_(&N,A,&N,IPIV,WORK,&LWORK,&INFO);
 
-        delete IPIV;
-        delete WORK;
+        delete [] IPIV;
+        delete [] WORK;
     }
     void cpuConvFourier()
     {
