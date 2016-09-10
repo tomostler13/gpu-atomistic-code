@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Sep 2016 10:21:22
+// Last-modified: 10 Sep 2016 18:42:23
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -154,10 +154,11 @@ int main(int argc,char *argv[])
 
             llg::integrate(t);
         }
-        util::outputSpinsVTU(-1);
+//        util::outputSpinsVTU(-1);
         time_t nowe=time(0);
         char *dtimee=ctime(&nowe);
-        util::outputSpinsVTU(-1);
+        unsigned int temp=-1;
+        util::outputSpinsVTU(temp);
         std::cout << "#End time:\t" << dtimee << std::endl;
     }
     else
