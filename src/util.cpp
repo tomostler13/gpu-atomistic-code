@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Sep 2016 17:22:10
+// Last-modified: 10 Sep 2016 18:36:34
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -266,6 +266,110 @@ namespace util
         std::stringstream pvss;
         std::string pv="spinmap";
         pvss << pv << "_" << t << ".vtu";
+        std::string pvs = pvss.str();
+        std::ofstream pvf(pvs.c_str());
+        if(!pvf.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open file for writing paraview files");
+        }
+
+        pvf << "<?xml version=\"1.0\"?>" << "\n";
+        pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
+        pvf << "<UnstructuredGrid>" << "\n";
+        pvf << "<Piece NumberOfPoints=\""<<geom::nspins<<"\"  NumberOfCells=\"1\">" << "\n";
+        pvf << "<PointData Scalar=\"Spin\">" << "\n";
+        pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+                    pvf << spins::Sx(i) << "\t" << spins::Sy(i) << "\t" << spins::Sz(i) << "\n";
+        }
+        pvf << "</DataArray>" << "\n";
+        pvf << "</PointData>" << "\n";
+        pvf << "<CellData>" << "\n";
+        pvf << "</CellData>" << "\n";
+        pvf << "<Points>" << "\n";
+        pvf << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            pvf << geom::rx[i] << "\t" << geom::ry[i] << "\t" << geom::rz[i] << "\n";
+        }
+
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Points>" << "\n";
+        pvf << "<Cells>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Cells>" << "\n";
+        pvf << "</Piece>" << "\n";
+        pvf << "</UnstructuredGrid>" << "\n";
+        pvf << "</VTKFile>" << "\n";
+        pvf.close();
+    }
+    void outputSpinsVTU(unsigned int t,double T)
+    {
+        std::stringstream pvss;
+        std::string pv="spinmap";
+        pvss << pv << "_T_" << T << "_t_" << t << ".vtu";
+        std::string pvs = pvss.str();
+        std::ofstream pvf(pvs.c_str());
+        if(!pvf.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open file for writing paraview files");
+        }
+
+        pvf << "<?xml version=\"1.0\"?>" << "\n";
+        pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
+        pvf << "<UnstructuredGrid>" << "\n";
+        pvf << "<Piece NumberOfPoints=\""<<geom::nspins<<"\"  NumberOfCells=\"1\">" << "\n";
+        pvf << "<PointData Scalar=\"Spin\">" << "\n";
+        pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+                    pvf << spins::Sx(i) << "\t" << spins::Sy(i) << "\t" << spins::Sz(i) << "\n";
+        }
+        pvf << "</DataArray>" << "\n";
+        pvf << "</PointData>" << "\n";
+        pvf << "<CellData>" << "\n";
+        pvf << "</CellData>" << "\n";
+        pvf << "<Points>" << "\n";
+        pvf << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            pvf << geom::rx[i] << "\t" << geom::ry[i] << "\t" << geom::rz[i] << "\n";
+        }
+
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Points>" << "\n";
+        pvf << "<Cells>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Cells>" << "\n";
+        pvf << "</Piece>" << "\n";
+        pvf << "</UnstructuredGrid>" << "\n";
+        pvf << "</VTKFile>" << "\n";
+        pvf.close();
+    }
+    void outputSpinsVTU(double T)
+    {
+        std::stringstream pvss;
+        std::string pv="spinmap";
+        pvss << pv << "_T_" << T << ".vtu";
         std::string pvs = pvss.str();
         std::ofstream pvf(pvs.c_str());
         if(!pvf.is_open())

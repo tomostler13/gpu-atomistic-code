@@ -36,14 +36,9 @@ sim:
 };
 mvt:
 {
-    lower_temp=0.1;
-    upper_temp=0.5;
-    temp_step=1.0;
-    mean_tolerance=1e-5;
-    variance_tolerance=1e-5;
-    MaxRunTime=30e-12;
-    MinRunTime=1e-12;
-    MvTFile="MvT.dat";
+    Lower_temp=50.0;
+    Upper_temp=800.0;
+    Temp_step=50.0;
 };
 laserheating:
 {

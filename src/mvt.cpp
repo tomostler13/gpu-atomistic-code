@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 24 Jun 2016 14:24:47
+// Last-modified: 10 Sep 2016 18:39:28
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -39,26 +39,91 @@ void sim::MvT(int argc,char *argv[])
 
     libconfig::Setting &setting = config::cfg.lookup("mvt");
     double lT=0.0,uT=0.0,dT=0.0,convmean=0.0,convvar=0.0,met=0.0,minrt=0.0;
-    setting.lookupValue("lower_temp",lT);
-    FIXOUT(config::Info,"Lower temperature:" << lT << std::endl);
-    setting.lookupValue("upper_temp",uT);
-    FIXOUT(config::Info,"Upper temperature:" << uT << std::endl);
-    setting.lookupValue("temp_step",dT);
-    FIXOUT(config::Info,"Temperature step:" << dT << std::endl);
-    setting.lookupValue("mean_tolerance",convmean);
-    setting.lookupValue("variance_tolerance",convvar);
-    FIXOUT(config::Info,"Converging mean to:" << convmean << std::endl);
-    FIXOUT(config::Info,"Converging variance to:" << convvar << std::endl);
-    setting.lookupValue("MaxRunTime",met);
-    FIXOUT(config::Info,"Maximum run time per temperature:" << met << " seconds" << std::endl);
-    setting.lookupValue("MinRunTime",minrt);
-    FIXOUT(config::Info,"Minimum runtime per temp step:" << minrt << std::endl);
+    if(!setting.lookupValue("Lower_temp",lT))
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not read the lower temperature mvt.Lower_temp (double). It is required.");
+    }
+    else
+    {
+        FIXOUT(config::Info,"Lower temperature:" << lT << std::endl);
+    }
+    if(!setting.lookupValue("upper_temp",uT))
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not read the upper temperature (mvt.Upper_temp (double)). It is required");
+    }
+    else
+    {
+        FIXOUT(config::Info,"Upper temperature:" << uT << std::endl);
+    }
+    if(!setting.lookupValue("Temp_step",dT))
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Could not read the step in temperature (mvt.Temp_step (double)). It is required");
+    }
+    else
+    {
+        FIXOUT(config::Info,"Temperature step:" << dT << std::endl);
+    }
+    if(!setting.lookupValue("Mean_tol",convmean))
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Mean tolerance could not be read (mvt.Mean_tol (double)), defaulting to 1e-5");
+        convmean=1e-5;
+        FIXOUT(config::Info,"Converging mean to (default):" << convmean << std::endl);
+    }
+    else
+    {
+        FIXOUT(config::Info,"Converging mean to:" << convmean << std::endl);
+    }
+    if(!setting.lookupValue("Variance_tol",convvar))
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Variance tolerance could not be read (mvt.Variance_tol (double)), defaulting to 1e-6");
+        convvar=1e-6;
+    }
+    else
+    {
+        FIXOUT(config::Info,"Converging variance to:" << convvar << std::endl);
+    }
+    if(!setting.lookupValue("MaxRunTime",met))
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Maximum run time per temperature step not read (mvt.MaxRunTime (double)), defaulting to 25ps");
+        met=25e-12;
+        FIXOUT(config::Info,"Maximum run time per temperature (default):" << met << " seconds" << std::endl);
+    }
+    else
+    {
+        FIXOUT(config::Info,"Maximum run time per temperature:" << met << " seconds" << std::endl);
+    }
+    if(!setting.lookupValue("MinRunTime",minrt))
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Minimum run time per temperature step not read (mvt.MinRunTime (double)), defaulting to 5ps");
+        met=5e-12;
+        FIXOUT(config::Info,"Minimum run time per temperature (default):" << met << " seconds" << std::endl);
+    }
+    else
+    {
+        FIXOUT(config::Info,"Minimum runtime per temperature step:" << minrt << std::endl);
+    }
     unsigned int mrts=int(met/llg::dt),eminrts=int(minrt/llg::dt);
     FIXOUT(config::Info,"Maximum run timesteps:" << mrts << std::endl);
     FIXOUT(config::Info,"Min rum timesteps:" << eminrts << std::endl);
     std::string opf;
-    setting.lookupValue("MvTFile",opf);
-    FIXOUT(config::Info,"Outputting magnetization data to:" << opf << std::endl);
+    if(!setting.lookupValue("MvTFile",opf))
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("COuld not read the name of the outputfile for the magnetization. Defaulting to MvT.dat");
+        opf="MvT.dat";
+        FIXOUT(config::Info,"Outputting magnetization data to (default):" << opf << std::endl);
+    }
+    else
+    {
+        FIXOUT(config::Info,"Outputting magnetization data to (default):" << opf << std::endl);
+    }
     std::ofstream ofs(opf.c_str());
     if(!ofs.is_open())
     {
@@ -69,9 +134,51 @@ void sim::MvT(int argc,char *argv[])
     {
         ofs << "#Temperature\tMean" << std::endl;
     }
+
+    //Output VTU files? Two options exist 1) regularly outputting the spin configuration at given intervals, or 2) outputting at the end for each temperature. The default is 2.
+    bool outVTU=false;
+    int outVTUtype=2,outVTUfreq=1;
+    if(!setting.lookupValue("OutputSpinsVTU",outVTU))
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not read if you want to output the VTU files during M(T) calculation (mvt.OutputSpinsVTU (bool)), defaulting to false.");
+        outVTU=false;
+        FIXOUT(config::Info,"Outputting spins in VTU format (default)?:" << config::isTF(outVTU) << std::endl);
+    }
+    else
+    {
+        FIXOUT(config::Info,"Outputting spins in VTU format?:" << config::isTF(outVTU) << std::endl);
+        if(!setting.lookupValue("OutputVTUType",outVTUtype))
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not read output type of VTUs, (mvt.OutputVTUType (int)), defaulting to 2 (at the end of each T step)");
+            outVTUtype=2;
+            FIXOUT(config::Info,"Output VTU type (default):" << outVTUtype << std::endl);
+        }
+        else
+        {
+            FIXOUT(config::Info,"Output VTU type:" << outVTUtype << std::endl);
+        }
+        if(outVTUtype==1)
+        {
+            if(!setting.lookupValue("OutputVTUFreq",outVTUfreq))
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not read output VTU frequency (mvt.OutputVTUFreq (int) in units of update, defaulting to 100");
+                outVTUfreq=100;
+                FIXOUT(config::Info,"Output frequency of VTUs (default):" << outVTUfreq << std::endl);
+            }
+        }
+        else
+        {
+            FIXOUT(config::Info,"Output frequency of VTUs:" << outVTUfreq << std::endl);
+        }
+    }
+
     util::RunningStat *MS=new util::RunningStat[geom::ucm.GetNMS()];
     util::ofs << "#The magnetization is output into indices for each temperature and depending on the output method" << std::endl;
     unsigned int globt=0.0;
+    unsigned int VTUcount=0;
     if(dT>0.0)
     {
         //temperature loop
@@ -97,7 +204,15 @@ void sim::MvT(int argc,char *argv[])
                 {
                     util::calc_mag();
                     util::output_mag(t);
-                    util::outputSpinsVTU(globt);
+                    if(outVTUtype==1 && VTUcount==outVTUfreq)
+                    {
+                        util::outputSpinsVTU(t,T);
+                        VTUcount=0;
+                    }
+                    else if(outVTUtype==1 && VTUcount!=outVTUfreq)
+                    {
+                        VTUcount++;
+                    }
                 }
             }
             //have all the magnetization converged?
@@ -110,7 +225,15 @@ void sim::MvT(int argc,char *argv[])
                 {
                     util::calc_mag();
                     util::output_mag(t);
-                    util::outputSpinsVTU(globt);
+                    if(outVTUtype==1 && VTUcount==outVTUfreq)
+                    {
+                        util::outputSpinsVTU(t,T);
+                        VTUcount=0;
+                    }
+                    else if(outVTUtype==1 && VTUcount!=outVTUfreq)
+                    {
+                        VTUcount++;
+                    }
 
                     /*                if(t>int(10e-12/llg::dt))
                                       {*/
@@ -137,6 +260,10 @@ void sim::MvT(int argc,char *argv[])
                     //}
 
                 }
+            }
+            if(outVTUtype==2)
+            {
+                util::outputSpinsVTU(T);
             }
             ofs << T;
             for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
@@ -174,7 +301,15 @@ void sim::MvT(int argc,char *argv[])
                 {
                     util::calc_mag();
                     util::output_mag(t);
-                    util::outputSpinsVTU(globt);
+                    if(outVTUtype==1 && VTUcount==outVTUfreq)
+                    {
+                        util::outputSpinsVTU(t,T);
+                        VTUcount=0;
+                    }
+                    else if(outVTUtype==1 && VTUcount!=outVTUfreq)
+                    {
+                        VTUcount++;
+                    }
                 }
             }
             //have all the magnetization converged?
@@ -188,6 +323,15 @@ void sim::MvT(int argc,char *argv[])
                     util::calc_mag();
                     util::output_mag(t);
                     util::outputSpinsVTU(globt);
+                    if(outVTUtype==1 && VTUcount==outVTUfreq)
+                    {
+                        util::outputSpinsVTU(t,T);
+                        VTUcount=0;
+                    }
+                    else if(outVTUtype==1 && VTUcount!=outVTUfreq)
+                    {
+                        VTUcount++;
+                    }
 
                     /*                if(t>int(10e-12/llg::dt))
                                       {*/
@@ -214,6 +358,10 @@ void sim::MvT(int argc,char *argv[])
                     //}
 
                 }
+            }
+            if(outVTUtype==2)
+            {
+                util::outputSpinsVTU(T);
             }
             ofs << T;
             for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
