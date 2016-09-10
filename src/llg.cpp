@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 23 Jun 2016 15:50:46
+// Last-modified: 10 Sep 2016 17:54:15
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -24,8 +24,8 @@ namespace llg
     Array<double> llgpf;
     std::string scm;
 
-	void initLLG(int argc,char *argv[])
-	{
+    void initLLG(int argc,char *argv[])
+    {
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**LLG details***" << std::endl;
 
@@ -44,128 +44,212 @@ namespace llg
             std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
             exit(EXIT_FAILURE);
         }
-
-        libconfig::Setting &setting = config::cfg.lookup("llg");
-        setting.lookupValue("dt",dt);
-        for(unsigned int i = 0 ; i < 3 ;i++)
+        bool llgset=false;
+        if(!config::cfg.exists("llg"))
         {
-            applied[i]=setting["applied"][i];
-        }
-        setting.lookupValue("update",spins::update);
-        FIXOUT(config::Info,"Spin update:" << spins::update << " [Timesteps]" << std::endl);
-        FIXOUTVEC(config::Info,"Applied field:",applied[0],applied[1],applied[2]);
-        FIXOUT(config::Info,"Timestep:" << dt << " seconds" << std::endl);
-        rdt=dt*gyro;
-		FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
-        if(!setting.lookupValue("MagnetizationCalculationMethod:",spins::mag_calc_method))
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not read method for calculating magnetization (llg:MagnetizationCalculationMethod)");
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Setting class llg does not exists, setting defaults.");
+            llgset=false;
+            dt=0.1e-15;
+            FIXOUT(config::Info,"Timestep (default):" << dt << " seconds" << std::endl);
+            rdt=dt*gyro;
+            FIXOUT(config::Info,"Reduced timestep (default):" << rdt << std::endl);
+            applied[0]=0.0;applied[1]=0.0;applied[2]=0.0;
+            FIXOUTVEC(config::Info,"Applied field (default):",applied[0],applied[1],applied[2]);
+            spins::update=100;
+            FIXOUT(config::Info,"Update of spins (default):" << spins::update << " [Timesteps]" << std::endl;);
+            spins::mag_calc_method=0;
+            FIXOUT(config::Info,"Magnetization calculatioin method (default):" << spins::mag_calc_method << std::endl);
+            scm="file";
+            spins::setSpinsConfig();
+            FIXOUT(config::Info,"Initial spin configuratio (default):" << scm << std::endl);
         }
         else
         {
-            FIXOUT(config::Info,"Magnetization calculatioin method:" << spins::mag_calc_method << std::endl);
-        }
-        if(spins::mag_calc_method==9)
-        {
-            util::magDiscSize.resize(3);
-            util::magDiscSize.IFill(0);
-            for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+            libconfig::Setting &setting = config::cfg.lookup("llg");
+            if(!setting.lookupValue("dt",dt))
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Time-step not set (llg.dt (double)), setting default 1e-16 [s]");
+                dt=0.1e-15;
+                FIXOUT(config::Info,"Timestep (default):" << dt << " seconds" << std::endl);
+                rdt=dt*gyro;
+                FIXOUT(config::Info,"Reduced timestep (default):" << rdt << std::endl);
+
+            }
+            else
+            {
+                FIXOUT(config::Info,"Timestep:" << dt << " seconds" << std::endl);
+                rdt=dt*gyro;
+                FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
+            }
+            int count=3;
+            for(unsigned int i = 0 ; i < 3 ;i++)
             {
                 try
                 {
-                    util::magDiscSize[xyz]=setting["NoMagDisc"][xyz];
+                    applied[i]=setting["applied"][i];
                 }
                 catch(const libconfig::SettingNotFoundException &snf)
                 {
-                    error::errPreamble(__FILE__,__LINE__);
+                    error::errWarnPreamble(__FILE__,__LINE__);
                     std::stringstream errsstr;
-                    errsstr << "Setting not found exception caught. Setting " << snf.getPath();
+                    errsstr << "Setting not found exception caught. Setting " << snf.getPath() << " component " << i;
                     std::string errstr=errsstr.str();
                     error::errMessage(errstr);
+                    count--;
                 }
             }
-            FIXOUTVEC(config::Info,"Number of intervals for calculating discrete magnetization:",util::magDiscSize[0],util::magDiscSize[1],util::magDiscSize[2]);
-
-            double fractpart,intpart;
-
-            double no_kpx_pd=static_cast<double>(geom::dim[0]*geom::Nk[0])/static_cast<double>(util::magDiscSize[0]);
-            fractpart=std::modf(no_kpx_pd,&intpart);
-            if(fabs(fractpart)>1e-12)
+            if(count==0)
             {
-                error::errPreamble(__FILE__,__LINE__);
-                printf ("No. points per discretization cell %f = %f + %f (the fractional part is bigger than 1e-12) \n", no_kpx_pd, intpart, fractpart);
-                error::errMessage("Error in discretization (in x). At the moment the code requires a perfect number of points so that geom::dim*geom::Nk/magDiscSize is EXACTLY an integer (to an accuracy of 1e-12).");
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Field not specified, setting default to zero.");
+                applied[0]=0.0;applied[1]=0.0;applied[2]=0.0;
+                FIXOUTVEC(config::Info,"Applied field (default):",applied[0],applied[1],applied[2]);
             }
-            double no_kpy_pd=static_cast<double>(geom::dim[1]*geom::Nk[1])/static_cast<double>(util::magDiscSize[1]);
-            fractpart=std::modf(no_kpy_pd,&intpart);
-            if(fabs(fractpart)>1e-12)
+            else if(count==3)
             {
-                error::errPreamble(__FILE__,__LINE__);
-                printf ("No. points per discretization cell %f = %f + %f (the fractional part is bigger than 1e-12) \n", no_kpy_pd, intpart, fractpart);
-                error::errMessage("Error in discretization (in y). At the moment the code requires a perfect number of points so that geom::dim*geom::Nk/magDiscSize is EXACTLY an integer (to an accuracy of 1e-12).");
-            }
-            double no_kpz_pd=static_cast<double>(geom::dim[2]*geom::Nk[2])/static_cast<double>(util::magDiscSize[2]);
-            fractpart=std::modf(no_kpz_pd,&intpart);
-            if(fabs(fractpart)>1e-12)
-            {
-                error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("Error in discretization (in z). At the moment the code requires a perfect number of points so that geom::dim*geom::Nk/magDiscSize is EXACTLY an integer (to an accuracy of 1e-12).");
-                printf ("No. points per discretization cell %f = %f + %f (the fractional part is bigger than 1e-12) \n", no_kpz_pd, intpart, fractpart);
-            }
-            if(setting.lookupValue("DiscOutputFormat",util::disOutForm))
-            {
-                FIXOUT(config::Info,"Output format for mag disc output (MagnetizationCalculationMethod):" << util::disOutForm << std::endl);
+                 FIXOUTVEC(config::Info,"Applied field (default):",applied[0],applied[1],applied[2]);
             }
             else
             {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("Could not read the DiscOutputFormat (llg:DiscOutputFormat (string))");
+                error::errMessage("Part of the field was not specified properly, check the warnings.");
             }
-        }
-        setting.lookupValue("OutputMagnetization",spins::output_mag);
-        FIXOUT(config::Info,"Initializing output of magnetization:" << std::endl);
-        if(setting.lookupValue("SpinConfigMethod",scm))
-        {
-            FIXOUT(config::Info,"How are spins initially configured?:" << scm << std::endl);
-            if(scm=="random")
+
+            if(!setting.lookupValue("update",spins::update))
             {
-                spins::setSpinsRandom();
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not read the spin update, setting default to 100 (timesteps)");
+                spins::update=100;
+                FIXOUT(config::Info,"Update of spins (default):" << spins::update << " [Timesteps]" << std::endl);
             }
-            else if(scm=="file")
+            if(!setting.lookupValue("MagnetizationCalculationMethod:",spins::mag_calc_method))
             {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not read method for calculating magnetization (llg:MagnetizationCalculationMethod). Setting default to 0 (overall magnetization).");
+                spins::mag_calc_method=0;
+                FIXOUT(config::Info,"Magnetization calculatioin method (default):" << spins::mag_calc_method << std::endl);
+
+            }
+            else
+            {
+                FIXOUT(config::Info,"Magnetization calculatioin method:" << spins::mag_calc_method << std::endl);
+            }
+            if(spins::mag_calc_method==9 && geom::Nkset==true)
+            {
+                util::magDiscSize.resize(3);
+                util::magDiscSize.IFill(0);
+                for(unsigned int xyz = 0 ; xyz < 3 ; xyz++)
+                {
+                    try
+                    {
+                        util::magDiscSize[xyz]=setting["NoMagDisc"][xyz];
+                    }
+                    catch(const libconfig::SettingNotFoundException &snf)
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        std::stringstream errsstr;
+                        errsstr << "Setting not found exception caught. Setting " << snf.getPath() << " component " << xyz;
+                        std::string errstr=errsstr.str();
+                        error::errMessage(errstr);
+                    }
+                }
+                FIXOUTVEC(config::Info,"Number of intervals for calculating discrete magnetization:",util::magDiscSize[0],util::magDiscSize[1],util::magDiscSize[2]);
+
+                double fractpart,intpart;
+
+                double no_kpx_pd=static_cast<double>(geom::dim[0]*geom::Nk[0])/static_cast<double>(util::magDiscSize[0]);
+                fractpart=std::modf(no_kpx_pd,&intpart);
+                if(fabs(fractpart)>1e-12)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    printf ("No. points per discretization cell %f = %f + %f (the fractional part is bigger than 1e-12) \n", no_kpx_pd, intpart, fractpart);
+                    error::errMessage("Error in discretization (in x). At the moment the code requires a perfect number of points so that geom::dim*geom::Nk/magDiscSize is EXACTLY an integer (to an accuracy of 1e-12).");
+                }
+                double no_kpy_pd=static_cast<double>(geom::dim[1]*geom::Nk[1])/static_cast<double>(util::magDiscSize[1]);
+                fractpart=std::modf(no_kpy_pd,&intpart);
+                if(fabs(fractpart)>1e-12)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    printf ("No. points per discretization cell %f = %f + %f (the fractional part is bigger than 1e-12) \n", no_kpy_pd, intpart, fractpart);
+                    error::errMessage("Error in discretization (in y). At the moment the code requires a perfect number of points so that geom::dim*geom::Nk/magDiscSize is EXACTLY an integer (to an accuracy of 1e-12).");
+                }
+                double no_kpz_pd=static_cast<double>(geom::dim[2]*geom::Nk[2])/static_cast<double>(util::magDiscSize[2]);
+                fractpart=std::modf(no_kpz_pd,&intpart);
+                if(fabs(fractpart)>1e-12)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Error in discretization (in z). At the moment the code requires a perfect number of points so that geom::dim*geom::Nk/magDiscSize is EXACTLY an integer (to an accuracy of 1e-12).");
+                    printf ("No. points per discretization cell %f = %f + %f (the fractional part is bigger than 1e-12) \n", no_kpz_pd, intpart, fractpart);
+                }
+                if(setting.lookupValue("DiscOutputFormat",util::disOutForm))
+                {
+                    FIXOUT(config::Info,"Output format for mag disc output (MagnetizationCalculationMethod):" << util::disOutForm << std::endl);
+                }
+                else
+                {
+                    error::errWarnPreamble(__FILE__,__LINE__);
+                    error::errWarning("Could not read the DiscOutputFormat (llg:DiscOutputFormat (string)), defaulting to VTU.");
+                    util::disOutForm="vtu";
+                }
+            }
+            else if(spins::mag_calc_method==9 && geom::Nkset==false)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("To use magnetisation method 9 (discretization into cells) you have to define Nm.");
+            }
+            if(!setting.lookupValue("OutputMagnetization",spins::output_mag))
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Output overall magnetization (llg.OutputMagnetization) not specified. Defaulting to true.");
+            }
+            FIXOUT(config::Info,"Initializing output of magnetization:" << std::endl);
+            if(setting.lookupValue("SpinConfigMethod",scm))
+            {
+                FIXOUT(config::Info,"How are spins initially configured?:" << scm << std::endl);
+                if(scm=="random")
+                {
+                    spins::setSpinsRandom();
+                }
+                else if(scm=="file")
+                {
+                    spins::setSpinsConfig();
+                }
+                else if(scm=="chequerx")
+                {
+                    spins::setSpinsChequerX();
+                }
+                else if(scm=="chequery")
+                {
+                    spins::setSpinsChequerY();
+                }
+                else if(scm=="chequerz")
+                {
+                    spins::setSpinsChequerZ();
+                }
+                else if(scm=="species")
+                {
+                    spins::setSpinsSpecies(setting);
+                }
+                else if(scm=="vampire")
+                {
+                    spins::setSpinsVampire(setting);
+                }
+                else
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Method for initialising spins not recognised (llg.SpinConfigMethod (string). Check you config file.");
+                }
+            }
+            else
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not read the method for applying the initial spin config. Setting llg.SpinConfigMethod (string), defaulting to file.");
+                scm="file";
                 spins::setSpinsConfig();
+                FIXOUT(config::Info,"Initial spin configuratio (default):" << scm << std::endl);
             }
-            else if(scm=="chequerx")
-            {
-                spins::setSpinsChequerX();
-            }
-            else if(scm=="chequery")
-            {
-                spins::setSpinsChequerY();
-            }
-            else if(scm=="chequerz")
-            {
-                spins::setSpinsChequerZ();
-            }
-            else if(scm=="species")
-            {
-                spins::setSpinsSpecies(setting);
-            }
-            else if(scm=="vampire")
-            {
-                spins::setSpinsVampire(setting);
-            }
-            else
-            {
-                error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("Method for initialising spins not recognised (llg.SpinConfigMethod (string). Check you config file.");
-            }
-        }
-        else
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Could not read the method for applying the initial spin config. Setting llg.SpinConfigMethod (string)");
         }
         util::init_output();
 
@@ -233,14 +317,14 @@ namespace llg
 
         SUCCESS(config::Info);
 
-	}
+    }
     void integrate(unsigned int& t)
     {
-        #ifdef CUDA
+#ifdef CUDA
         cullg::llgGPU(t);
-        #else
+#else
         llgCPU::llgCPU(t);
-        #endif
+#endif
 
     }
 }

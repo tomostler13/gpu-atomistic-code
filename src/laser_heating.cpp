@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 10 Sep 2016 17:23:35
+// Last-modified: 10 Sep 2016 17:26:28
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -553,18 +553,21 @@ void sim::laser_heating(int argc,char *argv[])
         }
         if(t%spins::update==0)
         {
-            if(VTUcount==static_cast<int>(VTUupdate))
+            if(outVTU)
             {
-                if(static_cast<double>(t)*llg::dt >= VTUstart)
+                if(VTUcount==static_cast<int>(VTUupdate))
                 {
-                    util::outputSpinsVTU(t);
+                    if(static_cast<double>(t)*llg::dt >= VTUstart)
+                    {
+                        util::outputSpinsVTU(t);
+                    }
+                    //restart the counter
+                    VTUcount=0;
                 }
-                //restart the counter
-                VTUcount=0;
-            }
-            else
-            {
-                VTUcount++;
+                else
+                {
+                    VTUcount++;
+                }
             }
         }
         llg::integrate(t);
@@ -616,19 +619,20 @@ void sim::laser_heating(int argc,char *argv[])
         }
         if(t%spins::update==0)
         {
-            if(VTUcount==static_cast<int>(VTUupdate))
-            {
-                if(static_cast<double>(t)*llg::dt >= VTUstart)
+            if(outVTU)
+                if(VTUcount==static_cast<int>(VTUupdate))
                 {
-                    util::outputSpinsVTU(t);
+                    if(static_cast<double>(t)*llg::dt >= VTUstart)
+                    {
+                        util::outputSpinsVTU(t);
+                    }
+                    //restart the counter
+                    VTUcount=0;
                 }
-                //restart the counter
-                VTUcount=0;
-            }
-            else
-            {
-                VTUcount++;
-            }
+                else
+                {
+                    VTUcount++;
+                }
         }
         if(opsf==true)
         {

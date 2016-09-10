@@ -16,21 +16,14 @@ exchange:
     Read_exch_method="unitcell";
     Exchfile="BiFeO3.exch";
 };
-llg:
+/*llg:
 {
     dt = 0.2e-15;
     applied = [ 0.0 , 0.0 , 0.5 ];
     update=100;
     MagnetizationCalculationMethod=0;
-    NoMagDisc=[ 5 , 5 , 5 ];
-    DiscOutputFormat="vtu";
-    OutputMagnetization=TRUE;
-    //options are
-    // - file - defined through the config file
-    // - random - randomized before start of simulation
-    SpinConfigMethod="random";
 
-};
+};*/
 cuda:
 {
     threadsperblock=256;
@@ -55,7 +48,7 @@ mvt:
 laserheating:
 {
     EquilibrationTime = 0e-12;
-    RunTime = 1.0e-12;
+    RunTime = 0.01e-12;
     InitialTemperature = 300.0;
     Cl = 4.54e1;
     PumpTime = 100e-15;
@@ -67,5 +60,4 @@ laserheating:
     PumpFluence = 25.0e15;
     NumPulses = 1;
     PulseDelays = [ 300e-15 ];
-
 };
