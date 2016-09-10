@@ -1,7 +1,7 @@
 // File: exch_determine_exchange_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 08 Sep 2016 19:23:06
+// Last-modified: 10 Sep 2016 13:38:32
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the CSR neighbourlist
@@ -232,75 +232,7 @@ namespace exch
         }
         FIXOUT(config::Info,"Max number of interactions a given spin can have is:" << maxNoSpecInt << std::endl);
     }
-    void get_exch_direct(int argc,char *argv[])
-    {
-        FIXOUT(config::Info,"Determining \"direct\" interactions" << std::endl);
-        //first read the exchange constants
-        J.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3,3);
-        for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
-        {
-            for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
-            {
-                config::printline(config::Info);
-                FIXOUT(config::Info,"Exchange interaction between species:" << s1 << " and " << s2 << std::endl);
-                std::stringstream sstr_int;
-                sstr_int << "exchange" << "_" << s1 << "_" << s2;
-                std::string str_int = sstr_int.str();
-                libconfig::Setting &exchset = exchcfg.lookup(str_int.c_str());
-                //If the interactions are "direct" then the array shell_list actually stores the total number
-                //of interactions for the interaction between species s1 and s2
-                exchset.lookupValue("Num_Interactions",shell_list(s1,s2));
-                FIXOUT(config::Info,"Reading information for:" << shell_list(s1,s2) << " interactions" << std::endl);
-                exchset.lookupValue("units",enerType);
-                for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
-                {
-                    std::stringstream evsstr;
-                    std::string evstr;
-                    evsstr << "Shell" << i+1 << "Vec";
-                    evstr=evsstr.str();
-                    //get the vector for interaction i
-                    for(unsigned int j = 0 ; j < 3 ; j++)
-                    {
-                        exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
-                    }
-                    config::Info << "Interaction " << i << " ";
-                    FIXOUTVEC(config::Info," vector:",exchvec(s1,s2,i,0),exchvec(s1,s2,i,1),exchvec(s1,s2,i,2));
-                    for(unsigned int j = 0 ; j < 3 ; j++)
-                    {
 
-                        std::stringstream Jsstr;
-                        Jsstr << "J" << i+1 << "_" << j+1;
-                        std::string Jstr;
-                        Jstr=Jsstr.str();
-                        for(unsigned int k = 0 ; k < 3 ; k++)
-                        {
-                            J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
-                            if(enerType=="mRy")
-                            {
-                                J(s1,s2,i,j,k)*=2.179872172e-18; //now to milli
-                                J(s1,s2,i,j,k)*=1.0e-3;
-                            }
-                            else if(enerType=="eV")
-                            {
-                                J(s1,s2,i,j,k)*=1.602176565e-19;
-                            }
-                            else if(enerType=="J" || enerType=="Joules" || enerType=="joules")
-                            {
-                                //do nothing
-                            }
-                            else
-                            {
-                                error::errPreamble(__FILE__,__LINE__);
-                                error::errMessage("Units of exchange energy not recognised");
-                            }
-
-                        }
-                        FIXOUTVEC(config::Info,Jstr,J(s1,s2,i,j,0),J(s1,s2,i,j,1),J(s1,s2,i,j,2));
-                    }
-                }
-            }
-        }
-    }
     void get_exch_mapint(int argc,char *argv[])
     {
         FIXOUT(config::Info,"Determining interactions from a list of integer mesh lookups" << std::endl);

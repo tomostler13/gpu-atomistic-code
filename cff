@@ -1,5 +1,5 @@
 OutputFile = "opf.dat";
-seed = 1455011540;
+Seed = 1455011540;
 system:
 {
     //number of unit cells
@@ -30,15 +30,15 @@ system:
 //rprim3 = [ 0.0 , 0.0 , 1.0 ];
 
     //do we include the dipole-dipole calculation?
-    include_dipole = FALSE;
+    Include_dipole = FALSE;
     Exchange_method="CSR";
     Dipole_method="fft";
     //if the exchange method is a sparse matrix multiplication
     //then you can specify if you have off-diagonal terms or not.
     //If not then they are ignored.
-    Off_Diagonals = FALSE;
+    Off_diagonals = FALSE;
     //Do you want to output the unit cell info to the log file?
-    log_unit_cell = TRUE;
+    Log_unit_cell = TRUE;
     Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
 };
 exchange:

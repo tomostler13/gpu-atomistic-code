@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 13 Aug 2015 14:57:33
+// Last-modified: 10 Sep 2016 13:16:38
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -44,6 +44,11 @@ namespace intmat
             std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
             exit(EXIT_FAILURE);
         }
+        if(geom::Nkset==false)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Cannot have fft method without specifying Nm");
+        }
         //For the interaction matrices we can use a 7D array to make the loops very compact
         //The first element is the species (i)
         //Second is the species (j) that species (i) is interacting with
@@ -71,8 +76,8 @@ namespace intmat
               }
               }
               std::cin.get();*/
-            //set the time limit for optimizing the plan of the FFT to 60 seconds
-            fftw_set_timelimit(60);
+            //set the time limit for optimizing the plan of the FFT to 300 seconds
+            fftw_set_timelimit(300);
             int n[3]={geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
             int *inembed=n;
             int *onembed=n;
@@ -108,7 +113,7 @@ namespace intmat
             hNkab.IFill(0);
             config::Info.width(45);config::Info << std::right << "*" << "**Interaction matrix details***" << std::endl;
             FIXOUT(config::Info,"Setting up fftw of set of 2D interaction matrices (see log):" << std::flush);
-            fftw_set_timelimit(60);
+            fftw_set_timelimit(300);
             int n[2]={geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]};
             int *inembed=n;
             int *onembed=n;

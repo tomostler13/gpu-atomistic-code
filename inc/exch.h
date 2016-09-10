@@ -1,7 +1,7 @@
 // File: exch.h
 // Author:Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 08 Sep 2016 11:55:30
+// Last-modified: 10 Sep 2016 13:38:03
 #ifndef _EXCH_H_
 #define _EXCH_H_
 #include <string>
@@ -32,7 +32,6 @@ namespace exch
 
     extern libconfig::Config exchcfg;
     void permute(int argc,char *argv[]);
-    void direct(int argc,char *argv[]);
     void mapint(int argc,char *argv[]);
     void unitcell(int argc,char *argv[]);
     void get_exch_permute(int argc,char *argv[]);

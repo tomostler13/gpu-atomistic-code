@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 08 Sep 2016 10:38:35
+// Last-modified: 10 Sep 2016 13:36:19
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -52,10 +52,6 @@ namespace exch
             {
                 permute(argc,argv);
             }//end of if(method=="permute") statement
-            else if(method=="direct" && rem==false)
-            {
-                direct(argc,argv);
-            }
             else if(method=="mapint" && rem==false)
             {
                 mapint(argc,argv);
