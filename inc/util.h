@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 10 Sep 2016 18:35:59
+// Last-modified: 10 Sep 2016 19:07:28
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -99,7 +99,7 @@ namespace util
         {
             T sum = data[0];
             T c = (T)0.0;
-            for (int i = 1; i < size; i++)
+            for (unsigned int i = 1; i < size; i++)
             {
                 T y = data[i] - c;
                 T t = sum + y;

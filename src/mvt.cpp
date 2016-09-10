@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 10 Sep 2016 18:39:28
+// Last-modified: 10 Sep 2016 19:05:37
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -137,7 +137,7 @@ void sim::MvT(int argc,char *argv[])
 
     //Output VTU files? Two options exist 1) regularly outputting the spin configuration at given intervals, or 2) outputting at the end for each temperature. The default is 2.
     bool outVTU=false;
-    int outVTUtype=2,outVTUfreq=1;
+    unsigned int outVTUtype=2,outVTUfreq=1;
     if(!setting.lookupValue("OutputSpinsVTU",outVTU))
     {
         error::errWarnPreamble(__FILE__,__LINE__);
@@ -184,8 +184,11 @@ void sim::MvT(int argc,char *argv[])
         //temperature loop
         for(double T = lT ; T < uT ; T+=dT)
         {
-            double modm[geom::ucm.GetNMS()],oldmean[geom::ucm.GetNMS()];
-            bool convTF[geom::ucm.GetNMS()];
+            double *modm=NULL,*oldmean=NULL;
+            modm = new double[geom::ucm.GetNMS()];
+            oldmean = new double[geom::ucm.GetNMS()];
+            bool *convTF=NULL;
+            convTF = new bool[geom::ucm.GetNMS()];
             config::printline(config::Info);
             FIXOUT(config::Info,"Converging temperature:" << T << std::endl);
             llg::T=T;
@@ -274,6 +277,36 @@ void sim::MvT(int argc,char *argv[])
 
             FIXOUT(config::Info,"Converged?" << config::isTF(allconv) << std::endl);
             util::ofs << std::endl << std::endl;
+            try
+            {
+                delete [] oldmean;
+                oldmean=NULL;
+            }
+            catch(...)
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not delete array oldmean");
+            }
+            try
+            {
+                delete [] convTF;
+                convTF=NULL;
+            }
+            catch(...)
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not delete array convTF");
+            }
+            try
+            {
+                delete [] modm;
+                modm=NULL;
+            }
+            catch(...)
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not delete array modm");
+            }
         }
     }
     if(dT<0.0)
@@ -281,8 +314,11 @@ void sim::MvT(int argc,char *argv[])
         //temperature loop
         for(double T = uT ; T > lT ; T+=dT)
         {
-            double modm[geom::ucm.GetNMS()],oldmean[geom::ucm.GetNMS()];
-            bool convTF[geom::ucm.GetNMS()];
+            double *modm=NULL,*oldmean=NULL;
+            modm = new double[geom::ucm.GetNMS()];
+            oldmean = new double[geom::ucm.GetNMS()];
+            bool *convTF=NULL;
+            convTF = new bool[geom::ucm.GetNMS()];
             config::printline(config::Info);
             FIXOUT(config::Info,"Converging temperature:" << T << std::endl);
             llg::T=T;
@@ -372,6 +408,36 @@ void sim::MvT(int argc,char *argv[])
 
             FIXOUT(config::Info,"Converged?" << config::isTF(allconv) << std::endl);
             util::ofs << std::endl << std::endl;
+            try
+            {
+                delete [] oldmean;
+                oldmean=NULL;
+            }
+            catch(...)
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not delete array oldmean");
+            }
+            try
+            {
+                delete [] convTF;
+                convTF=NULL;
+            }
+            catch(...)
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not delete array convTF");
+            }
+            try
+            {
+                delete [] modm;
+                modm=NULL;
+            }
+            catch(...)
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not delete array modm");
+            }
         }
     }
     ofs.close();

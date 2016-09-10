@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Sep 2016 18:50:55
+// Last-modified: 10 Sep 2016 19:01:35
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -286,6 +286,16 @@ namespace geom
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errWarning("Could not close structure files.");
+        }
+        try
+        {
+            delete [] spec_counter;
+            spec_counter=NULL;
+        }
+        catch(...)
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Failed to delete spec_counter array");
         }
     }
 }

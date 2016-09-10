@@ -1,7 +1,7 @@
 //File matrix_conv.cpp
 // Author: Tom Ostler
 // Created: 07 Oct 2014
-// Last-modified: 15 Jun 2016 11:31:33
+// Last-modified: 10 Sep 2016 19:10:45
 // The routines within this file convert a 2D matrix to
 // a number of formats depending on the routine used. The
 // return structures depend on the storage format
@@ -93,14 +93,14 @@ namespace matconv
             }
 
             int iloop=istart,jloop=jstart;
-            for(unsigned int j = 0 ; j < num_elem ; j++)
+            for(int j = 0 ; j < num_elem ; j++)
             {
                 //starting value of CSR to lookup
                 unsigned int start=xadj[iloop],end=xadj[iloop+1];
                 for(unsigned int k = start ; k < end ; k++)
                 {
                     //now need to determine if k is on our diagonal
-                    if(adjncy[k]==jloop)
+                    if(adjncy[k]==static_cast<unsigned int>(jloop))
                     {
                         //then we have found a neighbour that is on our diagonal
                         if(diag<0)
@@ -197,14 +197,14 @@ namespace matconv
             }
 
             int iloop=istart,jloop=jstart;
-            for(unsigned int j = 0 ; j < num_elem ; j++)
+            for(unsigned int j = 0 ; j < static_cast<unsigned int>(num_elem) ; j++)
             {
                 //starting value of CSR to lookup
                 unsigned int start=xadj[iloop],end=xadj[iloop+1];
                 for(unsigned int k = start ; k < end ; k++)
                 {
                     //now need to determine if k is on our diagonal
-                    if(adjncy[k]==jloop)
+                    if(adjncy[k]==static_cast<unsigned int>(jloop))
                     {
                         //then we have found a neighbour that is on our diagonal
                         if(diag<0)
@@ -303,7 +303,7 @@ namespace matconv
             int iloop=istart,jloop=jstart;
 
             double abs_J=0.0;
-            for(unsigned int j = 0 ; j < num_elem ; j++)
+            for(unsigned int j = 0 ; j < static_cast<unsigned int>(num_elem) ; j++)
             {
                 abs_J+=(fabs(JMat(iloop,jloop,0,0))+fabs(JMat(iloop,jloop,1,1))+fabs(JMat(iloop,jloop,2,2)));
                 iloop++;
@@ -352,7 +352,7 @@ namespace matconv
 
 
             double abs_J=0.0;
-            for(unsigned int j = 0 ; j < num_elem ; j++)
+            for(unsigned int j = 0 ; j < static_cast<unsigned int>(num_elem) ; j++)
             {
 
                 abs_J+=(fabs(JMat(iloop,jloop,0,0))+fabs(JMat(iloop,jloop,1,1))+fabs(JMat(iloop,jloop,2,2)));
@@ -437,7 +437,7 @@ namespace matconv
 
             double abs_J=0.0;
             double abs_offJ=0.0;
-            for(unsigned int j = 0 ; j < num_elem ; j++)
+            for(unsigned int j = 0 ; j < static_cast<unsigned int>(num_elem) ; j++)
             {
                 abs_J+=fabs(JMat(iloop,jloop,0,0))+fabs(JMat(iloop,jloop,1,1))+fabs(JMat(iloop,jloop,2,2));
                 abs_offJ+=fabs(JMat(iloop,jloop,0,1))+fabs(JMat(iloop,jloop,0,2))+fabs(JMat(iloop,jloop,1,0))+fabs(JMat(iloop,jloop,1,2))+fabs(JMat(iloop,jloop,2,0))+fabs(JMat(iloop,jloop,2,1));
@@ -508,7 +508,7 @@ namespace matconv
 
             double abs_J=0.0;
             double abs_offJ=0.0;
-            for(unsigned int j = 0 ; j < num_elem ; j++)
+            for(unsigned int j = 0 ; j < static_cast<unsigned int>(num_elem) ; j++)
             {
 
                 abs_J+=fabs(JMat(iloop,jloop,0,0))+fabs(JMat(iloop,jloop,1,1))+fabs(JMat(iloop,jloop,2,2));
@@ -520,7 +520,7 @@ namespace matconv
             {
                 iloop=istart;
                 jloop=jstart;
-                for(unsigned int j = 0 ; j < num_elem ; j++)
+                for(unsigned int j = 0 ; j < static_cast<unsigned int>(num_elem) ; j++)
                 {
                     if(i<0)
                     {
@@ -544,7 +544,7 @@ namespace matconv
             {
                 iloop=istart;
                 jloop=jstart;
-                for(unsigned int j = 0 ; j < num_elem ; j++)
+                for(unsigned int j = 0 ; j < static_cast<unsigned int>(num_elem) ; j++)
                 {
                     if(i<0)
                     {

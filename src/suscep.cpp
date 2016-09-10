@@ -1,7 +1,7 @@
 // File: suscep.h
 // Author: Tom Ostler
 // Created: 25 Jan 2013
-// Last-modified: 24 Sep 2014 14:59:34
+// Last-modified: 10 Sep 2016 19:06:44
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -85,11 +85,11 @@ void sim::suscep(int argc,char *argv[])
 				const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
 				const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
 				const double modm=sqrt(mx*mx+my*my+mz*mz);
-				if(t>int(25e-12/llg::dt))
+				if(t>static_cast<unsigned int>(25e-12/llg::dt))
 				{
 					MS.Push(modm);
 					config::Info.width(15);config::Info << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS.Mean()-oldmean) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Variance() << " [ " << convvar << " ]|" << std::endl;
-					if(((fabs(MS.Mean()-oldmean)) < convmean) && (MS.Variance()<convvar) && t > int(75e-12/llg::dt))
+					if(((fabs(MS.Mean()-oldmean)) < convmean) && (MS.Variance()<convvar) && t > static_cast<unsigned int>(75e-12/llg::dt))
 					{
 						ofs << T << "\t" << modm << std::endl;
 						convTF=true;

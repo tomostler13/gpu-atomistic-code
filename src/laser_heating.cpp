@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 10 Sep 2016 17:26:28
+// Last-modified: 10 Sep 2016 19:14:09
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -200,7 +200,16 @@ void sim::laser_heating(int argc,char *argv[])
         error::errMessage("Could not read the number of pulses (laserheating:NumPulses (unsigned int))");
     }
     llg::T=initT;
-    double pulse_delays[num_pulses];
+    double *pulse_delays=NULL;
+    try
+    {
+        pulse_delays = new double[num_pulses];
+    }
+    catch(...)
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not malloc pulse_delays array");
+    }
     FIXOUT(config::Info,"Pulse delays:"<< "[ " << std::flush);
     for(unsigned int i = 0 ; i < num_pulses ; i++)
     {
@@ -222,7 +231,7 @@ void sim::laser_heating(int argc,char *argv[])
         }
     }
     config::Info << pulse_delays[num_pulses-1] << " ]" << std::endl;
-    double pulse_scale[num_pulses];
+    double *pulse_scale=new double [num_pulses];
     bool scale_pulses=false;
     if(setting.lookupValue("ScalePulses",scale_pulses))
     {
@@ -765,6 +774,24 @@ void sim::laser_heating(int argc,char *argv[])
                 error::errWarning("Could not delete at least one of the species dependent info or data k-vec files.");
             }
         }
+    }
+    try
+    {
+        delete [] pulse_delays;
+    }
+    catch(...)
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not deallocate pulse_delays array.");
+    }
+    try
+    {
+        delete [] pulse_scale;
+    }
+    catch(...)
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not deallocate pulse_scale array.");
     }
 }
 

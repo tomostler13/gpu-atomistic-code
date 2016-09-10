@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 23 Jun 2016 16:22:36
+// Last-modified: 10 Sep 2016 18:59:46
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -401,14 +401,14 @@ namespace spins
             }
             for(unsigned int spin = 0 ; spin < geom::nspins ; spin++)
             {
-                if(initm[i]=="uniformz" && geom::lu(spin,3)==i)
+                if(initm[i]=="uniformz" && geom::lu(spin,3)==static_cast<int>(i))
                 {
                     spins::Sx[spin]=0;
                     spins::Sy[spin]=0;
                     spins::Sz[spin]=1.0;
 //                    std::cout << "Spin " << spin << " is species " << i << std::endl;
                 }
-                else if(initm[i]=="chequer" && geom::lu(spin,3)==i)
+                else if(initm[i]=="chequer" && geom::lu(spin,3)==static_cast<int>(i))
                 {
 //                    std::cout << "Spin " << spin << " is species " << i << std::endl;
                     int mycoords[3]={static_cast<int>(static_cast<double>(geom::lu(spin,0))*chequergridscale[0]+0.5),static_cast<int>(static_cast<double>(geom::lu(spin,1))*chequergridscale[1]+0.5),static_cast<int>(static_cast<double>(geom::lu(spin,2))*chequergridscale[2]+0.5)};
