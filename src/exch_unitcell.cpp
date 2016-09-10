@@ -1,7 +1,7 @@
 // File: exch_unitcell.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 10 Sep 2016 14:15:50
+// Last-modified: 10 Sep 2016 19:19:19
 // This routine determines the exchange matrix for the unitcell method
 #include "../inc/arrays.h"
 #include "../inc/error.h"
@@ -349,6 +349,22 @@ namespace exch
                     }
                     //std::cout << "Unit Cell Lookup " << lookupvec[0] << "\t" << lookupvec[1] << "\t" << lookupvec[2] << std::endl;
 
+                    //check the neighbouring spin is not greater than the interaction range
+                    const double ci[3]={geom::rx[i],geom::ry[i],geom::rz[i]};
+                    double cj[3]={0.0,0.0,0.0};
+                    double xred[3]={geom::ucm.GetXred(s1,0),geom::ucm.GetXred(s1,1),geom::ucm.GetXred(s1,2)};
+                    cj[0]=(xred[0]+static_cast<double>(cluv[0]))*geom::rprim(0,0)+(xred[1]+static_cast<double>(cluv[1]))*geom::rprim(1,0)+(xred[2]+static_cast<double>(cluv[2]))*geom::rprim(2,0);
+                    cj[1]=(xred[0]+static_cast<double>(cluv[0]))*geom::rprim(0,1)+(xred[1]+static_cast<double>(cluv[1]))*geom::rprim(1,1)+(xred[2]+static_cast<double>(cluv[2]))*geom::rprim(2,1);
+                    cj[2]=(xred[0]+static_cast<double>(cluv[0]))*geom::rprim(0,2)+(xred[1]+static_cast<double>(cluv[1]))*geom::rprim(1,2)+(xred[2]+static_cast<double>(cluv[2]))*geom::rprim(2,2);
+                    const double dist=sqrt((ci[0]-cj[0])*(ci[0]-cj[0])+(ci[1]-cj[1])*(ci[1]-cj[1])+(ci[2]-cj[2])*(ci[2]-cj[2]));
+                    if(cutexch)
+                    {
+                        if(dist>rcut/1e-10)
+                        {
+                            check_lookup=0;
+                        }
+                    }
+
                     //std::cin.get();
                     if(check_lookup==3)
                     {
@@ -382,16 +398,6 @@ namespace exch
                         }
                         if(outputJ)
                         {
-                            const double ci[3]={geom::rx[i],geom::ry[i],geom::rz[i]};
-                            double cj[3]={0.0,0.0,0.0};
-                            double realpos[3]={0,0,0};
-                            double xred[3]={geom::ucm.GetXred(s1,0),geom::ucm.GetXred(s1,1),geom::ucm.GetXred(s1,2)};
-                            //std::cout << xred[0] << "\t" << xred[1] << "\t" << xred[2] << std::endl;
-                            //std::cout << xredi[0] << "\t" << xredi[1] << "\t" << xredi[2] << std::endl;
-                            cj[0]=(xred[0]+static_cast<double>(cluv[0]))*geom::rprim(0,0)+(xred[1]+static_cast<double>(cluv[1]))*geom::rprim(1,0)+(xred[2]+static_cast<double>(cluv[2]))*geom::rprim(2,0);
-                            cj[1]=(xred[0]+static_cast<double>(cluv[0]))*geom::rprim(0,1)+(xred[1]+static_cast<double>(cluv[1]))*geom::rprim(1,1)+(xred[2]+static_cast<double>(cluv[2]))*geom::rprim(2,1);
-                            cj[2]=(xred[0]+static_cast<double>(cluv[0]))*geom::rprim(0,2)+(xred[1]+static_cast<double>(cluv[1]))*geom::rprim(1,2)+(xred[2]+static_cast<double>(cluv[2]))*geom::rprim(2,2);
-                            const double dist=sqrt((ci[0]-cj[0])*(ci[0]-cj[0])+(ci[1]-cj[1])*(ci[1]-cj[1])+(ci[2]-cj[2])*(ci[2]-cj[2]));
                             opJ << i << "\t" << neighid << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << ci[0] << "," << ci[1] << "," << ci[2] << " ] -> [ " << cj[0] << "," << cj[1] << "," << cj[2] << " ]" << "\t" << dist << std::endl;
                         }
                     }

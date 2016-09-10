@@ -1,7 +1,7 @@
 // File: ramp_field.cpp
 // Author: Tom Ostler
 // Created: 13 May 2015
-// Last-modified: 24 Aug 2015 13:59:40
+// Last-modified: 10 Sep 2016 19:16:27
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -273,7 +273,8 @@ void sim::ramp_field(int argc,char *argv[])
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errWarning("Could not open file for outputting the final config file. The code will now attempt to output a vtu file that contains the information. This will have to be post processed.");
-            util::outputSpinsVTU(-1);
+            unsigned int temp=-1;
+            util::outputSpinsVTU(temp);
         }
         finalucf << geom::ucm.GetNMS() << std::endl;
         finalucf << geom::ucm.NumAtomsUnitCell() << std::endl;
