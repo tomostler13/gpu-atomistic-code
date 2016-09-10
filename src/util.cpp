@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Sep 2016 18:36:34
+// Last-modified: 10 Sep 2016 18:54:32
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -174,14 +174,14 @@ namespace util
     }
     void fillfloat(int size0,int size1,int size2,Array3D<fftw_complex> da,Array3D<fftwf_complex> fa)
     {
-        for(unsigned int i = 0 ; i < size0 ; i++)
+        for(int i = 0 ; i < size0 ; i++)
         {
-            for(unsigned int j = 0 ; j < size1 ; j++)
+            for(int j = 0 ; j < size1 ; j++)
             {
-                for(unsigned int k = 0 ; k < size2 ; k++)
+                for(int k = 0 ; k < size2 ; k++)
                 {
-                    fa(i,j,k)[0]=float(da(i,j,k)[0]);
-                    fa(i,j,k)[1]=float(da(i,j,k)[1]);
+                    fa(i,j,k)[0]=static_cast<float>(da(i,j,k)[0]);
+                    fa(i,j,k)[1]=static_cast<float>(da(i,j,k)[1]);
                 }
             }
         }

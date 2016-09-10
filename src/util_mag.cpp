@@ -1,7 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 09 Feb 2016 09:30:41
+// Last-modified: 10 Sep 2016 18:56:57
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
@@ -443,9 +443,9 @@ namespace util
                 int cx=static_cast<int>(static_cast<double>(kx)/static_cast<double>(magDiscSize[0]));
                 int cy=static_cast<int>(static_cast<double>(ky)/static_cast<double>(magDiscSize[1]));
                 int cz=static_cast<int>(static_cast<double>(kz)/static_cast<double>(magDiscSize[2]));
-                if(cx>maxcx){maxcx=cx;}
-                if(cy>maxcy){maxcy=cy;}
-                if(cz>maxcz){maxcz=cz;}
+                if(cx>static_cast<int>(maxcx)){maxcx=cx;}
+                if(cy>static_cast<int>(maxcy)){maxcy=cy;}
+                if(cz>static_cast<int>(maxcz)){maxcz=cz;}
             }
             magdisc.resize(maxcx+1,maxcy+1,maxcz+1,3);
             magdisc.IFill(0);

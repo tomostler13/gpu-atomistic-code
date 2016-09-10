@@ -1,7 +1,7 @@
 // File: sim.cpp
 // Author:Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 10 Sep 2016 18:47:39
+// Last-modified: 10 Sep 2016 18:51:37
 #include "../inc/config.h"
 #include "../inc/sim.h"
 #include "../inc/geom.h"
@@ -37,13 +37,13 @@ namespace sim
             std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
             exit(EXIT_FAILURE);
         }
-        if(!config::cfg.exists("sim")
+        if(!config::cfg.exists("sim"))
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Setting sim does not exist. It is required.");
         }
         libconfig::Setting &setting = config::cfg.lookup("sim");
-        if(!setting.lookupValue("sim_type",sim_type)0
+        if(!setting.lookupValue("sim_type",sim_type))
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Error reading simulation type (sim.sim_type (string)). Options are mvt, laserheating");

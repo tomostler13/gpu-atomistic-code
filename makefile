@@ -3,7 +3,7 @@ SHELL:=/bin/bash
 HOSTNAME=$(shell hostname)
 OPT_LEVEL=-O3
 GITINFO=-DGIT_SHA1='"$(shell git rev-parse HEAD)"' -DGITDIRTY='"$(shell git status -s | grep -v ? | wc -l)"'
-GCC=g++ -g -Wsign-compare $(OPTLEVEL)  -DCOMP='"GNU C++ Compiler $(shell g++ --version | head -n 1 | cut -b 5-)"' -DHOSTNAME='"$(shell hostname)"' ${GITINFO}
+GCC=g++ -g -Wsign-compare -pedantic -Werror -Wfatal-errors $(OPTLEVEL)  -DCOMP='"GNU C++ Compiler $(shell g++ --version | head -n 1 | cut -b 5-)"' -DHOSTNAME='"$(shell hostname)"' ${GITINFO}
 NVCC=nvcc -g $(OPTLEVEL) -DCOMP='"NVIDIA C++ Compiler $(shell nvcc --version | tail -n 2 | head -n 1)"' -DHOSTNAME='"$(shell hostname)"' ${GITINFO}
 export LANG=C
 export LC_ALL=C

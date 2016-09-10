@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 10 Sep 2016 16:36:27
+// Last-modified: 10 Sep 2016 18:58:24
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -260,7 +260,7 @@ namespace intmat
                                     //The interaction matrix must be wrapped around for a C-array format
                                     for(unsigned int l = 0 ; l < 3 ; l++)
                                     {
-                                        if(lc[l]>geom::dim[l]*geom::Nk[l])
+                                        if(static_cast<unsigned int>(lc[l])>geom::dim[l]*geom::Nk[l])
                                         {
                                             lc[l]=geom::dim[l]*geom::Nk[l]-lc[l];
                                             tc[l]=geom::zpdim[l]*geom::Nk[l]+lc[l];
@@ -330,7 +330,7 @@ namespace intmat
                             //The interaction matrix must be wrapped around for a C-array format
                             for(unsigned int l = 0 ; l < 3 ; l++)
                             {
-                                if(lc[l]>geom::dim[l]*geom::Nk[l])
+                                if(static_cast<unsigned int>(lc[l])>geom::dim[l]*geom::Nk[l])
                                 {
                                     lc[l]=geom::dim[l]*geom::Nk[l]-lc[l];
                                     tc[l]=geom::zpdim[l]*geom::Nk[l]+lc[l];

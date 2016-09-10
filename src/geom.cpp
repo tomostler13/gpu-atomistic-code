@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Sep 2016 17:21:48
+// Last-modified: 10 Sep 2016 18:50:55
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -189,7 +189,8 @@ namespace geom
         }
         unsigned int atom_counter=0;
         //for counting the number of species
-        unsigned int spec_counter[ucm.GetNMS()];
+        unsigned int *spec_counter=NULL;
+        spec_counter=new unsigned int[ucm.GetNMS()];
         for(unsigned int i = 0 ; i < ucm.GetNMS() ; i++)
         {
             spec_counter[i]=0;
