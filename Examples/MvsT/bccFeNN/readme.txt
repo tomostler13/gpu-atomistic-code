@@ -7,3 +7,10 @@ needed are:
 
 The damping in the unit cell file should be set to 1.0 (critical damping) so
 that the magnetisation relaxes to it's equilibrium quickly.
+
+For the three simple ferromagnetic structures (sc, bcc and fcc) the Curie
+temperature should follow the following relations.
+
+sc - 1.44*Jij = kB*Tc
+bcc - 2.05*Jij = kB*Tc
+fcc - 3.18*Jij = kB*Tc
