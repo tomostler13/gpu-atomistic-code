@@ -1,7 +1,7 @@
 // File: exch_determine_exchange_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 10 Sep 2016 16:02:07
+// Last-modified: 11 Sep 2016 14:02:36
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the CSR neighbourlist
@@ -79,7 +79,7 @@ namespace exch
                         {
                             error::errPreamble(__FILE__,__LINE__);
                             std::stringstream errsstr;
-                            errsstr << "Could not read vector for interaction number, " << i+1 << " check your exchange file.";
+                            errsstr << "Could not read vector for interaction number, (between " << s1 << " and " << s2 << ") " << i+1 << " check your exchange file.";
                             std::string errstr=errsstr.str();
                             error::errMessage(errstr);
                         }

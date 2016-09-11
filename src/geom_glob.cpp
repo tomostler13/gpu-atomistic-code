@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 10 Sep 2016 16:49:42
+// Last-modified: 11 Sep 2016 12:54:07
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -125,7 +125,7 @@ namespace geom
             {
                 Nkset=true;
             }
-            if(config::exchmeth=="fft" || config::dipmeth=="fft")
+            if((config::exchmeth=="fft" && Nkset==false) || (config::dipmeth=="fft" && Nkset==false))
             {
                 error::errPreamble(__FILE__,__LINE__);
                 error::errMessage("To use the fft method you must specify the number of mesh points. (Nm)");
@@ -188,16 +188,11 @@ namespace geom
             }
             FIXOUTVEC(config::Info,str.c_str(),rprim(i,0),rprim(i,1),rprim(i,2));
         }
-        if(Nkset && rprimset)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("Cannot currently set Nm and rprim");
-        }
-        if(rprimset && config::exchmeth=="fft")
+/*        if(rprimset && config::exchmeth=="fft")
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Setting rprim is only currently compatible with the use of a sparse matrix multiplication for the exchange calculation (system.Exchange_method (string) equal to CSR or DIA).");
-        }
+        }*/
 
         FIXOUT(config::Info,"Unit cell information file:" << ucf << std::endl);
         //stream for reading unit cell file
@@ -235,10 +230,19 @@ namespace geom
 
             //get the position of this atom in the unit cell
             double c[3]={0,0,0};
+            //If Nkset is true then we can put the moments on a mesh
+            //which is specified in the unit cell file
+            int mp[3]={0,0,0};
             ucfi >> c[0] >> c[1] >> c[2];
+            if(Nkset)
+            {
+                ucfi >> mp[0] >> mp[1] >> mp[2];
+                ucm.SetMP(mp[0],mp[1],mp[2],i);
+                //set the position vector
+                ucm.SetMP(static_cast<unsigned int>(c[0]*Nk[0]+0.5),static_cast<unsigned int>(c[1]*Nk[1]+0.5),static_cast<unsigned int>(c[2]*Nk[2]+0.5),i);
+
+            }
             ucm.SetXred(c[0],c[1],c[2],i);
-            //set the position vector
-            ucm.SetPosVec(static_cast<unsigned int>(c[0]*Nk[0]+0.5),static_cast<unsigned int>(c[1]*Nk[1]+0.5),static_cast<unsigned int>(c[2]*Nk[2]+0.5),i);
 
             double temp=0.0;//this is going to hold mu, lambda and gamma so we call it temp
             //set the magnetic moment

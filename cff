@@ -2,13 +2,15 @@ Seed = 123123123;
 system:
 {
     //number of unit cells
-    dim = [ 30 , 30 , 30 ];
+    dim = [ 5 , 5 , 5 ];
+    Nm = [ 2 , 2 , 2 ];
     Unitcellfile="FeOnly_Conv.ucf";
     abc = [ 5.722e-10 , 5.722e-10 , 5.722e-10 ];
     rprim1 = [ 5.6883853177e-1 , 0.0000000000 , 8.2244922322e-1  ];
     rprim2 = [ -2.8441926588e-1 , 4.9262861916e-1 ,  8.2244922322e-1 ];
     rprim3 = [ -2.8441926588e-1 , -4.9262861916e-1 , 8.2244922322e-1 ];
     Include_dipole = FALSE;
+    Exchange_method="CSR";
     Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
 };
 exchange:
@@ -24,6 +26,11 @@ exchange:
     MagnetizationCalculationMethod=0;
 
 };*/
+sf:
+{
+    Calculate=TRUE;
+    InputFile="sf.in";
+};
 cuda:
 {
     threadsperblock=256;
@@ -55,4 +62,8 @@ laserheating:
     PumpFluence = 25.0e15;
     NumPulses = 1;
     PulseDelays = [ 300e-15 ];
+};
+timeseries:
+{
+    Temperature=1.0;
 };

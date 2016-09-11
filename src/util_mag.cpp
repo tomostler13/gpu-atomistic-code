@@ -1,7 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 10 Sep 2016 18:56:57
+// Last-modified: 11 Sep 2016 12:49:46
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
@@ -48,6 +48,7 @@ namespace util
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
             {
                 unsigned int sl = geom::sublattice[i];
+
                 spins::mag(sl,0)+=spins::Sx[i];
                 spins::mag(sl,1)+=spins::Sy[i];
                 spins::mag(sl,2)+=spins::Sz[i];

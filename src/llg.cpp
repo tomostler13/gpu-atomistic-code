@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 10 Sep 2016 17:54:15
+// Last-modified: 11 Sep 2016 12:40:34
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -264,12 +264,8 @@ namespace llg
         {
             std::stringstream sstr,sstr1;
             std::string str=sstr.str();
-            if(geom::logunit)
-            {
-                sstr << "Sigma prefactor for unit cell atom " << i << ":";
-                sstr1 << "Prefactor for LLG for unit cell atom " << i << ":";
-            }
-
+            sstr << "Sigma prefactor for unit cell atom " << i << ":";
+            sstr1 << "Prefactor for LLG for unit cell atom " << i << ":";
             geom::ucm.SetSigma(i,sqrt(2.0*kB*geom::ucm.GetDamping(i)/(geom::ucm.GetMu(i)*muB*dt*geom::ucm.GetGamma(i)*gyro)));
             geom::ucm.Setllgpf(i,-1./(1.0+geom::ucm.GetDamping(i)*geom::ucm.GetDamping(i)));
 

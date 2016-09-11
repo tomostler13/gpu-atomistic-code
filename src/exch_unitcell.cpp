@@ -1,7 +1,7 @@
 // File: exch_unitcell.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 10 Sep 2016 20:04:21
+// Last-modified: 11 Sep 2016 14:29:37
 // This routine determines the exchange matrix for the unitcell method
 #include "../inc/arrays.h"
 #include "../inc/error.h"
@@ -327,7 +327,8 @@ namespace exch
                     {
                         lookup[2]=static_cast<int>(exchvec(aiuc,s1,shell,2)+0.5);
                     }
-                    //std::cout << "Unit Cell Lookup (before)" << lookup[0] << "\t" << lookup[1] << "\t" << lookup[2] << std::endl;
+                    //std::cout << "Unit Cell Lookup (before) " << lookup[0] << "\t" << lookup[1] << "\t" << lookup[2] << std::endl;
+                    //std::cout << "Input: " << exchvec(aiuc,s1,shell,0) << "\t"<< exchvec(aiuc,s1,shell,1) << "\t" << exchvec(aiuc,s1,shell,2) << std::endl;
                     int lookupvec[3]={lookup[0]+ucc[0],lookup[1]+ucc[1],lookup[2]+ucc[2]};
                     int cluv[3]={lookupvec[0],lookupvec[1],lookupvec[2]};
                     unsigned int check_lookup=0;
@@ -349,6 +350,7 @@ namespace exch
                         }
                     }
                     //std::cout << "Unit Cell Lookup " << lookupvec[0] << "\t" << lookupvec[1] << "\t" << lookupvec[2] << std::endl;
+                    //std::cin.get();
 
                     //check the neighbouring spin is not greater than the interaction range
                     const double ci[3]={geom::rx[i],geom::ry[i],geom::rz[i]};

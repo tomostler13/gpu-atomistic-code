@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Sep 2016 19:01:35
+// Last-modified: 11 Sep 2016 14:18:38
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -37,29 +37,33 @@ namespace geom
         mu.resize(nspins);gamma.resize(nspins);lambda.resize(nspins);sigma.resize(nspins);llgpf.resize(nspins);rx.resize(nspins);ry.resize(nspins);rz.resize(nspins);sublattice.resize(nspins);
         //resize the anisotropy arrays
         anis::k1u.resize(nspins);anis::k1udir.resize(nspins,3);
-        FIXOUTVEC(config::Info,"Number of mesh-points:",Nk[0],Nk[1],Nk[2]);
+
         FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
-        //For real to complex (or c2r) transforms we can save computation
-        //by exploiting half dim size of this type of transform
-        cplxdim=(dim[2]*Nk[2])+1;
-
-        //The total number of elements involved in the 3D transform
-        czps=zpdim[0]*Nk[0]*zpdim[1]*Nk[1]*cplxdim;
-        FIXOUT(config::Info,"czps:" << czps << std::endl);
-        FIXOUT(config::Info,"Z-dimension for r2c and c2r transforms:" << cplxdim << std::endl);
-
-        //Calculate the size of the real space zero padded array
-        zps=1;
-        for(unsigned int i = 0 ; i < 3 ; i++)
+        if(Nkset)
         {
-            zps*=(2*dim[i]*Nk[i]);
+            FIXOUTVEC(config::Info,"Number of mesh-points:",Nk[0],Nk[1],Nk[2]);
+            //For real to complex (or c2r) transforms we can save computation
+            //by exploiting half dim size of this type of transform
+            cplxdim=(dim[2]*Nk[2])+1;
+
+            //The total number of elements involved in the 3D transform
+            czps=zpdim[0]*Nk[0]*zpdim[1]*Nk[1]*cplxdim;
+            FIXOUT(config::Info,"czps:" << czps << std::endl);
+            FIXOUT(config::Info,"Z-dimension for r2c and c2r transforms:" << cplxdim << std::endl);
+
+            //Calculate the size of the real space zero padded array
+            zps=1;
+            for(unsigned int i = 0 ; i < 3 ; i++)
+            {
+                zps*=(2*dim[i]*Nk[i]);
+            }
+            //The point of this array is to number each mesh-point and assign it a value on the mesh-point
+            //mesh. The reason is so that when we do the convolution on the GPU we can look up the
+            //correct array elements
+            zplu.resize(zps,3);
+            FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
         }
-        //The point of this array is to number each mesh-point and assign it a value on the mesh-point
-        //mesh. The reason is so that when we do the convolution on the GPU we can look up the
-        //correct array elements
-        zplu.resize(zps,3);
         FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
-        FIXOUT(config::Info,"Zero pad size:" << zps << std::endl);
         //Next we want to output the information stored in the class to an output file.
         //If the number of atoms in the unit cell is large (usually when we are using a bit supercell)
         //the we don't want to mess up the format of the output file as it would make it unreadable if
@@ -91,8 +95,7 @@ namespace geom
                 if(Nkset)
                 {
 
-                    FIXOUTVEC(config::Info,"Positions [real space]:",ucm.GetCoord(i,0)/static_cast<double>(Nk[0]),ucm.GetCoord(i,1)/static_cast<double>(Nk[1]),ucm.GetCoord(i,2)/static_cast<double>(Nk[2]));
-                    FIXOUTVEC(config::Info,"Positions [k-lattice]:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
+                    FIXOUTVEC(config::Info,"Positions [mesh]:",ucm.GetMP(i,0),ucm.GetMP(i,1),ucm.GetMP(i,2));
                 }
                 FIXOUT(config::Info,"Part of sublattice:" << ucm.GetSublattice(i) << std::endl);
                 FIXOUT(config::Info,"Damping:" << ucm.GetDamping(i) << std::endl);
@@ -120,8 +123,8 @@ namespace geom
                 if(Nkset)
                 {
 
-                    FIXOUTVEC(config::Info,"Positions [real space]:",ucm.GetCoord(i,0)/static_cast<double>(Nk[0]),ucm.GetCoord(i,1)/static_cast<double>(Nk[1]),ucm.GetCoord(i,2)/static_cast<double>(Nk[2]));
-                    FIXOUTVEC(config::Info,"Positions [k-lattice]:",ucm.GetCoord(i,0),ucm.GetCoord(i,1),ucm.GetCoord(i,2));
+//                    FIXOUTVEC(config::Info,"Positions [real space]:",ucm.GetCoord(i,0)/static_cast<double>(Nk[0]),ucm.GetCoord(i,1)/static_cast<double>(Nk[1]),ucm.GetCoord(i,2)/static_cast<double>(Nk[2]));
+                    FIXOUTVEC(config::Info,"Positions [k-lattice]:",ucm.GetMP(i,0),ucm.GetMP(i,1),ucm.GetMP(i,2));
                 }
                 FIXOUT(config::Log,"Part of sublattice:" << ucm.GetSublattice(i) << std::endl);
                 FIXOUT(config::Log,"Damping:" << ucm.GetDamping(i) << std::endl);
@@ -207,11 +210,11 @@ namespace geom
                         double ri[3]={0,0,0};
                         if(Nkset)
                         {
-                            coords(i*Nk[0]+ucm.GetCoord(t,0),j*Nk[1]+ucm.GetCoord(t,1),k*Nk[2]+ucm.GetCoord(t,2),0)=atom_counter;
-                            coords(i*Nk[0]+ucm.GetCoord(t,0),j*Nk[1]+ucm.GetCoord(t,1),k*Nk[2]+ucm.GetCoord(t,2),1)=ucm.GetSublattice(t);
-                            lu(atom_counter,0)=i*Nk[0]+ucm.GetCoord(t,0);
-                            lu(atom_counter,1)=j*Nk[1]+ucm.GetCoord(t,1);
-                            lu(atom_counter,2)=k*Nk[2]+ucm.GetCoord(t,2);
+                            coords(i*Nk[0]+ucm.GetMP(t,0),j*Nk[1]+ucm.GetMP(t,1),k*Nk[2]+ucm.GetMP(t,2),0)=atom_counter;
+                            coords(i*Nk[0]+ucm.GetMP(t,0),j*Nk[1]+ucm.GetMP(t,1),k*Nk[2]+ucm.GetMP(t,2),1)=ucm.GetSublattice(t);
+                            lu(atom_counter,0)=i*Nk[0]+ucm.GetMP(t,0);
+                            lu(atom_counter,1)=j*Nk[1]+ucm.GetMP(t,1);
+                            lu(atom_counter,2)=k*Nk[2]+ucm.GetMP(t,2);
                         }
 
                         lu(atom_counter,3)=ucm.GetSublattice(t);
@@ -279,7 +282,7 @@ namespace geom
         sloc << nspins << "\n\n";
         for(unsigned int i = 0 ; i < nspins; i++)
         {
-            sloc << "\"" << i << "\"\t" << ucm.GetElement(lu(i,4)) << "\t" << rx[i] << "\t" << ry[i] << "\t" << rz[i] << std::endl;
+            sloc << ucm.GetElement(lu(i,4)) << "\t" << rx[i] << "\t" << ry[i] << "\t" << rz[i] << std::endl;
         }
         sloc.close();
         if(sloc.is_open())
