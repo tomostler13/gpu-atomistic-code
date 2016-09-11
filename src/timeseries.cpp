@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 11 Sep 2016 13:51:43
+// Last-modified: 11 Sep 2016 16:10:51
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -292,8 +292,12 @@ void sim::timeseries(int argc,char *argv[])
                     for(unsigned int i = 0 ; i < geom::nspins ; i++)
                     {
                         unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                        //std::cout << xyz[0] << "\t" << xyz[1] << "\t" << xyz[2] << std::endl;
+                        //std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+                        //std::cin.get();
                         //get the magnetic species number
                         unsigned int ms=geom::lu(i,3);
+                        //std::cout << ms << std::endl;
                         if(sf::qa[0]>1e-12)//quantization axis is x
                         {
                             s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i]*sf::uo(ms,1);

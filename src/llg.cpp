@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 11 Sep 2016 12:40:34
+// Last-modified: 11 Sep 2016 16:21:00
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -122,6 +122,10 @@ namespace llg
                 error::errWarnPreamble(__FILE__,__LINE__);
                 error::errWarning("Could not read the spin update, setting default to 100 (timesteps)");
                 spins::update=100;
+                FIXOUT(config::Info,"Update of spins (default):" << spins::update << " [Timesteps]" << std::endl);
+            }
+            else
+            {
                 FIXOUT(config::Info,"Update of spins (default):" << spins::update << " [Timesteps]" << std::endl);
             }
             if(!setting.lookupValue("MagnetizationCalculationMethod:",spins::mag_calc_method))
@@ -245,7 +249,7 @@ namespace llg
             else
             {
                 error::errWarnPreamble(__FILE__,__LINE__);
-                error::errMessage("Could not read the method for applying the initial spin config. Setting llg.SpinConfigMethod (string), defaulting to file.");
+                error::errWarning("Could not read the method for applying the initial spin config. Setting llg.SpinConfigMethod (string), defaulting to file.");
                 scm="file";
                 spins::setSpinsConfig();
                 FIXOUT(config::Info,"Initial spin configuratio (default):" << scm << std::endl);

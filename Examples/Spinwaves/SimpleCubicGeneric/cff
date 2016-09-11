@@ -1,0 +1,45 @@
+Seed = 123123123;
+system:
+{
+    //number of unit cells
+    dim = [ 32 , 32 , 64 ];
+    Nm = [ 1 , 1 , 1 ];
+    Unitcellfile="sc_gen.ucf";
+    abc = [ 3e-10 , 3e-10 , 3e-10 ];
+    rprim1 = [ 1.0 , 0.0 , 0.0 ];
+    rprim2 = [ 0.0 , 1.0 , 0.0 ];
+    rprim3 = [ 0.0 , 0.0 , 1.0 ];
+    Include_dipole = FALSE;
+    Exchange_method="CSR";
+    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
+};
+exchange:
+{
+    Read_exch_method="unitcell";
+    Exchfile="sc_gen.exch";
+};
+sf:
+{
+    Calculate=TRUE;
+    InputFile="sc_gen.sf";
+};
+llg:
+{
+    dt=1e-16;
+    update=50;
+    applied = [ 0.0 , 0.0 , 1.0 ];
+};
+cuda:
+{
+    threadsperblock=256;
+};
+sim:
+{
+    sim_type="timeseries";
+};
+timeseries:
+{
+    Temperature=1.0;
+    EquilibrationTime=15e-12;
+    RunTime=15e-12;
+};

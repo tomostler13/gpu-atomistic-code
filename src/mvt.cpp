@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 10 Sep 2016 19:26:08
+// Last-modified: 11 Sep 2016 17:55:39
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -116,7 +116,7 @@ void sim::MvT(int argc,char *argv[])
     if(!setting.lookupValue("MvTFile",opf))
     {
         error::errWarnPreamble(__FILE__,__LINE__);
-        error::errWarning("COuld not read the name of the outputfile for the magnetization. Defaulting to MvT.dat");
+        error::errWarning("Could not read the name of the outputfile for the magnetization. Defaulting to MvT.dat");
         opf="MvT.dat";
         FIXOUT(config::Info,"Outputting magnetization data to (default):" << opf << std::endl);
     }

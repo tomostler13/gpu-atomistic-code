@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH --job-name=ASD_Ex_MvT
+#SBATCH --output=o.Ex_MvT.%A_%a
+#SBATCH --time=0-2:00:00
+#SBATCH --partition=defq
+#SBATCH --gres=gpu:k40:1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --array=1-1:1
+executable=./ASD
+configfile="cff"
+trap '{ echo "JOBSCRIPT [$(date)] : Caught SIGUSR2, rescuing files from node"; copyFromNode; exit;}' SIGUSR2
+echo "JOBSCRIPT [$(date)] : executable $executable";
+echo "JOBSCRIPT [$(date)] : configfile $configfile";
+echo "JOBSCRIPT [$(date)] : starting executable";
+#------------------------------------------
+$executable ${configfile} 2>err.log
+#------------------------------------------
+echo "JOBSCRIPT [$(date)] : finished executing";

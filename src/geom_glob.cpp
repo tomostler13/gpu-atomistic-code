@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 11 Sep 2016 12:54:07
+// Last-modified: 11 Sep 2016 15:58:28
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -99,6 +99,7 @@ namespace geom
             zpdim[i]=2*dim[i];
         }
         FIXOUT(config::Info,"Dimensions (unit cells):" << "[ " << dim[0] << " , " << dim[1] << " , " << dim[2] << " ]" << std::endl);
+        FIXOUT(config::Info,"Zero pad dimensions:" << "[ " << zpdim[0] << " , " << zpdim[1] << " , " << zpdim[2] << " ]" << std::endl);
         Nk.resize(3);
         abc.resize(3);
         for(unsigned int i = 0 ; i < 3 ; i++)
