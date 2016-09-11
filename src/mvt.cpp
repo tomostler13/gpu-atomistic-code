@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 10 Sep 2016 19:05:37
+// Last-modified: 10 Sep 2016 19:26:08
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -48,7 +48,7 @@ void sim::MvT(int argc,char *argv[])
     {
         FIXOUT(config::Info,"Lower temperature:" << lT << std::endl);
     }
-    if(!setting.lookupValue("upper_temp",uT))
+    if(!setting.lookupValue("Upper_temp",uT))
     {
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("Could not read the upper temperature (mvt.Upper_temp (double)). It is required");

@@ -1,7 +1,7 @@
 // File: exch_unitcell.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 10 Sep 2016 19:19:19
+// Last-modified: 10 Sep 2016 20:04:21
 // This routine determines the exchange matrix for the unitcell method
 #include "../inc/arrays.h"
 #include "../inc/error.h"
@@ -301,6 +301,7 @@ namespace exch
             {
                 for(unsigned int shell = 0 ; shell < shell_list(aiuc,s1) ; shell++)
                 {
+
                     int lookup[3]={0,0,0};
                     if(exchvec(aiuc,s1,shell,0)<0)
                     {

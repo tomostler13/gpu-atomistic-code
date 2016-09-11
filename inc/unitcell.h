@@ -1,7 +1,7 @@
 // File: array.h
 // Author: Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 07 Sep 2016 16:06:22
+// Last-modified: 10 Sep 2016 20:55:31
 #ifndef __UNITCELL_H__
 #define __UNITCELL_H__
 #include "../inc/arrays.h"
@@ -121,7 +121,7 @@ class unitCellMembers
             k1udir(t,0)=x;
             k1udir(t,1)=y;
             k1udir(t,2)=z;
-            if(fabs(sqrt(x*x+y*y+z*z)-1)>1e-12)
+            if(fabs(sqrt(x*x+y*y+z*z)-1)>1e-6)
             {
                 return(2);
             }

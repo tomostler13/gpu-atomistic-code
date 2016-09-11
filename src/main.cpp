@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Sep 2016 18:42:23
+// Last-modified: 10 Sep 2016 19:43:47
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -132,7 +132,7 @@ int main(int argc,char *argv[])
         time_t now = time(0);
         char *dtime=ctime(&now);
         std::cout << "#Start time:\t" << dtime << std::endl;
-        for(unsigned int t = 0 ; t < 1000 ; t++)
+        for(unsigned int t = 0 ; t < 100000 ; t++)
         {
             if(t%spins::update==0)
             {
