@@ -13,7 +13,7 @@ for i in `seq 0 1 $nkp`;do
     kx=`grep "lookupkvector $i =" kvecinfo.dat | awk '{print $4}'`
     ky=`grep "lookupkvector $i =" kvecinfo.dat | awk '{print $5}'`
     kz=`grep "lookupkvector $i =" kvecinfo.dat | awk '{print $6}'`
-    echo "k-point $i, kx = $kx , ky = $ky , kz = $kx"
+    echo "k-point $i, kx = $kx , ky = $ky , kz = $kz"
     if [ -f kx${kx}ky${ky}kz${kz}.dat ];then
         cat kx${kx}ky${ky}kz${kz}.dat | awk -v k=$i -v kx=$kx -v ky=$ky -v kz=$kz '{print k,kx,ky,kz,$1,$2,$3,$4,$5}' >> $filename
         echo "" >> $filename
