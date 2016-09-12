@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 10 Sep 2016 17:00:32
+// Last-modified: 12 Sep 2016 15:26:19
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -135,7 +135,11 @@ namespace exch
                 exit(EXIT_FAILURE);
             }
         }
-
+        if(!exchcfg.exists("exchange"))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("You have not set the exchange setting in your exchange file.");
+        }
         libconfig::Setting &GlobExch = exchcfg.lookup("exchange");
         if(!GlobExch.lookupValue("FourSpin",inc4spin))
         {
