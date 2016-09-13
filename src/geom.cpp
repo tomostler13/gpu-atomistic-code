@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 11 Sep 2016 14:18:38
+// Last-modified: 13 Sep 2016 12:23:51
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -241,9 +241,9 @@ namespace geom
                         double xred[3]={ucm.GetXred(t,0),ucm.GetXred(t,1),ucm.GetXred(t,2)};
 
                         double xcart[3]={0,0,0};
-                        xcart[0]=(xred[0]+double(i))*rprim(0,0)+(xred[1]+double(j))*rprim(1,0)+(xred[2]+double(k))*rprim(2,0);
-                        xcart[1]=(xred[0]+double(i))*rprim(0,1)+(xred[1]+double(j))*rprim(1,1)+(xred[2]+double(k))*rprim(2,1);
-                        xcart[2]=(xred[0]+double(i))*rprim(0,2)+(xred[1]+double(j))*rprim(1,2)+(xred[2]+double(k))*rprim(2,2);
+                        xcart[0]=(xred[0]+static_cast<double>(i))*rprim(0,0)+(xred[1]+static_cast<double>(j))*rprim(1,0)+(xred[2]+static_cast<double>(k))*rprim(2,0);
+                        xcart[1]=(xred[0]+static_cast<double>(i))*rprim(0,1)+(xred[1]+static_cast<double>(j))*rprim(1,1)+(xred[2]+static_cast<double>(k))*rprim(2,1);
+                        xcart[2]=(xred[0]+static_cast<double>(i))*rprim(0,2)+(xred[1]+static_cast<double>(j))*rprim(1,2)+(xred[2]+static_cast<double>(k))*rprim(2,2);
                         //rx[atom_counter]=((ucm.GetCoord(t,0)+static_cast<double>(i*Nk[0]))/static_cast<double>(Nk[0]))*abc[0];
                         //ry[atom_counter]=((ucm.GetCoord(t,1)+static_cast<double>(j*Nk[1]))/static_cast<double>(Nk[1]))*abc[1];
                         //rz[atom_counter]=((ucm.GetCoord(t,2)+static_cast<double>(k*Nk[2]))/static_cast<double>(Nk[2]))*abc[2];

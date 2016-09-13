@@ -18,14 +18,22 @@ exchange:
     Read_exch_method="unitcell";
     Exchfile="BiFeO3.exch";
 };
-/*llg:
+llg:
 {
     dt = 0.2e-15;
     applied = [ 0.0 , 0.0 , 0.5 ];
     update=100;
     MagnetizationCalculationMethod=0;
+    //options are 0 or 1 (magnetisation or set manually)
+    OrdParTrans = 1;
+    //This should be equal to the number of species in the unit cell
+    OrdTrans:
+    {
+        T1 = [ 1.0 , 1.0 , 1.0 ];
+        T2 = [ -1.0 , -1.0 , -1.0 ];
+    };
 
-};*/
+};
 sf:
 {
     Calculate=TRUE;

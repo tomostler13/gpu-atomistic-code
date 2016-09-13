@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 11 Sep 2016 16:21:00
+// Last-modified: 13 Sep 2016 12:33:09
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -20,6 +20,8 @@
 namespace llg
 {
     double applied[3]={0,0,0},T,dt,rdt,gyro=1.76e11,muB=9.27e-24,kB=1.38e-23;
+    Array2D<double> optrans;
+    unsigned int trans=0;
     Array<double> Ts,dps,cps;
     Array<double> llgpf;
     std::string scm;
@@ -62,7 +64,9 @@ namespace llg
             FIXOUT(config::Info,"Magnetization calculatioin method (default):" << spins::mag_calc_method << std::endl);
             scm="file";
             spins::setSpinsConfig();
-            FIXOUT(config::Info,"Initial spin configuratio (default):" << scm << std::endl);
+            FIXOUT(config::Info,"Initial spin configuration (default):" << scm << std::endl);
+            FIXOUT(config::Info,"Order parameter transform (default):" << trans << std::endl);
+
         }
         else
         {
@@ -96,7 +100,7 @@ namespace llg
                     std::stringstream errsstr;
                     errsstr << "Setting not found exception caught. Setting " << snf.getPath() << " component " << i;
                     std::string errstr=errsstr.str();
-                    error::errMessage(errstr);
+                    error::errWarning(errstr);
                     count--;
                 }
             }
@@ -109,7 +113,7 @@ namespace llg
             }
             else if(count==3)
             {
-                 FIXOUTVEC(config::Info,"Applied field (default):",applied[0],applied[1],applied[2]);
+                 FIXOUTVEC(config::Info,"Applied field:",applied[0],applied[1],applied[2]);
             }
             else
             {
@@ -253,6 +257,60 @@ namespace llg
                 scm="file";
                 spins::setSpinsConfig();
                 FIXOUT(config::Info,"Initial spin configuratio (default):" << scm << std::endl);
+            }
+            if(!setting.lookupValue("OrdParTrans",trans))
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not read llg.OrdParTrans (int), setting default (0)");
+                FIXOUT(config::Info,"Order parameter transform (default):" << trans << std::endl);
+            }
+            else
+            {
+                FIXOUT(config::Info,"Order parameter transform:" << trans << std::endl);
+                if(trans==1)
+                {
+                    optrans.resize(geom::ucm.GetNMS(),3);
+                    if(!config::cfg.exists("llg.OrdTrans"))
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("You requested to perform a transform to the order parameter calculation (e.g. to get the Neel vector) but you did not include the setting llg.OrdTrans in your config file.");
+                    }
+                    else
+                    {
+                        libconfig::Setting &subset = config::cfg.lookup("llg.OrdTrans");
+                        for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+                        {
+                            std::stringstream tsstr;
+                            tsstr << "T" << i+1;
+                            std::string tstr=tsstr.str();
+                            for(unsigned int j = 0 ; j < 3 ; j++)
+                            {
+                                try
+                                {
+                                    optrans(i,j)=subset[tstr.c_str()][j];
+                                }
+                                catch(const libconfig::SettingNotFoundException &snf)
+                                {
+                                    std::stringstream errsstr;
+                                    errsstr << "Setting not found exception caught. Setting " << snf.getPath() << " component " << j << " for species " << i;
+                                    std::string errstr=errsstr.str();
+                                    error::errMessage(errstr);
+
+                                }
+                                if(fabs(optrans(i,j)-1.0>1e-6))
+                                {
+                                    error::errPreamble(__FILE__,__LINE__);
+                                    error::errMessage("Each component of the spin transforms for outputting should have a magnitude of 1, check you input file under setting llg.OrdTrans");
+                                }
+                            }
+                            std::stringstream opsstr;
+                            opsstr << "Transformation for order parameter output for species " << i << ":";
+                            std::string opstr=opsstr.str();
+                            FIXOUTVEC(config::Info,opstr,optrans(i,0),optrans(i,1),optrans(i,2));
+
+                        }
+                    }
+                }
             }
         }
         util::init_output();
