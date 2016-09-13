@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 12 Sep 2016 15:26:19
+// Last-modified: 13 Sep 2016 13:19:58
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -238,6 +238,25 @@ namespace exch
                 error::errMessage("Could not read the setting exchange.MaxQuartetPermutations (int)");
             }
             read4spin();
+        }
+        if(!GlobExch.lookupValue("TruncateExchange",cutexch))
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not read if you wanted to trucate the interaction range (exchange.TruncateExchange (bool)). Defaulting to false");
+            cutexch=false;
+        }
+        FIXOUT(config::Info,"Truncate exchange?:" << config::isTF(cutexch) << std::endl);
+        if(cutexch==true)
+        {
+            if(!GlobExch.lookupValue("TruncateRCut",rcut))
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("You stated that you wanted to cut the interaction range but have not specified a cut-off radius (exchange.TruncateRCut (double) in metres).");
+            }
+            else
+            {
+                FIXOUT(config::Info,"Cut-off radius:" << rcut << " [m]" << std::endl);
+            }
         }
     }
 

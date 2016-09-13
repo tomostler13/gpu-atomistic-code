@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 13 Sep 2016 11:35:04
+// Last-modified: 13 Sep 2016 20:09:11
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -129,7 +129,7 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="quick")
     {
 
-        llg::T=0.1;
+        llg::T=1.0;
         int counter=0;
         time_t now = time(0);
         char *dtime=ctime(&now);
@@ -138,7 +138,7 @@ int main(int argc,char *argv[])
         {
             if(t%spins::update==0)
             {
-                if(counter%10==0)
+                if(counter%50==0)
                 {
                     util::outputSpinsVTU(t);
                     counter=0;

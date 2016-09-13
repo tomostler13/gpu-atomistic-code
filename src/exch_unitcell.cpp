@@ -1,7 +1,7 @@
 // File: exch_unitcell.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 11 Sep 2016 14:29:37
+// Last-modified: 13 Sep 2016 20:10:39
 // This routine determines the exchange matrix for the unitcell method
 #include "../inc/arrays.h"
 #include "../inc/error.h"
@@ -360,6 +360,7 @@ namespace exch
                     cj[1]=(xred[0]+static_cast<double>(cluv[0]))*geom::rprim(0,1)+(xred[1]+static_cast<double>(cluv[1]))*geom::rprim(1,1)+(xred[2]+static_cast<double>(cluv[2]))*geom::rprim(2,1);
                     cj[2]=(xred[0]+static_cast<double>(cluv[0]))*geom::rprim(0,2)+(xred[1]+static_cast<double>(cluv[1]))*geom::rprim(1,2)+(xred[2]+static_cast<double>(cluv[2]))*geom::rprim(2,2);
                     const double dist=sqrt((ci[0]-cj[0])*(ci[0]-cj[0])+(ci[1]-cj[1])*(ci[1]-cj[1])+(ci[2]-cj[2])*(ci[2]-cj[2]));
+                    //std::cout << dist << "\t" << rcut << std::endl;
                     if(cutexch)
                     {
                         if(dist>rcut/1e-10)
@@ -401,7 +402,7 @@ namespace exch
                         }
                         if(outputJ)
                         {
-                            opJ << i << "\t" << neighid << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << ci[0] << "," << ci[1] << "," << ci[2] << " ] -> [ " << cj[0] << "," << cj[1] << "," << cj[2] << " ]" << "\t" << dist << std::endl;
+                            opJ << i << "\t" << aiuc << "\t" << neighid << "\t" << s1 << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << ci[0] << "," << ci[1] << "," << ci[2] << " ] -> [ " << cj[0] << "," << cj[1] << "," << cj[2] << " ]" << "\t" << dist << std::endl;
                         }
                     }
                 }
