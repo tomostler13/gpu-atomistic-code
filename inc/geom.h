@@ -1,7 +1,7 @@
 // File: geom.h
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 10 Sep 2016 13:05:47
+// Last-modified: 18 Oct 2016 12:42:10
 #include "../inc/arrays.h"
 #include "../inc/unitcell.h"
 #include <string>
@@ -11,8 +11,8 @@ namespace geom
 {
     extern unsigned int dim[],zpdim[],nspins,zps,cplxdim,czps,nms;
     extern std::string place;
-    void initGeom(int argc,char *argv[]);
-    void readconfig(int argc,char *argv[]);
+    void initGeom();
+    void readconfig();
     extern bool Nkset,rprimset;
     extern Array2D<int> lu,zplu;
     extern Array2D<double> rprim;

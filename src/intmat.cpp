@@ -1,7 +1,7 @@
 // File: intmat.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2012
-// Last-modified: 10 Sep 2016 18:58:24
+// Last-modified: 18 Oct 2016 12:52:56
 #include <fftw3.h>
 #include <cmath>
 #include <iostream>
@@ -26,24 +26,9 @@ namespace intmat
     Array<unsigned int> zpsn;
     fftw_plan ftP,dipftP;
 
-    void initIntmat(int argc,char *argv[])
+    void initIntmat()
     {
         config::Info.width(45);config::Info << std::right << "*" << "**Interaction matrix details***" << std::endl;
-        try
-        {
-            config::cfg.readFile(argv[1]);
-        }
-        catch(const libconfig::FileIOException &fioex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("I/O error while reading config file");
-        }
-        catch(const libconfig::ParseException &pex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-            exit(EXIT_FAILURE);
-        }
         if(geom::Nkset==false)
         {
             error::errPreamble(__FILE__,__LINE__);
@@ -145,24 +130,9 @@ namespace intmat
 
 
     }
-    void initDipIntmat(int argc,char *argv[])
+    void initDipIntmat()
     {
         config::Info.width(45);config::Info << std::right << "*" << "**Interaction matrix details***" << std::endl;
-        try
-        {
-            config::cfg.readFile(argv[1]);
-        }
-        catch(const libconfig::FileIOException &fioex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("I/O error while reading config file");
-        }
-        catch(const libconfig::ParseException &pex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-            exit(EXIT_FAILURE);
-        }
         dipNkab.resize(3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
         dipNrab.resize(3,3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
         FIXOUT(config::Info,"The real space interaction matrix contains:" << dipNrab.size() << " elements (double complex)" << std::endl);

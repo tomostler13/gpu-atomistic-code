@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 13 Sep 2016 13:19:58
+// Last-modified: 18 Oct 2016 12:56:00
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -29,20 +29,10 @@ namespace exch
     {
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Exchange details***" << std::endl;
-        try
-        {
-            config::cfg.readFile(argv[1]);
-        }
-        catch(const libconfig::FileIOException &fioex)
+        if(!config::cfg.exists("exchange"))
         {
             error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("I/O error while reading config file");
-        }
-        catch(const libconfig::ParseException &pex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-            exit(EXIT_FAILURE);
+            error::errMessage("Setting \"exchange\" does not exist in the global config file. Check your config file.");
         }
         libconfig::Setting &setting = config::cfg.lookup("exchange");
         if(setting.lookupValue("Read_exch_method",method))

@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 11 Sep 2016 15:58:28
+// Last-modified: 18 Oct 2016 12:46:01
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -50,29 +50,19 @@ namespace geom
     bool logunit=false;
     Array4D<unsigned int> atnolu;
 
-    void readconfig(int argc,char *argv[])
+    void readconfig()
     {
         assert(config::lcf);
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Geometry and magnetic property details***" << std::endl;
-        try
-        {
-            config::cfg.readFile(argv[1]);
-        }
-        catch(const libconfig::FileIOException &fioex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("I/O error while reading config file");
-        }
-        catch(const libconfig::ParseException &pex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-            exit(EXIT_FAILURE);
-        }
 
         rprim.resize(3,3);rprim.IFill(0);
         //angdeg.resize(3);angdeg.IFill(0);
+        if(!config::cfg.exists("system"))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Setting \"system\" does not exist. Check your config file.");
+        }
         libconfig::Setting &setting = config::cfg.lookup("system");
         //do we want to write the unit cell info to the log file?
         if(!setting.lookupValue("Log_unit_cell",logunit))

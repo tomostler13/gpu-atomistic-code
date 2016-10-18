@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 10 Sep 2016 14:25:53
+// Last-modified: 18 Oct 2016 12:51:13
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -20,7 +20,6 @@ namespace config
 {
     void initConfig(int argc,char *argv[])
     {
-        libconfig::Config cfg;
         if(argc < 2)
         {
             error::errPreamble(__FILE__,__LINE__);

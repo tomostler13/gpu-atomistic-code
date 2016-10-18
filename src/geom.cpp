@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 13 Sep 2016 12:23:51
+// Last-modified: 18 Oct 2016 12:41:56
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -23,9 +23,9 @@
 //geom_glob.cpp
 namespace geom
 {
-    void initGeom(int argc,char *argv[])
+    void initGeom()
     {
-        readconfig(argc,argv);
+        readconfig();
         //The unit cell file has a strict format
         //first line -  number of distinct atomic type
         //second line - number of magnetic atoms in unit cell

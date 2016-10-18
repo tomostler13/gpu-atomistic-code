@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 23 Sep 2016 09:31:26
+// Last-modified: 18 Oct 2016 12:53:33
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -34,11 +34,11 @@ int main(int argc,char *argv[])
 {
     config::initConfig(argc,argv);
     //Initialize the lattice
-    geom::initGeom(argc,argv);
+    geom::initGeom();
     if(config::exchm==0)//then we are using the FFT method for the exchange calculation
     {
         //initialize the interaction matrices
-        intmat::initIntmat(argc,argv);
+        intmat::initIntmat();
 
         if(config::inc_dip==true && config::dipm==0)
         {
@@ -48,7 +48,7 @@ int main(int argc,char *argv[])
     }
     else if(config::inc_dip==true && config::dipm==0)
     {
-        intmat::initDipIntmat(argc,argv);
+        intmat::initDipIntmat();
         // in this case the interaction matrix does
         // not need to be species dependent
         intmat::fillDipIntmat();
@@ -57,10 +57,10 @@ int main(int argc,char *argv[])
     {
         //If we are using the hybrid method we will always
         //use CSR for the CPU and DIA for the GPU
-        intmat::initIntmat(argc,argv);
+        intmat::initIntmat();
         if(config::inc_dip==true && config::dipm==0)
         {
-            intmat::initDipIntmat(argc,argv);
+            intmat::initDipIntmat();
             intmat::fillDipIntmat();
         }
 
