@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 18 Oct 2016 16:52:22
+// Last-modified: 18 Oct 2016 17:35:32
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -53,29 +53,33 @@ namespace llg
             FIXOUT(config::Info,"Initial spin configuration (default):" << scm << std::endl);
             FIXOUT(config::Info,"Order parameter transform (default):" << trans << std::endl);
             util::escheck=false;
-            FIXOUT(config::Info,"Outputting exchange striction (default):" << config::isTF(escheck) << std::endl);
+            FIXOUT(config::Info,"Outputting exchange striction (default):" << config::isTF(util::escheck) << std::endl);
 
         }
         else
         {
             libconfig::Setting &setting = config::cfg.lookup("llg");
+//            std::cout << "does it exist or not " << config::cfg.exists("llg.exch_striction") << std::endl;
+//            std::cin.get();
             if(!config::cfg.exists("llg.exch_striction"))
             {
                 util::escheck=false;
                 error::errWarnPreamble(__FILE__,__LINE__);
-                error::errWarning("Setting, llg.exchange_striction not set, defaulting to false.");
+                error::errWarning("Setting, llg.exch_striction not set, defaulting to false.");
                 FIXOUT(config::Info,"Outputting exchange striction (default):" << config::isTF(util::escheck) << std::endl);
             }
             else
             {
+                util::escheck=true;
                 FIXOUT(config::Info,"Outputting exchange striction:" << config::isTF(util::escheck) << std::endl);
                 if(util::escheck)//then read the variables that control it
                 {
+                    libconfig::Setting &esset = config::cfg.lookup("llg.exch_striction");
                     //get the number of pairs
-                    if(!setting.lookupValue("exchange_striction.NumPairs",util::esnp))
+                    if(!esset.lookupValue("NumPairs",util::esnp))
                     {
                         error::errPreamble(__FILE__,__LINE__);
-                        error::errMessage("You have not correctly set up the exchange striction calculation. llg.exchange_striction.NumPairs (int) must be set.");
+                        error::errMessage("You have not correctly set up the exchange striction calculation. llg.exch_striction.NumPairs (int) must be set.");
                     }
                     else
                     {
@@ -86,14 +90,14 @@ namespace llg
                     for(unsigned int i = 0 ; i < util::esnp ; i++)
                     {
                         std::stringstream sstr;
-                        sstr << "exchange_striction.Pair" << i;
+                        sstr << "Pair" << i;
                         std::string str=sstr.str();
 
                         for(unsigned int  j = 0 ; j < 2 ; j++)
                         {
                             try
                             {
-                                util::espairs(i,j)=setting[str.c_str][j];
+                                util::espairs(i,j)=esset[str.c_str()][j];
                             }
                             catch(const libconfig::SettingNotFoundException &snf)
                             {
@@ -103,10 +107,13 @@ namespace llg
                                 std::string errstr=errsstr.str();
                                 error::errMessage(errstr);
                             }
-                            std::stringstream opsstr;
-                            opsstr << "Pair " << i << " has
-                            FIXOUT(config::Info,"Pair " <<
                         }
+                        std::stringstream opsstr,opsstr1;
+                        opsstr << "Pair " << i << " is between atoms:";
+                        opsstr1 << util::espairs(i,0) << " and " << util::espairs(i,1) << std::endl;
+                        std::string opstr=opsstr.str(),opstr1=opsstr1.str();
+                        FIXOUT(config::Info,opstr << opstr1 << std::endl);
+
                     }
                 }
             }

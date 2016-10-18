@@ -2,7 +2,7 @@ Seed = 123123123;
 system:
 {
     //number of unit cells
-    dim = [ 2 , 2 , 2 ];
+    dim = [ 16 , 16 , 16 ];
     //Nm = [ 2 , 2 , 2 ];
     Unitcellfile="LiCoPO4.ucf";
     abc = [ 10.202e-10 , 5.9229e-10 , 4.699e-10 ];
@@ -30,8 +30,6 @@ llg:
         NumPairs = 2;
         Pair0 = [ 0 , 1 ];
         Pair1 = [ 2 , 3 ];
-        Sign0=1;
-        Sign1=-1;
     };
 };
 cuda:
@@ -40,14 +38,14 @@ cuda:
 };
 sim:
 {
-//    sim_type="MvT";
+    sim_type="MvT";
 //    sim_type="quick";
-    sim_type="laserheating";
+//    sim_type="laserheating";
 };
 mvt:
 {
-    Lower_temp=50.0;
-    Upper_temp=800.0;
+    Lower_temp=1.0;
+    Upper_temp=1.1;
     Temp_step=50.0;
 };
 laserheating:
