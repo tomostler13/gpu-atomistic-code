@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 2 Nov 2014
-// Last-modified: 10 Sep 2016 16:24:17
+// Last-modified: 18 Oct 2016 13:36:59
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -34,25 +34,10 @@ namespace sf
     //sfupdate=the sample timesteps in units of llg::update.
     unsigned int sfupdate=0;
 
-    void readSFParam(int argc,char *argv[])
+    void readSFParam()
     {
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Structure factor details***" << std::endl;
-        try
-        {
-            config::cfg.readFile(argv[1]);
-        }
-        catch(const libconfig::FileIOException &fioex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("I/O error while reading config file");
-        }
-        catch(const libconfig::ParseException &pex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-            exit(EXIT_FAILURE);
-        }
         bool errstatus=false;
         std::string sffile;
         if(!config::cfg.exists("sf"))
@@ -91,9 +76,10 @@ namespace sf
             {
                 FIXOUT(config::Info,"SF input file:" << sffile << std::endl);
             }
+            libconfig::Config sfcfg;
             try
             {
-                config::cfg.readFile(sffile.c_str());
+                sfcfg.readFile(sffile.c_str());
             }
             catch(const libconfig::FileIOException &fioex)
             {
@@ -106,7 +92,12 @@ namespace sf
                 std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
                 exit(EXIT_FAILURE);
             }
-            libconfig::Setting &nsetting = config::cfg.lookup("sf");
+            if(!sfcfg.exists("sf"))
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("sf setting in structure factor config file not present, check your config file");
+            }
+            libconfig::Setting &nsetting = sfcfg.lookup("sf");
             //if we have not exited or returned by this point we need to read the input file
             //First read the (predicted) quantization axis
             qa.resize(3);

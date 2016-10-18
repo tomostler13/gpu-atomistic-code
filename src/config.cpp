@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 18 Oct 2016 12:51:13
+// Last-modified: 18 Oct 2016 13:39:51
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -38,7 +38,7 @@ namespace config
         {
             error::errPreamble(__FILE__,__LINE__);
             std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-            exit(EXIT_FAILURE);
+//            exit(EXIT_FAILURE);
         }
         //for getting the date and time
         time_t now = time(0);

@@ -1,6 +1,6 @@
 // File: stepchange.cpp
 // Author: Tom Ostler // Created: 29 Mar 2013
-// Last-modified: 17 May 2013 14:48:41
+// Last-modified: 18 Oct 2016 13:15:13
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -18,25 +18,9 @@
 #include "../inc/llg.h"
 #include "../inc/sim.h"
 #include "../inc/exch.h"
-void sim::stepchange(int argc,char *argv[])
+void sim::stepchange()
 {
     config::printline(config::Info);
-    config::Info.width(45);config::Info << std::right << "*" << "**Step Change details***" << std::endl;
-    try
-    {
-        config::cfg.readFile(argv[1]);
-    }
-    catch(const libconfig::FileIOException &fioex)
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("I/O error while reading config file");
-    }
-    catch(const libconfig::ParseException &pex)
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-        exit(EXIT_FAILURE);
-    }
 
     libconfig::Setting &setting = config::cfg.lookup("stepchange");
     double Tstart=0.0,Tfinal=0.0,met=0.0,et=0.0,rate=0.0;

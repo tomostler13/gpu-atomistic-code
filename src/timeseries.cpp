@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 11 Sep 2016 16:10:51
+// Last-modified: 18 Oct 2016 13:17:52
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -20,7 +20,7 @@
 #include "../inc/llg.h"
 #include "../inc/sim.h"
 #include "../inc/sf.h"
-void sim::timeseries(int argc,char *argv[])
+void sim::timeseries()
 {
     unsigned int num_samples=0;
     double et=0.0,rt=0.0;
@@ -35,20 +35,10 @@ void sim::timeseries(int argc,char *argv[])
     config::printline(config::Info);
     config::Info.width(45);config::Info << std::right << "*" << "**Time series details***" << std::endl;
     //The k-vector information is read in the file sf.cpp and sf_glob.cpp
-    try
-    {
-        config::cfg.readFile(argv[1]);
-    }
-    catch(const libconfig::FileIOException &fioex)
+    if(!config::cfg.exists("timeseries"))
     {
         error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("I/O error while reading config file");
-    }
-    catch(const libconfig::ParseException &pex)
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-        exit(EXIT_FAILURE);
+        error::errMessage("Setting \"timeseries\" does not exist. Check your config file.");
     }
     if(!config::cfg.exists("timeseries"))
     {

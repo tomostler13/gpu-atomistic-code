@@ -1,7 +1,7 @@
 // File: rscf.h
 // Author:Tom Ostler
 // Created: 23 Oct 2015
-// Last-modified: 16 Mar 2016 09:59:55
+// Last-modified: 18 Oct 2016 13:26:44
 #include "../inc/arrays.h"
 #include "../inc/unitcell.h"
 #include <string>
@@ -11,7 +11,7 @@
 namespace rscf
 {
     extern bool ccf;
-    void initRSCF(int argc,char *argv[]);
+    void initRSCF();
     void calcRSCF(unsigned int);
     std::string conv(unsigned int);
     void outputRSCF(std::ofstream&,Array3D<double>&,unsigned int);

@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 10 Sep 2016 19:14:09
+// Last-modified: 18 Oct 2016 13:18:23
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -23,7 +23,7 @@
 #include "../inc/rscf.h"
 //function prototype
 void CalcTe(double*,double*,double,unsigned int,double,double,double&,double&,double,double,double,double,double,double);
-void sim::laser_heating(int argc,char *argv[])
+void sim::laser_heating()
 {
     bool opsf=false;//OutPut Structure Factor info
     unsigned int ets = 0 , rts = 0 , num_pulses=0;
@@ -33,22 +33,12 @@ void sim::laser_heating(int argc,char *argv[])
     Array<double> field_times;
     config::printline(config::Info);
     config::Info.width(45);config::Info << std::right << "*" << "**Laser Heating Simulation details***" << std::endl;
-    try
-    {
-        config::cfg.readFile(argv[1]);
-    }
-    catch(const libconfig::FileIOException &fioex)
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("I/O error while reading config file");
-    }
-    catch(const libconfig::ParseException &pex)
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-        exit(EXIT_FAILURE);
-    }
 
+    if(!config::cfg.exists("laserheating"))
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Setting \"laserheating\" does not exist. Check your config file.");
+    }
     libconfig::Setting &setting = config::cfg.lookup("laserheating");
     if(setting.lookupValue("EquilibrationTime",et))
     {

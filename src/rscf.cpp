@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 23 Oct 2015
-// Last-modified: 10 Sep 2016 18:45:22
+// Last-modified: 18 Oct 2016 13:25:16
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -43,23 +43,8 @@ namespace rscf
     std::ofstream Coxx,Coxy,Coxz,Coyx,Coyy,Coyz,Cozx,Cozy,Cozz,Cosds;
     //normalisation factor
     double normfac=1.0;
-    void initRSCF(int argc,char *argv[])
+    void initRSCF()
     {
-        try
-        {
-            config::cfg.readFile(argv[1]);
-        }
-        catch(const libconfig::FileIOException &fioex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("I/O error while reading config file");
-        }
-        catch(const libconfig::ParseException &pex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-            exit(EXIT_FAILURE);
-        }
         if(!config::cfg.exists("rscf"))
         {
             error::errWarnPreamble(__FILE__,__LINE__);

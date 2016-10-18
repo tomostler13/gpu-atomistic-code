@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 18 Oct 2016 12:53:33
+// Last-modified: 18 Oct 2016 13:39:32
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -85,26 +85,30 @@ int main(int argc,char *argv[])
         intmat::fftIntmat();
     }
     //Initialise the field arrays
-    fields::initFields(argc,argv);
+    fields::initFields();
     //Initialise the spin arrays
-    spins::initSpins(argc,argv);
-    sim::initSim(argc,argv);
-    llg::initLLG(argc,argv);
+    spins::initSpins();
+    sim::initSim();
+    llg::initLLG();
+
     //Initialise the Dynamic structure factor calculation
-    sf::initSF(argc,argv);
+    sf::initSF();
+
     //initialise the real space correlation function calculations
-    rscf::initRSCF(argc,argv);
+    rscf::initRSCF();
+
     //unsigned int temp=0;
     //rscf::calcRSCF(temp);
 #ifdef CUDA
-    cullg::cuinit(argc,argv);
+
+    cullg::cuinit();
 #else
-    llgCPU::initLLG(argc,argv);
+    llgCPU::initLLG();
 #endif
 
     if(sim::sim_type=="MvT")
     {
-        sim::MvT(argc,argv);
+        sim::MvT();
     }
     else if(sim::sim_type=="suscep")
     {
@@ -112,19 +116,19 @@ int main(int argc,char *argv[])
     }
     else if(sim::sim_type=="timeseries")
     {
-        sim::timeseries(argc,argv);
+        sim::timeseries();
     }
     else if(sim::sim_type=="laserheating")
     {
-        sim::laser_heating(argc,argv);
+        sim::laser_heating();
     }
     else if(sim::sim_type=="fix_field")
     {
-        sim::ramp_field(argc,argv);
+        sim::ramp_field();
     }
     else if(sim::sim_type=="thermal_hyst")
     {
-        sim::thermal_hyst(argc,argv);
+        sim::thermal_hyst();
     }
     else if(sim::sim_type=="quick")
     {

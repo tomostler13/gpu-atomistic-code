@@ -1,7 +1,7 @@
 // File: spins.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 23 Jun 2016 15:51:23
+// Last-modified: 18 Oct 2016 13:22:30
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -26,7 +26,7 @@ namespace spins
     extern Array2D<double> mag;
     extern unsigned int update,mag_calc_method;
     extern bool output_mag,mapout;
-    void initSpins(int argc,char *argv[]);
+    void initSpins();
     void FFTForward();
     void hFFTForward();
     void eFFTForward();

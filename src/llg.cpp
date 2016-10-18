@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 13 Sep 2016 12:33:09
+// Last-modified: 18 Oct 2016 16:52:22
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -22,30 +22,16 @@ namespace llg
     double applied[3]={0,0,0},T,dt,rdt,gyro=1.76e11,muB=9.27e-24,kB=1.38e-23;
     Array2D<double> optrans;
     unsigned int trans=0;
+    bool exstr=false;
     Array<double> Ts,dps,cps;
     Array<double> llgpf;
     std::string scm;
 
-    void initLLG(int argc,char *argv[])
+    void initLLG()
     {
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**LLG details***" << std::endl;
 
-        try
-        {
-            config::cfg.readFile(argv[1]);
-        }
-        catch(const libconfig::FileIOException &fioex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("I/O error while reading config file");
-        }
-        catch(const libconfig::ParseException &pex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-            exit(EXIT_FAILURE);
-        }
         bool llgset=false;
         if(!config::cfg.exists("llg"))
         {
@@ -66,11 +52,64 @@ namespace llg
             spins::setSpinsConfig();
             FIXOUT(config::Info,"Initial spin configuration (default):" << scm << std::endl);
             FIXOUT(config::Info,"Order parameter transform (default):" << trans << std::endl);
+            util::escheck=false;
+            FIXOUT(config::Info,"Outputting exchange striction (default):" << config::isTF(escheck) << std::endl);
 
         }
         else
         {
             libconfig::Setting &setting = config::cfg.lookup("llg");
+            if(!config::cfg.exists("llg.exch_striction"))
+            {
+                util::escheck=false;
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Setting, llg.exchange_striction not set, defaulting to false.");
+                FIXOUT(config::Info,"Outputting exchange striction (default):" << config::isTF(util::escheck) << std::endl);
+            }
+            else
+            {
+                FIXOUT(config::Info,"Outputting exchange striction:" << config::isTF(util::escheck) << std::endl);
+                if(util::escheck)//then read the variables that control it
+                {
+                    //get the number of pairs
+                    if(!setting.lookupValue("exchange_striction.NumPairs",util::esnp))
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        error::errMessage("You have not correctly set up the exchange striction calculation. llg.exchange_striction.NumPairs (int) must be set.");
+                    }
+                    else
+                    {
+                        FIXOUT(config::Info,"Number of pairs in exchange striction term:" << util::esnp << std::endl);
+                        util::espairs.resize(util::esnp,2);
+                        util::espairs.IFill(0);
+                    }
+                    for(unsigned int i = 0 ; i < util::esnp ; i++)
+                    {
+                        std::stringstream sstr;
+                        sstr << "exchange_striction.Pair" << i;
+                        std::string str=sstr.str();
+
+                        for(unsigned int  j = 0 ; j < 2 ; j++)
+                        {
+                            try
+                            {
+                                util::espairs(i,j)=setting[str.c_str][j];
+                            }
+                            catch(const libconfig::SettingNotFoundException &snf)
+                            {
+                                error::errPreamble(__FILE__,__LINE__);
+                                std::stringstream errsstr;
+                                errsstr << "Setting not found exception caught. Exchange striction not set up properly. Setting " << snf.getPath() << " must be set.";
+                                std::string errstr=errsstr.str();
+                                error::errMessage(errstr);
+                            }
+                            std::stringstream opsstr;
+                            opsstr << "Pair " << i << " has
+                            FIXOUT(config::Info,"Pair " <<
+                        }
+                    }
+                }
+            }
             if(!setting.lookupValue("dt",dt))
             {
                 error::errWarnPreamble(__FILE__,__LINE__);

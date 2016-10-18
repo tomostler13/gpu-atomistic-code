@@ -1,7 +1,7 @@
 // File: suscep.h
 // Author: Tom Ostler
 // Created: 25 Jan 2013
-// Last-modified: 10 Sep 2016 19:06:44
+// Last-modified: 18 Oct 2016 13:17:12
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -17,26 +17,17 @@
 #include "../inc/fields.h"
 #include "../inc/llg.h"
 #include "../inc/sim.h"
-void sim::suscep(int argc,char *argv[])
+void sim::suscep()
 {
 	config::printline(config::Info);
 	config::Info.width(45);config::Info << std::right << "*" << "**Chi(T) details***" << std::endl;
-	try
-	{
-		config::cfg.readFile(argv[1]);
-	}
-	catch(const libconfig::FileIOException &fioex)
-	{
-		error::errPreamble(__FILE__,__LINE__);
-		error::errMessage("I/O error while reading config file");
-	}
-	catch(const libconfig::ParseException &pex)
-	{
-		error::errPreamble(__FILE__,__LINE__);
-		std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-		exit(EXIT_FAILURE);
-	}
 
+
+    if(!config::cfg.exists("suscep"))
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Setting \"suscep\" does not exist. Check your config file.");
+    }
 	libconfig::Setting &setting = config::cfg.lookup("suscep");
 	double lT=0.0,uT=0.0,dT=0.0,convmean=0.0,convvar=0.0,met=0.0;
 	setting.lookupValue("lower_temp",lT);

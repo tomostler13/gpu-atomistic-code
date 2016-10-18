@@ -2,13 +2,13 @@ Seed = 123123123;
 system:
 {
     //number of unit cells
-    dim = [ 5 , 5 , 5 ];
-    Nm = [ 2 , 2 , 2 ];
-    Unitcellfile="FeOnly_Conv.ucf";
-    abc = [ 5.722e-10 , 5.722e-10 , 5.722e-10 ];
-    rprim1 = [ 5.6883853177e-1 , 0.0000000000 , 8.2244922322e-1  ];
-    rprim2 = [ -2.8441926588e-1 , 4.9262861916e-1 ,  8.2244922322e-1 ];
-    rprim3 = [ -2.8441926588e-1 , -4.9262861916e-1 , 8.2244922322e-1 ];
+    dim = [ 2 , 2 , 2 ];
+    //Nm = [ 2 , 2 , 2 ];
+    Unitcellfile="LiCoPO4.ucf";
+    abc = [ 10.202e-10 , 5.9229e-10 , 4.699e-10 ];
+    rprim1 = [ 1.0 , 0.0 , 0.0 ];
+    rprim2 = [ 0.0 , 1.0 , 0.0 ];
+    rprim3 = [ 0.0 , 0.0 , 1.0 ];
     Include_dipole = FALSE;
     Exchange_method="CSR";
     Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
@@ -16,7 +16,8 @@ system:
 exchange:
 {
     Read_exch_method="unitcell";
-    Exchfile="BiFeO3.exch";
+    Exchfile="LiCoPO4.exch";
+    OutputExchange=TRUE;
 };
 llg:
 {
@@ -24,20 +25,14 @@ llg:
     applied = [ 0.0 , 0.0 , 0.5 ];
     update=100;
     MagnetizationCalculationMethod=0;
-    //options are 0 or 1 (magnetisation or set manually)
-    OrdParTrans = 1;
-    //This should be equal to the number of species in the unit cell
-    OrdTrans:
+    exch_striction:
     {
-        T1 = [ 1.0 , 1.0 , 1.0 ];
-        T2 = [ -1.0 , -1.0 , -1.0 ];
+        NumPairs = 2;
+        Pair0 = [ 0 , 1 ];
+        Pair1 = [ 2 , 3 ];
+        Sign0=1;
+        Sign1=-1;
     };
-
-};
-sf:
-{
-    Calculate=TRUE;
-    InputFile="sf.in";
 };
 cuda:
 {

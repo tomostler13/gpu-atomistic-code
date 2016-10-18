@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 08 Sep 2016 19:23:32
+// Last-modified: 18 Oct 2016 13:24:42
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -29,7 +29,7 @@ namespace llgCPU
     Array<double> fny;
     Array<double> fnz;
     Array<double> Ts,cps,dps;
-    void initLLG(int argc,char *argv[])
+    void initLLG()
     {
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**LLG CPU details***" << std::endl;

@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 18 Oct 2016 12:32:06
+// Last-modified: 18 Oct 2016 16:43:33
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -16,6 +16,9 @@
 namespace util
 {
     extern std::ofstream ofs,sofs;
+    extern unsigned int esnp;
+    extern bool escheck;
+    extern Array2D<unsigned int> espairs;
     //convergence class
     class RunningStat
     {
@@ -131,7 +134,7 @@ namespace util
     void calc_mag();
     void output_mag(unsigned int);
     void init_output();
-    void init_es();
+    void calc_es();
     void calc_Ts();
 
 }

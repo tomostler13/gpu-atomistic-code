@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 14 Jun 2016 13:39:46
+// Last-modified: 18 Oct 2016 13:21:50
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -30,7 +30,7 @@ namespace fields
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz,HDemagx,HDemagy,HDemagz;
     Array<double> H4sx,H4sy,H4sz;
     fftw_plan HP,dHP;
-    void initFields(int argc,char *argv[])
+    void initFields()
     {
         if(config::exchm==0)
         {

@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 10 Sep 2016 18:59:46
+// Last-modified: 18 Oct 2016 13:22:23
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -38,7 +38,7 @@ namespace spins
     unsigned int update=0,mag_calc_method=0;
     bool output_mag=true,mapout=false;
     std::ifstream sfs;
-    void initSpins(int argc,char *argv[])
+    void initSpins()
     {
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Spin details***" << std::endl;
