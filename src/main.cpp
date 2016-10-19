@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 18 Oct 2016 13:39:32
+// Last-modified: 19 Oct 2016 14:36:39
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -133,13 +133,14 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="quick")
     {
 
-        llg::T=1.0;
+        llg::T=100.0;
         int counter=0;
         time_t now = time(0);
         char *dtime=ctime(&now);
         std::cout << "#Start time:\t" << dtime << std::endl;
         for(unsigned int t = 0 ; t < 300000 ; t++)
         {
+//            std::cout << t << std::endl;
             if(t%spins::update==0)
             {
                 if(counter%50==0)
@@ -165,7 +166,7 @@ int main(int argc,char *argv[])
         char *dtimee=ctime(&nowe);
         unsigned int temp=-1;
         util::outputSpinsVTU(temp);
-        std::cout << "Outputting fourier transform of spin map..." << std::flush;
+//        std::cout << "Outputting fourier transform of spin map..." << std::flush;
 //        Array5D<fftw_complex> lSk;
 //        Array5D<double> lSr;
 //        lSr.resize(geom::ucm.GetNMS(),3,geom::zpdim[0]*geom::Nk[0],geom::zpdim[1]*geom::Nk[1],geom::zpdim[2]*geom::Nk[2]);
@@ -192,7 +193,7 @@ int main(int argc,char *argv[])
         FIXOUT(config::Log,"Direction (sign) " << FFTW_FORWARD << std::endl);
         FIXOUT(config::Log,"flags = " << "FFTW_PATIENT" << std::endl);
         fftw_plan SP = fftw_plan_many_dft(3,n,geom::ucm.GetNMS()*3,lSr.ptr(),inembed,istride,idist,lSk.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_ESTIMATE);*/
-        Array3D<fftw_complex> Skx,Sky,Skz;
+/*        Array3D<fftw_complex> Skx,Sky,Skz;
         Array3D<double> Srx,Sry,Srz;
         Skx.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
         Srx.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
@@ -278,7 +279,7 @@ int main(int argc,char *argv[])
                     }
                 }
             }
-        }
+        }*/
 
         std::cout << "#End time:\t" << dtimee << std::endl;
     }

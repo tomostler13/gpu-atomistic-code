@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 19 Oct 2016 12:27:19
+// Last-modified: 19 Oct 2016 14:36:29
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -72,6 +72,20 @@ namespace llg
             {
                 util::escheck=true;
                 FIXOUT(config::Info,"Outputting exchange striction:" << config::isTF(util::escheck) << std::endl);
+                //open the file to write the polarisation to
+                util::outESP.open("exch_stric_P.dat");
+                if(!util::outESP.is_open())
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Could not open file exch_stric_P.dat, check disk space and access");
+                }
+                else
+                {
+                    util::outESP << "# This file contains the time in seconds in the first column followed by the" << std::endl;
+                    util::outESP << "# dot product between spin pairs (each pair is output) normalised by the number" << std::endl;
+                    util::outESP << "# of unit cell (N) and the number of interactions that each spin participates in" << std::endl;
+                }
+
                 if(util::escheck)//then read the variables that control it
                 {
                     libconfig::Setting &esset = config::cfg.lookup("llg.exch_striction");
@@ -102,6 +116,8 @@ namespace llg
                         util::esuc.IFill(0);
                         util::lambda.resize(util::esnp);
                         util::lambda.IFill(0);
+                        util::esP.resize(util::esnp);
+                        util::esP.IFill(0);
 
                     }
                     for(unsigned int i = 0 ; i < util::esnp ; i++)
@@ -518,6 +534,12 @@ namespace llg
     }
     void integrate(unsigned int& t)
     {
+        if(util::escheck && t%spins::update==0)
+        {
+            util::outESP << static_cast<double>(t)*dt;
+            util::calc_es();
+        }
+
 #ifdef CUDA
         cullg::llgGPU(t);
 #else

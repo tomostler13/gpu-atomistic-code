@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 18 Oct 2016 13:16:40
+// Last-modified: 19 Oct 2016 13:18:23
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -297,6 +297,11 @@ void sim::MvT()
                 error::errWarnPreamble(__FILE__,__LINE__);
                 error::errWarning("Could not delete array modm");
             }
+            if(util::escheck)
+            {
+                util::outESP << std::endl;
+                util::outESP << std::endl;
+            }
         }
     }
     if(dT<0.0)
@@ -427,6 +432,11 @@ void sim::MvT()
             {
                 error::errWarnPreamble(__FILE__,__LINE__);
                 error::errWarning("Could not delete array modm");
+            }
+            if(util::escheck)
+            {
+                util::outESP << std::endl;
+                util::outESP << std::endl;
             }
         }
     }
