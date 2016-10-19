@@ -1,7 +1,7 @@
 // File: util_exch_striction.cpp
 // Author:Tom Ostler
 // Created: 18 Dec 2016
-// Last-modified: 18 Oct 2016 16:43:34
+// Last-modified: 19 Oct 2016 12:22:04
 // Contains useful functions and classes
 // that pertain to exchange striction
 #include "../inc/util.h"
@@ -19,11 +19,14 @@
 namespace util
 {
     //exch stric no. pairs
-    unsigned int esnp;
+    unsigned int esnp,maxuc;
     Array2D<unsigned int> espairs;
+    Array3D<int> esuc;
+    Array<unsigned int> esnum;
+    Array<double> lambda;
     bool escheck;
     void calc_es()
     {
-
+//        for(unsigned int i = 0
     }
 }

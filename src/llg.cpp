@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 18 Oct 2016 17:35:32
+// Last-modified: 19 Oct 2016 12:27:19
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -84,8 +84,25 @@ namespace llg
                     else
                     {
                         FIXOUT(config::Info,"Number of pairs in exchange striction term:" << util::esnp << std::endl);
+                        if(!esset.lookupValue("MaxUnitCells",util::maxuc))
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            error::errMessage("You must set the maximum number of unit cells to look for for the exchange striction. Setting llg.exch_striction.MaxUnitCells (int)");
+                        }
+                        else
+                        {
+                            FIXOUT(config::Info,"Max number of unit cells to look for for the exchange striction:" << util::maxuc << std::endl);
+                        }
                         util::espairs.resize(util::esnp,2);
                         util::espairs.IFill(0);
+                        //resize the arrays to hold the unit cell interactio details
+                        util::esnum.resize(util::esnp);
+                        util::esnum.IFill(0);
+                        util::esuc.resize(util::esnp,util::maxuc,3);
+                        util::esuc.IFill(0);
+                        util::lambda.resize(util::esnp);
+                        util::lambda.IFill(0);
+
                     }
                     for(unsigned int i = 0 ; i < util::esnp ; i++)
                     {
@@ -110,10 +127,87 @@ namespace llg
                         }
                         std::stringstream opsstr,opsstr1;
                         opsstr << "Pair " << i << " is between atoms:";
-                        opsstr1 << util::espairs(i,0) << " and " << util::espairs(i,1) << std::endl;
+                        opsstr1 << util::espairs(i,0) << " and " << util::espairs(i,1);
                         std::string opstr=opsstr.str(),opstr1=opsstr1.str();
                         FIXOUT(config::Info,opstr << opstr1 << std::endl);
+                        opsstr.str("");
+                        opsstr.clear();
+                        opsstr << "llg.exch_striction.UnitCells" << i;
+                        opstr=opsstr.str();
+                        if(!config::cfg.exists(opstr.c_str()))
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            opsstr.str("");
+                            opsstr.clear();
+                            opsstr << "Your setting of the unit cell directions llg.exch_striction.UnitCell" << i << " cannout be found, check your config file.";
+                            opstr=opsstr.str();
+                            error::errMessage(opstr);
+                        }
+                        else
+                        {
+                            libconfig::Setting &pset = config::cfg.lookup(opstr.c_str());
 
+                            if(!pset.lookupValue("lambda",util::lambda(i)))
+                            {
+                                error::errPreamble(__FILE__,__LINE__);
+                                opsstr.str("");opsstr.clear();
+                                opsstr << "The exchange striction constant for pair " << i << " was not set properly, setting llg.exch_striction.UnitCells" << i << ".lambda (double)";
+                                error::errMessage(opsstr);
+                            }
+                            else
+                            {
+                                FIXOUT(config::Info,"Exchange striction constant:" << util::lambda(i) << " [UNITS????]" << std::endl);
+                            }
+                            if(!pset.lookupValue("num",util::esnum(i)))
+                            {
+                                opsstr.str("");
+                                opsstr.clear();
+                                opsstr << "Could not read number of unit cells for calculation of exchange striction (setting llg.exch_striction.UnitCell" << i << ".num (int)";
+                                error::errPreamble(__FILE__,__LINE__);
+                                error::errMessage(opsstr);
+                            }
+                            else
+                            {
+
+                                FIXOUT(config::Info,"Number of unit cells:" << util::esnum(i) << std::endl);
+                                if(util::esnum(i)>util::maxuc)
+                                {
+                                    error::errPreamble(__FILE__,__LINE__);
+                                    opsstr.str("");opsstr.clear();
+                                    opsstr << "The number of unit cells to look for (llg.exch_striction.UnitCells." << i << ".num (int) cannot be larger than setting llg.exch_striction.NumPairs (int), check your config file.";
+                                    error::errMessage(opsstr);
+                                }
+                                for(unsigned int uc = 0 ; uc < util::esnum(i) ; uc++)
+                                {
+                                    opsstr.str("");opsstr.clear();
+                                    opsstr << "dir" << uc;
+                                    opstr=opsstr.str();
+                                    for(unsigned int d = 0 ; d < 3 ; d++)
+                                    {
+                                        try
+                                        {
+                                            util::esuc(i,uc,d)=pset[opstr.c_str()][d];
+                                        }
+                                        catch(const libconfig::SettingNotFoundException &snf)
+                                        {
+                                            error::errPreamble(__FILE__,__LINE__);
+                                            std::stringstream errsstr;
+                                            errsstr << "Setting not found exception caught. Exchange striction unit cell lookup, setting llg.exch_striction.UnitCells" << i << " not set up properly for direction " << d << ". Setting " << snf.getPath() << " must be set.";
+                                            std::string errstr=errsstr.str();
+                                            error::errMessage(errstr);
+                                        }
+                                    }
+                                    opsstr.str("");
+                                    opsstr.clear();
+                                    opsstr << "Unit cell direction " << uc;
+                                    opstr=opsstr.str();
+
+                                    FIXOUTVEC(config::Info,opstr,util::esuc(i,uc,0),util::esuc(i,uc,1),util::esuc(i,uc,2));
+                                }
+                                config::Info << std::endl;
+                            }
+
+                        }
                     }
                 }
             }

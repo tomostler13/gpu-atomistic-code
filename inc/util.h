@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 18 Oct 2016 16:43:33
+// Last-modified: 19 Oct 2016 12:22:17
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -16,9 +16,12 @@
 namespace util
 {
     extern std::ofstream ofs,sofs;
-    extern unsigned int esnp;
+    extern unsigned int esnp,maxuc;
     extern bool escheck;
     extern Array2D<unsigned int> espairs;
+    extern Array3D<int> esuc;
+    extern Array<unsigned int> esnum;
+    extern Array<double> lambda;
     //convergence class
     class RunningStat
     {

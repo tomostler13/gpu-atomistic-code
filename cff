@@ -28,8 +28,28 @@ llg:
     exch_striction:
     {
         NumPairs = 2;
+        MaxUnitCells=4;
         Pair0 = [ 0 , 1 ];
+        UnitCells0:
+        {
+            num = 4;
+            lambda = 1.0;
+            dir0 = [ 0 , 0 , 0 ];
+            dir1 = [ 0 , -1 , 0 ];
+            dir2 = [ 0 , -1 , 1 ];
+            dir3 = [ 0 , 0 , 1 ];
+        };
+
         Pair1 = [ 2 , 3 ];
+        UnitCells1:
+        {
+            num = 4;
+            lambda = 1.0;
+            dir0 = [ 0 , 0 , 0 ];
+            dir1 = [ 0 , 1 , 0 ];
+            dir2 = [ 0 , 1 , -1 ];
+            dir3 = [ 0 , 0 , -1 ];
+        };
     };
 };
 cuda:
