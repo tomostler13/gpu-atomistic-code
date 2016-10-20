@@ -1,8 +1,8 @@
-Seed = 123123123;
+Seed = 123890572;
 system:
 {
     //number of unit cells
-    dim = [ 16 , 16 , 16 ];
+    dim = [ 32 , 32 , 32 ];
     //Nm = [ 2 , 2 , 2 ];
     Unitcellfile="LiCoPO4.ucf";
     abc = [ 10.202e-10 , 5.9229e-10 , 4.699e-10 ];
@@ -17,12 +17,11 @@ exchange:
 {
     Read_exch_method="unitcell";
     Exchfile="LiCoPO4.exch";
-    OutputExchange=TRUE;
 };
 llg:
 {
     dt = 0.2e-15;
-    applied = [ 0.0 , 0.0 , 0.5 ];
+    applied = [ 0.0 , 0.0 , 0.0 ];
     update=100;
     MagnetizationCalculationMethod=0;
     exch_striction:
@@ -58,33 +57,18 @@ cuda:
 };
 sim:
 {
-//    sim_type="MvT";
-    sim_type="quick";
+    sim_type="MvT";
+//    sim_type="quick";
 //    sim_type="laserheating";
 };
 mvt:
 {
-    Lower_temp=1.0;
-    Upper_temp=1.1;
-    Temp_step=50.0;
-};
-laserheating:
-{
-    EquilibrationTime = 0e-12;
-    RunTime = 0.01e-12;
-    InitialTemperature = 300.0;
-    Cl = 4.54e1;
-    PumpTime = 100e-15;
-    //J/mol/K/s
-    G_ep = 1.05e12;
-    //Joules/mol/K^2
-    Gamma_e = 3.5e-3;
-    CoolingTime = 3000000.0e-12;
-    PumpFluence = 25.0e15;
-    NumPulses = 1;
-    PulseDelays = [ 300e-15 ];
-};
-timeseries:
-{
-    Temperature=1.0;
+    Lower_temp=2.0;
+    Upper_temp=25.0;
+    Temp_step=1.0;
+    Mean_tol=1e-6;
+    Variance_tol=1e-6;
+    MinRunTime=1.5e-12;
+    MaxRunTime=5e-12;
+    OutputSpinsVTU=true;
 };
