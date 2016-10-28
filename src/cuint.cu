@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 16 Mar 2016 09:56:23
+// Last-modified: 27 Oct 2016 14:41:49
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -72,7 +72,7 @@ namespace cuint
                 lfn[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
                 Cfn[3*i+j]=lfn[j];
                 es[j]=s[j]+lfn[j]*Crdt;
-                mods+=s[j]*s[j];
+                mods+=es[j]*es[j];
             }
             //calculate one over the square root of the spin modulus
             const double nf=rsqrt(mods);
