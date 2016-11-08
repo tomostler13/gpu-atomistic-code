@@ -15,7 +15,6 @@ array.job
 unit_cell_files
 *.swp
 */*.swp
-*.ucf
 *.DS*
 N_8
 exchange_files/GdFe_MultiLayers/
@@ -67,3 +66,6 @@ test.cpp
 test/
 test_checkpoint/
 ucf.chud
+*.dat
+*.log
+*.job

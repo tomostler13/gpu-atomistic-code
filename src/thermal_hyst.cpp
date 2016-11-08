@@ -1,7 +1,7 @@
 // File: thermal_hyst.cpp
 // Author: Tom Ostler
 // Created: 7th June 2015
-// Last-modified: 27 Nov 2015 19:01:51
+// Last-modified: 18 Oct 2016 13:19:20
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -20,25 +20,11 @@
 #include "../inc/llg.h"
 #include "../inc/sim.h"
 #include "../inc/sf.h"
-void sim::thermal_hyst(int argc,char *argv[])
+void sim::thermal_hyst()
 {
     config::printline(config::Info);
     config::Info.width(45);config::Info << std::right << "*" << "**Thermal Hysteresis details***" << std::endl;
-    try
-    {
-        config::cfg.readFile(argv[1]);
-    }
-    catch(const libconfig::FileIOException &fioex)
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("I/O error while reading config file");
-    }
-    catch(const libconfig::ParseException &pex)
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+
     bool outputSpinConfig=false;
     bool checkset=config::cfg.exists("thermal_hyst");
     if(!checkset)

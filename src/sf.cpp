@@ -2,7 +2,7 @@
 // Note: Original dsf.cpp
 // Author:Tom Ostler
 // Created: 2 Nov 2014
-// Last-modified: 06 Nov 2014 11:53:52
+// Last-modified: 18 Oct 2016 13:25:46
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -20,8 +20,8 @@
 
 namespace sf
 {
-    void initSF(int argc,char *argv[])
+    void initSF()
     {
-        readSFParam(argc,argv);
+        readSFParam();
     }
 }

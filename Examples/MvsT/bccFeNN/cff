@@ -1,0 +1,37 @@
+Seed = 123123123;
+system:
+{
+    //number of unit cells
+    dim = [ 32 , 32 , 32 ];
+    Unitcellfile="bccFe.ucf";
+    abc = [ 3e-10 , 3e-10 , 3e-10 ];
+    rprim1 = [ 1.0 , 0.0 , 0.0 ];
+    rprim2 = [ 0.0 , 1.0 , 0.0 ];
+    rprim3 = [ 0.0 , 0.0 , 1.0 ];
+    Include_dipole = FALSE;
+    Exchange_method="CSR";
+    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
+};
+exchange:
+{
+    Read_exch_method="unitcell";
+    Exchfile="uc_bccFe_NN.exch";
+    OutputExchange=TRUE;
+};
+cuda:
+{
+    threadsperblock=256;
+};
+sim:
+{
+    sim_type="MvT";
+};
+mvt:
+{
+    Lower_temp=100.0;
+    Upper_temp=1200.0;
+    Temp_step=100.0;
+    MinRunTime=1e-12;
+    MaxRunTime=2e-12;
+    OutputSpinsVTU=TRUE;
+};

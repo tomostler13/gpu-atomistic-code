@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 05 Jun 2015 19:58:58
+// Last-modified: 18 Oct 2016 13:21:50
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -30,7 +30,7 @@ namespace fields
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz,HDemagx,HDemagy,HDemagz;
     Array<double> H4sx,H4sy,H4sz;
     fftw_plan HP,dHP;
-    void initFields(int argc,char *argv[])
+    void initFields()
     {
         if(config::exchm==0)
         {
@@ -153,7 +153,7 @@ namespace fields
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             double h[3]={0,0,0};
-            //lookup the k-points coords
+            //lookup the mesh-points coords
             unsigned int lci[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
             double ri[3]={0,0,0};
             //spin components
@@ -167,7 +167,7 @@ namespace fields
             {
                 if(i!=j)
                 {
-                    //lookup the k-points coords
+                    //lookup the mesh-points coords
                     unsigned int lcj[3]={geom::lu(j,0),geom::lu(j,1),geom::lu(j,2)};
                     double rj[3]={0,0,0};
                     double sj[3]={spins::Sx[j],spins::Sy[j],spins::Sz[j]};

@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 09 Feb 2016 10:01:44
+// Last-modified: 13 Sep 2016 12:31:29
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -42,8 +42,8 @@ namespace util
         dgetrf_(&N,&N,A,&N,IPIV,&INFO);
         dgetri_(&N,A,&N,IPIV,WORK,&LWORK,&INFO);
 
-        delete IPIV;
-        delete WORK;
+        delete [] IPIV;
+        delete [] WORK;
     }
     void cpuConvFourier()
     {
@@ -174,14 +174,14 @@ namespace util
     }
     void fillfloat(int size0,int size1,int size2,Array3D<fftw_complex> da,Array3D<fftwf_complex> fa)
     {
-        for(unsigned int i = 0 ; i < size0 ; i++)
+        for(int i = 0 ; i < size0 ; i++)
         {
-            for(unsigned int j = 0 ; j < size1 ; j++)
+            for(int j = 0 ; j < size1 ; j++)
             {
-                for(unsigned int k = 0 ; k < size2 ; k++)
+                for(int k = 0 ; k < size2 ; k++)
                 {
-                    fa(i,j,k)[0]=float(da(i,j,k)[0]);
-                    fa(i,j,k)[1]=float(da(i,j,k)[1]);
+                    fa(i,j,k)[0]=static_cast<float>(da(i,j,k)[0]);
+                    fa(i,j,k)[1]=static_cast<float>(da(i,j,k)[1]);
                 }
             }
         }
@@ -274,25 +274,75 @@ namespace util
             error::errMessage("Could not open file for writing paraview files");
         }
 
-        pvf << "<?xml version=\"1.0\"?>" << "\n";
-        pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
-        pvf << "<UnstructuredGrid>" << "\n";
-        pvf << "<Piece NumberOfPoints=\""<<geom::nspins<<"\"  NumberOfCells=\"1\">" << "\n";
-        pvf << "<PointData Scalar=\"Spin\">" << "\n";
-        pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
-        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        if(llg::trans==0)
         {
-                    pvf << spins::Sx(i) << "\t" << spins::Sy(i) << "\t" << spins::Sz(i) << "\n";
+            pvf << "<?xml version=\"1.0\"?>" << "\n";
+            pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
+            pvf << "<UnstructuredGrid>" << "\n";
+            pvf << "<Piece NumberOfPoints=\""<<geom::nspins<<"\"  NumberOfCells=\"1\">" << "\n";
+            pvf << "<PointData Scalar=\"Spin\">" << "\n";
+            pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                pvf << spins::Sx(i) << "\t" << spins::Sy(i) << "\t" << spins::Sz(i) << "\n";
+            }
         }
+        else
+        {
+            pvf << "<?xml version=\"1.0\"?>" << "\n";
+            pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
+            pvf << "<UnstructuredGrid>" << "\n";
+            pvf << "<Piece NumberOfPoints=\""<<geom::dim[0]*geom::dim[1]*geom::dim[2]<<"\"  NumberOfCells=\"1\">" << "\n";
+            pvf << "<PointData Scalar=\"Spin\">" << "\n";
+            pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+            for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
+            {
+                for(unsigned int j = 0 ; j < geom::dim[1] ; j++)
+                {
+                    for(unsigned int k = 0 ; k < geom::dim[2] ; k++)
+                    {
+                        double op[3]={0,0,0};
+                        for(unsigned int t = 0 ; t < geom::ucm.GetNMS() ; t++)
+                        {
+                            unsigned int atid=geom::atnolu(i,j,k,t);
+                            op[0]+=spins::Sx[atid]*llg::optrans(t,0);
+                            op[1]+=spins::Sy[atid]*llg::optrans(t,1);
+                            op[2]+=spins::Sz[atid]*llg::optrans(t,2);
+                        }
+                        pvf << op[0] << "\t" << op[1] << "\t" << op[2] << std::endl;
+                    }
+                }
+            }
+        }
+
         pvf << "</DataArray>" << "\n";
         pvf << "</PointData>" << "\n";
         pvf << "<CellData>" << "\n";
         pvf << "</CellData>" << "\n";
         pvf << "<Points>" << "\n";
         pvf << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
-        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        if(llg::trans==0)
         {
-            pvf << static_cast<double>(geom::lu(i,0))*geom::abc[0] << "\t" << static_cast<double>(geom::lu(i,1))*geom::abc[1] << "\t" << static_cast<double>(geom::lu(i,2))*geom::abc[2] << "\n";
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                pvf << geom::rx[i] << "\t" << geom::ry[i] << "\t" << geom::rz[i] << "\n";
+            }
+        }
+        else
+        {
+            for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
+            {
+                for(unsigned int j = 0 ; j < geom::dim[1] ; j++)
+                {
+                    for(unsigned int k = 0 ; k < geom::dim[2] ; k++)
+                    {
+                        pvf << static_cast<double>(i)*geom::rprim(0,0)+static_cast<double>(j)*geom::rprim(1,0)+static_cast<double>(k)*geom::rprim(2,0) << "\t";
+                        pvf << static_cast<double>(i)*geom::rprim(0,1)+static_cast<double>(j)*geom::rprim(1,1)+static_cast<double>(k)*geom::rprim(2,1) << "\t";
+                        pvf << static_cast<double>(i)*geom::rprim(0,2)+static_cast<double>(j)*geom::rprim(1,2)+static_cast<double>(k)*geom::rprim(2,2) << std::endl;
+                    }
+                }
+            }
         }
 
         pvf << "</DataArray>" << "\n";
@@ -313,13 +363,216 @@ namespace util
         pvf << "</VTKFile>" << "\n";
         pvf.close();
     }
+    void outputSpinsVTU(unsigned int t,double T)
+    {
+        std::stringstream pvss;
+        std::string pv="spinmap";
+        pvss << pv << "_T_" << T << "_t_" << t << ".vtu";
+        std::string pvs = pvss.str();
+        std::ofstream pvf(pvs.c_str());
+        if(!pvf.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open file for writing paraview files");
+        }
+        if(llg::trans==0)
+        {
+            pvf << "<?xml version=\"1.0\"?>" << "\n";
+            pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
+            pvf << "<UnstructuredGrid>" << "\n";
+            pvf << "<Piece NumberOfPoints=\""<<geom::nspins<<"\"  NumberOfCells=\"1\">" << "\n";
+            pvf << "<PointData Scalar=\"Spin\">" << "\n";
+            pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                pvf << spins::Sx(i) << "\t" << spins::Sy(i) << "\t" << spins::Sz(i) << "\n";
+            }
+        }
+        else
+        {
+            pvf << "<?xml version=\"1.0\"?>" << "\n";
+            pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
+            pvf << "<UnstructuredGrid>" << "\n";
+            pvf << "<Piece NumberOfPoints=\""<<geom::dim[0]*geom::dim[1]*geom::dim[2]<<"\"  NumberOfCells=\"1\">" << "\n";
+            pvf << "<PointData Scalar=\"Spin\">" << "\n";
+            pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+            for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
+            {
+                for(unsigned int j = 0 ; j < geom::dim[1] ; j++)
+                {
+                    for(unsigned int k = 0 ; k < geom::dim[2] ; k++)
+                    {
+                        double op[3]={0,0,0};
+                        for(unsigned int t = 0 ; t < geom::ucm.GetNMS() ; t++)
+                        {
+                            unsigned int atid=geom::atnolu(i,j,k,t);
+                            op[0]+=spins::Sx[atid]*llg::optrans(t,0);
+                            op[1]+=spins::Sy[atid]*llg::optrans(t,1);
+                            op[2]+=spins::Sz[atid]*llg::optrans(t,2);
+                        }
+                        pvf << op[0] << "\t" << op[1] << "\t" << op[2] << std::endl;
+                    }
+                }
+            }
+        }
+
+        pvf << "</DataArray>" << "\n";
+        pvf << "</PointData>" << "\n";
+        pvf << "<CellData>" << "\n";
+        pvf << "</CellData>" << "\n";
+        pvf << "<Points>" << "\n";
+        pvf << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+        if(llg::trans==0)
+        {
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                pvf << geom::rx[i] << "\t" << geom::ry[i] << "\t" << geom::rz[i] << "\n";
+            }
+        }
+        else
+        {
+            for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
+            {
+                for(unsigned int j = 0 ; j < geom::dim[1] ; j++)
+                {
+                    for(unsigned int k = 0 ; k < geom::dim[2] ; k++)
+                    {
+                        pvf << static_cast<double>(i)*geom::rprim(0,0)+static_cast<double>(j)*geom::rprim(1,0)+static_cast<double>(k)*geom::rprim(2,0) << "\t";
+                        pvf << static_cast<double>(i)*geom::rprim(0,1)+static_cast<double>(j)*geom::rprim(1,1)+static_cast<double>(k)*geom::rprim(2,1) << "\t";
+                        pvf << static_cast<double>(i)*geom::rprim(0,2)+static_cast<double>(j)*geom::rprim(1,2)+static_cast<double>(k)*geom::rprim(2,2) << std::endl;
+                    }
+                }
+            }
+        }
+
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Points>" << "\n";
+        pvf << "<Cells>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Cells>" << "\n";
+        pvf << "</Piece>" << "\n";
+        pvf << "</UnstructuredGrid>" << "\n";
+        pvf << "</VTKFile>" << "\n";
+        pvf.close();
+    }
+    void outputSpinsVTU(double T)
+    {
+        std::stringstream pvss;
+        std::string pv="spinmap";
+        pvss << pv << "_T_" << T << ".vtu";
+        std::string pvs = pvss.str();
+        std::ofstream pvf(pvs.c_str());
+        if(!pvf.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open file for writing paraview files");
+        }
+        if(llg::trans==0)
+        {
+            pvf << "<?xml version=\"1.0\"?>" << "\n";
+            pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
+            pvf << "<UnstructuredGrid>" << "\n";
+            pvf << "<Piece NumberOfPoints=\""<<geom::nspins<<"\"  NumberOfCells=\"1\">" << "\n";
+            pvf << "<PointData Scalar=\"Spin\">" << "\n";
+            pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                pvf << spins::Sx(i) << "\t" << spins::Sy(i) << "\t" << spins::Sz(i) << "\n";
+            }
+        }
+        else
+        {
+            pvf << "<?xml version=\"1.0\"?>" << "\n";
+            pvf << "<VTKFile type=\"UnstructuredGrid\">" << "\n";
+            pvf << "<UnstructuredGrid>" << "\n";
+            pvf << "<Piece NumberOfPoints=\""<<geom::dim[0]*geom::dim[1]*geom::dim[2]<<"\"  NumberOfCells=\"1\">" << "\n";
+            pvf << "<PointData Scalar=\"Spin\">" << "\n";
+            pvf << "<DataArray type=\"Float32\" Name=\"Spin\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+            for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
+            {
+                for(unsigned int j = 0 ; j < geom::dim[1] ; j++)
+                {
+                    for(unsigned int k = 0 ; k < geom::dim[2] ; k++)
+                    {
+                        double op[3]={0,0,0};
+                        for(unsigned int t = 0 ; t < geom::ucm.GetNMS() ; t++)
+                        {
+                            unsigned int atid=geom::atnolu(i,j,k,t);
+                            op[0]+=spins::Sx[atid]*llg::optrans(t,0);
+                            op[1]+=spins::Sy[atid]*llg::optrans(t,1);
+                            op[2]+=spins::Sz[atid]*llg::optrans(t,2);
+                        }
+                        pvf << op[0] << "\t" << op[1] << "\t" << op[2] << std::endl;
+                    }
+                }
+            }
+        }
+
+        pvf << "</DataArray>" << "\n";
+        pvf << "</PointData>" << "\n";
+        pvf << "<CellData>" << "\n";
+        pvf << "</CellData>" << "\n";
+        pvf << "<Points>" << "\n";
+        pvf << "<DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">" << "\n";
+        if(llg::trans==0)
+        {
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                pvf << geom::rx[i] << "\t" << geom::ry[i] << "\t" << geom::rz[i] << "\n";
+            }
+        }
+        else
+        {
+            for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
+            {
+                for(unsigned int j = 0 ; j < geom::dim[1] ; j++)
+                {
+                    for(unsigned int k = 0 ; k < geom::dim[2] ; k++)
+                    {
+                        pvf << static_cast<double>(i)*geom::rprim(0,0)+static_cast<double>(j)*geom::rprim(1,0)+static_cast<double>(k)*geom::rprim(2,0) << "\t";
+                        pvf << static_cast<double>(i)*geom::rprim(0,1)+static_cast<double>(j)*geom::rprim(1,1)+static_cast<double>(k)*geom::rprim(2,1) << "\t";
+                        pvf << static_cast<double>(i)*geom::rprim(0,2)+static_cast<double>(j)*geom::rprim(1,2)+static_cast<double>(k)*geom::rprim(2,2) << std::endl;
+                    }
+                }
+            }
+        }
+
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Points>" << "\n";
+        pvf << "<Cells>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">" << "\n";
+        pvf << "1" << "\n";
+        pvf << "</DataArray>" << "\n";
+        pvf << "</Cells>" << "\n";
+        pvf << "</Piece>" << "\n";
+        pvf << "</UnstructuredGrid>" << "\n";
+        pvf << "</VTKFile>" << "\n";
+
+        pvf.close();
+    }
     void calc_Ts()
     {
         for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
         {
-            llg::Ts[s]=0.0;
-            llg::cps[s]=0.0;
-            llg::dps[s]=0.0;
+            llg::Ts(s)=0.0;
+            llg::cps(s)=0.0;
+            llg::dps(s)=0.0;
         }
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
@@ -329,13 +582,14 @@ namespace util
             const double sdh=s[0]*h[0]+s[1]*h[1]+s[2]*h[2];
             //get the species
             unsigned int spec=geom::lu(i,3);
-            double mm=geom::ucm.GetMu(i);
-            llg::cps[spec]+=mm*sxh[0]*sxh[0]+mm*sxh[1]*sxh[1]+mm*sxh[2]*sxh[2];
-            llg::dps[spec]+=sdh;
+            double mm=geom::ucm.GetMu(spec);
+            llg::cps(spec)+=mm*sxh[0]*sxh[0]+mm*sxh[1]*sxh[1]+mm*sxh[2]*sxh[2];
+            llg::dps(spec)+=sdh;
         }
         for(unsigned int s = 0 ; s < geom::ucm.GetNMS() ; s++)
         {
-            llg::Ts[s]=llg::muB*llg::cps[s]/(2.0*llg::kB*llg::dps[s]);
+
+            llg::Ts(s)=llg::muB*llg::cps(s)/(2.0*llg::kB*llg::dps(s));
             //std::cout << geom::ucm.GetMu(s) << std::endl;
         }
     }

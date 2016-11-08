@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 05 Oct 2015 12:37:51
+// Last-modified: 18 Oct 2016 13:17:52
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -20,7 +20,7 @@
 #include "../inc/llg.h"
 #include "../inc/sim.h"
 #include "../inc/sf.h"
-void sim::timeseries(int argc,char *argv[])
+void sim::timeseries()
 {
     unsigned int num_samples=0;
     double et=0.0,rt=0.0;
@@ -35,85 +35,102 @@ void sim::timeseries(int argc,char *argv[])
     config::printline(config::Info);
     config::Info.width(45);config::Info << std::right << "*" << "**Time series details***" << std::endl;
     //The k-vector information is read in the file sf.cpp and sf_glob.cpp
-    try
-    {
-        config::cfg.readFile(argv[1]);
-    }
-    catch(const libconfig::FileIOException &fioex)
+    if(!config::cfg.exists("timeseries"))
     {
         error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("I/O error while reading config file");
+        error::errMessage("Setting \"timeseries\" does not exist. Check your config file.");
     }
-    catch(const libconfig::ParseException &pex)
+    if(!config::cfg.exists("timeseries"))
     {
         error::errPreamble(__FILE__,__LINE__);
-        std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-        exit(EXIT_FAILURE);
+        error::errMessage("Timeseries settings cannot be found, check your config file.");
     }
-
     libconfig::Setting &setting = config::cfg.lookup("timeseries");
-    bool errstatus=setting.lookupValue("EquilibrationTime",et);
-    if(errstatus)
+    if(setting.lookupValue("EquilibrationTime",et))
     {
         FIXOUT(config::Info,"Equilibration time:" << et << " [s]" << std::endl);
         ets=static_cast<unsigned int>((et/llg::dt)+0.5);
         FIXOUT(config::Info,"Number of equilibration timesteps:" << ets << std::endl);
     }
-    errstatus=setting.lookupValue("RunTime",rt);
-    if(errstatus)
+    else
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not find the equilibration time, defaulting to 15ps");
+        et=15e-12;
+        FIXOUT(config::Info,"Equilibration time (default):" << et << " [s]" << std::endl);
+        ets=static_cast<unsigned int>((et/llg::dt)+0.5);
+        FIXOUT(config::Info,"Number of equilibration timesteps (default):" << ets << std::endl);
+    }
+    if(setting.lookupValue("RunTime",rt))
     {
         FIXOUT(config::Info,"Run time:" << rt << " [s]" << std::endl);
         rts=static_cast<unsigned int>((rt/llg::dt)+0.5);
         FIXOUT(config::Info,"Number of timesteps for run:" << rts << std::endl);
     }
-    errstatus=setting.lookupValue("Temperature",llg::T);
-    if(errstatus)
+    else
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Could not find the run time, defaulting to 100ps");
+        rt=100e-12;
+        FIXOUT(config::Info,"Run time (default):" << rt << " [s]" << std::endl);
+        rts=static_cast<unsigned int>((rt/llg::dt)+0.5);
+        FIXOUT(config::Info,"Number of timesteps for run (default):" << rts << std::endl);
+    }
+    if(setting.lookupValue("Temperature",llg::T))
     {
         FIXOUT(config::Info,"Temperature:" << llg::T << " [K]" << std::endl);
     }
     else
     {
         error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not read temperature for sf (sf:Temperature (double))");
+        error::errMessage("Could not read temperature for sf (sf:Temperature (double)). Must be set.");
     }
     bool oits=false;
-    errstatus=setting.lookupValue("OutputIndividualTimeSeries",oits);
-    if(errstatus)
+    if(setting.lookupValue("OutputIndividualTimeSeries",oits))
     {
         FIXOUT(config::Info,"Outputting individual time series for each magnetic species?:" << config::isTF(oits) << std::endl);
     }
     else
     {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("Could not read whether you want to output the individual time series for each magnetic species (timseries:OutputIndividualTimeSeries (bool))");
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Outputting of individual timeseries (timeseries.OutputIndividualTimeSeries (bool)) not set, defaulting to false.");
+        oits=false;
     }
 
-    FIXOUT(config::Info,"Planning FFT for spin map:" << std::flush);
     //This array stores the spin map in real space
     Array3D<fftw_complex> s3d;
     //this is the same as s3d except that it is for calculating the structure factor for each magnetic species
     Array4D<fftw_complex> is3d;
-    s3d.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
-    s3d.IFill(0);
-    fftw_plan ftspins;
-    //plan an in-place transform
-    fftw_set_timelimit(60);
-    ftspins=fftw_plan_dft_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],s3d.ptr(),s3d.ptr(),FFTW_FORWARD,FFTW_PATIENT);
-    SUCCESS(config::Info);
-    fftw_plan iftspins;
-    if(oits)
+
+    fftw_plan ftspins,iftspins;
+    if(geom::Nkset)
     {
-        FIXOUT(config::Info,"Planning FFT for individual species:" << std::flush);
-        is3d.resize(geom::ucm.GetNMS(),geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
-        is3d.IFill(0);
-        int rank=3;
-        const int n[3] = {geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]};
-        int howmany=geom::ucm.GetNMS();
-        int idist=n[0]*n[1]*n[2],odist=n[0]*n[1]*n[2];
-        int istride=1,ostride=1;
-        const int *inembed=n,*onembed=n;
-        iftspins=fftw_plan_many_dft(rank,n,howmany,is3d.ptr(),inembed,istride,idist,is3d.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
+        FIXOUT(config::Info,"Planning FFT for spin map:" << std::flush);
+        s3d.resize(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+        s3d.IFill(0);
+        //plan an in-place transform
+        fftw_set_timelimit(60);
+        ftspins=fftw_plan_dft_3d(geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2],s3d.ptr(),s3d.ptr(),FFTW_FORWARD,FFTW_PATIENT);
         SUCCESS(config::Info);
+        if(oits)
+        {
+            FIXOUT(config::Info,"Planning FFT for individual species:" << std::flush);
+            is3d.resize(geom::ucm.GetNMS(),geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]);
+            is3d.IFill(0);
+            int rank=3;
+            const int n[3] = {geom::dim[0]*geom::Nk[0],geom::dim[1]*geom::Nk[1],geom::dim[2]*geom::Nk[2]};
+            int howmany=geom::ucm.GetNMS();
+            int idist=n[0]*n[1]*n[2],odist=n[0]*n[1]*n[2];
+            int istride=1,ostride=1;
+            const int *inembed=n,*onembed=n;
+            iftspins=fftw_plan_many_dft(rank,n,howmany,is3d.ptr(),inembed,istride,idist,is3d.ptr(),onembed,ostride,odist,FFTW_FORWARD,FFTW_PATIENT);
+            SUCCESS(config::Info);
+        }
+    }
+    else
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("To calculate the time-series (and eventually get the spinwave dispersion relation) you must set Nm (i.e. put the spins on the FFT grid)");
     }
 
 
@@ -246,8 +263,6 @@ void sim::timeseries(int argc,char *argv[])
 
     unsigned int sample_counter=0;
 
-
-
     spins::mapout=true;
     for(unsigned int t = ets ; t < (rts+ets) ; t++)
     {
@@ -267,8 +282,12 @@ void sim::timeseries(int argc,char *argv[])
                     for(unsigned int i = 0 ; i < geom::nspins ; i++)
                     {
                         unsigned int xyz[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+                        //std::cout << xyz[0] << "\t" << xyz[1] << "\t" << xyz[2] << std::endl;
+                        //std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+                        //std::cin.get();
                         //get the magnetic species number
                         unsigned int ms=geom::lu(i,3);
+                        //std::cout << ms << std::endl;
                         if(sf::qa[0]>1e-12)//quantization axis is x
                         {
                             s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sy[i]*sf::uo(ms,1);

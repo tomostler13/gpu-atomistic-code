@@ -1,0 +1,42 @@
+sf:
+{
+    QuantizationAxis = [ 0.0 , 0.0 , 1.0 ];
+    UnitaryOperator0 = [ 1.0 , 1.0 , 1.0 ];
+    Update = 1;
+
+    NumberKPoints=33;
+    KPoint0 = [  0 , 0 , 0 ];
+    KPoint1 = [  0 , 0 , 1 ];
+    KPoint2 = [  0 , 0 , 2 ];
+    KPoint3 = [  0 , 0 , 3 ];
+    KPoint4 = [  0 , 0 , 4 ];
+    KPoint5 = [  0 , 0 , 5 ];
+    KPoint6 = [  0 , 0 , 6 ];
+    KPoint7 = [  0 , 0 , 7 ];
+    KPoint8 = [  0 , 0 , 8 ];
+    KPoint9 = [  0 , 0 , 9 ];
+    KPoint10 = [ 0 , 0, 10  ];
+    KPoint11 = [ 0 , 0, 11  ];
+    KPoint12 = [ 0 , 0, 12  ];
+    KPoint13 = [ 0 , 0, 13  ];
+    KPoint14 = [ 0 , 0, 14  ];
+    KPoint15 = [ 0 , 0, 15  ];
+    KPoint16 = [ 0 , 0, 16 ];
+    KPoint17 = [  0 , 0 , 17 ];
+    KPoint18 = [  0 , 0 , 18 ];
+    KPoint19 = [  0 , 0 , 19 ];
+    KPoint20 = [  0 , 0 , 20 ];
+    KPoint21 = [  0 , 0 , 21 ];
+    KPoint22 = [  0 , 0 , 22 ];
+    KPoint23 = [  0 , 0 , 23 ];
+    KPoint24 = [  0 , 0 , 24 ];
+    KPoint25 = [  0 , 0 , 25 ];
+    KPoint26 = [  0 , 0 , 26 ];
+    KPoint27 = [ 0 , 0, 27  ];
+    KPoint28 = [ 0 , 0, 28  ];
+    KPoint29 = [ 0 , 0, 29  ];
+    KPoint30 = [ 0 , 0, 30  ];
+    KPoint31 = [ 0 , 0, 31  ];
+    KPoint32 = [ 0 , 0, 32  ];
+    KPoint33 = [ 0 , 0, 33 ];
+};

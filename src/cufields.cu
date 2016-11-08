@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 03 Aug 2015 16:51:22
+// Last-modified: 23 Jun 2016 16:22:24
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -80,6 +80,7 @@ namespace cufields
     // Efficient Spart Matrix-Vector Multiplication on CUDA
     // Nathan Bell and Michael Garland
     // http://www.nvidia.com/docs/IO/66889/nvr-2008-004.pdf
+    // This is the diagonal part only
     __global__ void CSpMV_DIA(int N,
             int *offset,
             float *dataxx,float *datayy,float *datazz,
@@ -118,7 +119,51 @@ namespace cufields
             //printf("Fields\t%d\t%4.5f\t%4.5f\t%4.5f\n",row,CH[3*row],CH[3*row+1],CH[3*row+2]);
         }
     }
-    // perform the CSR matrix multiplication.
+    //off-diagonal part
+    __global__ void CSpMV_DIA_OffDiag(int N,
+            int *offset,
+            float *dataxx,float *dataxy,float *dataxz,
+            float *datayx,float *datayy,float *datayz,
+            float *datazx,float *datazy,float *datazz,
+            double *Cspin,
+            float *CHDemag,float *CH)
+    {
+        const int row = blockDim.x*blockIdx.x + threadIdx.x;
+        //num_rows=N as we are ALWAYS dealing with a num_rows=num_cols
+        if(row < N)
+        {
+            //contains sum over neighbours
+            float dot[3]={0,0,0};
+            for(int n = 0 ; n < DND ; n++)
+            {
+                int col = row + offset[n];
+                float val[3][3] = {{dataxx[N*n + row],dataxy[N*n + row],dataxz[N*n + row]},{datayx[N*n + row],datayy[N*n + row],datayz[N*n+row]},{datazx[N*n + row],datazy[N*n + row],datazz[N*n + row]}};
+//                printf("Data\t%4.5f\t%4.5f\t%4.5f\n",dataxx[N*n+row],datayy[N*n+row],datayy[N*n+row]);
+                if(col >= 0 && col < N)
+                {
+                        //printf("Spin\t%4.5f\t%4.5f\t%4.5f\n",col,Cspin[3*col],Cspin[3*col+1],Cspin[3*col+2]);
+                    for(unsigned int co = 0 ; co < 3 ; co++)
+                    {
+                        for(unsigned int ro = 0 ; ro < 3 ; ro++)
+                        {
+                            dot[co]+=val[co][ro]*Cspin[3*col+ro];
+                        }
+                    }
+
+                        //printf("%4.5f\t%4.5f\t%4.5f\n",val[0],val[1],val[2]);
+                        //printf("Spin\t%4.5f\t%4.5f\t%4.5f\n",col,Cspin[3*col],Cspin[3*col+1],Cspin[3*col+2]);
+                }
+            }
+//                printf("Spins\t%d\t%4.5f\t%4.5f\t%4.5f\n",col,Cspin[3*col],Cspin[3*col+1],Cspin[3*col+2]);
+//                printf("Fields\t%d\t%4.5f\t%4.5f\t%4.5f\n",row,dot[0],dot[1],dot[2]);
+
+            CH[3*row]=CHDemag[3*row]+dot[0];
+            CH[3*row+1]=CHDemag[3*row+1]+dot[1];
+            CH[3*row+2]=CHDemag[3*row+2]+dot[2];
+            //printf("Fields\t%d\t%4.5f\t%4.5f\t%4.5f\n",row,CH[3*row],CH[3*row+1],CH[3*row+2]);
+        }
+    }
+    // perform the CSR matrix multiplication.(diagonals only)
     __global__ void CSpMV_CSR(unsigned int N,
             unsigned int *xadj,unsigned int *adjncy,
             float *dataxx,float *datayy,float *datazz,
@@ -138,6 +183,46 @@ namespace cufields
                 for(unsigned int co = 0 ; co < 3 ; co++)
                 {
                     dot[co]+=(val[co]*Cspin[3*neigh+co]);
+                }
+            }
+            CH[3*i]=CHDemag[3*i]+dot[0];
+            CH[3*i+1]=CHDemag[3*i+1]+dot[1];
+            CH[3*i+2]=CHDemag[3*i+2]+dot[2];
+
+        }
+    }
+    // perform the CSR matrix multiplication. (off-diagonals  +  diagonals)
+    __global__ void CSpMV_CSR_OffDiag(unsigned int N,
+            unsigned int *xadj,unsigned int *adjncy,
+            float *dataxx,float *dataxy,float *dataxz,
+            float *datayx,float *datayy,float *datayz,
+            float *datazx,float *datazy,float *datazz,
+            double *Cspin,
+            float *CHDemag,float *CH)
+    {
+        const int i = blockDim.x*blockIdx.x + threadIdx.x;
+        //num_rows=N as we are ALWAYS dealing with a num_rows=num_cols
+        if(i < N)
+        {
+            //contains sum over neighbours
+            float dot[3]={0,0,0};
+            for(int n = xadj[i] ; n < xadj[i+1] ; n++)
+            {
+                unsigned int neigh=adjncy[n];
+                float val[3][3] = {{dataxx[n],dataxy[n],dataxz[n]},{datayx[n],datayy[n],datayz[n]},{datazx[n],datazy[n],datazz[n]}};
+                /*if(i==0)
+                {
+                    printf("%d\n%d\n",i,neigh);
+                    printf("%4.10f\t%4.10f\t%4.10f\n",val[0][0],val[0][1],val[0][2]);
+                    printf("%4.10f\t%4.10f\t%4.10f\n",val[1][0],val[1][1],val[1][2]);
+                    printf("%4.10f\t%4.10f\t%4.10f\n\n",val[2][0],val[2][1],val[2][2]);
+                }*/
+                for(unsigned int co = 0 ; co < 3 ; co++)
+                {
+                    for(unsigned int ro = 0 ; ro < 3 ; ro++)
+                    {
+                        dot[co]+=val[co][ro]*Cspin[3*neigh+ro];
+                    }
                 }
             }
             CH[3*i]=CHDemag[3*i]+dot[0];

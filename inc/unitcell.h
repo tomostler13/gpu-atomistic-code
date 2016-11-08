@@ -1,7 +1,7 @@
 // File: array.h
 // Author: Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 03 Oct 2014 16:40:54
+// Last-modified: 11 Sep 2016 12:08:28
 #ifndef __UNITCELL_H__
 #define __UNITCELL_H__
 #include "../inc/arrays.h"
@@ -21,9 +21,11 @@ class unitCellMembers
         //elements - string holding element type
         //sublattice - which sublattice (magnetic species type) does this unit cell atom belog to?
         //base_mom - the number of unique moments there should be
-        unitCellMembers(): nes(0), nms(0), size(0), oones(0), coords(0,0), elements(0), damping(0), mu(0), gamma(0), k1u(0), k1udir(0,0), sublattice(0), initspin(0,0), lambda(0), llgpf(0), sigma(0), base_mom(0){}
+        //xred - reduced unit cell coordinates of each atom
+        //mp - mesh points of unit cell
+        unitCellMembers(): nes(0), nms(0), size(0), oones(0), coords(0,0), elements(0), damping(0), mu(0), gamma(0), k1u(0), k1udir(0,0), sublattice(0), initspin(0,0), lambda(0), llgpf(0), sigma(0), base_mom(0), mp(0,0), xred(0,0){}
         //constructor
-        unitCellMembers(unsigned int nauc,unsigned int nms): coords(nauc,3), elements(nauc), damping(nauc), mu(nauc), gamma(nauc), sublattice(nauc), llgpf(nauc), sigma(nauc), initspin(nauc,3), size(nauc), base_mom(nms), k1u(nauc), k1udir(nauc,3) {}
+        unitCellMembers(unsigned int nauc,unsigned int nms): coords(nauc,3), elements(nauc), damping(nauc), mu(nauc), gamma(nauc), sublattice(nauc), llgpf(nauc), sigma(nauc), initspin(nauc,3), size(nauc), base_mom(nms), k1u(nauc), k1udir(nauc,3), mp(nauc,3), xred(nauc,3){}
         //destructor
         ~unitCellMembers(){clean();}
         inline void init(unsigned int nauc,unsigned int num_mag)
@@ -48,6 +50,10 @@ class unitCellMembers
             nms=num_mag;
             //resize the base_mom array
             base_mom.resize(nms);
+            //resize the xred array
+            xred.resize(nauc,3);
+            //resize the mesh points array
+            mp.resize(nauc,3);
             //prefactor to the LLG
             llgpf.resize(nauc);
             //prefactor to thermal term
@@ -71,6 +77,26 @@ class unitCellMembers
             coords(t,0)=x;
             coords(t,1)=y;
             coords(t,2)=z;
+        }
+        inline double GetXred(unsigned int t,unsigned int c)
+        {
+            return(xred(t,c));
+        }
+        inline unsigned int GetMP(unsigned int t,unsigned int c)
+        {
+            return(mp(t,c));
+        }
+        inline void SetMP(unsigned int x,unsigned int y,unsigned int z,unsigned int t)
+        {
+            mp(t,0)=x;
+            mp(t,1)=y;
+            mp(t,2)=z;
+        }
+        inline void SetXred(double x,double y,double z,unsigned int t)
+        {
+            xred(t,0)=x;
+            xred(t,1)=y;
+            xred(t,2)=z;
         }
         //first arguement is the string of the atom type. Second is the atom in the unit cell
         inline void SetElement(std::string str,unsigned int t)
@@ -108,7 +134,7 @@ class unitCellMembers
             k1udir(t,0)=x;
             k1udir(t,1)=y;
             k1udir(t,2)=z;
-            if(fabs(sqrt(x*x+y*y+z*z)-1)>1e-12)
+            if(fabs(sqrt(x*x+y*y+z*z)-1)>1e-6)
             {
                 return(2);
             }
@@ -266,8 +292,8 @@ class unitCellMembers
     private:
         unsigned int size;
         unsigned int nms;
-        Array2D<double> initspin,k1udir;
-        Array2D<unsigned int> coords;
+        Array2D<double> initspin,k1udir,xred;
+        Array2D<unsigned int> coords,mp;
         Array<double> damping,mu,gamma,lambda,base_mom,k1u,sigma,llgpf,oones;
         Array<unsigned int> sublattice,nes;
         std::vector<std::string> elements;

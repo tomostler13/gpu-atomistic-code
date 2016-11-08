@@ -1,7 +1,7 @@
 // File: sim.h
 // Author:Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 09 Jun 2015 20:48:49
+// Last-modified: 18 Oct 2016 13:14:48
 #include <iostream>
 #include <fstream>
 #ifndef _SIM_H_
@@ -9,12 +9,12 @@
 namespace sim
 {
     extern std::string sim_type;
-    void initSim(int argc,char *argv[]);
-    void MvT(int argc,char *argv[]);
-    void suscep(int argc,char *argv[]);
-    void timeseries(int argc,char *argv[]);
-    void laser_heating(int argc,char *argv[]);
-    void ramp_field(int argc,char *argv[]);
-    void thermal_hyst(int argc,char *argv[]);
+    void initSim();
+    void MvT();
+    void suscep();
+    void timeseries();
+    void laser_heating();
+    void ramp_field();
+    void thermal_hyst();
 }
 #endif /*_SIM_H_*/
