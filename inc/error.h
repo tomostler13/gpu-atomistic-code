@@ -1,6 +1,6 @@
 // File: error.h
 // Author:Tom Ostler
-// Last-modified: 23 Oct 2015 17:45:59
+// Last-modified: 19 Oct 2016 11:55:00
 #include <string>
 #include <iostream>
 #include <cstdlib>
@@ -10,8 +10,9 @@
 namespace error
 {
     void errPreamble(std::string,int);
+    void errWarnPreamble(std::string,int);
     void errMessage(std::string);
-//    void errMessage(std::stringstream);
+    void errMessage(std::stringstream&);
 	void errWarning(std::string);
 
 }

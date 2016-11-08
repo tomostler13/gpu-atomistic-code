@@ -1,7 +1,7 @@
 // File: suscep.h
 // Author: Tom Ostler
 // Created: 25 Jan 2013
-// Last-modified: 24 Sep 2014 14:59:34
+// Last-modified: 18 Oct 2016 13:17:12
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -17,26 +17,17 @@
 #include "../inc/fields.h"
 #include "../inc/llg.h"
 #include "../inc/sim.h"
-void sim::suscep(int argc,char *argv[])
+void sim::suscep()
 {
 	config::printline(config::Info);
 	config::Info.width(45);config::Info << std::right << "*" << "**Chi(T) details***" << std::endl;
-	try
-	{
-		config::cfg.readFile(argv[1]);
-	}
-	catch(const libconfig::FileIOException &fioex)
-	{
-		error::errPreamble(__FILE__,__LINE__);
-		error::errMessage("I/O error while reading config file");
-	}
-	catch(const libconfig::ParseException &pex)
-	{
-		error::errPreamble(__FILE__,__LINE__);
-		std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-		exit(EXIT_FAILURE);
-	}
 
+
+    if(!config::cfg.exists("suscep"))
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Setting \"suscep\" does not exist. Check your config file.");
+    }
 	libconfig::Setting &setting = config::cfg.lookup("suscep");
 	double lT=0.0,uT=0.0,dT=0.0,convmean=0.0,convvar=0.0,met=0.0;
 	setting.lookupValue("lower_temp",lT);
@@ -85,11 +76,11 @@ void sim::suscep(int argc,char *argv[])
 				const double my = util::reduceCPU(spins::Sy,geom::nspins)/double(geom::nspins);
 				const double mz = util::reduceCPU(spins::Sz,geom::nspins)/double(geom::nspins);
 				const double modm=sqrt(mx*mx+my*my+mz*mz);
-				if(t>int(25e-12/llg::dt))
+				if(t>static_cast<unsigned int>(25e-12/llg::dt))
 				{
 					MS.Push(modm);
 					config::Info.width(15);config::Info << "| Mean = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Mean() << " | delta M = " << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << fabs(MS.Mean()-oldmean) << " [ " << convmean << " ] | Variance =" << std::showpos << std::fixed << std::setfill(' ') << std::setw(18) << MS.Variance() << " [ " << convvar << " ]|" << std::endl;
-					if(((fabs(MS.Mean()-oldmean)) < convmean) && (MS.Variance()<convvar) && t > int(75e-12/llg::dt))
+					if(((fabs(MS.Mean()-oldmean)) < convmean) && (MS.Variance()<convvar) && t > static_cast<unsigned int>(75e-12/llg::dt))
 					{
 						ofs << T << "\t" << modm << std::endl;
 						convTF=true;

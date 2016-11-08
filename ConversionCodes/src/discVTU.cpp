@@ -1,7 +1,7 @@
 // File: discVTU.cpp
 // Author:Tom Ostler
 // Created: 25 Feb 2016
-// Last-modified: 25 Feb 2016 23:19:55
+// Last-modified: 03 Mar 2016 16:15:52
 
 //The purpose of this section of code is to take the output of the vtu
 //files and put the spins into cells and calculate the average magnetization
@@ -34,13 +34,17 @@ int main(int argc,char *argv[])
     std::cout << "Done" << std::endl;
 
     std::cout << "#Resizing magnetization and spin arrays..." << std::flush;
-    int ddim[3]={inputs::dimin[0]*inputs::Nk[0]/inputs::dimout[0],inputs::dimin[1]*inputs::Nk[1]/inputs::dimout[1],inputs::dimin[2]*inputs::Nk[2]/inputs::dimout[2]};
+    int ddim[3]={static_cast<int>(static_cast<double>(inputs::dimin[0]*inputs::Nk[0])/static_cast<double>(inputs::dimout[0])+0.5),
+        static_cast<int>(static_cast<double>(inputs::dimin[1]*inputs::Nk[1])/static_cast<double>(inputs::dimout[1])+0.5),
+        static_cast<int>(static_cast<double>(inputs::dimin[2]*inputs::Nk[2])/static_cast<double>(inputs::dimout[2])+0.5)};
     mag.resize(ddim[0],ddim[1],ddim[2],3);
     mag.IFill(0);
     count.resize(ddim[0],ddim[1],ddim[2]);
     spins.resize(inputs::nspins,6);
     spins.IFill(0);
     std::cout << "Done" << std::endl;
+
+    std::cout << "#DDIM = " << ddim[0] << " , " << ddim[1] << " , " << ddim[2] << std::endl;
     for(unsigned int t = inputs::lt ; t < inputs::ut+1 ; t+=inputs::dt)
     {
         std::stringstream sstr;
@@ -60,24 +64,27 @@ int main(int argc,char *argv[])
         for(unsigned int i = 0 ; i < 6 ; i++)
         {
             std::getline(ifs,dumpline);
+//            std::cout << dumpline << std::endl;
         }
         //get the spin vectors (sx,sy,sz)
         for(unsigned int i = 0 ; i < inputs::nspins ; i++)
         {
             ifs >> spins(i,0) >> spins(i,1) >> spins(i,2);
+//            std::cout << spins(i,0) << "\t" << spins(i,1) << "\t" << spins(i,2) << std::endl;
         }
-        //std::cout << spins(inputs::nspins-1,0) << std::endl;
+//        std::cout << spins(inputs::nspins-1,0) << std::endl;
         //get rid of the middle six lines
         for(unsigned int i = 0 ; i < 7 ; i++)
         {
             std::getline(ifs,dumpline);
-        //    std::cout << dumpline << std::endl;
+//            std::cout << dumpline << std::endl;
         }
+//        std::cin.get();
         //get the coordinates
         for(unsigned int i = 0 ; i < inputs::nspins ; i++)
         {
             ifs >> spins(i,3) >> spins(i,4) >> spins(i,5);
-        //    std::cout << spins(i,3) << "\t" << spins(i,4) << "\t" << spins(i,5) << std::endl;
+//            std::cout << spins(i,3) << "\t" << spins(i,4) << "\t" << spins(i,5) << std::endl;
         }
 //        std::cout << __FILE__ << "\t" << __LINE__ << std::endl;
         ifs.close();

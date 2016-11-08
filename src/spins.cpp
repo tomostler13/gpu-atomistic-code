@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 16 Dec 2015 13:05:13
+// Last-modified: 18 Oct 2016 13:22:23
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -38,7 +38,7 @@ namespace spins
     unsigned int update=0,mag_calc_method=0;
     bool output_mag=true,mapout=false;
     std::ifstream sfs;
-    void initSpins(int argc,char *argv[])
+    void initSpins()
     {
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Spin details***" << std::endl;
@@ -278,7 +278,47 @@ namespace spins
             Sz[i]=1.0-2.0*s;
         }
     }
-    void setSpinsChequer()
+    void setSpinsChequerX()
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+
+            int mycoords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            if((mycoords[0]+mycoords[1]+mycoords[2])%2==0)
+            {//then we are on sublattice A
+                spins::Sx[i]=1.0;
+                spins::Sy[i]=0.0;
+                spins::Sz[i]=0.0;
+            }
+            else
+            {//then we are on sublattice B
+                spins::Sx[i]=-1.0;
+                spins::Sy[i]=0.0;
+                spins::Sz[i]=0.0;
+            }
+        }
+    }
+    void setSpinsChequerY()
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+
+            int mycoords[3]={geom::lu(i,0),geom::lu(i,1),geom::lu(i,2)};
+            if((mycoords[0]+mycoords[1]+mycoords[2])%2==0)
+            {//then we are on sublattice A
+                spins::Sx[i]=0.0;
+                spins::Sy[i]=1.0;
+                spins::Sz[i]=0.0;
+            }
+            else
+            {//then we are on sublattice B
+                spins::Sx[i]=0.0;
+                spins::Sy[i]=-1.0;
+                spins::Sz[i]=0.0;
+            }
+        }
+    }
+    void setSpinsChequerZ()
     {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
@@ -361,14 +401,14 @@ namespace spins
             }
             for(unsigned int spin = 0 ; spin < geom::nspins ; spin++)
             {
-                if(initm[i]=="uniformz" && geom::lu(spin,3)==i)
+                if(initm[i]=="uniformz" && geom::lu(spin,3)==static_cast<int>(i))
                 {
                     spins::Sx[spin]=0;
                     spins::Sy[spin]=0;
                     spins::Sz[spin]=1.0;
 //                    std::cout << "Spin " << spin << " is species " << i << std::endl;
                 }
-                else if(initm[i]=="chequer" && geom::lu(spin,3)==i)
+                else if(initm[i]=="chequer" && geom::lu(spin,3)==static_cast<int>(i))
                 {
 //                    std::cout << "Spin " << spin << " is species " << i << std::endl;
                     int mycoords[3]={static_cast<int>(static_cast<double>(geom::lu(spin,0))*chequergridscale[0]+0.5),static_cast<int>(static_cast<double>(geom::lu(spin,1))*chequergridscale[1]+0.5),static_cast<int>(static_cast<double>(geom::lu(spin,2))*chequergridscale[2]+0.5)};
@@ -398,6 +438,53 @@ namespace spins
             }
         }
 
+    }
+    void setSpinsVampire(libconfig::Setting& setting)
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            //initialise all spins to zero and at the end check that
+            //their modulus is NOT 0
+            spins::Sx[i]=0.0;
+            spins::Sy[i]=0.0;
+            spins::Sz[i]=0.0;
+        }
+        std::ifstream ifs("vampire.in");
+        std::string dump;
+        if(!ifs.is_open())
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Cannot read the vampire spin config file, check it is called vampire.in");
+        }
+        else
+        {
+            //get rid of the first line
+            std::getline(ifs,dump);
+        }
+        for(unsigned int k = 0 ; k < geom::dim[2] ; k++)
+        {
+            for(unsigned int j = 0 ; j < geom::dim[1] ; j++)
+            {
+                for(unsigned int i = 0 ; i < geom::dim[0] ; i++)
+                {
+                    for(unsigned int t = 0 ; t < geom::ucm.NumAtomsUnitCell() ; t++)
+                    {
+                        //get the atom number
+                        int an=geom::coords(i*geom::Nk[0]+geom::ucm.GetCoord(t,0),j*geom::Nk[1]+geom::ucm.GetCoord(t,1),k*geom::Nk[2]+geom::ucm.GetCoord(t,2),0);
+                        if(an<0)
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            error::errMessage("There is an inconsistency between the input (vampire) unit cell/dimensions and your input.");
+                        }
+                        //vampire outputs each atom in the unit cell so you have to check
+                        //that the order is
+
+                        ifs >> dump >> dump >> dump >> dump >> spins::Sx[an] >> spins::Sy[an] >> spins::Sz[an];
+//                        std::cout << spins::Sx[an] << "\t" << spins::Sy[an] << "\t" << spins::Sz[an] << std::endl;
+                    }
+                }
+            }
+        }
     }
 
 }

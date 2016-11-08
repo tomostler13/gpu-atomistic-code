@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 09 Dec 2014 19:57:02
+// Last-modified: 18 Oct 2016 12:46:01
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -23,6 +23,10 @@ namespace geom
     unsigned int dim[3]={0,0,0};
     //zero pad size (in unit cells)
     unsigned int zpdim[3]={0,0,0};
+    //primitive vector
+    Array2D<double> rprim;
+    //angdeg
+    Array<double> angdeg;
     //For r2c transform the final dimension must be zpdim[2]/2+1
     unsigned int cplxdim=0;
     //number of spins, zeropad size
@@ -31,8 +35,9 @@ namespace geom
     //The a,b and c values (i.e. lattice constants)
     Array<double> abc,mu,gamma,lambda,llgpf,sigma,rx,ry,rz;
     Array<unsigned int> sublattice;
-    //Number of K points
+    //Number of mesh points
     Array<unsigned int> Nk;
+    bool Nkset,rprimset;
     //lookup array. Give atom number and return coordinates
     Array2D<int> lu,zplu;
     //Coords array. Give coords and returns atom number. This coords array
@@ -43,43 +48,143 @@ namespace geom
     //instance of the unit cell
     unitCellMembers ucm;
     bool logunit=false;
+    Array4D<unsigned int> atnolu;
 
-    void readconfig(int argc,char *argv[])
+    void readconfig()
     {
         assert(config::lcf);
         config::printline(config::Info);
         config::Info.width(45);config::Info << std::right << "*" << "**Geometry and magnetic property details***" << std::endl;
-        try
-        {
-            config::cfg.readFile(argv[1]);
-        }
-        catch(const libconfig::FileIOException &fioex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            error::errMessage("I/O error while reading config file");
-        }
-        catch(const libconfig::ParseException &pex)
-        {
-            error::errPreamble(__FILE__,__LINE__);
-            std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-        FIXOUT(config::Info,"Dipole fields included?" << config::isTF(config::inc_dip) << std::endl);
 
+        rprim.resize(3,3);rprim.IFill(0);
+        //angdeg.resize(3);angdeg.IFill(0);
+        if(!config::cfg.exists("system"))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Setting \"system\" does not exist. Check your config file.");
+        }
         libconfig::Setting &setting = config::cfg.lookup("system");
         //do we want to write the unit cell info to the log file?
-        setting.lookupValue("log_unit_cell",logunit);
+        if(!setting.lookupValue("Log_unit_cell",logunit))
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not read if you want to log the entire unit cell or not. Defaulting to false.");
+            logunit=false;
+        }
         for(unsigned int i = 0 ; i < 3 ; i++)
         {
             //number of unit cells in each direction
-            dim[i]=setting["dim"][i];
+            try
+            {
+                dim[i]=setting["dim"][i];
+            }
+            catch(const libconfig::SettingNotFoundException &snf)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                std::stringstream errsstr;
+                errsstr << "Setting not found exception caught. Setting " << snf.getPath() << " must be set.";
+                std::string errstr=errsstr.str();
+                error::errMessage(errstr);
+            }
             zpdim[i]=2*dim[i];
         }
         FIXOUT(config::Info,"Dimensions (unit cells):" << "[ " << dim[0] << " , " << dim[1] << " , " << dim[2] << " ]" << std::endl);
+        FIXOUT(config::Info,"Zero pad dimensions:" << "[ " << zpdim[0] << " , " << zpdim[1] << " , " << zpdim[2] << " ]" << std::endl);
+        Nk.resize(3);
+        abc.resize(3);
+        for(unsigned int i = 0 ; i < 3 ; i++)
+        {
+            int count=3;
+            try
+            {
+                Nk[i]=setting["Nm"][i];
+            }
+            catch(const libconfig::SettingNotFoundException &snf)
+            {
+                count--;
+                error::errWarnPreamble(__FILE__,__LINE__);
+                std::stringstream errsstr;
+                errsstr << "Setting not found exception caught. Setting " << snf.getPath() << " element " << i;
+                std::string errstr=errsstr.str();
+                error::errWarning(errstr);
+            }
+            if(count<3)
+            {
+                Nkset=false;
+            }
+            else
+            {
+                Nkset=true;
+            }
+            if((config::exchmeth=="fft" && Nkset==false) || (config::dipmeth=="fft" && Nkset==false))
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("To use the fft method you must specify the number of mesh points. (Nm)");
+            }
+            try
+            {
+                abc[i]=setting["abc"][i];
+            }
+            catch(const libconfig::SettingNotFoundException &snf)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                std::stringstream errsstr;
+                errsstr << "Setting not found exception caught. Setting " << snf.getPath() << " must be set.";
+                std::string errstr=errsstr.str();
+                error::errMessage(errstr);
+            }
+        }
         //string for holding the information about the unit cell file (we do not need global scope here)
         std::string ucf;
         //get the string for opening the unit cell file
-        setting.lookupValue("unitcellfile",ucf);
+        if(!setting.lookupValue("Unitcellfile",ucf))
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("A unit cell file must be specified (system.Unitcellfile (string))");
+        }
+
+        //read rprim
+        for(unsigned int i = 0 ; i < 3 ; i++)
+        {
+            int count=9;
+            //double magrprim=0.0;
+            std::stringstream sstr;
+            sstr << "rprim" << i+1;
+            std::string str=sstr.str();
+            for(unsigned int j = 0 ; j < 3 ; j++)
+            {
+                try
+                {
+                    rprim(i,j)=setting[str.c_str()][j];
+                    rprim(i,j)*=(abc[i]/1e-10);
+                    //magrprim+=rprim(i,j)*rprim(i,j);
+                }
+                catch(const libconfig::SettingNotFoundException &snf)
+                {
+                    count--;
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "Setting not found exception caught. Setting " << snf.getPath();
+                    std::string errstr=errsstr.str();
+                    error::errWarning(errstr);
+                }
+            }
+            if(count<9)
+            {
+                rprimset=false;
+            }
+            else
+            {
+                rprimset=true;
+            }
+            FIXOUTVEC(config::Info,str.c_str(),rprim(i,0),rprim(i,1),rprim(i,2));
+        }
+/*        if(rprimset && config::exchmeth=="fft")
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Setting rprim is only currently compatible with the use of a sparse matrix multiplication for the exchange calculation (system.Exchange_method (string) equal to CSR or DIA).");
+        }*/
+
         FIXOUT(config::Info,"Unit cell information file:" << ucf << std::endl);
         //stream for reading unit cell file
         std::ifstream ucfi(ucf.c_str());
@@ -90,20 +195,20 @@ namespace geom
         }
 
         ucfi >> nms;
-        Nk.resize(3);
-        abc.resize(3);
-        for(unsigned int i = 0 ; i < 3 ; i++)
-        {
-            Nk[i]=setting["Nk"][i];
-            abc[i]=setting["abc"][i];
-        }
-
         FIXOUT(config::Info,"Number of magnetic species (sublattices):" << nms << std::endl);
         unsigned int nauc=0;
         ucfi >> nauc;
+        if(nauc<1)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("There are no atoms in the unit cell, check your unit cell file.");
+        }
         FIXOUT(config::Info,"Number of atoms in the unit cell:" << nauc << std::endl);
         //initialize an instance of the unit cell class
         ucm.init(nauc,nms);
+        //now we know the unit cell size and the dimensions (how many unit cells in each direction) we can allocate atnolu
+        atnolu.resize(dim[0],dim[1],dim[2],nauc);
+        atnolu.IFill(0);
         unsigned int errcheck=0;//for a bit of error checking from unit cell class
         //loop over the atoms in the unit cell and set the properties in the class (ucm)
         for(unsigned int i = 0 ; i < nauc ; i++)
@@ -116,20 +221,50 @@ namespace geom
 
             //get the position of this atom in the unit cell
             double c[3]={0,0,0};
+            //If Nkset is true then we can put the moments on a mesh
+            //which is specified in the unit cell file
+            int mp[3]={0,0,0};
             ucfi >> c[0] >> c[1] >> c[2];
-            //set the position vector
-            ucm.SetPosVec(static_cast<unsigned int>(c[0]*Nk[0]+0.5),static_cast<unsigned int>(c[1]*Nk[1]+0.5),static_cast<unsigned int>(c[2]*Nk[2]+0.5),i);
+            if(Nkset)
+            {
+                ucfi >> mp[0] >> mp[1] >> mp[2];
+                ucm.SetMP(mp[0],mp[1],mp[2],i);
+                //set the position vector
+                ucm.SetMP(static_cast<unsigned int>(c[0]*Nk[0]+0.5),static_cast<unsigned int>(c[1]*Nk[1]+0.5),static_cast<unsigned int>(c[2]*Nk[2]+0.5),i);
+
+            }
+            ucm.SetXred(c[0],c[1],c[2],i);
 
             double temp=0.0;//this is going to hold mu, lambda and gamma so we call it temp
             //set the magnetic moment
             ucfi >> temp;
             ucm.SetMu(temp,i);
+            if(temp<1e-5)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Magnetic moment is less than 1e-5 (so, very small). Check your unit cell file is of the correct format");
+            }
+            else if(temp>1e5)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Magnetic moment is greater than 1e5 (so, really huge). Check your unit cell file is of the correct format");
+            }
             //set the damping
             ucfi >> temp;
             ucm.SetDamping(temp,i);
             //set the gyromagnetic ratio
             ucfi >> temp;
             ucm.SetGamma(temp,i);
+            if(temp<1e-5)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Gyromagnetic is less than 1e-5 (so, really small). Check your unit cell file is of the correct format");
+            }
+            else if(temp>1e5)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Gyromagnetic is greater than 1e5 (so, really huge). Remember it should be in units of the free electron value 1.76e11.\nCheck your unit cell file is of the correct format");
+            }
             //Get the element of the atom in the unit cell
             std::string str;
             ucfi >> str;
@@ -148,8 +283,6 @@ namespace geom
                 error::errPreamble(__FILE__,__LINE__);
                 error::errMessage(ucm.errorCode(errcheck));
             }
-
-
         }
         ucfi.close();
         if(ucfi.is_open())

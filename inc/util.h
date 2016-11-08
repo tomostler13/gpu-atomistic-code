@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 08 Feb 2016 15:03:51
+// Last-modified: 19 Oct 2016 13:07:53
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -15,7 +15,13 @@
 #define _UTIL_H_
 namespace util
 {
-    extern std::ofstream ofs,sofs;
+    extern std::ofstream ofs,sofs,outESP;
+    extern unsigned int esnp,maxuc;
+    extern bool escheck;
+    extern Array2D<unsigned int> espairs;
+    extern Array3D<int> esuc;
+    extern Array<unsigned int> esnum;
+    extern Array<double> lambda,esP;
     //convergence class
     class RunningStat
     {
@@ -99,7 +105,7 @@ namespace util
         {
             T sum = data[0];
             T c = (T)0.0;
-            for (int i = 1; i < size; i++)
+            for (unsigned int i = 1; i < size; i++)
             {
                 T y = data[i] - c;
                 T t = sum + y;
@@ -125,10 +131,13 @@ namespace util
     void copy3vecto1(int,Array<double>,Array<double>,Array<double>,double*);
     std::string exec(char*);
     void outputSpinsVTU(unsigned int);
+    void outputSpinsVTU(unsigned int,double);
+    void outputSpinsVTU(double);
     void outputDiscVTU(unsigned int);
     void calc_mag();
     void output_mag(unsigned int);
     void init_output();
+    void calc_es();
     void calc_Ts();
 
 }

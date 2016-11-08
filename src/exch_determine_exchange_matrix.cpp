@@ -1,7 +1,7 @@
 // File: exch_determine_exchange_matrix.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 09 Feb 2016 13:24:12
+// Last-modified: 11 Sep 2016 14:02:36
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. This
 // source file calculates the CSR neighbourlist
@@ -24,6 +24,121 @@
 namespace exch
 {
     unsigned int maxNoSpecInt;
+    void get_exch_unitcell(int argc,char *argv[])
+    {
+        FIXOUT(config::Info,"Determining interactions within and between unit cells" << std::endl);
+        J.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_int,3,3);
+        for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
+        {
+            for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
+            {
+                config::printline(config::Info);
+                FIXOUT(config::Info,"Exchange interaction between species:" << s1 << " and " << s2 << std::endl);
+                std::stringstream sstr_int;
+                sstr_int << "exchange" << "_" << s1 << "_" << s2;
+                std::string str_int = sstr_int.str();
+                libconfig::Setting &exchset = exchcfg.lookup(str_int.c_str());
+
+                if(exchset.lookupValue("Num_Interactions",shell_list(s1,s2)))
+                {
+                    FIXOUT(config::Info,"Reading information for:" << shell_list(s1,s2) << " interactions" << std::endl);
+                }
+                else
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "Could not read the number of interactions between species " << s1 << " and " << s2;
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
+                }
+                if(exchset.lookupValue("units",enerType))
+                {
+                    FIXOUT(config::Info,"Units:" << enerType << std::endl);
+                }
+                else
+                {
+                    error::errWarnPreamble(__FILE__,__LINE__);
+                    error::errWarning("Could not read energy type, defaulting to joules, you should check this!");
+                }
+
+                for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
+                {
+                    std::stringstream evsstr;
+                    std::string evstr;
+
+                    evsstr << "UnitCell" << i+1;
+                    evstr=evsstr.str();
+                    //get the unit cell for interaction
+                    for(unsigned int j = 0 ; j < 3 ; j++)
+                    {
+                        try
+                        {
+                            exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
+                        }
+                        catch(const libconfig::SettingNotFoundException &snf)
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            std::stringstream errsstr;
+                            errsstr << "Could not read vector for interaction number, (between " << s1 << " and " << s2 << ") " << i+1 << " check your exchange file.";
+                            std::string errstr=errsstr.str();
+                            error::errMessage(errstr);
+                        }
+                    }
+                    FIXOUTVEC(config::Info,"Unit cell vector:",exchvec(s1,s2,i,0),exchvec(s1,s2,i,1),exchvec(s1,s2,i,2));
+                    for(unsigned int j = 0 ; j < 3 ; j++)
+                    {
+                        std::stringstream Jsstr;
+                        Jsstr << "J" << i+1 << "_" << j+1;
+                        std::string Jstr;
+                        Jstr=Jsstr.str();
+                        for(unsigned int k = 0 ; k < 3 ; k++)
+                        {
+                            try
+                            {
+                                J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
+                            }
+                            catch(const libconfig::SettingNotFoundException &snf)
+                            {
+                                std::stringstream errsstr;
+                                errsstr << "Could not exchange interaction number " << i+1 << " tensor components " << j << " and " << k << ", for interaction between species " << s1 << " and " << s2 << " (" << snf.getPath() << ")";
+                                std::string errstr=errsstr.str();
+                                error::errPreamble(__FILE__,__LINE__);
+                                error::errMessage(errstr);
+                            }
+                            if(enerType=="mRy")
+                            {
+                                J(s1,s2,i,j,k)*=2.179872172e-18; //now to milli
+                                J(s1,s2,i,j,k)*=1.0e-3;
+                            }
+                            else if(enerType=="eV")
+                            {
+                                J(s1,s2,i,j,k)*=1.602176565e-19;
+                            }
+                            else if(enerType=="meV")
+                            {
+                                J(s1,s2,i,j,k)*=1.602176565e-22;
+                            }
+                            else if(enerType=="J" || enerType=="Joules" || enerType=="joules")
+                            {
+                                //do nothing
+                            }
+                            else if(enerType=="Ry")
+                            {
+                                J(s1,s2,i,j,k)*=2.179872172e-18;
+                            }
+                            else
+                            {
+                                error::errPreamble(__FILE__,__LINE__);
+                                error::errMessage("Units of exchange energy not recognised");
+                            }
+
+                        }
+                        FIXOUTVEC(config::Info,Jstr,J(s1,s2,i,j,0),J(s1,s2,i,j,1),J(s1,s2,i,j,2));
+                    }
+                }
+            }
+        }
+    }
     void get_exch_permute(int argc,char *argv[])
     {
         //first read the exchange constants
@@ -41,10 +156,21 @@ namespace exch
                 sstr_int << "exchange" << "_" << s1 << "_" << s2;
                 std::string str_int=sstr_int.str();
                 libconfig::Setting &exchset = exchcfg.lookup(str_int.c_str());
-                exchset.lookupValue("Num_Shells",shell_list(s1,s2));
+                if(!exchset.lookupValue("Num_Shells",shell_list(s1,s2)))
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "Could not read number of shells between species " << s1 << " and " << s2 << ", check your exchange file." << std::endl;
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
+                }
                 FIXOUT(config::Info,"Reading exchange information for:" << shell_list(s1,s2) << " shells" << std::endl);
                 //Read the units of the exchange energy and scale appropriately to Joules
-                exchset.lookupValue("units",enerType);
+                if(!exchset.lookupValue("units",enerType))
+                {
+                    error::errWarnPreamble(__FILE__,__LINE__);
+                    error::errWarning("Could not read energy type, defaulting to joules, you should check this!");
+                }
                 FIXOUT(config::Info,"Units of exchange:" << enerType << std::endl);
 
                 for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
@@ -55,13 +181,30 @@ namespace exch
                     nistr=nisstr.str();
                     evsstr << "Shell" << i+1 << "Vec";
                     evstr=evsstr.str();
-                    exchset.lookupValue(nistr.c_str(),numint(s1,s2,i));
+                    if(!exchset.lookupValue(nistr.c_str(),numint(s1,s2,i)))
+                    {
+                        std::stringstream errsstr;
+                        errsstr << "Could not read the exchange vector between species " << s1 << " and " << s2 << " (shell " << i << ")";
+                        std::string errstr=errsstr.str();
+                        error::errMessage(errstr);
+                    }
                     config::Info << "Shell " << i+1;
                     FIXOUT(config::Info," number of interactions:" << numint(s1,s2,i) << std::endl);
                     maxNoInt(s1,s2)+=numint(s1,s2,i);
                     for(unsigned int j = 0 ; j < 3 ; j++)
                     {
-                        exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
+                        try
+                        {
+                            exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
+                        }
+                        catch(const libconfig::SettingNotFoundException &snf)
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            std::stringstream errsstr;
+                            errsstr << "Could not read vector for interaction number, " << i+1 << " check your exchange file.";
+                            std::string errstr=errsstr.str();
+                            error::errMessage(errstr);
+                        }
                     }
                     FIXOUTVEC(config::Info,"Vectors:",exchvec(s1,s2,i,0),exchvec(s1,s2,i,1),exchvec(s1,s2,i,2));
                     config::Info << std::endl;
@@ -74,7 +217,18 @@ namespace exch
                         Jstr=Jsstr.str();
                         for(unsigned int k = 0 ; k < 3 ; k++)
                         {
-                            J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
+                            try
+                            {
+                                J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
+                            }
+                            catch(const libconfig::SettingNotFoundException &snf)
+                            {
+                                error::errPreamble(__FILE__,__LINE__);
+                                std::stringstream errsstr;
+                                errsstr << "Could not read exchange for interaction between species " << s1 << " and " << s2 << " (shell " << i << ", element of tensor (" << j << "," << k << ") check your config file.";
+                                std::string errstr=errsstr.str();
+                                error::errMessage(errstr);
+                            }
                             if(enerType=="mRy")
                             {
                                 J(s1,s2,i,j,k)*=2.179872172e-18; //now to milli
@@ -117,75 +271,7 @@ namespace exch
         }
         FIXOUT(config::Info,"Max number of interactions a given spin can have is:" << maxNoSpecInt << std::endl);
     }
-    void get_exch_direct(int argc,char *argv[])
-    {
-        FIXOUT(config::Info,"Determining \"direct\" interactions" << std::endl);
-        //first read the exchange constants
-        J.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_shells,3,3);
-        for(unsigned int s1 = 0 ; s1 < geom::ucm.GetNMS() ; s1++)
-        {
-            for(unsigned int s2 = 0 ; s2 < geom::ucm.GetNMS() ; s2++)
-            {
-                config::printline(config::Info);
-                FIXOUT(config::Info,"Exchange interaction between species:" << s1 << " and " << s2 << std::endl);
-                std::stringstream sstr_int;
-                sstr_int << "exchange" << "_" << s1 << "_" << s2;
-                std::string str_int = sstr_int.str();
-                libconfig::Setting &exchset = exchcfg.lookup(str_int.c_str());
-                //If the interactions are "direct" then the array shell_list actually stores the total number
-                //of interactions for the interaction between species s1 and s2
-                exchset.lookupValue("Num_Interactions",shell_list(s1,s2));
-                FIXOUT(config::Info,"Reading information for:" << shell_list(s1,s2) << " interactions" << std::endl);
-                exchset.lookupValue("units",enerType);
-                for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
-                {
-                    std::stringstream evsstr;
-                    std::string evstr;
-                    evsstr << "Shell" << i+1 << "Vec";
-                    evstr=evsstr.str();
-                    //get the vector for interaction i
-                    for(unsigned int j = 0 ; j < 3 ; j++)
-                    {
-                        exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
-                    }
-                    config::Info << "Interaction " << i << " ";
-                    FIXOUTVEC(config::Info," vector:",exchvec(s1,s2,i,0),exchvec(s1,s2,i,1),exchvec(s1,s2,i,2));
-                    for(unsigned int j = 0 ; j < 3 ; j++)
-                    {
 
-                        std::stringstream Jsstr;
-                        Jsstr << "J" << i+1 << "_" << j+1;
-                        std::string Jstr;
-                        Jstr=Jsstr.str();
-                        for(unsigned int k = 0 ; k < 3 ; k++)
-                        {
-                            J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
-                            if(enerType=="mRy")
-                            {
-                                J(s1,s2,i,j,k)*=2.179872172e-18; //now to milli
-                                J(s1,s2,i,j,k)*=1.0e-3;
-                            }
-                            else if(enerType=="eV")
-                            {
-                                J(s1,s2,i,j,k)*=1.602176565e-19;
-                            }
-                            else if(enerType=="J" || enerType=="Joules" || enerType=="joules")
-                            {
-                                //do nothing
-                            }
-                            else
-                            {
-                                error::errPreamble(__FILE__,__LINE__);
-                                error::errMessage("Units of exchange energy not recognised");
-                            }
-
-                        }
-                        FIXOUTVEC(config::Info,Jstr,J(s1,s2,i,j,0),J(s1,s2,i,j,1),J(s1,s2,i,j,2));
-                    }
-                }
-            }
-        }
-    }
     void get_exch_mapint(int argc,char *argv[])
     {
         FIXOUT(config::Info,"Determining interactions from a list of integer mesh lookups" << std::endl);
@@ -204,11 +290,28 @@ namespace exch
 
                 //If the interactions are "direct" then the array shell_list actually stores the total number
                 //of interactions for the interaction between species s1 and s2
-                exchset.lookupValue("Num_Interactions",shell_list(s1,s2));
+                if(exchset.lookupValue("Num_Interactions",shell_list(s1,s2)))
+                {
+                    FIXOUT(config::Info,"Reading information for:" << shell_list(s1,s2) << " interactions" << std::endl);
+                }
+                else
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "Could not read the number of interactions between species " << s1 << " and " << s2;
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
+                }
+                if(exchset.lookupValue("units",enerType))
+                {
+                    FIXOUT(config::Info,"Units:" << enerType << std::endl);
+                }
+                else
+                {
+                    error::errWarnPreamble(__FILE__,__LINE__);
+                    error::errWarning("Could not read energy type, defaulting to joules, you should check this!");
+                }
 
-                FIXOUT(config::Info,"Reading information for:" << shell_list(s1,s2) << " interactions" << std::endl);
-
-                exchset.lookupValue("units",enerType);
                 for(unsigned int i = 0 ; i < shell_list(s1,s2) ; i++)
                 {
                     std::stringstream evsstr;
@@ -219,7 +322,18 @@ namespace exch
                     //get the vector for interaction i
                     for(unsigned int j = 0 ; j < 3 ; j++)
                     {
-                        exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
+                        try
+                        {
+                            exchvec(s1,s2,i,j)=exchset[evstr.c_str()][j];
+                        }
+                        catch(const libconfig::SettingNotFoundException &snf)
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            std::stringstream errsstr;
+                            errsstr << "Could not read vector for interaction number, " << i+1 << " check your exchange file.";
+                            std::string errstr=errsstr.str();
+                            error::errMessage(errstr);
+                        }
 
                     }
                     config::Info << "Interaction " << i << " ";
@@ -233,7 +347,19 @@ namespace exch
                         Jstr=Jsstr.str();
                         for(unsigned int k = 0 ; k < 3 ; k++)
                         {
-                            J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
+                            try
+                            {
+                                J(s1,s2,i,j,k) = exchset[Jstr.c_str()][k];
+                            }
+                            catch(const libconfig::SettingNotFoundException &snf)
+                            {
+                                std::stringstream errsstr;
+                                errsstr << "Could not exchange interaction number " << i+1 << " tensor components " << j << " and " << k << ", for interaction between species " << s1 << " and " << s2 << " (" << snf.getPath() << ")";
+                                std::string errstr=errsstr.str();
+                                error::errPreamble(__FILE__,__LINE__);
+                                error::errMessage(errstr);
+                            }
+
                             if(enerType=="mRy")
                             {
                                 J(s1,s2,i,j,k)*=2.179872172e-18; //now to milli
@@ -242,6 +368,10 @@ namespace exch
                             else if(enerType=="eV")
                             {
                                 J(s1,s2,i,j,k)*=1.602176565e-19;
+                            }
+                            else if(enerType=="meV")
+                            {
+                                J(s1,s2,i,j,k)*=1.602176565e-22;
                             }
                             else if(enerType=="J" || enerType=="Joules" || enerType=="joules")
                             {
@@ -355,17 +485,17 @@ namespace exch
                                         //The format of the file that is read in is in Jxx. We want in our interaction
                                         //matrix the DM vectors.
                                         // Nxy = 1/2(Jyx-Jxy)
-                                        intmat::hNrab(0,1,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,1,0)-J(s1,s1,i,0,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(0,1,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
                                         // Nxz = 1/2(Jxz-Jzx)
-                                        intmat::hNrab(0,2,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,0,2)-J(s1,s1,i,2,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(0,2,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
                                         // Nyx = 1/2(Jxy-Jyx)
-                                        intmat::hNrab(1,0,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,0,1)-J(s1,s1,i,1,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(1,0,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
                                         // Nyz = 1/2(Jzy-Jyz)
-                                        intmat::hNrab(1,2,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,2,1)-J(s1,s1,i,1,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(1,2,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
                                         // Nzx = 1/2(Jzx - Jxz)
-                                        intmat::hNrab(2,0,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,2,0)-J(s1,s1,i,0,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(2,0,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
                                         // Nzy = 1/2(Jyz-Jzy)
-                                        intmat::hNrab(2,1,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,1,2)-J(s1,s1,i,2,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(2,1,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
 
                                         config::Log << "[ " << J(s1,s1,i,0,0) << " , " << J(s1,s1,i,0,1) << " , " << J(s1,s1,i,0,2) << " ]" << std::endl;
                                         config::Log << "[ " << J(s1,s1,i,1,0) << " , " << J(s1,s1,i,1,1) << " , " << J(s1,s1,i,1,2) << " ]\t (Joules)" << std::endl;
@@ -483,17 +613,17 @@ namespace exch
                                         //The format of the file that is read in is in Jxx. We want in our interaction
                                         //matrix the DM vectors.
                                         // Nxy = 1/2(Jyx-Jxy)
-                                        intmat::hNrab(0,1,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,1,0)-J(s1,s1,i,0,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(0,1,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
                                         // Nxz = 1/2(Jxz-Jzx)
-                                        intmat::hNrab(0,2,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,0,2)-J(s1,s1,i,2,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(0,2,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
                                         // Nyx = 1/2(Jxy-Jyx)
-                                        intmat::hNrab(1,0,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,0,1)-J(s1,s1,i,1,0)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(1,0,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
                                         // Nyz = 1/2(Jzy-Jyz)
-                                        intmat::hNrab(1,2,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,2,1)-J(s1,s1,i,1,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(1,2,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
                                         // Nzx = 1/2(Jzx - Jxz)
-                                        intmat::hNrab(2,0,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,2,0)-J(s1,s1,i,0,2)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(2,0,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
                                         // Nzy = 1/2(Jyz-Jzy)
-                                        intmat::hNrab(2,1,plane,wc[1],wc[2])[0]+=(0.5*(J(s1,s1,i,1,2)-J(s1,s1,i,2,1)))/(geom::ucm.GetMuBase(s1)*llg::muB);
+                                        intmat::hNrab(2,1,plane,wc[1],wc[2])[0]/=(geom::ucm.GetMuBase(s1)*llg::muB);
 
                                         config::Log << "[ " << J(s1,s1,i,0,0) << " , " << J(s1,s1,i,0,1) << " , " << J(s1,s1,i,0,2) << " ]" << std::endl;
                                         config::Log << "[ " << J(s1,s1,i,1,0) << " , " << J(s1,s1,i,1,1) << " , " << J(s1,s1,i,1,2) << " ]\t (Joules)" << std::endl;

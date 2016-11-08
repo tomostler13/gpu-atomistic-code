@@ -1,7 +1,7 @@
 // File: ramp_field.cpp
 // Author: Tom Ostler
 // Created: 13 May 2015
-// Last-modified: 24 Aug 2015 13:59:40
+// Last-modified: 18 Oct 2016 13:18:55
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -20,7 +20,7 @@
 #include "../inc/llg.h"
 #include "../inc/sim.h"
 #include "../inc/sf.h"
-void sim::ramp_field(int argc,char *argv[])
+void sim::ramp_field()
 {
     double et=0.0,ef[3]={0,0,0},rf[3]={0,0,0};
     //rf is a unit vector to specify the direction in which the field
@@ -30,22 +30,12 @@ void sim::ramp_field(int argc,char *argv[])
     config::printline(config::Info);
     config::Info.width(45);config::Info << std::right << "*" << "**Field details***" << std::endl;
     //The k-vector information is read in the file sf.cpp and sf_glob.cpp
-    try
-    {
-        config::cfg.readFile(argv[1]);
-    }
-    catch(const libconfig::FileIOException &fioex)
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("I/O error while reading config file");
-    }
-    catch(const libconfig::ParseException &pex)
-    {
-        error::errPreamble(__FILE__,__LINE__);
-        std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-        exit(EXIT_FAILURE);
-    }
 
+    if(!config::cfg.exists("field"))
+    {
+        error::errPreamble(__FILE__,__LINE__);
+        error::errMessage("Setting \"field\" does not exist. Check your config file.");
+    }
     libconfig::Setting &setting = config::cfg.lookup("field");
     bool errstatus=false;
     if(setting.lookupValue("EquilTime",et))
@@ -273,7 +263,8 @@ void sim::ramp_field(int argc,char *argv[])
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errWarning("Could not open file for outputting the final config file. The code will now attempt to output a vtu file that contains the information. This will have to be post processed.");
-            util::outputSpinsVTU(-1);
+            unsigned int temp=-1;
+            util::outputSpinsVTU(temp);
         }
         finalucf << geom::ucm.GetNMS() << std::endl;
         finalucf << geom::ucm.NumAtomsUnitCell() << std::endl;

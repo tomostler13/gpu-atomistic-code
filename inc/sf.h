@@ -2,7 +2,7 @@
 // Note: originally dsf.h
 // Author:Tom Ostler
 // Created: 2 Nov 2014
-// Last-modified: 06 Nov 2014 12:01:44
+// Last-modified: 18 Oct 2016 13:26:53
 #include "../inc/arrays.h"
 #include "../inc/unitcell.h"
 #include <string>
@@ -15,7 +15,7 @@ namespace sf
     extern Array<double> qa;
     extern bool csf;
     extern unsigned int sfupdate,nk,ets,rts;
-    void initSF(int argc,char *argv[]);
-    void readSFParam(int argc,char *argv[]);
+    void initSF();
+    void readSFParam();
 }
 #endif /*_SF_H_*/
