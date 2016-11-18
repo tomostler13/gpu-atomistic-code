@@ -1,23 +1,23 @@
 system:
 {
-    seed=23423421;
-    dim = [ 32 , 32 , 32 ];
+    seed=82123421;
+    dim = [ 80 , 80 , 16 ];
     globdim = [ 1 , 1 , 1 ];
     nk = [ 2 , 2 , 2 ];
     nms = 2;
-    spec = [ "Fe" , "Ni" ];
-    damping = [ 1e24 , 1e25 ];
-    gamma = [ 1e28 , 1e29 ];
-    mu = [ 1e26 , 1e27 ];
-    spin0 = [ 0.0 , 0.0 , 1.0 ];
+    spec = [ "Fe" , "Gd" ];
+    damping = [ 1.0 , 1.0 ];
+    gamma = [ 1.0 , 1.0 ];
+    mu = [ 1.92 , 7.63 ];
+    spin0 = [ 0.0 , 0.0 , -1.0 ];
     spin1 = [ 0.0 , 0.0 , 1.0 ];
-    D0 = [ 4.32e-25 , 4.48e-25 ];
+    D0 = [ 0.807243e-23 , 0.807243e-23 ];
     DVec0 = [ 0.0 , 0.0 , 1.0 ];
     DVec1 = [ 0.0 , 0.0 , 1.0 ];
     //Assuming that the system has two composition areas
     //Then amount 0 should be nms long
-    amount0 = [ 19.0 , 81.0 ];
-    amount1 = [ 80.0 , 20.0 ];
+    amount0 = [ 75.0 , 25.0 ];
+    amount1 = [ 75.0 , 25.0 ];
     //This has NOTHING to do with the magnetic system
     //it is only related to the underlying crystal 
     //structure. The total number of atoms should be:
