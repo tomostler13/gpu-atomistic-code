@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 18 Oct 2016 13:22:23
+// Last-modified: 05 Dec 2016 13:14:02
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -338,6 +338,54 @@ namespace spins
             }
         }
     }
+    void setSpinsResText(libconfig::Setting& setting)
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            //initialise all spins to zero and at the end check that
+            //their modulus is NOT 0
+            spins::Sx[i]=0.0;
+            spins::Sy[i]=0.0;
+            spins::Sz[i]=0.0;
+        }
+        std::string fname;
+        if(setting.lookupValue("SpinFile",fname))
+        {
+            FIXOUT(config::Info,"Initialising spins from file:" << fname << std::endl);
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read the file (SpinFile) to initialise spins");
+        }
+        std::ifstream ifs(fname.c_str());
+        if(ifs.is_open())
+        {
+            unsigned int tmpns=0;
+            ifs >> tmpns;
+            if(tmpns!=geom::nspins)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("The number of spins read in is not the same as the number you are now trying to create.");
+            }
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                ifs >> spins::Sx[i] >> spins::Sy[i] >> spins::Sz[i];
+            }
+            ifs.close();
+            if(ifs.is_open())
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not close spin file used for initialising spins.");
+            }
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open spin file to initialise spin, check your filename.");
+        }
+    }
+
     void setSpinsSpecies(libconfig::Setting& setting)
     {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
