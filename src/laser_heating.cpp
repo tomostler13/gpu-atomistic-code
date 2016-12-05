@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 18 Oct 2016 13:18:23
+// Last-modified: 05 Dec 2016 07:52:41
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -583,6 +583,34 @@ void sim::laser_heating()
         }
     }
 
+    //output the spin config after equilibration
+    std::ofstream ofse("after_equil_spins.dat");
+    if(!ofse.is_open())
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Error opening file to output spins at the end of the laser simulation. Will try to redirect to cout");
+        std::cout << "#############SPIN CONFIG AFTER EQUILIBRATION#######################" << std::endl;
+        std::cout << geom::nspins << std::endl;
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+        }
+        std::cout << "###################################################################" << std::endl;
+    }
+    else
+    {
+        ofse << geom::nspins << std::endl;
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            ofse << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+        }
+        ofse.close();
+        if(ofse.is_open())
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close end_spins.dat");
+        }
+    }
 
     // Check the flag to output the spin map
     spins::mapout=true;
@@ -619,6 +647,7 @@ void sim::laser_heating()
         if(t%spins::update==0)
         {
             if(outVTU)
+            {
                 if(VTUcount==static_cast<int>(VTUupdate))
                 {
                     if(static_cast<double>(t)*llg::dt >= VTUstart)
@@ -632,6 +661,7 @@ void sim::laser_heating()
                 {
                     VTUcount++;
                 }
+            }
         }
         if(opsf==true)
         {
@@ -782,6 +812,34 @@ void sim::laser_heating()
     {
         error::errWarnPreamble(__FILE__,__LINE__);
         error::errWarning("Could not deallocate pulse_scale array.");
+    }
+    //output the spins at the end to be read back in
+    std::ofstream ofs("end_spins.dat");
+    if(!ofs.is_open())
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Error opening file to output spins at the end of the laser simulation. Will try to redirect to cout");
+        std::cout << "#############SPIN CONFIG AFTER RUN#######################" << std::endl;
+        std::cout << geom::nspins << std::endl;
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+        }
+        std::cout << "#########################################################" << std::endl;
+    }
+    else
+    {
+        ofs << geom::nspins << std::endl;
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            ofs << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+        }
+        ofs.close();
+        if(ofs.is_open())
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close end_spins.dat");
+        }
     }
 }
 
