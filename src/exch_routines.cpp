@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 18 Oct 2016 12:56:00
+// Last-modified: 05 Dec 2016 13:21:47
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -96,7 +96,7 @@ namespace exch
             else
             {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("Error reading filename for csr exchange matrix. Check setting exchange.csrMatrixName");
+                error::errMessage("Error reading filename for csr exchange matrix. Check setting exchange.ExchangeMatrixFilename");
             }
         }
         FIXOUT(config::Info,"Output of exchange matrix:" << config::isTF(outputJ) << std::endl);
