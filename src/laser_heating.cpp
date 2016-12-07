@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 05 Dec 2016 07:52:41
+// Last-modified: 07 Dec 2016 14:24:48
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -29,6 +29,9 @@ void sim::laser_heating()
     unsigned int ets = 0 , rts = 0 , num_pulses=0;
     double et = 0.0 , rt = 0.0 , gamma_e = 0.0 , Cl = 0.0 , G_ep = 0.0 , Pump_Time = 0.0 , ct = 0.0 , pumpfluence = 0 , initT = 0.0;
     unsigned int nfv=0;
+    //false means electrons
+    //true means phonons
+    bool tbath=false;
     Array2D<double> field_val;
     Array<double> field_times;
     config::printline(config::Info);
@@ -357,6 +360,33 @@ void sim::laser_heating()
         }
         config::Info << std::endl;
     }
+    std::string bath;
+    if(setting.lookupValue("TempBath",bath))
+    {
+
+        if(bath=="electron")
+        {
+            tbath=false;
+        }
+        else if(bath=="phonon")
+        {
+            tbath=true;
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("You have incorrectly set the flag, TempBath (string), options are electron or phonon, check your config file.");
+        }
+        FIXOUT(config::Info,"Temperature bath:" << bath << std::endl);
+    }
+    else
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Flag TempBath (string) not set (options are electron or phonon), setting default to electron");
+        bath="electron";
+        FIXOUT(config::Info,"Temperature bath (default):" << bath << std::endl);
+        tbath=false;
+    }
 
     //declarations for the correlation function (may not be malloced)
     //This array stores the spin map in real space
@@ -637,7 +667,15 @@ void sim::laser_heating()
         //std::cout << realtime << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
         unsigned int nt=t-ets;
         CalcTe(pulse_scale,pulse_delays,static_cast<double>(nt)*llg::dt,num_pulses,Pump_Time,pumpfluence,Te,Tl,G_ep,Cl,gamma_e,llg::dt,initT,ct);
-        llg::T=Te;
+        if(tbath)
+        {
+            llg::T=Te;
+        }
+        else
+        {
+            llg::T=Tl;
+        }
+
         if(t%spins::update==0)
         {
             util::calc_mag();

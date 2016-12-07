@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 07 Dec 2016 13:53:34
+// Last-modified: 07 Dec 2016 14:25:29
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -25,7 +25,6 @@ namespace config
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("You must give a config file, exiting");
         }
-        std::cout << static_cast<std::string>(argv[1]) << std::endl;
         try
         {
             cfg.readFile(argv[1]);
