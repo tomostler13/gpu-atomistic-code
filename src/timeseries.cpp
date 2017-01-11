@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 18 Oct 2016 13:17:52
+// Last-modified: 11 Jan 2017 15:38:31
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -302,6 +302,11 @@ void sim::timeseries()
                         {
                             s3d(xyz[0],xyz[1],xyz[2])[0]=spins::Sx[i]*sf::uo(ms,0);
                             s3d(xyz[0],xyz[1],xyz[2])[1]=spins::Sy[i]*sf::uo(ms,1);
+                        }
+                        else
+                        {
+                            s3d(xyz[0],xyz[1],xyz[2])[0]=0.0;
+                            s3d(xyz[0],xyz[1],xyz[2])[1]=0.0;
                         }
                     }
                     fftw_execute(ftspins);

@@ -1,54 +1,22 @@
-OutputFile = "opf.dat";
-seed = 1481001675;
+Seed = 1482512683;
 system:
 {
     //number of unit cells
-    dim = [ 1 , 1 , 1 ];
-    //The unit cell file
-    //This file gives all of the information
-    //on the locations of the magnetic system
-    unitcellfile="final_config.ucf";
-    //Number of k-points in each direction
-    Nk = [ 160 , 160 , 32 ];
-    //lattice constants
-    abc = [ 24e-9 , 24e-9 , 4.8e-9 ];
-    //do we include the dipole-dipole calculation?
-    include_dipole = TRUE;
+    dim = [ 32 , 32 , 32 ];
+    Nm = [ 2 , 2 , 4 ];
+    Unitcellfile="LiCoPO4.ucf";
+    abc = [ 10.202e-10 , 5.9229e-10 , 4.699e-10 ];
+    rprim1 = [ 1.0 , 0.0 , 0.0 ];
+    rprim2 = [ 0.0 , 1.0 , 0.0 ];
+    rprim3 = [ 0.0 , 0.0 , 1.0 ];
+    Include_dipole = FALSE;
     Exchange_method="CSR";
-    Dipole_method="fft";
-    //if the exchange method is a sparse matrix multiplication
-    //then you can specify if you have off-diagonal terms or not.
-    //If not then they are ignored.
-    Off_Diagonals = FALSE;
-    //Do you want to output the unit cell info to the log file?
-    log_unit_cell = FALSE;
-    Periodic_Boundaries = [ TRUE , TRUE , FALSE ];
+    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
 };
 exchange:
 {
-    //Exchange reading method 
-    //direct (by reading in all interactions directly)
-    //permute (take a neighbour and calculate permutations)
-    exchmethod="permute";
-    OutputExchange=FALSE;
-    //How are we to read in the exchange
-    //- thisfile (read from the config file)
-    //- extfile (read from an external file)
-    exchinput="extfile";
-    exchfile="exch.GdFeCo";
-    OutputExchangeMatrix=FALSE;
-    ExitAfterExchangeMatrix=FALSE;
-    ReadExchangeMatrix=TRUE;
-    ExchangeMatrixFilename="csr_exch_mat.dat";
-};
-rscf:
-{
-    Calculate=FALSE;
-};
-sf:
-{
-    Calculate=FALSE;
-    InputFile="sf.in";
+    Read_exch_method="unitcell";
+    Exchfile="LiCoPO4.exch";
 };
 llg:
 {
@@ -56,11 +24,32 @@ llg:
     applied = [ 0.0 , 0.0 , 0.0 ];
     update=100;
     MagnetizationCalculationMethod=0;
-    OutputMagnetization=TRUE;
-    //options are
-    // - file - defined through the config file
-    // - random - randomized before start of simulation
-    SpinConfigMethod="file";
+    exch_striction:
+    {
+        NumPairs = 2;
+        MaxUnitCells=4;
+        Pair0 = [ 0 , 3 ];
+        UnitCells0:
+        {
+            num = 4;
+            lambda = 1.0;
+            dir0 = [ 0 , 0 , 0 ];
+            dir1 = [ -1 , 0 , 0 ];
+            dir2 = [ -1 , 0 , 1 ];
+            dir3 = [ 0 , 0 , 1 ];
+        };
+
+        Pair1 = [ 1 , 2 ];
+        UnitCells1:
+        {
+            num = 4;
+            lambda = 1.0;
+            dir0 = [ 0 , 0 , 0 ];
+            dir1 = [ -1 , 0 , 0 ];
+            dir2 = [ -1 , 0 , 1 ];
+            dir3 = [ 0 , 0 , 1 ];
+        };
+    };
 };
 cuda:
 {
@@ -68,17 +57,17 @@ cuda:
 };
 sim:
 {
-    sim_type="fix_field";
+    sim_type="timeseries";
 };
-field:
+sf:
 {
-    EquilTime=0.0;
-    Temperature=280.0;
-    OutputFilename="field_mag_0_m15.dat";
-    EqField = [ 0.0 , 0.0 , 0.0 ];
-    NumRateIntervals=1;
-    FieldChangeUnit = [ 0.0 , 0.0 , 1.0 ];
-    Fields = [ 0.0 , -15.0 ];
-    Rates = [ -10e9 ];
-    OutputFinalSpinConfig=TRUE;
+    Calculate=TRUE;
+    InputFile="LiCoPO4.sf";
+};
+timeseries:
+{
+    EquilibrationTime=0.01e-12;
+    RunTime=1e-12;
+    Temperature=1.0;
+    OutputIndividualTimeSeries=TRUE;
 };
