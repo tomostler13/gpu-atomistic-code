@@ -2,13 +2,14 @@ Seed = 123890572;
 system:
 {
     //number of unit cells
-    dim = [ 32 , 32 , 32 ];
+    dim = [ 2 , 2 , 2 ];
     //Nm = [ 2 , 2 , 2 ];
-    Unitcellfile="LiCoPO4.ucf";
-    abc = [ 10.202e-10 , 5.9229e-10 , 4.699e-10 ];
-    rprim1 = [ 1.0 , 0.0 , 0.0 ];
-    rprim2 = [ 0.0 , 1.0 , 0.0 ];
-    rprim3 = [ 0.0 , 0.0 , 1.0 ];
+//    Unitcellfile="LiCoPO4.ucf";
+    Unitcellfile="BiCoO3.ucf";
+    abc = [ 7.11168e-10 , 7.11168e-10 , 7.11168e-10 ];
+    rprim1 = [ 1.0 , -1.0 , 0.0 ];
+    rprim2 = [ 1.0 , 1.0 , 0.0 ];
+    rprim3 = [ 0.0 , 0.0 , 1.3064999827 ];
     Include_dipole = FALSE;
     Exchange_method="CSR";
     Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
@@ -17,11 +18,12 @@ exchange:
 {
     Read_exch_method="unitcell";
     Exchfile="LiCoPO4.exch";
+
 };
 llg:
 {
     dt = 0.2e-15;
-    applied = [ 0.0 , 0.0 , 0.0 ];
+    applied = [ 0.0 , 0.0 , 0.1 ];
     update=100;
     MagnetizationCalculationMethod=0;
     exch_striction:
