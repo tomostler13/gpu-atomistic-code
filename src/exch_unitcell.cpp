@@ -1,7 +1,7 @@
 // File: exch_unitcell.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 13 Sep 2016 20:10:39
+// Last-modified: 06 Feb 2017 17:20:40
 // This routine determines the exchange matrix for the unitcell method
 #include "../inc/arrays.h"
 #include "../inc/error.h"
@@ -273,7 +273,7 @@ namespace exch
                 error::errPreamble(__FILE__,__LINE__);
                 error::errMessage("Could not open file J.dat for writing the 2D interaction matrix to.");
             }
-            opJ << "#No. of spin i - No. of spin j - Jij [T] - Coords (i) - Coords(j) - Distance" << std::endl;
+            opJ << "#No. of spin i - type - ri_x - ri_y - ri_z - No. of spin j - type - rj_x - rj_y - rj_z - Jij [J]" << std::endl;
         }
         //temporary arrays in format to store the adjncy as we don't know
         //how big it is before hand
@@ -402,7 +402,16 @@ namespace exch
                         }
                         if(outputJ)
                         {
-                            opJ << i << "\t" << aiuc << "\t" << neighid << "\t" << s1 << "\t" << tdata[0][0][adjncy_counter-1] << "\t[ " << ci[0] << "," << ci[1] << "," << ci[2] << " ] -> [ " << cj[0] << "," << cj[1] << "," << cj[2] << " ]" << "\t" << dist << std::endl;
+                            opJ << i << "\t" << aiuc << "\t" << ci[0] << "\t" << ci[1] << "\t" << ci[2] << "\t" << neighid << "\t" << s1 << "\t" << cj[0] << "\t" << cj[1] << "\t" << cj[2];
+                            for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
+                            {
+                                for(unsigned int beta = 0 ; beta < 3 ; beta++)
+                                {
+
+                                    opJ << "\t" << tdata[alpha][beta][adjncy_counter-1]*geom::mu[i]*9.27e-24;
+                                }
+                            }
+                            opJ << std::endl;
                         }
                     }
                 }

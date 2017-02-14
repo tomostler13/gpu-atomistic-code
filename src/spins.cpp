@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 05 Dec 2016 13:14:02
+// Last-modified: 14 Feb 2017 14:14:22
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -371,6 +371,15 @@ namespace spins
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
             {
                 ifs >> spins::Sx[i] >> spins::Sy[i] >> spins::Sz[i];
+                const double mods=sqrt(spins::Sx[i]*spins::Sx[i] + spins::Sy[i]*spins::Sy[i] + spins::Sz[i]*spins::Sz[i]);
+                if(mods < 1e-12)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Read a spin with a zero (<1e-12) spin lenth)");
+                }
+                spins::Sx[i]/=mods;
+                spins::Sy[i]/=mods;
+                spins::Sz[i]/=mods;
             }
             ifs.close();
             if(ifs.is_open())

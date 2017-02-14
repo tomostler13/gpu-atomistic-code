@@ -1,7 +1,7 @@
 // File: timeseries.cpp
 // Author: Tom Ostler
 // Created: 03 Nov 2014
-// Last-modified: 11 Jan 2017 15:38:31
+// Last-modified: 14 Feb 2017 14:15:17
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -377,6 +377,7 @@ void sim::timeseries()
         }
         llg::integrate(t);
     }
+    util::outputSpinsVTU(-1);
     if(sample_counter!=num_samples)
     {
         error::errPreamble(__FILE__,__LINE__);
