@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 19 Oct 2016 13:18:23
+// Last-modified: 21 Feb 2017 10:29:33
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -17,6 +17,7 @@
 #include "../inc/fields.h"
 #include "../inc/llg.h"
 #include "../inc/sim.h"
+#include "../inc/rscf.h"
 void sim::MvT()
 {
     config::printline(config::Info);
@@ -165,10 +166,12 @@ void sim::MvT()
         }
     }
 
+
     util::RunningStat *MS=new util::RunningStat[geom::ucm.GetNMS()];
     util::ofs << "#The magnetization is output into indices for each temperature and depending on the output method" << std::endl;
     unsigned int globt=0.0;
     unsigned int VTUcount=0;
+    unsigned int rscfcount=0;
     if(dT>0.0)
     {
         //temperature loop
@@ -206,6 +209,17 @@ void sim::MvT()
                     {
                         VTUcount++;
                     }
+                    if(rscf::ccf)
+                    {
+                        if(rscfcount==rscf::upd)
+                        {
+                            rscf::calcRSCF(t);
+                        }
+                        else
+                        {
+                            rscfcount++;
+                        }
+                    }
                 }
             }
             //have all the magnetization converged?
@@ -227,7 +241,17 @@ void sim::MvT()
                     {
                         VTUcount++;
                     }
-
+                    if(rscf::ccf)
+                    {
+                        if(rscfcount==rscf::upd)
+                        {
+                            rscf::calcRSCF(t);
+                        }
+                        else
+                        {
+                            rscfcount++;
+                        }
+                    }
                     /*                if(t>int(10e-12/llg::dt))
                                       {*/
 
@@ -302,6 +326,7 @@ void sim::MvT()
                 util::outESP << std::endl;
                 util::outESP << std::endl;
             }
+            rscf::outputRSCFNextIndex();
         }
     }
     if(dT<0.0)

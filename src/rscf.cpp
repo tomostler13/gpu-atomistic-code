@@ -2,7 +2,7 @@
 // Note: originall dsf_glob.cpp
 // Author:Tom Ostler
 // Created: 23 Oct 2015
-// Last-modified: 18 Oct 2016 13:25:16
+// Last-modified: 21 Feb 2017 10:23:33
 #include "../inc/llg.h"
 #include "../inc/config.h"
 #include "../inc/error.h"
@@ -79,6 +79,8 @@ namespace rscf
                 FIXOUT(config::Info,"Correlation function input file:" << cffile << std::endl);
             }
         }
+
+        libconfig::Config rcfg;
         if(ccf)
         {
             nzpcplxdim=(geom::dim[2]*geom::Nk[2]/2)+1;
@@ -86,7 +88,7 @@ namespace rscf
             FIXOUT(config::Info,"Normalisation for correlation function:" << 1/normfac << std::endl);
             try
             {
-                config::cfg.readFile(cffile.c_str());
+                rcfg.readFile(cffile.c_str());
             }
             catch(const libconfig::FileIOException &fioex)
             {
@@ -99,7 +101,7 @@ namespace rscf
                 std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
                 exit(EXIT_FAILURE);
             }
-            libconfig::Setting &nsetting = config::cfg.lookup("rscf");
+            libconfig::Setting &nsetting = rcfg.lookup("rscf");
             rscfP.resize(3,3);
             if(nsetting.lookupValue("CalcSdotS",sdots))
             {
@@ -664,6 +666,50 @@ namespace rscf
             return(0);
         }
     }
+    void outputRSCFNextIndex()
+    {
+        if(cab[0][0])
+        {
+            Coxx << std::endl << std::endl;
+        }
+        if(cab[0][1])
+        {
+            Coxy << std::endl << std::endl;
+        }
+        if(cab[0][2])
+        {
+            Coxz << std::endl << std::endl;
+        }
+        if(cab[1][0])
+        {
+            Coyx << std::endl << std::endl;
+        }
+        if(cab[1][1])
+        {
+            Coyy << std::endl << std::endl;
+        }
+        if(cab[1][2])
+        {
+            Coyz << std::endl << std::endl;
+        }
+        if(cab[2][0])
+        {
+            Cozx << std::endl << std::endl;
+        }
+        if(cab[2][1])
+        {
+            Cozy << std::endl << std::endl;
+        }
+        if(cab[2][2])
+        {
+            Cozz << std::endl << std::endl;
+        }
+        if(sdots)
+        {
+            Cosds << std::endl << std::endl;
+        }
+    }
+
     void outputRSCF(std::ofstream& ops,Array3D<double>& C,unsigned int t)
     {
         for(unsigned int i = 0 ; i < nr ; i++)
