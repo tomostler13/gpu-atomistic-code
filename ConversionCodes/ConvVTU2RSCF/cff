@@ -1,0 +1,11 @@
+rscf:
+{
+    NumberSpin=2720000;
+    NCellsIn = [ 400 , 400 , 17 ];
+    Nk = [ 1 , 1 , 1 ];
+    abc = [ 2.4e-9 , 2.4e-9 , 2.364e-9 ];
+    InputFilenameBase = "spinmap_";
+    StartTime = 3000;
+    EndTime = 3000;
+    dTime = 3000;
+};

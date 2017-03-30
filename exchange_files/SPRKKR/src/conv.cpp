@@ -51,9 +51,10 @@ int main(int argc,char *argv[])
     }
     std::string sdump,inst;
     //Get and dump the header
-    ifs >> sdump >> sdump >> sdump >> sdump >> sdump >> sdump;
-    ifs >> sdump >> sdump >> sdump >> sdump >> sdump;
+//    ifs >> sdump >> sdump >> sdump >> sdump >> sdump >> sdump;
+//    ifs >> sdump >> sdump >> sdump >> sdump >> sdump;
     std::getline(ifs,inst);
+    std::cout << inst << std::endl;
     FIXOUT(logf,"Opened input file:" << fnm << std::endl);
     FIXOUT(logf,"Opened file for outputting exchange:" << "Continuing" << std::endl);
     FIXOUTVEC(logf,"Scaling vector for lookup coordinates:",ns[0],ns[1],ns[2]);
@@ -70,21 +71,22 @@ int main(int argc,char *argv[])
     bool brk=false;
     int nl=0;
     std::string search="IQ";
-    while(brk==false)
+    while(!ifs.eof())
     {
         std::getline(ifs,inst);
-    //    std::cout << inst << std::endl;
+        std::cout << inst << std::endl;
         nl++;
-        if(inst.find(search)!=std::string::npos)
-        {
-            brk=true;
-        }
+        //if(inst.find(search)!=std::string::npos)
+        //{
+        //    brk=true;
+        //}
         if(nl>1e6)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("The number of lines read before reading of the exchange exceeded 1,000,000. This is probably an error.");
         }
     }
+    std::cout << "Finished" << std::endl;
     unsigned numsite=nl-2;
     FIXOUT(logf,"Number of magnetic sites:" << numsite << std::endl);
     //should not have reached the end of the file so don't (in theory) have to clear to eof flag
