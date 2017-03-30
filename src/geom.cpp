@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 18 Oct 2016 12:41:56
+// Last-modified: 18 Nov 2016 10:46:03
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -272,11 +272,11 @@ namespace geom
             FIXOUT(config::Info,str.c_str() << ucm.GetNES(i) << " [ " << 100*(static_cast<double>(ucm.GetNES(i))/static_cast<double>(nspins)) << "% ]" << std::endl);
         }
 
-        if(nms > 50)
+/*        if(nms > 50)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("Too many magnetic types. If you want more edit cuint.cu variable MAXNSPEC (a #define).\n This is because the constant memory allocation for the species dependent variables cannot be\ndynamic.");
-        }
+        }*/
         //sloc << "#This file contains the positions of the magnetic species and their type" << std::endl;
         //sloc << "# Element - x [A] - y [A] - z[A]" << std::endl;
         sloc << nspins << "\n\n";

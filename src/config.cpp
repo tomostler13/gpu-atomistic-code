@@ -1,6 +1,6 @@
 // File: config.cpp
 // Author:Tom Ostler
-// Last-modified: 18 Oct 2016 13:39:51
+// Last-modified: 07 Dec 2016 14:25:29
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -38,7 +38,12 @@ namespace config
         {
             error::errPreamble(__FILE__,__LINE__);
             std::cerr << ". Parse error at " << pex.getFile()  << ":" << pex.getLine() << "-" << pex.getError() << "***\n" << std::endl;
-//            exit(EXIT_FAILURE);
+            //exit(EXIT_FAILURE);
+        }
+        catch(...)
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Unspecified libconfig error on reading the input file.");
         }
         //for getting the date and time
         time_t now = time(0);

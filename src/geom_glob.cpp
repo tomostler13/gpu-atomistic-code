@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 18 Oct 2016 12:46:01
+// Last-modified: 11 Jan 2017 15:43:00
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -230,7 +230,7 @@ namespace geom
                 ucfi >> mp[0] >> mp[1] >> mp[2];
                 ucm.SetMP(mp[0],mp[1],mp[2],i);
                 //set the position vector
-                ucm.SetMP(static_cast<unsigned int>(c[0]*Nk[0]+0.5),static_cast<unsigned int>(c[1]*Nk[1]+0.5),static_cast<unsigned int>(c[2]*Nk[2]+0.5),i);
+//                ucm.SetMP(static_cast<unsigned int>(c[0]+0.5),static_cast<unsigned int>(c[1]+0.5),static_cast<unsigned int>(c[2]+0.5),i);
 
             }
             ucm.SetXred(c[0],c[1],c[2],i);

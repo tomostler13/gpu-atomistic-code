@@ -1,7 +1,7 @@
 // File: exch_routines.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 18 Oct 2016 12:56:00
+// Last-modified: 03 Feb 2017 15:50:52
 // This source file was added to tidy up the file exch.cpp
 // because it was becoming cumbersome to work with. The
 // intention of this source file is to add a set of callable
@@ -96,7 +96,7 @@ namespace exch
             else
             {
                 error::errPreamble(__FILE__,__LINE__);
-                error::errMessage("Error reading filename for csr exchange matrix. Check setting exchange.csrMatrixName");
+                error::errMessage("Error reading filename for csr exchange matrix. Check setting exchange.ExchangeMatrixFilename");
             }
         }
         FIXOUT(config::Info,"Output of exchange matrix:" << config::isTF(outputJ) << std::endl);
@@ -161,12 +161,6 @@ namespace exch
                 error::errPreamble(__FILE__,__LINE__);
                 error::errMessage("Could not read the max number of interactions of exchange to read in (exchange.MaxInteractions (int)).");
             }
-            if(!GlobExch.lookupValue("TruncateExchange",cutexch))
-            {
-                error::errWarnPreamble(__FILE__,__LINE__);
-                error::errWarning("Could not read if you wanted to trucate the interaction range (exchange.TruncateExchange (bool)). Defaulting to false");
-                cutexch=false;
-            }
             evs.resize(3);
             for(unsigned int i = 0 ; i < 3 ; i++)
             {
@@ -184,19 +178,6 @@ namespace exch
                 }
             }
             FIXOUTVEC(config::Info,"Scaling factor for exchange vectors:",evs[0],evs[1],evs[2]);
-            FIXOUT(config::Info,"Truncate exchange?:" << config::isTF(cutexch) << std::endl);
-            if(cutexch==true)
-            {
-                if(!GlobExch.lookupValue("TruncateRCut",rcut))
-                {
-                    error::errPreamble(__FILE__,__LINE__);
-                    error::errMessage("You stated that you wanted to cut the interaction range but have not specified a cut-off radius (exchange.TruncateRCut (double) in metres).");
-                }
-                else
-                {
-                    FIXOUT(config::Info,"Cut-off radius:" << rcut << " [m]" << std::endl);
-                }
-            }
             FIXOUT(config::Info,"Maximum number of interactions:" << max_int << std::endl);
             numint.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_int);
             exchvec.resize(geom::ucm.GetNMS(),geom::ucm.GetNMS(),max_int,3);
@@ -235,7 +216,7 @@ namespace exch
             error::errWarning("Could not read if you wanted to trucate the interaction range (exchange.TruncateExchange (bool)). Defaulting to false");
             cutexch=false;
         }
-        FIXOUT(config::Info,"Truncate exchange?:" << config::isTF(cutexch) << std::endl);
+        FIXOUT(config::Info,"Truncate exchange interactions?:" << config::isTF(cutexch) << std::endl);
         if(cutexch==true)
         {
             if(!GlobExch.lookupValue("TruncateRCut",rcut))

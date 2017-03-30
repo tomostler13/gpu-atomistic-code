@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 13 Sep 2016 12:31:29
+// Last-modified: 05 Dec 2016 15:27:14
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -386,7 +386,7 @@ namespace util
 
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
             {
-                pvf << spins::Sx(i) << "\t" << spins::Sy(i) << "\t" << spins::Sz(i) << "\n";
+                pvf << spins::Sx(i)*geom::mu[i] << "\t" << spins::Sy(i)*geom::mu[i] << "\t" << spins::Sz(i)*geom::mu[i] << "\n";
             }
         }
         else
@@ -487,7 +487,8 @@ namespace util
 
             for(unsigned int i = 0 ; i < geom::nspins ; i++)
             {
-                pvf << spins::Sx(i) << "\t" << spins::Sy(i) << "\t" << spins::Sz(i) << "\n";
+//                pvf << spins::Sx(i) << "\t" << spins::Sy(i) << "\t" << spins::Sz(i) << "\n";
+                pvf << spins::Sx(i)*geom::mu[i] << "\t" << spins::Sy(i)*geom::mu[i] << "\t" << spins::Sz(i)*geom::mu[i] << "\n";
             }
         }
         else

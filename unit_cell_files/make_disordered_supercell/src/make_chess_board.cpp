@@ -1,7 +1,7 @@
 // File: make_chess_board.cpp
 // Author:Tom Ostler
 // Created: 22 Nov 2014
-// Last-modified: 15 Dec 2014 18:01:00
+// Last-modified: 09 Nov 2016 13:32:39
 
 //The purpose of this section of code is to create a unit cell
 //file for use with the main program. The specific type of unit
@@ -173,12 +173,22 @@ int main(int argc,char *argv[])
         anisvec(i,2)=setting[str.c_str()][2];
         FIXOUTVEC(Info,"Anisotropy axis:",anisvec(i,0),anisvec(i,1),anisvec(i,2));
     }
-    if(fabs(100-(amounts(0,0)+amounts(0,1)))>1e-12)
+    double sumamounts=0.0;
+    for(unsigned int i = 0 ; i < nms ; i++)
+    {
+        sumamounts+=amounts(0,i);
+    }
+    if(fabs(100-sumamounts)>1e-12)
     {
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("The amounts in area 0 do not equal 100%");
     }
-    if(fabs(100-(amounts(1,0)+amounts(1,1)))>1e-12)
+    sumamounts=0.0;
+    for(unsigned int i = 0 ; i < nms ; i++)
+    {
+        sumamounts+=amounts(0,i);
+    }
+    if(fabs(100-sumamounts)>1e-12)
     {
         error::errPreamble(__FILE__,__LINE__);
         error::errMessage("The amounts in area 1 do not equal 100%");
@@ -291,6 +301,7 @@ int main(int argc,char *argv[])
             unsigned int yoffs=j*dim[1]*nk[1];
             for(unsigned int k = 0 ; k < globdim[2] ; k++)
             {
+                std::cout << "Placing elements in area with coords (integer) " << i << " " << j << " " << k << std::endl;
                 unsigned int zoffs=k*dim[2]*nk[2];
                 //lookup which composition we want
                 unsigned int comp=((i+j+k)%nms);
@@ -303,44 +314,47 @@ int main(int argc,char *argv[])
                     double percent=0.0;
                     unsigned int countamount=0;
                     bool placed=false;
-                    while(placed==false)
+                    if(amounts(comp,species)>1e-12)
                     {
-                        //now loop over the k-points within this "chess square"
-                        for(unsigned int ii = 0 ; ii < dim[0]*nk[0] ; ii++)
+                        while(placed==false)
                         {
-                            unsigned int xcoord=xoffs+ii;
-                            for(unsigned int jj = 0 ; jj < dim[1]*nk[1] ; jj++)
+                            //now loop over the k-points within this "chess square"
+                            for(unsigned int ii = 0 ; ii < dim[0]*nk[0] ; ii++)
                             {
-                                unsigned int ycoord=yoffs+jj;
-                                for(unsigned int kk = 0 ; kk < dim[2]*nk[2] ; kk++)
+                                unsigned int xcoord=xoffs+ii;
+                                for(unsigned int jj = 0 ; jj < dim[1]*nk[1] ; jj++)
                                 {
-                                    unsigned int zcoord=zoffs+kk;
-
-                                    //we only want to replace atoms that should
-                                    //exist (>-1) and ones that are not species
-                                    //that we have placed after placing species 0
-                                    if(coords(xcoord,ycoord,zcoord)==0)
+                                    unsigned int ycoord=yoffs+jj;
+                                    for(unsigned int kk = 0 ; kk < dim[2]*nk[2] ; kk++)
                                     {
-                                    //std::cout << "Coord\t" << xcoord << "\t" << ycoord << "\t" << zcoord << "\t" << coords(xcoord,ycoord,zcoord) << std::endl;
+                                        unsigned int zcoord=zoffs+kk;
 
-                                        if(Random::rand()*100.0 <= amounts(comp,species))
+                                        //we only want to replace atoms that should
+                                        //exist (>-1) and ones that are not species
+                                        //that we have placed after placing species 0
+                                        if(coords(xcoord,ycoord,zcoord)==0)
                                         {
-                                            //then place an atom
-                                            coords(xcoord,ycoord,zcoord)=species;
-                                            countamount++;
-                                            percent=(static_cast<double>(countamount)/static_cast<double>(nspinsperarea))*100.0;
-                                            //std::cout << xcoord << "\t" << ycoord << "\t" << zcoord << "\tpercent = " << percent << std::endl;
-                                            if(percent >= amounts(comp,species))
+                                            //std::cout << "Coord\t" << xcoord << "\t" << ycoord << "\t" << zcoord << "\t" << coords(xcoord,ycoord,zcoord) << std::endl;
+
+                                            if(Random::rand()*100.0 <= amounts(comp,species))
                                             {
-                                                placed=true;
+                                                //then place an atom
+                                                coords(xcoord,ycoord,zcoord)=species;
+                                                countamount++;
+                                                percent=(static_cast<double>(countamount)/static_cast<double>(nspinsperarea))*100.0;
+                                                //std::cout << xcoord << "\t" << ycoord << "\t" << zcoord << "\tpercent = " << percent << std::endl;
+                                                if(percent >= amounts(comp,species))
+                                                {
+                                                    placed=true;
+                                                }
                                             }
                                         }
+                                        if(placed){break;}
                                     }
                                     if(placed){break;}
                                 }
                                 if(placed){break;}
                             }
-                            if(placed){break;}
                         }
                     }
 

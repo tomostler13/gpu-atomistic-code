@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 19 Oct 2016 14:36:29
+// Last-modified: 05 Dec 2016 13:13:47
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -399,6 +399,10 @@ namespace llg
                 else if(scm=="vampire")
                 {
                     spins::setSpinsVampire(setting);
+                }
+                else if(scm=="restart_text")
+                {
+                    spins::setSpinsResText(setting);
                 }
                 else
                 {

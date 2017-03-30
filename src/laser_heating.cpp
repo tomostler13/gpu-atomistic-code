@@ -1,7 +1,7 @@
 // File: laser_heating.cpp
 // Author: Tom Ostler
 // Created: 24 Nov 2014
-// Last-modified: 18 Oct 2016 13:18:23
+// Last-modified: 07 Dec 2016 14:24:48
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -29,6 +29,9 @@ void sim::laser_heating()
     unsigned int ets = 0 , rts = 0 , num_pulses=0;
     double et = 0.0 , rt = 0.0 , gamma_e = 0.0 , Cl = 0.0 , G_ep = 0.0 , Pump_Time = 0.0 , ct = 0.0 , pumpfluence = 0 , initT = 0.0;
     unsigned int nfv=0;
+    //false means electrons
+    //true means phonons
+    bool tbath=false;
     Array2D<double> field_val;
     Array<double> field_times;
     config::printline(config::Info);
@@ -357,6 +360,33 @@ void sim::laser_heating()
         }
         config::Info << std::endl;
     }
+    std::string bath;
+    if(setting.lookupValue("TempBath",bath))
+    {
+
+        if(bath=="electron")
+        {
+            tbath=false;
+        }
+        else if(bath=="phonon")
+        {
+            tbath=true;
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("You have incorrectly set the flag, TempBath (string), options are electron or phonon, check your config file.");
+        }
+        FIXOUT(config::Info,"Temperature bath:" << bath << std::endl);
+    }
+    else
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Flag TempBath (string) not set (options are electron or phonon), setting default to electron");
+        bath="electron";
+        FIXOUT(config::Info,"Temperature bath (default):" << bath << std::endl);
+        tbath=false;
+    }
 
     //declarations for the correlation function (may not be malloced)
     //This array stores the spin map in real space
@@ -583,6 +613,34 @@ void sim::laser_heating()
         }
     }
 
+    //output the spin config after equilibration
+    std::ofstream ofse("after_equil_spins.dat");
+    if(!ofse.is_open())
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Error opening file to output spins at the end of the laser simulation. Will try to redirect to cout");
+        std::cout << "#############SPIN CONFIG AFTER EQUILIBRATION#######################" << std::endl;
+        std::cout << geom::nspins << std::endl;
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+        }
+        std::cout << "###################################################################" << std::endl;
+    }
+    else
+    {
+        ofse << geom::nspins << std::endl;
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            ofse << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+        }
+        ofse.close();
+        if(ofse.is_open())
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close end_spins.dat");
+        }
+    }
 
     // Check the flag to output the spin map
     spins::mapout=true;
@@ -609,7 +667,15 @@ void sim::laser_heating()
         //std::cout << realtime << "\t" << llg::applied[0] << "\t" << llg::applied[1] << "\t" << llg::applied[2] << std::endl;
         unsigned int nt=t-ets;
         CalcTe(pulse_scale,pulse_delays,static_cast<double>(nt)*llg::dt,num_pulses,Pump_Time,pumpfluence,Te,Tl,G_ep,Cl,gamma_e,llg::dt,initT,ct);
-        llg::T=Te;
+        if(tbath)
+        {
+            llg::T=Te;
+        }
+        else
+        {
+            llg::T=Tl;
+        }
+
         if(t%spins::update==0)
         {
             util::calc_mag();
@@ -619,6 +685,7 @@ void sim::laser_heating()
         if(t%spins::update==0)
         {
             if(outVTU)
+            {
                 if(VTUcount==static_cast<int>(VTUupdate))
                 {
                     if(static_cast<double>(t)*llg::dt >= VTUstart)
@@ -632,6 +699,7 @@ void sim::laser_heating()
                 {
                     VTUcount++;
                 }
+            }
         }
         if(opsf==true)
         {
@@ -782,6 +850,34 @@ void sim::laser_heating()
     {
         error::errWarnPreamble(__FILE__,__LINE__);
         error::errWarning("Could not deallocate pulse_scale array.");
+    }
+    //output the spins at the end to be read back in
+    std::ofstream ofs("end_spins.dat");
+    if(!ofs.is_open())
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Error opening file to output spins at the end of the laser simulation. Will try to redirect to cout");
+        std::cout << "#############SPIN CONFIG AFTER RUN#######################" << std::endl;
+        std::cout << geom::nspins << std::endl;
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            std::cout << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+        }
+        std::cout << "#########################################################" << std::endl;
+    }
+    else
+    {
+        ofs << geom::nspins << std::endl;
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            ofs << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+        }
+        ofs.close();
+        if(ofs.is_open())
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Could not close end_spins.dat");
+        }
     }
 }
 
