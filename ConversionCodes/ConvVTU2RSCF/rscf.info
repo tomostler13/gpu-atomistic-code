@@ -1,0 +1,7 @@
+Number of spins (in):                                                      2720000
+Dimensions read in:                                                        [   400   , 400   , 17      ]
+Size of unit cell (abc):                                                   [   2.4e-09 , 2.4e-09 , 2.364e-09   ]
+Base for filenames:                                                        spinmap_
+Start time index:                                                          3000
+End time index:                                                            3000
+Step in time index:                                                        3000

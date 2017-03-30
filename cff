@@ -17,11 +17,12 @@ exchange:
 {
     Read_exch_method="unitcell";
     Exchfile="LiCoPO4.exch";
+
 };
 llg:
 {
     dt = 0.2e-15;
-    applied = [ 0.0 , 0.0 , 0.0 ];
+    applied = [ 0.0 , 0.0 , 0.1 ];
     update=100;
     MagnetizationCalculationMethod=0;
     exch_striction:
