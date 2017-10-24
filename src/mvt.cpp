@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 21 Feb 2017 10:29:33
+// Last-modified: 24 Oct 2017 20:20:03
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -329,10 +329,10 @@ void sim::MvT()
             rscf::outputRSCFNextIndex();
         }
     }
-    if(dT<0.0)
+    else if(dT<0.0)
     {
         //temperature loop
-        for(double T = uT ; T > lT ; T+=dT)
+        for(double T = uT ; T>lT ; T+=dT)
         {
             double *modm=NULL,*oldmean=NULL;
             modm = new double[geom::ucm.GetNMS()];

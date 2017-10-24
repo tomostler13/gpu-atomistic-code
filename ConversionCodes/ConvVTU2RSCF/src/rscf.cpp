@@ -1,7 +1,7 @@
 // File: discVTU.cpp
 // Author:Tom Ostler
 // Created: 25 Feb 2016
-// Last-modified: 30 Mar 2017 10:34:28
+// Last-modified: 31 Mar 2017 15:33:11
 
 //The purpose of this section of code is to take the output of the vtu
 //files and put the spins into cells and calculate the average magnetization
@@ -31,16 +31,23 @@ int main(int argc,char *argv[])
     //Array3D<int> coords;
     //Array2D<int> lu;
     Array2D<double> spins;
-    Array3D<double> spinsx,spinsy,spinsz;
-    Array3D<fftw_complex> kspinsx,kspinsy,kspinsz;
+    Array3D<double> spinsx,spinsy,spinsz,spinsmod,Cxx,Cyy,Czz,Csds;
+    Array3D<fftw_complex> kspinsx,kspinsy,kspinsz,kspinsmod,CKxx,CKyy,CKzz,CKsds;
     fftw_plan SxP,SyP,SzP;
-    fftw_plan SxB,SyB,SzB;
-    int cplxdim=(inputs::dimin[2]/2)+1;
-    std::cout << "#Reading config file..." << std::flush;
+    fftw_plan SxB,SyB,SzB,SdotB;
     inputs::readcff(argc,argv);
+    inputs::dimin[2]+=1;
+    std::cout << "#Reading config file..." << std::flush;
 
-    double normfac=1./(static_cast<double>(inputs::dimin[0]*inputs::dimin[1]*inputs::dimin[2]));
+    int cplxdim=(inputs::dimin[2]/2)+1;
+
+
+    double normfac=(1./(static_cast<double>(inputs::dimin[0]*inputs::dimin[1]*inputs::dimin[2])))*(1./(static_cast<double>(inputs::dimin[0]*inputs::dimin[1]*inputs::dimin[2])));
     std::cout << "Done" << std::endl;
+
+    std::cout << "New dim size " << inputs::dimin[2] << std::endl;
+
+    std::cout << "#Normalisation factor" << normfac << std::endl;
 
     std::cout << "#Resizing magnetization and spin arrays..." << std::flush;
     mag.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2],3);
@@ -49,21 +56,50 @@ int main(int argc,char *argv[])
     spinsx.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2]);
     spinsy.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2]);
     spinsz.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2]);
+    spinsmod.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2]);
+    Cxx.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2]);
+    Cyy.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2]);
+    Czz.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2]);
+    Csds.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2]);
+    CKxx.resize(inputs::dimin[0],inputs::dimin[1],cplxdim);
+    CKyy.resize(inputs::dimin[0],inputs::dimin[1],cplxdim);
+    CKzz.resize(inputs::dimin[0],inputs::dimin[1],cplxdim);
+    CKsds.resize(inputs::dimin[0],inputs::dimin[1],cplxdim);
     spinsx.IFill(0);
     spinsy.IFill(0);
     spinsz.IFill(0);
-    kspinsx.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2]);
-    kspinsy.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2]);
-    kspinsz.resize(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2]);
+    spinsmod.IFill(0);
+    Cxx.IFill(0);
+    Cyy.IFill(0);
+    Czz.IFill(0);
+    Csds.IFill(0);
+    CKxx.IFill(0);
+    CKyy.IFill(0);
+    CKzz.IFill(0);
+    CKsds.IFill(0);
+    kspinsx.resize(inputs::dimin[0],inputs::dimin[1],cplxdim);
+    kspinsy.resize(inputs::dimin[0],inputs::dimin[1],cplxdim);
+    kspinsz.resize(inputs::dimin[0],inputs::dimin[1],cplxdim);
+    kspinsmod.resize(inputs::dimin[0],inputs::dimin[1],cplxdim);
     kspinsx.IFill(0);
     kspinsy.IFill(0);
     kspinsz.IFill(0);
+    kspinsmod.IFill(0);
     SxP=fftw_plan_dft_r2c_3d(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2],spinsx.ptr(),kspinsx.ptr(),FFTW_ESTIMATE);
     SyP=fftw_plan_dft_r2c_3d(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2],spinsy.ptr(),kspinsy.ptr(),FFTW_ESTIMATE);
     SzP=fftw_plan_dft_r2c_3d(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2],spinsz.ptr(),kspinsz.ptr(),FFTW_ESTIMATE);
-    SxB=fftw_plan_dft_c2r_3d(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2],kspinsx.ptr(),spinsx.ptr(),FFTW_ESTIMATE);
-    SyB=fftw_plan_dft_c2r_3d(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2],kspinsy.ptr(),spinsy.ptr(),FFTW_ESTIMATE);
-    SzB=fftw_plan_dft_c2r_3d(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2],kspinsz.ptr(),spinsz.ptr(),FFTW_ESTIMATE);
+    SxB=fftw_plan_dft_c2r_3d(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2],CKxx.ptr(),Cxx.ptr(),FFTW_ESTIMATE);
+    SyB=fftw_plan_dft_c2r_3d(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2],CKyy.ptr(),Cyy.ptr(),FFTW_ESTIMATE);
+    SzB=fftw_plan_dft_c2r_3d(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2],CKzz.ptr(),Czz.ptr(),FFTW_ESTIMATE);
+    SdotB=fftw_plan_dft_c2r_3d(inputs::dimin[0],inputs::dimin[1],inputs::dimin[2],CKsds.ptr(),Csds.ptr(),FFTW_ESTIMATE);
+    spinsx.IFill(0);
+    spinsy.IFill(0);
+    spinsz.IFill(0);
+    spinsmod.IFill(0);
+    kspinsx.IFill(0);
+    kspinsy.IFill(0);
+    kspinsz.IFill(0);
+    kspinsmod.IFill(0);
     std::cout << "Done" << std::endl;
 
     std::cout << "#inputs::dimin = " << inputs::dimin[0] << " , " << inputs::dimin[1] << " , " << inputs::dimin[2] << std::endl;
@@ -88,11 +124,24 @@ int main(int argc,char *argv[])
             std::getline(ifs,dumpline);
 //            std::cout << dumpline << std::endl;
         }
+        spins.IFill(0);
+        spinsx.IFill(0);
+        spinsy.IFill(0);
+        spinsz.IFill(0);
+        kspinsx.IFill(0);
+        kspinsy.IFill(0);
+        kspinsz.IFill(0);
+        kspinsmod.IFill(0);
+        spinsmod.IFill(0);
         //get the spin vectors (sx,sy,sz)
         for(unsigned int i = 0 ; i < inputs::nspins ; i++)
         {
             ifs >> spins(i,0) >> spins(i,1) >> spins(i,2);
-//            std::cout << spins(i,0) << "\t" << spins(i,1) << "\t" << spins(i,2) << std::endl;
+//            const double n=sqrt(spins(i,0)*spins(i,0)+spins(i,1)*spins(i,1)+spins(i,2)*spins(i,2));
+//            spins(i,0)/=n;
+//            spins(i,1)/=n;
+//            spins(i,2)/=n;
+            //std::cout << spins(i,0) << "\t" << spins(i,1) << "\t" << spins(i,2) << std::endl;
         }
 //        std::cout << spins(inputs::nspins-1,0) << std::endl;
         //get rid of the middle six lines
@@ -123,27 +172,22 @@ int main(int argc,char *argv[])
             {
                 for(unsigned int k = 0 ; k < cplxdim ; k++)
                 {
-                    double tx[2]={0,0};
-                    tx[0]=kspinsx(i,j,k)[0]*kspinsx(i,j,k)[0]+kspinsx(i,j,k)[1]*kspinsx(i,j,k)[1];
-                    tx[1]=kspinsx(i,j,k)[1]*kspinsx(i,j,k)[0]-kspinsx(i,j,k)[0]*kspinsx(i,j,k)[1];
-                    kspinsx(i,j,k)[0]=tx[0];
-                    kspinsx(i,j,k)[1]=tx[1];
-                    double ty[2]={0,0};
-                    ty[0]=kspinsy(i,j,k)[0]*kspinsy(i,j,k)[0]+kspinsy(i,j,k)[1]*kspinsy(i,j,k)[1];
-                    ty[1]=kspinsy(i,j,k)[1]*kspinsy(i,j,k)[0]-kspinsy(i,j,k)[0]*kspinsy(i,j,k)[1];
-                    kspinsy(i,j,k)[0]=ty[0];
-                    kspinsy(i,j,k)[1]=ty[1];
-                    double tz[2]={0,0};
-                    tz[0]=kspinsz(i,j,k)[0]*kspinsz(i,j,k)[0]+kspinsz(i,j,k)[1]*kspinsz(i,j,k)[1];
-                    tz[1]=kspinsz(i,j,k)[1]*kspinsz(i,j,k)[0]-kspinsz(i,j,k)[0]*kspinsz(i,j,k)[1];
-                    kspinsz(i,j,k)[0]=tz[0];
-                    kspinsz(i,j,k)[1]=tz[1];
+                    CKxx(i,j,k)[0]=kspinsx(i,j,k)[0]*kspinsx(i,j,k)[0]+kspinsx(i,j,k)[1]*kspinsx(i,j,k)[1];
+                    CKxx(i,j,k)[1]=kspinsx(i,j,k)[1]*kspinsx(i,j,k)[0]-kspinsx(i,j,k)[0]*kspinsx(i,j,k)[1];
+                    CKyy(i,j,k)[0]=kspinsy(i,j,k)[0]*kspinsy(i,j,k)[0]+kspinsy(i,j,k)[1]*kspinsy(i,j,k)[1];
+                    CKyy(i,j,k)[1]=kspinsy(i,j,k)[1]*kspinsy(i,j,k)[0]-kspinsy(i,j,k)[0]*kspinsy(i,j,k)[1];
+                    CKzz(i,j,k)[0]=kspinsz(i,j,k)[0]*kspinsz(i,j,k)[0]+kspinsz(i,j,k)[1]*kspinsz(i,j,k)[1];
+                    CKzz(i,j,k)[1]=kspinsz(i,j,k)[1]*kspinsz(i,j,k)[0]-kspinsz(i,j,k)[0]*kspinsz(i,j,k)[1];
+
+                    CKsds(i,j,k)[0]=kspinsx(i,j,k)[0]*kspinsx(i,j,k)[0] + kspinsx(i,j,k)[1]*kspinsx(i,j,k)[1] + kspinsy(i,j,k)[0]*kspinsy(i,j,k)[0]+kspinsy(i,j,k)[1]*kspinsy(i,j,k)[1] + kspinsz(i,j,k)[0]*kspinsz(i,j,k)[0]+kspinsz(i,j,k)[1]*kspinsz(i,j,k)[1];
+                    CKsds(i,j,k)[1]=kspinsx(i,j,k)[1]*kspinsx(i,j,k)[0] - kspinsx(i,j,k)[0]*kspinsx(i,j,k)[1] + kspinsy(i,j,k)[1]*kspinsy(i,j,k)[0]-kspinsy(i,j,k)[0]*kspinsy(i,j,k)[1] + kspinsz(i,j,k)[1]*kspinsz(i,j,k)[0]-kspinsz(i,j,k)[0]*kspinsz(i,j,k)[1];
                 }
             }
         }
         fftw_execute(SxB);
         fftw_execute(SyB);
         fftw_execute(SzB);
+        fftw_execute(SdotB);
         ifs.close();
         if(ifs.is_open())
         {
@@ -186,9 +230,18 @@ int main(int argc,char *argv[])
                     lj=rj;
                 }
                 //output sxsx, sysy and szsz correlation function
-                ofs << ri << "\t" << rj << "\t" << spinsx(li,lj,0)*normfac << "\t" << spinsy(li,lj,0)*normfac << "\t" << spinsz(li,lj,0)*normfac << std::endl;
+                ofs << ri << "\t" << rj << "\t" << Cxx(li,lj,0)*normfac << "\t" << Cyy(li,lj,0)*normfac << "\t" << Czz(li,lj,0)*normfac << "\t" << Csds(li,lj,0)*normfac << "\t" << sqrt(CKxx(li,lj,0)[0]*CKxx(li,lj,0)[0]+CKxx(li,lj,0)[1]*CKxx(li,lj,0)[1])*normfac << "\t" << sqrt(CKyy(li,lj,0)[0]*CKyy(li,lj,0)[0]+CKyy(li,lj,0)[1]*CKyy(li,lj,0)[1])*normfac << "\t" << sqrt(CKzz(li,lj,0)[0]*CKzz(li,lj,0)[0]+CKzz(li,lj,0)[1]*CKzz(li,lj,0)[1])*normfac << "\t" << sqrt(CKsds(li,lj,0)[0]*CKsds(li,lj,0)[0]+CKsds(li,lj,0)[1]*CKsds(li,lj,0)[1])*normfac << std::endl;
             }
+            ofs << std::endl << std::endl;
         }
+        /*for(int i = inputs::dimin[0]/2 ; i < inputs::dimin[0] ; i++)
+        {
+            ofs << i-static_cast<int>(inputs::dimin[0]) << "\t" << Csds(i,0,0)*normfac << std::endl;
+        }
+        for(int i = 0 ; i < inputs::dimin[0]/2 ; i++)
+        {
+            ofs << i << "\t" << Csds(i,0,0)*normfac << std::endl;
+        }*/
         ofs.close();
 //        std::cout << __FILE__ << "\t" << __LINE__ << std::endl;
     }
