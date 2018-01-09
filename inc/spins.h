@@ -1,7 +1,7 @@
 // File: spins.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 05 Dec 2016 13:12:51
+// Last-modified: 08 Jan 2018 20:44:18
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>

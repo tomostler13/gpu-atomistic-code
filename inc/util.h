@@ -1,6 +1,6 @@
 // File: util.h
 // Author:Tom Ostler
-// Last-modified: 19 Oct 2016 13:07:53
+// Last-modified: 08 Jan 2018 20:43:49
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -115,7 +115,7 @@ namespace util
             return sum;
         }
     double reduceArrayDouble(Array<double>,unsigned int);
-    extern Array2D<double> magx,magy,magz;
+    extern Array2D<double> magx,magy,magz,magEachAtUC;
     extern Array3D<double> mag_species_x,mag_species_y,mag_species_z;
     extern Array4D<double> magdisc;
     extern Array3D<unsigned int> nd;

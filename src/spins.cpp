@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 14 Feb 2017 14:14:22
+// Last-modified: 08 Jan 2018 20:28:01
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -34,6 +34,7 @@ namespace spins
     Array3D<double> Crxx,Crxy,Crxz,Cryx,Cryy,Cryz,Crzx,Crzy,Crzz,Crsds;
     Array<double> Sx,Sy,Sz,eSx,eSy,eSz;
     Array2D<double> mag;
+    Array2D<double> magEachAtUC;
     fftw_plan SP,dSP;
     unsigned int update=0,mag_calc_method=0;
     bool output_mag=true,mapout=false;

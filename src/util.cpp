@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 05 Dec 2016 15:27:14
+// Last-modified: 08 Jan 2018 20:44:08
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -23,7 +23,7 @@ extern "C" {
 namespace util
 {
     std::ofstream ofs,sofs;
-    Array2D<double> magx,magy,magz;
+    Array2D<double> magx,magy,magz,magEachAtUC;
     double lx1,ly1,lz1,lx2,ly2,lz2;
     Array3D<double> mag_species_x,mag_species_y,mag_species_z;
     Array<unsigned int> magDiscSize;

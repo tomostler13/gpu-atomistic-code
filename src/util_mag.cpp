@@ -1,7 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 11 Sep 2016 12:49:46
+// Last-modified: 08 Jan 2018 20:56:41
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
@@ -218,6 +218,23 @@ namespace util
                 //std::cin.get();
 
 
+            }
+            else if(spins::mag_calc_method==10)
+            {
+                for(unsigned int i = 0 ; i < geom::nauc ; i++)
+                {
+                    magEachAtUC(i,0)=0.0;
+                    magEachAtUC(i,1)=0.0;
+                    magEachAtUC(i,2)=0.0;
+                }
+                for(unsigned int i = 0 ; i < geom::nspins ; i++)
+                {
+                    //unit cell id (which atom is it in the unit cell)
+                    unsigned int ucid=geom::lu(i,4);
+                    magEachAtUC(ucid,0)+=spins::Sx[i];
+                    magEachAtUC(ucid,1)+=spins::Sy[i];
+                    magEachAtUC(ucid,2)+=spins::Sz[i];
+                }
             }
             else
             {
@@ -474,6 +491,17 @@ namespace util
                 }
             }*/
         }
+        else if(spins::mag_calc_method==10)
+        {
+            magEachAtUC.resize(geom::nauc,3);
+            sofs.open("mag_av_each_atom_unitcell.dat");
+            if(!sofs.is_open())
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Could not open magnetization file for writing the magnetization average for each atom in the unit cell (mag_av_each_atom_unitcell.dat)\nMostly likely the disk is full or write permissions are not possible.");
+            }
+
+        }
     }
     void output_mag(unsigned int t)
     {
@@ -684,8 +712,22 @@ namespace util
                 error::errMessage("Method for outputting the discrete magnetization is not recognised. Check flag llg:DiscOutputFormat");
             }
         }
+        else if(spins::mag_calc_method==10)
+        {
+            sofs << static_cast<double>(t)*llg::dt << "\t";
+            for(unsigned int i = 0 ; i < geom::nauc ; i++)
+            {
+                magEachAtUC(i,0)/=static_cast<double>(geom::dim[0]*geom::dim[1]*geom::dim[2]);
+                magEachAtUC(i,1)/=static_cast<double>(geom::dim[0]*geom::dim[1]*geom::dim[2]);
+                magEachAtUC(i,2)/=static_cast<double>(geom::dim[0]*geom::dim[1]*geom::dim[2]);
+                sofs << magEachAtUC(i,0) << "\t" << magEachAtUC(i,1) << "\t" << magEachAtUC(i,2) << "\t";
+            }
+            sofs << std::endl;
+
+        }
 
     }
+
 
 
 }

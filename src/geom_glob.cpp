@@ -1,7 +1,7 @@
 // File: geom_glob.cpp
 // Author:Tom Ostler
 // Created: 26 July 2014
-// Last-modified: 11 Jan 2017 15:43:00
+// Last-modified: 08 Jan 2018 20:48:45
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -20,7 +20,7 @@
 namespace geom
 {
     //the number of unit cells
-    unsigned int dim[3]={0,0,0};
+    unsigned int dim[3]={0,0,0},nauc=0;
     //zero pad size (in unit cells)
     unsigned int zpdim[3]={0,0,0};
     //primitive vector
@@ -196,7 +196,7 @@ namespace geom
 
         ucfi >> nms;
         FIXOUT(config::Info,"Number of magnetic species (sublattices):" << nms << std::endl);
-        unsigned int nauc=0;
+        nauc=0;
         ucfi >> nauc;
         if(nauc<1)
         {

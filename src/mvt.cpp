@@ -1,7 +1,7 @@
 // File: mvt.h
 // Author: Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 24 Oct 2017 20:20:03
+// Last-modified: 08 Jan 2018 21:19:36
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -327,6 +327,7 @@ void sim::MvT()
                 util::outESP << std::endl;
             }
             rscf::outputRSCFNextIndex();
+            util::sofs << std::endl << std::endl;
         }
     }
     else if(dT<0.0)
@@ -463,6 +464,7 @@ void sim::MvT()
                 util::outESP << std::endl;
                 util::outESP << std::endl;
             }
+            util::sofs << std::endl << std::endl;
         }
     }
     ofs.close();
