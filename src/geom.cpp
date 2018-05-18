@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 18 Nov 2016 10:46:03
+// Last-modified: 23 Oct 2017 10:23:48
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -65,7 +65,7 @@ namespace geom
         }
         FIXOUT(config::Info,"Number of spins:" << nspins << std::endl);
         //Next we want to output the information stored in the class to an output file.
-        //If the number of atoms in the unit cell is large (usually when we are using a bit supercell)
+        //If the number of atoms in the unit cell is large (usually when we are using a big supercell)
         //the we don't want to mess up the format of the output file as it would make it unreadable if
         //we output the information for potentially millions of spins.
         //We will always output the information for the first 5 atoms but the whole data will
