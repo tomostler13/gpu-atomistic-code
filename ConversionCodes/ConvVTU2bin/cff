@@ -1,0 +1,14 @@
+convVTU2bin:
+{
+    NumberSpin=150000;
+    NCellsIn = [ 100 , 100 , 15 ];
+    Nk = [ 1 , 1 , 1 ];
+    abc = [ 0.3e-9 , 0.3e-9 , 0.3e-9 ];
+//    rprim1 = [ 1.0 , 0.0 , 0.0 ];
+//    rprim2 = [ 0.0 , 1.0 , 0.0 ];
+//    rprim3 = [ 0.0 , 0.0 , 1.0 ];
+    InputFilenameBase = "spinmap_";
+    StartTime = 75300;
+    EndTime = 77900;
+    dTime = 2600;
+};
