@@ -13,6 +13,10 @@ OPT_LEVEL=-O3
 GCC_FLAGS= $(OPT_LEVEL)
 
 # Objects
+OBJECTSTSALL= \
+obj/timeseries_all.o
+OBJECTSTSTM= \
+obj/timeseries_tm.o
 OBJECTSTS= \
 obj/timeseries.o
 OBJECTSSSF= \
@@ -21,14 +25,32 @@ OBJECTS2SLSSF= \
 obj/twosublatssf.o
 
 EXECUTABLETS=timeseries
+EXECUTABLETSALL=timeseries_all
+EXECUTABLETSTM=timeseries_tm
 EXECUTABLESSF=ssf
 EXECUTABLE2SLSSF=2slssf
 
-all: $(OBJECTS) ts ssf
+all: $(OBJECTS) tsa ts ssf tm
+
+# Time series all targets
+tsa: $(OBJECTSTSALL)
+	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTSTSALL) $(STATIC_LINK) -o $(EXECUTABLETS) $(LIBS)
+
+
+$(OBJECTSTSALL): obj/%.o: src/%.cpp
+	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
+
+# Time series two magnon
+tm: $(OBJECTSTSTM)
+	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTSTSTM) $(STATIC_LINK) -o $(EXECUTABLETM) $(LIBS)
+
+
+$(OBJECTSTSTM): obj/%.o: src/%.cpp
+	$(GCC) -c -o $@ $(DEFS) $(GCC_FLAGS) $(GITINFO) $<
 
 # Time series targets
 ts: $(OBJECTSTS)
-	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTSTS) $(STATIC_LINK) -o $(EXECUTABLETS) $(LIBS)
+	$(GCC) $(DEFS) $(GCC_FLAGS) $(OBJECTSTS) $(STATIC_LINK) -o $(EXECUTABLETSALL) $(LIBS)
 
 
 $(OBJECTSTS): obj/%.o: src/%.cpp
