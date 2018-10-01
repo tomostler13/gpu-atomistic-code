@@ -1,0 +1,11 @@
+bin2Sq2D:
+{
+    NumberSpin=150000;
+    NCellsIn = [ 100 , 100 , 15 ];
+    Nk = [ 1 , 1 , 1 ];
+    abc = [ 3.0 , 3.0 , 3.0 ];
+    InputFilenameBase = "spins_";
+    StartTime = 75300;
+    EndTime = 77900;
+    dTime = 2600;
+};
