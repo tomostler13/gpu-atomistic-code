@@ -1,7 +1,7 @@
 // File: util.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 08 Jan 2018 20:44:08
+// Last-modified: 21 Mar 2019 01:20:00 PM
 // Contains useful functions and classes
 #include "../inc/util.h"
 #include "../inc/llg.h"
@@ -13,13 +13,13 @@
 #include "../inc/error.h"
 #include <string>
 #include <sstream>
-extern "C" {
+/*extern "C" {
     // LU decomoposition of a general matrix
     void dgetrf_(int* M, int *N, double* A, int* lda, int* IPIV, int* INFO);
 
     // generate inverse of a matrix given its LU decomposition
     void dgetri_(int* N, double* A, int* lda, int* IPIV, double* WORK, int* lwork, int* INFO);
-}
+}*/
 namespace util
 {
     std::ofstream ofs,sofs;
@@ -32,7 +32,7 @@ namespace util
     unsigned int maxcx=0,maxcy=0,maxcz=0;
     Array3D<unsigned int> nd;
     Array2D<double> nspl;//number of spins per layer
-    void inverse(double* A, int N)
+/*    void inverse(double* A, int N)
     {
         int *IPIV = new int[N+1];
         int LWORK = N*N;
@@ -45,6 +45,7 @@ namespace util
         delete [] IPIV;
         delete [] WORK;
     }
+    */
     void cpuConvFourier()
     {
         fields::Hk.IFill(0);

@@ -77,8 +77,8 @@ int main(int argc,char *argv[])
             }
             else
             {
-                hammalpha=atof(argv[5]);
-                hammbeta=atof(argv[6]);
+                hammalpha=atof(argv[6]);
+                hammbeta=atof(argv[7]);
                 FIXOUT(Info,"Hamm alpha:" << hammalpha << std::endl);
                 FIXOUT(Info,"Hamm beta:" << hammbeta << std::endl);
             }
@@ -157,6 +157,7 @@ int main(int argc,char *argv[])
         {
             datain >> AllSq(c,t)[0];
             datain >> AllSq(c,t)[1];
+            //std::cout << AllSq(c,t)[0] << "\t" << AllSq(c,t)[1] << std::endl;
             if(windowi==1)
             {
                 AllSq(c,t)[0]*=(hammalpha-hammbeta*cos(2.0*M_PI*static_cast<double>(t)/(static_cast<double>(num_samples)-1.0)));
@@ -170,13 +171,19 @@ int main(int argc,char *argv[])
         std::cerr << "Error: Could not close data file on loop " << std::endl;
     }
 
+//    for(unsigned int t = 0 ; t < num_samples ; t++)
+//    {
+//        std::cout << AllSq(0,t)[0] << "\t" << AllSq(0,t)[1] << std::endl;
+//    }
+//    std::cin.get();
+
     FIXOUT(Info,"Planning the time-series analysis:" << std::flush);
     //At the end we want to perform the FFT in time
     fftw_plan fttime;
     //We're going to use the same identical plan quite a few times so it's
     //worth plannig it well
     fftw_set_timelimit(60);
-    fttime=fftw_plan_dft_1d(num_samples,Sq.ptr(),Sq.ptr(),FFTW_FORWARD,FFTW_PATIENT);
+    fttime=fftw_plan_dft_1d(num_samples,Sq.ptr(),Sq.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
     SUCCESS(Info);
 
     if(windowi>1)
@@ -214,6 +221,12 @@ int main(int argc,char *argv[])
                 }
             }
         }
+//        for(unsigned int t = 0 ; t < num_samples ; t++)
+//        {
+//            std::cout << Sq(t)[0] << "\t" << Sq(t)[1] << std::endl;
+//        }
+//        std::cin.get();
+
         FIXOUTVEC(Info,"Executing fourier transform for k-vector:",kvecs(i,0),kvecs(i,1),kvecs(i,2));
         fftw_execute(fttime);
         SUCCESS(Info);
@@ -247,7 +260,7 @@ int main(int argc,char *argv[])
         imres.IFill(0);
         for(unsigned int w = 0 ; w < num_samples/2 ; w++)
         {
-            int negq=-static_cast<int>(w)+num_samples;
+            int negq=-static_cast<int>(w)+num_samples-1;
             //calculate the bits of the one-sided PSD
             const double Hq = Sq(w)[0]*Sq(w)[0] + Sq(w)[1]*Sq(w)[1];
             const double Hmq = Sq(negq)[0]*Sq(negq)[0] + Sq(negq)[1]*Sq(negq)[1];
@@ -264,6 +277,11 @@ int main(int argc,char *argv[])
         double maxsmooth=0.0;
         unsigned int maxrawindex=0;
         unsigned int maxsmoothindex=0;
+/*        for(unsigned int w = 0 ; w < num_samples/2 ; w++)
+        {
+            std::cout << res(w) << std::endl;
+        }
+        std::cin.get();*/
         for(unsigned int w = 0 ; w < num_samples/2 ; w++)
         {
             if(res(w)>maxsmooth && static_cast<double>(w)*2*M_PI/(static_cast<double>(num_samples)*dt) > fcutl && static_cast<double>(w)*2*M_PI/(static_cast<double>(num_samples)*dt) < fcutu)

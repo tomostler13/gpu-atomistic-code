@@ -140,10 +140,7 @@ int main(int argc,char *argv[])
     FIXOUT(Info,"Planning the time-series analysis:" << std::flush);
     //At the end we want to perform the FFT in time
     fftw_plan fttime;
-    //We're going to use the same identical plan quite a few times so it's
-    //worth plannig it well
-    fftw_set_timelimit(60);
-    fttime=fftw_plan_dft_1d(num_samples,Sq.ptr(),Sq.ptr(),FFTW_FORWARD,FFTW_PATIENT);
+    fttime=fftw_plan_dft_1d(num_samples,Sq.ptr(),Sq.ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
     SUCCESS(Info);
 
     if(windowi>1)
@@ -231,9 +228,11 @@ int main(int argc,char *argv[])
         ores.IFill(0);
         for(unsigned int w = 0 ; w < num_samples/2 ; w++)
         {
-            int negq=-static_cast<int>(w)+num_samples;
+        //    std::cout << "w = " << w << std::endl;
+            int negq=-static_cast<int>(w)+num_samples-1;
             //calculate the bits of the one-sided PSD
             const double Hq = Sq(w)[0]*Sq(w)[0] + Sq(w)[1]*Sq(w)[1];
+        //    std::cout << negq << std::endl;
             const double Hmq = Sq(negq)[0]*Sq(negq)[0] + Sq(negq)[1]*Sq(negq)[1];
             res(w)=Hq+Hmq;
             ores(w)=res(w);

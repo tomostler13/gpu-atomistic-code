@@ -16,4 +16,6 @@ else ifeq ($(HOSTNAME),lemaitre2.cism.ucl.ac.be)
 include HostCompArg/lemaitre.args
 else ifeq ($(HOSTNAME),nanomat-gpu)
 include HostCompArg/nanomat-gpu.args
+else ifeq ($(HOSTNAME),hpc)
+include HostCompArg/hpc.args
 endif
