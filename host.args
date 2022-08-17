@@ -18,4 +18,6 @@ else ifeq ($(HOSTNAME),nanomat-gpu)
 include HostCompArg/nanomat-gpu.args
 else ifeq ($(HOSTNAME),hpc)
 include HostCompArg/hpc.args
+else ifeq ($(HOSTNAME),login01)
+include HostCompArg/viper.args
 endif
