@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 17 Aug 2022 15:45:19
+// Last-modified: 19 Aug 2022 13:12:30
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -20,6 +20,10 @@
 #include "../inc/intmat.h"
 #include "../inc/defines.h"
 #include "../inc/llg.h"
+#ifdef CUDA
+#include "../inc/cuda.h"
+#endif
+
 #define FIXOUT(a,b) a.width(75);a << std::left << b;
 namespace fields
 {
@@ -30,6 +34,7 @@ namespace fields
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz,HDemagx,HDemagy,HDemagz;
     Array<double> H4sx,H4sy,H4sz;
     Array<double> Hstagx,Hstagy,Hstagz;
+    Array2D<double> sofield;
     fftw_plan HP,dHP;
     void initFields()
     {
@@ -154,6 +159,29 @@ namespace fields
         Hstagz.IFill(0);
     }
 
+    void setStagZero()
+    {
+        Hstagx.IFill(0);
+        Hstagy.IFill(0);
+        Hstagz.IFill(0);
+        #ifdef CUDA
+        cullg::CsetStagFieldsZero();
+        #endif
+    }
+    void setStagField()
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+
+            unsigned int splu=geom::lu(i,3);
+            fields::Hstagx(i)=fields::sofield(splu,0);
+            fields::Hstagy(i)=fields::sofield(splu,1);
+            fields::Hstagz(i)=fields::sofield(splu,2);
+        }
+        #ifdef CUDA
+        cullg::CsetStagFields();
+        #endif
+    }
     void bfdip()
     {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)

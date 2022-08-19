@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 19 Aug 2022 09:59:15
+// Last-modified: 19 Aug 2022 12:35:38
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -442,6 +442,8 @@ namespace spins
                     error::errMessage(errstr);
                 }
                 ifs >> spins::Sx[lsn] >> spins::Sy[lsn] >> spins::Sz[lsn];
+                //std::cout << lc[0] << "\t" << lc[1] << "\t" << lc[2] << "\t" << spins::Sx[lsn] << "\t" << spins::Sy[lsn] << "\t" << spins::Sz[lsn] << std::endl;
+                //std::cin.get();
                 const double mods=sqrt(spins::Sx[lsn]*spins::Sx[lsn] + spins::Sy[lsn]*spins::Sy[lsn] + spins::Sz[lsn]*spins::Sz[lsn]);
                 if(mods < 1e-12)
                 {

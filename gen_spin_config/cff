@@ -26,7 +26,9 @@ llg:
         sapplied1 = [ 0.0 , 0.0 ,  1.0 ];
         sapplied2 = [ 0.0 , 0.0 , -1.0 ];
     };
-    MagnetizationCalculationMethod=1;
+    MagnetizationCalculationMethod=5;
+    SpinConfigMethod="grid";
+    SpinFile="dw_grid.in";
 };
 cuda:
 {
@@ -34,14 +36,11 @@ cuda:
 };
 sim:
 {
-    sim_type="MvT";
+    sim_type="simple";
 };
-mvt:
+simple:
 {
-    Lower_temp=600.0;
-    Upper_temp=651.0;
-    Temp_step=25.0;
-    MinRunTime=15e-12;
-    MaxRunTime=50e-12;
-    OutputSpinsVTU=FALSE;
+    EquilibrationTime=0.01e-12;
+    RunTime=1e-12;
+    Temperature=1.0;
 };

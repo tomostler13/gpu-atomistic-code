@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 17 Aug 2022 15:52:50
+// Last-modified: 19 Aug 2022 13:12:01
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -438,7 +438,7 @@ namespace cullg
             tnsda[3*i+1]=fields::Hstagy(i);
             tnsda[3*i+2]=fields::Hstagz(i);
         }
-        CUDA_CALL(cudaMemcpy(CHstg,tnsfa,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CHstg,tnsda,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
 
         //copy the first order uniaxial anisotropy direction
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -497,5 +497,29 @@ namespace cullg
 
         //make sure we clean up when the program exits
         atexit(deallocate_cuda_memory);
+    }
+    void CsetStagFields()
+    {
+        double *tnsda=new double[3*geom::nspins];
+        //copy the 3 Nspin long arrays containing the staggered field to the tnsfa array
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            tnsda[3*i]=  fields::Hstagx(i);
+            tnsda[3*i+1]=fields::Hstagy(i);
+            tnsda[3*i+2]=fields::Hstagz(i);
+        }
+        CUDA_CALL(cudaMemcpy(CHstg,tnsda,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
+    }
+    void CsetStagFieldsZero()
+    {
+        double *tnsda=new double[3*geom::nspins];
+        //copy the 3 Nspin long arrays containing the staggered field to the tnsfa array
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            tnsda[3*i]=  0.0;
+            tnsda[3*i+1]=0.0;
+            tnsda[3*i+2]=0.0;
+        }
+        CUDA_CALL(cudaMemcpy(CHstg,tnsda,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
     }
 }

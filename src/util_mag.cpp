@@ -1,7 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 17 Aug 2022 16:17:08
+// Last-modified: 19 Aug 2022 13:26:38
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
@@ -600,41 +600,6 @@ namespace util
                 error::errWarning(str1);
             }
 
-        }
-        else if(spins::mag_calc_method==1)//along x
-        {
-            const double timeid=static_cast<double>(t)*llg::dt;
-            //output in index format for plotting with gnuplot
-            for(unsigned int i = 0 ; i < geom::Nk[0]*geom::dim[0] ; i++)
-            {
-                const double timeid=static_cast<double>(t)*llg::dt;
-                //output in index format for plotting with gnuplot
-                for(unsigned int i = 0 ; i < geom::Nk[0]*geom::dim[0] ; i++)
-                {
-                    sofs << timeid << "\t" << magx(i,0) << "\t" << magx(i,1) << "\t" << magx(i,2) << std::endl;
-                }
-                sofs << std::endl << std::endl;
-            }
-        }
-        else if(spins::mag_calc_method==2)//along y
-        {
-            const double timeid=static_cast<double>(t)*llg::dt;
-            //output in index format for plotting with gnuplot
-            for(unsigned int i = 0 ; i < geom::Nk[1]*geom::dim[1] ; i++)
-            {
-                sofs << timeid << "\t" << magy(i,0) << "\t" << magy(i,1) << "\t" << magy(i,2) << std::endl;
-            }
-            sofs << std::endl << std::endl;
-        }
-        else if(spins::mag_calc_method==3)//along z
-        {
-            const double timeid=static_cast<double>(t)*llg::dt;
-            //output in index format for plotting with gnuplot
-            for(unsigned int i = 0 ; i < geom::Nk[2]*geom::dim[2] ; i++)
-            {
-                sofs << timeid << "\t" << i << "\t" << magz(i,0) << "\t" << magz(i,1) << "\t" << magz(i,2) << std::endl;
-            }
-            sofs << std::endl << std::endl;
         }
         else if(spins::mag_calc_method==5)//along x
         {

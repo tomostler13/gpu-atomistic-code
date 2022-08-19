@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 19 Oct 2016 14:40:23
+// Last-modified: 19 Aug 2022 13:18:01
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -117,6 +117,10 @@ int main(int argc,char *argv[])
     else if(sim::sim_type=="timeseries")
     {
         sim::timeseries();
+    }
+    else if(sim::sim_type=="simple")
+    {
+        sim::simple();
     }
     else if(sim::sim_type=="laserheating")
     {

@@ -72,10 +72,9 @@ sf:
     Calculate=TRUE;
     InputFile="LiCoPO4.sf";
 };
-timeseries:
+simple:
 {
     EquilibrationTime=0.01e-12;
     RunTime=1e-12;
     Temperature=1.0;
-    OutputIndividualTimeSeries=TRUE;
 };

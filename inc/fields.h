@@ -1,7 +1,7 @@
 // File: fields.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 17 Aug 2022 14:50:21
+// Last-modified: 19 Aug 2022 13:15:24
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -15,6 +15,7 @@
 #define _FIELDS_H_
 namespace fields
 {
+    extern Array2D<double> sofield;
     extern Array5D<fftw_complex> Hk;
     extern Array5D<fftw_complex> Hr;
     extern Array4D<fftw_complex> dipHr,dipHk,hHk,hHr;
@@ -26,6 +27,8 @@ namespace fields
     void dipbfdip();
     void dipftdip();
     void dipeftdip();
+    void setStagZero();
+    void setStagField();
 
 }
 #endif /*_FIELDS_H_*/

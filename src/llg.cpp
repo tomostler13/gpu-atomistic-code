@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 19 Aug 2022 10:00:15
+// Last-modified: 19 Aug 2022 13:11:23
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -228,9 +228,8 @@ namespace llg
                     }
                 }
             }
-            Array2D<double> sofield;
             //for storing the field for each atom in the unit cell
-            sofield.resize(geom::ucm.GetNMS(),3);
+            fields::sofield.resize(geom::ucm.GetNMS(),3);
 
             if(!config::cfg.exists("llg.staggered_field"))
             {
@@ -238,9 +237,9 @@ namespace llg
                 error::errWarning("Setting, llg.staggered)field not set, defaulting to zero.");
                 for(unsigned int i = 0 ;  i < geom::ucm.GetNMS() ; i++)
                 {
-                    sofield(i,0)=0.0;
-                    sofield(i,1)=0.0;
-                    sofield(i,2)=0.0;
+                    fields::sofield(i,0)=0.0;
+                    fields::sofield(i,1)=0.0;
+                    fields::sofield(i,2)=0.0;
                 }
             }
             else
@@ -259,7 +258,7 @@ namespace llg
                     {
                         try
                         {
-                            sofield(i,j)=sofset[sofstr.c_str()][j];
+                            fields::sofield(i,j)=sofset[sofstr.c_str()][j];
                         }
                         catch(const libconfig::SettingNotFoundException &snf)
                         {
@@ -272,7 +271,7 @@ namespace llg
                         }
                     }
 
-                    FIXOUTVEC(config::Info,sofstr,sofield(i,0),sofield(i,1),sofield(i,2));
+                    FIXOUTVEC(config::Info,sofstr,fields::sofield(i,0),fields::sofield(i,1),fields::sofield(i,2));
                 }
 
                 config::Info << "========================" << std::endl;
@@ -282,9 +281,9 @@ namespace llg
             {
 
                 unsigned int splu=geom::lu(i,3);
-                fields::Hstagx(i)=sofield(splu,0);
-                fields::Hstagy(i)=sofield(splu,1);
-                fields::Hstagz(i)=sofield(splu,2);
+                fields::Hstagx(i)=fields::sofield(splu,0);
+                fields::Hstagy(i)=fields::sofield(splu,1);
+                fields::Hstagz(i)=fields::sofield(splu,2);
             }
             config::Info << "Done" << std::endl;
 

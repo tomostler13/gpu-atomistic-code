@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 17 Aug 2022 15:52:10
+// Last-modified: 19 Aug 2022 13:10:46
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -59,6 +59,8 @@ namespace cullg
     };
     void cuinit();
     void deallocate_cuda_memory();
+    void CsetStagFieldsZero();
+    void CsetStagFields();
     void llgGPU(unsigned int&);
 }
 #endif /*_CULLB_H_*/
