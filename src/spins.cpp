@@ -1,7 +1,7 @@
 // File: spins.cpp
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 08 Jan 2018 20:28:01
+// Last-modified: 19 Aug 2022 09:59:15
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -396,6 +396,75 @@ namespace spins
         }
     }
 
+    void setSpinsGrid(libconfig::Setting& setting)
+    {
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            //initialise all spins to zero and at the end check that
+            //their modulus is NOT 0
+            spins::Sx[i]=0.0;
+            spins::Sy[i]=0.0;
+            spins::Sz[i]=0.0;
+        }
+        std::string fname;
+        if(setting.lookupValue("SpinFile",fname))
+        {
+            FIXOUT(config::Info,"Initialising spins from grid file:" << fname << std::endl);
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not read the file (SpinFile) to initialise spins");
+        }
+        std::ifstream ifs(fname.c_str());
+        if(ifs.is_open())
+        {
+            unsigned int tmpns=0;
+            ifs >> tmpns;
+            if(tmpns!=geom::nspins)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("The number of spins read in is not the same as the number you are now trying to create.");
+            }
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+                int lc[3]={0,0,0};
+                //Read the grid points of the spins
+                ifs >> lc[0] >> lc[1] >> lc[2];
+                //Get spin id of grid point
+                int lsn=geom::coords(lc[0],lc[1],lc[2],0);
+                if(lsn<0)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "No spin at site (" << lc [0] << " , " << lc[1] << "," << lc[2] << ")";
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
+                }
+                ifs >> spins::Sx[lsn] >> spins::Sy[lsn] >> spins::Sz[lsn];
+                const double mods=sqrt(spins::Sx[lsn]*spins::Sx[lsn] + spins::Sy[lsn]*spins::Sy[lsn] + spins::Sz[lsn]*spins::Sz[lsn]);
+                if(mods < 1e-12)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Read a spin with a zero (<1e-12) spin lenth)");
+                }
+                spins::Sx[i]/=mods;
+                spins::Sy[i]/=mods;
+                spins::Sz[i]/=mods;
+            }
+            ifs.close();
+            if(ifs.is_open())
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Could not close spin file used for initialising spins.");
+            }
+        }
+        else
+        {
+            error::errPreamble(__FILE__,__LINE__);
+            error::errMessage("Could not open spin file to initialise spin, check your filename.");
+        }
+    }
     void setSpinsSpecies(libconfig::Setting& setting)
     {
         for(unsigned int i = 0 ; i < geom::nspins ; i++)

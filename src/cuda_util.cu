@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 23 Jun 2016 13:45:45
+// Last-modified: 17 Aug 2022 15:52:50
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -196,6 +196,7 @@ namespace cullg
         CUDA_CALL(cudaFree(CDetFields));
         CUDA_CALL(cudaFree(Crand));
         CUDA_CALL(cudaFree(CH));
+        CUDA_CALL(cudaFree(CHstg));
         CUDA_CALL(cudaFree(Cfn));
         CUDA_CALL(cudaFree(Csigma));
         CUDA_CALL(cudaFree(Clambda));
@@ -397,6 +398,7 @@ namespace cullg
             CUDA_CALL(cudaMemcpy(Cadjncy_l,exch::adjncy_l.ptr(),exch::adjncy_l.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
         }
         CUDA_CALL(cudaMalloc((void**)&CHDemag,3*geom::nspins*sizeof(float)));
+        CUDA_CALL(cudaMalloc((void**)&CHstg,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&CDetFields,3*geom::nspins*sizeof(double)));
@@ -429,6 +431,15 @@ namespace cullg
         //Nspins int array, 3*Nspins int array
         int *nsia=new int[geom::nspins];
         int *tnsia=new int[3*geom::nspins];
+        //copy the 3 Nspin long arrays containing the staggered field to the tnsfa array
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            tnsda[3*i]=  fields::Hstagx(i);
+            tnsda[3*i+1]=fields::Hstagy(i);
+            tnsda[3*i+2]=fields::Hstagz(i);
+        }
+        CUDA_CALL(cudaMemcpy(CHstg,tnsfa,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
+
         //copy the first order uniaxial anisotropy direction
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {

@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 18 Oct 2016 13:24:42
+// Last-modified: 17 Aug 2022 15:51:12
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -177,7 +177,7 @@ namespace llgCPU
 
             const double s[3]={spins::Sx[i],spins::Sy[i],spins::Sz[i]};
             //Adding the demag here should be zero (see fields.cpp) if config::inc_dip==false
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i]+fields::HDemagx[i]+fields::H4sx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i]+fields::HDemagy[i]+fields::H4sy[i],fields::Hz[i]+fields::Hthx[i]+llg::applied[2]+fields::HDemagz[i]+fields::H4sz[i]};
+            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i]+fields::HDemagx[i]+fields::H4sx[i]+fields::Hstagx(i),llg::applied[1]+fields::Hthy[i]+fields::Hy[i]+fields::HDemagy[i]+fields::H4sy[i]+fields::Hstagy(i),fields::Hz[i]+fields::Hthx[i]+llg::applied[2]+fields::HDemagz[i]+fields::H4sz[i]+fields::Hstagz(i)};
 /*        if(t==0)
         {
             std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << h[0] << "\t" << h[1] << "\t" << h[2] << std::endl;
@@ -271,7 +271,7 @@ namespace llgCPU
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
         {
             const double s[3]={spins::eSx[i],spins::eSy[i],spins::eSz[i]};
-            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i]+fields::HDemagx[i]+fields::H4sx[i],llg::applied[1]+fields::Hthy[i]+fields::Hy[i]+fields::HDemagy[i]+fields::H4sy[i],fields::Hz[i]+fields::Hthx[i]+llg::applied[2]+fields::HDemagz[i]+fields::H4sz[i]};
+            double h[3]={llg::applied[0]+fields::Hthx[i]+fields::Hx[i]+fields::HDemagx[i]+fields::H4sx[i]+fields::Hstagx(i),llg::applied[1]+fields::Hthy[i]+fields::Hy[i]+fields::HDemagy[i]+fields::H4sy[i]+fields::Hstagy(i),fields::Hz[i]+fields::Hthx[i]+llg::applied[2]+fields::HDemagz[i]+fields::H4sz[i]+fields::Hstagz(i)};
             //--------------------------------------------------------
             //calculate the first order uniaxial anisotropy component
             //direction of the axis

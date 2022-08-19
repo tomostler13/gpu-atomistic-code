@@ -1,7 +1,7 @@
 // File: fields.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 18 Oct 2016 13:21:57
+// Last-modified: 17 Aug 2022 14:50:21
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -18,7 +18,7 @@ namespace fields
     extern Array5D<fftw_complex> Hk;
     extern Array5D<fftw_complex> Hr;
     extern Array4D<fftw_complex> dipHr,dipHk,hHk,hHr;
-    extern Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz,HDemagx,HDemagy,HDemagz,H4sx,H4sy,H4sz;
+    extern Array<double> Hstagx,Hstagy,Hstagz,Hx,Hy,Hz,Hthx,Hthy,Hthz,HDemagx,HDemagy,HDemagz,H4sx,H4sy,H4sz;
     void initFields();
     void bfdip();
     void ftdip();

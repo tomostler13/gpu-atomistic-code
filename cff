@@ -23,6 +23,13 @@ llg:
 {
     dt = 0.2e-15;
     applied = [ 0.0 , 0.0 , 0.1 ];
+    staggered_field:
+    {
+        sapplied1 = [ 0.0 , 0.0 ,  1.0 ];
+        sapplied2 = [ 0.0 , 0.0 , -1.0 ];
+    };
+    SpinConfigMethod="restart_text";
+    SpinFile="spins.in";
     update=100;
     MagnetizationCalculationMethod=0;
     exch_striction:

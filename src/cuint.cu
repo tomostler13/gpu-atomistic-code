@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 27 Oct 2016 14:41:49
+// Last-modified: 17 Aug 2022 15:55:43
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -37,7 +37,7 @@ namespace cuint
         cudaMemcpyToSymbol(*(&Crdt),&llg::rdt,sizeof(double));
         config::Info << "Done" << std::endl;
     }
-    __global__ void CHeun1(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,double *Csigma,double *Cllgpf,double *Clambda,double *Ck1u,double *Ck1udir)
+    __global__ void CHeun1(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,double *Csigma,double *Cllgpf,double *Clambda,double *Ck1u,double *Ck1udir,double *CHstg)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -48,7 +48,7 @@ namespace cuint
             const double lambda=Clambda[i];
             const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
 
-            double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
+            double h[3]={double(CH[3*i])+CHstg[3*i]+lrn[0]+appliedx,double(CH[3*i+1])+CHstg[3*i+1]+lrn[1]+appliedy,double(CH[3*i+2])+CHstg[3*i+2]+lrn[2]+appliedz};
 
             const double s[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
             //calculate the field arising from the first order uniaxial anisotropy
@@ -84,7 +84,7 @@ namespace cuint
         }
     }
 
-    __global__ void CHeun2(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,double *Csigma,double *Cllgpf,double *Clambda,double *Ck1u,double *Ck1udir,double *CDetField)
+    __global__ void CHeun2(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,double *Csigma,double *Cllgpf,double *Clambda,double *Ck1u,double *Ck1udir,double *CDetField,double *CHstg)
     {
         register const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -94,7 +94,7 @@ namespace cuint
             const double llgpf=Cllgpf[i];
             const double lambda=Clambda[i];
             const double lrn[3]={double(Crand[3*i])*TP,double(Crand[3*i+1])*TP,double(Crand[3*i+2])*TP};
-            double h[3]={double(CH[3*i])+lrn[0]+appliedx,double(CH[3*i+1])+lrn[1]+appliedy,double(CH[3*i+2])+lrn[2]+appliedz};
+            double h[3]={double(CH[3*i])+CHstg[3*i]+lrn[0]+appliedx,double(CH[3*i+1])+CHstg[3*i+1]+lrn[1]+appliedy,double(CH[3*i+2])+CHstg[3*i+2]+lrn[2]+appliedz};
 /*            if(i==1 || i==0)
             {
                 printf("spin=%d\t%4.6f\t%4.6f\t%4.6f\n",i,h[0],h[1],h[2]);

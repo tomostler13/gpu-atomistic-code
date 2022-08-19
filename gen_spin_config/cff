@@ -1,0 +1,47 @@
+Seed = 123456;
+system:
+{
+    //number of unit cells
+    dim = [ 100 ,1 , 1 ];
+    Unitcellfile="FeOnly_Conv.ucf";
+    abc = [ 6e-10 , 6e-10 , 6e-10 ];
+    Nm = [ 2 , 2 , 2 ];
+    rprim1 = [ 1.0 , 0.0 , 0.0 ];
+    rprim2 = [ 0.0 , 1.0 , 0.0 ];
+    rprim3 = [ 0.0 , 0.0 , 1.0 ];
+    Include_dipole = FALSE;
+    Exchange_method="CSR";
+    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
+};
+exchange:
+{
+    Read_exch_method="permute";
+    Exchfile="afm_nn.exch";
+    OutputExchange=TRUE;
+};
+llg:
+{
+    staggered_field:
+    {
+        sapplied1 = [ 0.0 , 0.0 ,  1.0 ];
+        sapplied2 = [ 0.0 , 0.0 , -1.0 ];
+    };
+    MagnetizationCalculationMethod=1;
+};
+cuda:
+{
+    threadsperblock=256;
+};
+sim:
+{
+    sim_type="MvT";
+};
+mvt:
+{
+    Lower_temp=600.0;
+    Upper_temp=651.0;
+    Temp_step=25.0;
+    MinRunTime=15e-12;
+    MaxRunTime=50e-12;
+    OutputSpinsVTU=FALSE;
+};

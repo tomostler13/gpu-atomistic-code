@@ -1,7 +1,7 @@
 // File: spins.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 08 Jan 2018 20:44:18
+// Last-modified: 19 Aug 2022 09:59:39
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -42,5 +42,6 @@ namespace spins
     void setSpinsSpecies(libconfig::Setting&);
     void setSpinsVampire(libconfig::Setting&);
     void setSpinsResText(libconfig::Setting&);
+    void setSpinsGrid(libconfig::Setting&);
 }
 #endif /*_SPINS_H_*/

@@ -1,0 +1,10 @@
+Nk =                                                                       [   2     , 2     , 2       ]
+abc =                                                                      [   6e-10 , 6e-10 , 6e-10   ]
+Dimensions (unit cells):                                                   [   100   , 1     , 1       ]
+rprim1                                                                     [   6     , 0     , 0       ]
+rprim2                                                                     [   0     , 6     , 0       ]
+rprim3                                                                     [   0     , 0     , 6       ]
+Unit cell file:                                                            FeOnly_Conv.ucf
+Number of magnetic species (sublattices):                                  2
+Number of atoms in the unit cell:                                          8
+Number of spins:                                                           800

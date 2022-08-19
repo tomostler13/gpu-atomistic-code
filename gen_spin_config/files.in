@@ -1,0 +1,3 @@
+OBJECTS= \
+obj/gen_dw_inp.o \
+obj/error.o

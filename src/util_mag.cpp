@@ -1,7 +1,7 @@
 // File: util_mag.cpp
 // Author:Tom Ostler
 // Created: 15 Dec 2014
-// Last-modified: 08 Jan 2018 20:56:41
+// Last-modified: 17 Aug 2022 16:17:08
 // Contains useful functions and classes
 // that pertain to magnetization
 #include "../inc/util.h"
@@ -535,7 +535,7 @@ namespace util
             //output in index format for plotting with gnuplot
             for(unsigned int i = 0 ; i < geom::Nk[0]*geom::dim[0] ; i++)
             {
-                sofs << timeid << "\t" << magx(i,0) << "\t" << magx(i,1) << "\t" << magx(i,2) << std::endl;
+                sofs << timeid << "\t" << i << "\t" << magx(i,0) << "\t" << magx(i,1) << "\t" << magx(i,2) << std::endl;
             }
             sofs << std::endl << std::endl;
         }
@@ -545,7 +545,7 @@ namespace util
             //output in index format for plotting with gnuplot
             for(unsigned int i = 0 ; i < geom::Nk[1]*geom::dim[1] ; i++)
             {
-                sofs << timeid << "\t" << magy(i,0) << "\t" << magy(i,1) << "\t" << magy(i,2) << std::endl;
+                sofs << timeid << "\t" << i << "\t" << magy(i,0) << "\t" << magy(i,1) << "\t" << magy(i,2) << std::endl;
             }
             sofs << std::endl << std::endl;
         }

@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 18 Oct 2016 13:21:50
+// Last-modified: 17 Aug 2022 15:45:19
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -29,6 +29,7 @@ namespace fields
     Array4D<fftw_complex> dipHr,dipHk;
     Array<double> Hx,Hy,Hz,Hthx,Hthy,Hthz,HDemagx,HDemagy,HDemagz;
     Array<double> H4sx,H4sy,H4sz;
+    Array<double> Hstagx,Hstagy,Hstagz;
     fftw_plan HP,dHP;
     void initFields()
     {
@@ -145,7 +146,12 @@ namespace fields
         H4sx.IFill(0);
         H4sy.IFill(0);
         H4sz.IFill(0);
-
+        Hstagx.resize(geom::nspins);
+        Hstagy.resize(geom::nspins);
+        Hstagz.resize(geom::nspins);
+        Hstagx.IFill(0);
+        Hstagy.IFill(0);
+        Hstagz.IFill(0);
     }
 
     void bfdip()
@@ -289,4 +295,5 @@ namespace fields
         util::dipcpuConvFourier();
         fields::dipFFTBack();
     }
+
 }

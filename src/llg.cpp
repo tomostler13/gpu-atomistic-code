@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 05 Dec 2016 13:13:47
+// Last-modified: 19 Aug 2022 10:00:15
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -10,6 +10,7 @@
 #include "../inc/spins.h"
 #include "../inc/util.h"
 #include "../inc/rscf.h"
+#include "../inc/fields.h"
 #include <cmath>
 #include <sstream>
 #include <string>
@@ -227,6 +228,66 @@ namespace llg
                     }
                 }
             }
+            Array2D<double> sofield;
+            //for storing the field for each atom in the unit cell
+            sofield.resize(geom::ucm.GetNMS(),3);
+
+            if(!config::cfg.exists("llg.staggered_field"))
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Setting, llg.staggered)field not set, defaulting to zero.");
+                for(unsigned int i = 0 ;  i < geom::ucm.GetNMS() ; i++)
+                {
+                    sofield(i,0)=0.0;
+                    sofield(i,1)=0.0;
+                    sofield(i,2)=0.0;
+                }
+            }
+            else
+            {
+
+                libconfig::Setting &sofset = config::cfg.lookup("llg.staggered_field");
+                config::Info << "Staggered field Details:" << std::endl;
+                config::Info << "========================" << std::endl;
+                for(unsigned int i = 0 ; i < geom::ucm.GetNMS() ; i++)
+                {
+                    std::stringstream sofsstr;
+                    sofsstr << "sapplied" << i+1;
+                    std::string sofstr;
+                    sofstr=sofsstr.str();
+                    for(unsigned int j = 0 ; j < 3 ; j++)
+                    {
+                        try
+                        {
+                            sofield(i,j)=sofset[sofstr.c_str()][j];
+                        }
+                        catch(const libconfig::SettingNotFoundException &snf)
+                        {
+                            error::errPreamble(__FILE__,__LINE__);
+                            std::stringstream errsstr;
+                            errsstr << "Setting not found exception caught. Staggered field not set up properly. Setting " << snf.getPath() << " must be set.";
+
+                            std::string errstr=errsstr.str();
+                            error::errMessage(errstr);
+                        }
+                    }
+
+                    FIXOUTVEC(config::Info,sofstr,sofield(i,0),sofield(i,1),sofield(i,2));
+                }
+
+                config::Info << "========================" << std::endl;
+            }
+            config::Info << "Filling staggered field arrays..." << std::flush;
+            for(unsigned int i = 0 ; i < geom::nspins ; i++)
+            {
+
+                unsigned int splu=geom::lu(i,3);
+                fields::Hstagx(i)=sofield(splu,0);
+                fields::Hstagy(i)=sofield(splu,1);
+                fields::Hstagz(i)=sofield(splu,2);
+            }
+            config::Info << "Done" << std::endl;
+
             if(!setting.lookupValue("dt",dt))
             {
                 error::errWarnPreamble(__FILE__,__LINE__);
@@ -403,6 +464,10 @@ namespace llg
                 else if(scm=="restart_text")
                 {
                     spins::setSpinsResText(setting);
+                }
+                else if(scm=="grid")
+                {
+                    spins::setSpinsGrid(setting);
                 }
                 else
                 {

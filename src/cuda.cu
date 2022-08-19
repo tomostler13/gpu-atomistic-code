@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 18 Oct 2016 13:30:04
+// Last-modified: 17 Aug 2022 15:56:00
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/spins.h"
@@ -148,7 +148,7 @@ namespace cullg
             delete [] temp;
             temp=NULL;
             exit(0);*/
-        cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir);
+        cuint::CHeun1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
         //in this case we are using the interaction matrix for both the exchange and the
         //dipole-dipole field so we might aswell update both at once
         if(config::exchm==0)
@@ -222,7 +222,7 @@ namespace cullg
         {
             cufields::CSpMV_CSR_FourSpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj_jkl,Cadjncy_j,Cadjncy_k,Cadjncy_l,CH,Cespin);
         }
-        cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CDetFields);
+        cuint::CHeun2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,Crand,Cfn,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CDetFields,CHstg);
         if(t%spins::update==0)
         {
             //copy spin arrays back to CPU
