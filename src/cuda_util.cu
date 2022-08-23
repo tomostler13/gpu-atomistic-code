@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 19 Aug 2022 13:12:01
+// Last-modified: 23 Aug 2022 15:17:35
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -398,7 +398,7 @@ namespace cullg
             CUDA_CALL(cudaMemcpy(Cadjncy_l,exch::adjncy_l.ptr(),exch::adjncy_l.size()*sizeof(unsigned int),cudaMemcpyHostToDevice));
         }
         CUDA_CALL(cudaMalloc((void**)&CHDemag,3*geom::nspins*sizeof(float)));
-        CUDA_CALL(cudaMalloc((void**)&CHstg,3*geom::nspins*sizeof(float)));
+        CUDA_CALL(cudaMalloc((void**)&CHstg,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&CDetFields,3*geom::nspins*sizeof(double)));

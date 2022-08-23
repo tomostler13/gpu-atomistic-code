@@ -1,63 +1,39 @@
-Seed = 1482512683;
+Seed = 123456;
 system:
 {
     //number of unit cells
-    dim = [ 32 , 32 , 32 ];
-    Nm = [ 2 , 2 , 4 ];
-    Unitcellfile="LiCoPO4.ucf";
-    abc = [ 10.202e-10 , 5.9229e-10 , 4.699e-10 ];
+    dim = [ 4000 ,4 , 4 ];
+    Unitcellfile="afm_nn.ucf";
+    abc = [ 3e-10 , 3e-10 , 3e-10 ];
+    Nm = [ 2 , 2 , 2 ];
     rprim1 = [ 1.0 , 0.0 , 0.0 ];
     rprim2 = [ 0.0 , 1.0 , 0.0 ];
     rprim3 = [ 0.0 , 0.0 , 1.0 ];
     Include_dipole = FALSE;
     Exchange_method="CSR";
-    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
+    Periodic_Boundaries = [ FALSE , TRUE , TRUE ];
 };
 exchange:
 {
-    Read_exch_method="unitcell";
-    Exchfile="LiCoPO4.exch";
-
+    Read_exch_method="permute";
+    Exchfile="afm_nn.exch";
+    OutputExchange=FALSE;
+    ExitAfterExchangeMatrix=FALSE;
+    OutputExchangeMatrix=FALSE;
+    ReadExchangeMatrix=TRUE;
+    ExchangeMatrixFilename="afm_nn_csr_4000x4x4.dat";
 };
 llg:
 {
-    dt = 0.2e-15;
-    applied = [ 0.0 , 0.0 , 0.1 ];
+    dt=1e-15;
+    SpinConfigMethod="grid";
+    SpinFile="dw_grid.in";
     staggered_field:
     {
-        sapplied1 = [ 0.0 , 0.0 ,  1.0 ];
-        sapplied2 = [ 0.0 , 0.0 , -1.0 ];
+        sapplied1 = [  300e-3 , 0.0 , 0.0 ];
+        sapplied2 = [ -300e-3 , 0.0 , 0.0 ];
     };
-    SpinConfigMethod="restart_text";
-    SpinFile="spins.in";
-    update=100;
-    MagnetizationCalculationMethod=0;
-    exch_striction:
-    {
-        NumPairs = 2;
-        MaxUnitCells=4;
-        Pair0 = [ 0 , 3 ];
-        UnitCells0:
-        {
-            num = 4;
-            lambda = 1.0;
-            dir0 = [ 0 , 0 , 0 ];
-            dir1 = [ -1 , 0 , 0 ];
-            dir2 = [ -1 , 0 , 1 ];
-            dir3 = [ 0 , 0 , 1 ];
-        };
-
-        Pair1 = [ 1 , 2 ];
-        UnitCells1:
-        {
-            num = 4;
-            lambda = 1.0;
-            dir0 = [ 0 , 0 , 0 ];
-            dir1 = [ -1 , 0 , 0 ];
-            dir2 = [ -1 , 0 , 1 ];
-            dir3 = [ 0 , 0 , 1 ];
-        };
-    };
+    MagnetizationCalculationMethod=5;
 };
 cuda:
 {
@@ -65,16 +41,11 @@ cuda:
 };
 sim:
 {
-    sim_type="timeseries";
-};
-sf:
-{
-    Calculate=TRUE;
-    InputFile="LiCoPO4.sf";
+    sim_type="simple";
 };
 simple:
 {
-    EquilibrationTime=0.01e-12;
-    RunTime=1e-12;
-    Temperature=1.0;
+    EquilibrationTime=0e-12;
+    RunTime=50e-12;
+    Temperature=1e-6;
 };
