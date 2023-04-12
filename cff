@@ -43,6 +43,16 @@ sim:
 {
     sim_type="simple";
 };
+anis:
+{
+    k2perp = -1.33e-22;
+    k2perpdir = [ 0.0 , 0.0 , 1.0 ];
+    k2par = 13.02e-25;
+    k2pardir = [ 0.0 , 1.0 , 0.0 ];
+    k4par = 1.86e-25;
+    k4pardirs = [[ 1.0 , 0.0 , 0.0 ],[ 0.0 , 1.0 , 0.0 ],[ 0.0 , 0.0 , 0.0 ]];
+    k4perp = 3.72e-25;
+    k4perpdirs = [[ 0.0 , 0.0 , 1.0 ],[ 0.0 , 0.0 , 0.0 ],[ 0.0 , 0.0 , 0.0 ]];
 simple:
 {
     EquilibrationTime=0e-12;

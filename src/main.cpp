@@ -1,7 +1,7 @@
 // File: main.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 19 Aug 2022 13:18:01
+// Last-modified: 12 Apr 2023 04:46:18 PM
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -88,6 +88,8 @@ int main(int argc,char *argv[])
     fields::initFields();
     //Initialise the spin arrays
     spins::initSpins();
+    //Read the anisotropy
+    anis::readGlobalAnis();
     sim::initSim();
     llg::initLLG();
 

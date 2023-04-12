@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 23 Oct 2017 10:23:48
+// Last-modified: 12 Apr 2023 12:26:26 PM
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -37,6 +37,10 @@ namespace geom
         mu.resize(nspins);gamma.resize(nspins);lambda.resize(nspins);sigma.resize(nspins);llgpf.resize(nspins);rx.resize(nspins);ry.resize(nspins);rz.resize(nspins);sublattice.resize(nspins);
         //resize the anisotropy arrays
         anis::k1u.resize(nspins);anis::k1udir.resize(nspins,3);
+        anis::k2pardir.resize(3);
+        anis::k2perpdir.resize(3);
+        anis::k4pardirs.resize(3,3);
+        anis::k4perpdirs.resize(3,3);
 
         FIXOUTVEC(config::Info,"Lattice constants:",abc[0],abc[1],abc[2]);
         if(Nkset)

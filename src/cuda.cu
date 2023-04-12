@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 17 Aug 2022 15:56:00
+// Last-modified: 12 Apr 2023 12:48:51 PM
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/spins.h"

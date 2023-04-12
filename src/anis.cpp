@@ -1,7 +1,7 @@
 // File: anis.cpp
 // Author: Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 25 Sep 2014 12:44:18
+// Last-modified: 12 Apr 2023 04:55:44 PM
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -25,4 +25,142 @@ namespace anis
 {
     Array<double> k1u;
     Array2D<double> k1udir;
+    double k2par,k2perp,k4par,k4perp;
+    Array<double> k2perpdir,k2pardir;
+    Array2D<double> k4perpdirs,k4pardirs;
+
+    void readGlobalAnis()
+    {
+        config::printline(config::Info);
+        config::Info.width(45);config::Info << std::right << "*" << "**Global Anisotropy details***" << std::endl;
+        bool anisset=false;
+        if(!config::cfg.exists("anis"))
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Setting class anis does not exist, setting defaults (all off).");
+            k2perp = 0.0;
+            k2pardir = 0.0;
+            k4par = 0.0;
+            k4perp = 0.0;
+            k2perpdir.IFill(0);
+            k2pardir.IFill(0);
+            k4perpdirs.IFill(0);
+            k4pardirs.IFill(0);
+            FIXOUT(config::Info,"K2_Perp:" << k2perp << " [J]" << std::endl);
+            FIXOUTVEC(config::Info,"K2 perp direction:",k2perpdir[0],k2perpdir[1],k2perpdir[2]);
+            FIXOUT(config::Info,"K2_Parallel:" << k2par << " [J]" << std::endl);
+            FIXOUTVEC(config::Info,"K2 parallel direction:",k2pardir[0],k2pardir[1],k2pardir[2]);
+            FIXOUT(config::Info,"K4_Perp:" << k4perp << " [J]" << std::endl);
+            FIXOUTVEC(config::Info,"K4 perp direction 1:",k4perpdirs(0,0),k4perpdirs(0,1),k4perpdirs(0,2));
+            FIXOUTVEC(config::Info,"K4 perp direction 1:",k4perpdirs(0,0),k4perpdirs(0,1),k4perpdirs(0,2));
+            FIXOUTVEC(config::Info,"K4 perp direction 2:",k4perpdirs(1,0),k4perpdirs(1,1),k4perpdirs(1,2));
+            FIXOUTVEC(config::Info,"K4 perp direction 3:",k4perpdirs(2,0),k4perpdirs(2,1),k4perpdirs(2,2));
+            FIXOUT(config::Info,"K4_Parallel:" << k4perp << " [J]" << std::endl);
+            FIXOUTVEC(config::Info,"K4 parallel direction 1:",k4pardirs(0,0),k4pardirs(0,1),k4pardirs(0,2));
+            FIXOUTVEC(config::Info,"K4 parallel direction 2:",k4pardirs(1,0),k4pardirs(1,1),k4pardirs(1,2));
+            FIXOUTVEC(config::Info,"K4 parallel direction 3:",k4pardirs(2,0),k4pardirs(2,1),k4pardirs(2,2));
+        }
+        else
+        {
+            libconfig::Setting &setting = config::cfg.lookup("anis");
+            if(!setting.lookupValue("k2perp",k2perp))
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Setting anis set, but no value for k2perp set (double)");
+            }
+            if(!setting.lookupValue("k2par",k2par))
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Setting anis set, but no value for k2par set (double)");
+            }
+            if(!setting.lookupValue("k4par",k4par))
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Setting anis set, but no value for k4par set (double)");
+            }
+            if(!setting.lookupValue("k4perp",k4perp))
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Setting anis set, but no value for k4perp set (double)");
+            }
+            for(unsigned int i = 0 ; i < 3 ; i++)
+            {
+                try
+                {
+                    k2pardir[i] = setting["k2pardir"][i];
+                }
+                catch(const libconfig::SettingNotFoundException & snf)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "Setting not found exception caught. Exchange striction not set up properly. Setting " << snf.getPath() << " must be set.";
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
+                }
+                try
+                {
+                    k2perpdir[i] = setting["k2perpdir"][i];
+                }
+                catch(const libconfig::SettingNotFoundException & snf)
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    std::stringstream errsstr;
+                    errsstr << "Setting not found exception caught. Exchange striction not set up properly. Setting " << snf.getPath() << " must be set.";
+                    std::string errstr=errsstr.str();
+                    error::errMessage(errstr);
+                }
+
+                /*std::stringstream k4pardir1_sstr;
+                std::stringstream k4pardir2_sstr;
+                std::stringstream k4pardir3_sstr;
+                std::stringstream k4perpdir1_sstr;
+                std::stringstream k4perpdir2_sstr;
+                std::stringstream k4perpdir3_sstr;
+                k4pardir1 << "k4pardirs*/
+                for(unsigned int j = 0 ; j < 3 ; j++)
+                {
+                    try
+                    {
+                        k4pardirs(i,j) = setting["k4pardirs"][i][j];
+                    }
+                    catch(const libconfig::SettingNotFoundException & snf)
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        std::stringstream errsstr;
+                        errsstr << "Setting not found exception caught. Exchange striction not set up properly. Setting " << snf.getPath() << " must be set.";
+                        std::string errstr=errsstr.str();
+                        error::errMessage(errstr);
+                    }
+                    try
+                    {
+                        k4perpdirs(i,j) = setting["k4perpdirs"][i][j];
+                    }
+                    catch(const libconfig::SettingNotFoundException & snf)
+                    {
+                        error::errPreamble(__FILE__,__LINE__);
+                        std::stringstream errsstr;
+                        errsstr << "Setting not found exception caught. Exchange striction not set up properly. Setting " << snf.getPath() << " must be set.";
+                        std::string errstr=errsstr.str();
+                        error::errMessage(errstr);
+                    }
+
+
+                }
+            }
+            FIXOUT(config::Info,"K2_Perp:" << k2perp << " [J]" << std::endl);
+            FIXOUTVEC(config::Info,"K2 perp direction:",k2perpdir[0],k2perpdir[1],k2perpdir[2]);
+            FIXOUT(config::Info,"K2_Parallel:" << k2par << " [J]" << std::endl);
+            FIXOUTVEC(config::Info,"K2 parallel direction:",k2pardir[0],k2pardir[1],k2pardir[2]);
+            FIXOUT(config::Info,"K4_Perp:" << k4perp << " [J]" << std::endl);
+            FIXOUTVEC(config::Info,"K4 perp direction 1:",k4perpdirs(0,0),k4perpdirs(0,1),k4perpdirs(0,2));
+            FIXOUTVEC(config::Info,"K4 perp direction 1:",k4perpdirs(0,0),k4perpdirs(0,1),k4perpdirs(0,2));
+            FIXOUTVEC(config::Info,"K4 perp direction 2:",k4perpdirs(1,0),k4perpdirs(1,1),k4perpdirs(1,2));
+            FIXOUTVEC(config::Info,"K4 perp direction 3:",k4perpdirs(2,0),k4perpdirs(2,1),k4perpdirs(2,2));
+            FIXOUT(config::Info,"K4_Parallel:" << k4perp << " [J]" << std::endl);
+            FIXOUTVEC(config::Info,"K4 parallel direction 1:",k4pardirs(0,0),k4pardirs(0,1),k4pardirs(0,2));
+            FIXOUTVEC(config::Info,"K4 parallel direction 2:",k4pardirs(1,0),k4pardirs(1,1),k4pardirs(1,2));
+            FIXOUTVEC(config::Info,"K4 parallel direction 3:",k4pardirs(2,0),k4pardirs(2,1),k4pardirs(2,2));
+
+        }//end of else
+    }//end of ReadGlobalAnis function
 }

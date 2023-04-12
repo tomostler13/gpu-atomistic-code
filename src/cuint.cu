@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 23 Aug 2022 15:19:32
+// Last-modified: 12 Apr 2023 12:15:54 PM
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -30,6 +30,15 @@ namespace cuint
 {
     //Reduced timestep
     __constant__ double Crdt;
+    __constant__ double CK2perp;
+    __constant__ double CK2perpdir[3];
+    __constant__ double CK2par;
+    __constant__ double CK2pardir[3];
+    __constant__ double CK4perp;
+    __constant__ double CK4perpdirs[3][3]; 
+    __constant__ double CK4par;
+    __constant__ double CK4pardirs[3][3];
+
 
     void copyConstData()
     {
@@ -56,6 +65,7 @@ namespace cuint
             const double k1udir[3]={Ck1udir[3*i],Ck1udir[3*i+1],Ck1udir[3*i+2]};
             const double k1u=Ck1u[i];
             const double sdn = s[0]*k1udir[0] + s[1]*k1udir[1] + s[2]*k1udir[2];
+
 
             h[0]+=(k1u*sdn*k1udir[0]);
             h[1]+=(k1u*sdn*k1udir[1]);

@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 17 Aug 2022 15:51:51
+// Last-modified: 12 Apr 2023 12:43:08 PM
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -65,7 +65,7 @@ namespace cullg
     double *Cspin=NULL,*Cespin=NULL,*CDetFields=NULL;
     float *CH=NULL,*Crand=NULL,*Cmagmom=NULL,*CHDemag=NULL;
     double *CHstg=NULL;
-    double *Clambda=NULL,*Csigma=NULL,*Cfn=NULL,*Cllgpf=NULL,*Ck1u=NULL,*Ck1udir=NULL;;
+    double *Clambda=NULL,*Csigma=NULL,*Cfn=NULL,*Cllgpf=NULL,*Ck1u=NULL,*Ck1udir=NULL;
     //cufft plans
     cufftHandle FPc2c,SPc2c;
 
