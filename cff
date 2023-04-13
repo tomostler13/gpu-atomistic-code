@@ -2,36 +2,38 @@ Seed = 123456;
 system:
 {
     //number of unit cells
-    dim = [ 4000 ,4 , 4 ];
-    Unitcellfile="afm_nn.ucf";
-    abc = [ 3e-10 , 3e-10 , 3e-10 ];
-    Nm = [ 2 , 2 , 2 ];
+    dim = [ 3 , 3 , 3 ];
+    Unitcellfile="Mn2Au_ua.ucf";
+    abc = [ 3.328e-10 , 3.328e-10 , 8.579e-10 ];
+    Nm = [ 2 , 2 , 6 ];
     rprim1 = [ 1.0 , 0.0 , 0.0 ];
     rprim2 = [ 0.0 , 1.0 , 0.0 ];
     rprim3 = [ 0.0 , 0.0 , 1.0 ];
     Include_dipole = FALSE;
     Exchange_method="CSR";
-    Periodic_Boundaries = [ FALSE , TRUE , TRUE ];
+    Periodic_Boundaries = [ TRUE , TRUE , TRUE ];
 };
 exchange:
 {
-    Read_exch_method="permute";
-    Exchfile="afm_nn.exch";
-    OutputExchange=FALSE;
+    Read_exch_method="unitcell";
+    Exchfile="Mn2Au_ua.exch";
+    OutputExchange=TRUE;
     ExitAfterExchangeMatrix=FALSE;
-    OutputExchangeMatrix=FALSE;
-    ReadExchangeMatrix=TRUE;
-    ExchangeMatrixFilename="afm_nn_csr_4000x4x4.dat";
+    OutputExchangeMatrix=TRUE;
+    ReadExchangeMatrix=FALSE;
+//    ExchangeMatrixFilename="afm_nn_csr_4000x4x4.dat";
 };
 llg:
 {
     dt=1e-15;
-    SpinConfigMethod="grid";
+    SpinConfigMethod="file";
     SpinFile="dw_grid.in";
     staggered_field:
     {
-        sapplied1 = [  300e-3 , 0.0 , 0.0 ];
-        sapplied2 = [ -300e-3 , 0.0 , 0.0 ];
+        sapplied1 = [ -300e-3 , 0.0 , 0.0 ];
+        sapplied2 = [  300e-3 , 0.0 , 0.0 ];
+        sapplied3 = [ -300e-3 , 0.0 , 0.0 ];
+        sapplied4 = [  300e-3 , 0.0 , 0.0 ];
     };
     MagnetizationCalculationMethod=5;
 };

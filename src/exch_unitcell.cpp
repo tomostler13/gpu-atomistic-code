@@ -1,7 +1,7 @@
 // File: exch_unitcell.cpp
 // Author: Tom Ostler
 // Created: 05 Dec 2014
-// Last-modified: 06 Feb 2017 17:20:40
+// Last-modified: 13 Apr 2023 04:17:07 PM
 // This routine determines the exchange matrix for the unitcell method
 #include "../inc/arrays.h"
 #include "../inc/error.h"
@@ -402,13 +402,16 @@ namespace exch
                         }
                         if(outputJ)
                         {
-                            opJ << i << "\t" << aiuc << "\t" << ci[0] << "\t" << ci[1] << "\t" << ci[2] << "\t" << neighid << "\t" << s1 << "\t" << cj[0] << "\t" << cj[1] << "\t" << cj[2];
+                            opJ << "|\t" << i << "\t|\t" << aiuc << "\t[" << ci[0] << "\t" << ci[1] << "\t" << ci[2] << "\t]|\t" << neighid << "\t|\t" << s1 << "\t|\t[" << cj[0] << "\t" << cj[1] << "\t" << cj[2] << "]";
+                            opJ << "\t|\t" << sqrt(powf(ci[0]-cj[0],2)+powf(ci[1]-cj[1],2)+powf(ci[2]-cj[2],2)) << "\t|\t";
                             for(unsigned int alpha = 0 ; alpha < 3 ; alpha++)
                             {
                                 for(unsigned int beta = 0 ; beta < 3 ; beta++)
                                 {
-
-                                    opJ << "\t" << tdata[alpha][beta][adjncy_counter-1]*geom::mu[i]*9.27e-24;
+                                    if(alpha==beta)
+                                    {
+                                        opJ << "\t" << tdata[alpha][beta][adjncy_counter-1]*geom::mu[i]*9.27e-24;
+                                    }
                                 }
                             }
                             opJ << std::endl;
