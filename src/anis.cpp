@@ -1,7 +1,7 @@
 // File: anis.cpp
 // Author: Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 12 Apr 2023 04:55:44 PM
+// Last-modified: 13 Apr 2023 10:53:31 AM
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -110,18 +110,17 @@ namespace anis
                     error::errMessage(errstr);
                 }
 
-                /*std::stringstream k4pardir1_sstr;
-                std::stringstream k4pardir2_sstr;
-                std::stringstream k4pardir3_sstr;
-                std::stringstream k4perpdir1_sstr;
-                std::stringstream k4perpdir2_sstr;
-                std::stringstream k4perpdir3_sstr;
-                k4pardir1 << "k4pardirs*/
+                std::stringstream k4pardir_sstr;
+                std::stringstream k4perpdir_sstr;
+                k4pardir_sstr << "k4pardir" << i+1;
+                k4perpdir_sstr << "k4perpdir" << i+1;
+                std::string k4pardir_str=k4pardir_sstr.str();
+                std::string k4perpdir_str=k4perpdir_sstr.str();
                 for(unsigned int j = 0 ; j < 3 ; j++)
                 {
                     try
                     {
-                        k4pardirs(i,j) = setting["k4pardirs"][i][j];
+                        k4pardirs(i,j) = setting[k4pardir_str][j];
                     }
                     catch(const libconfig::SettingNotFoundException & snf)
                     {
@@ -133,7 +132,7 @@ namespace anis
                     }
                     try
                     {
-                        k4perpdirs(i,j) = setting["k4perpdirs"][i][j];
+                        k4perpdirs(i,j) = setting[k4perpdir_str][j];
                     }
                     catch(const libconfig::SettingNotFoundException & snf)
                     {
@@ -152,7 +151,6 @@ namespace anis
             FIXOUT(config::Info,"K2_Parallel:" << k2par << " [J]" << std::endl);
             FIXOUTVEC(config::Info,"K2 parallel direction:",k2pardir[0],k2pardir[1],k2pardir[2]);
             FIXOUT(config::Info,"K4_Perp:" << k4perp << " [J]" << std::endl);
-            FIXOUTVEC(config::Info,"K4 perp direction 1:",k4perpdirs(0,0),k4perpdirs(0,1),k4perpdirs(0,2));
             FIXOUTVEC(config::Info,"K4 perp direction 1:",k4perpdirs(0,0),k4perpdirs(0,1),k4perpdirs(0,2));
             FIXOUTVEC(config::Info,"K4 perp direction 2:",k4perpdirs(1,0),k4perpdirs(1,1),k4perpdirs(1,2));
             FIXOUTVEC(config::Info,"K4 perp direction 3:",k4perpdirs(2,0),k4perpdirs(2,1),k4perpdirs(2,2));
