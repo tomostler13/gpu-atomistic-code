@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 13 Apr 2023 02:16:31 PM
+// Last-modified: 13 Apr 2023 02:17:38 PM
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -312,6 +312,37 @@ namespace llgCPU
             h[1]+=(TwoD*sdn*d[1]);
             h[2]+=(TwoD*sdn*d[2]);
             //--------------------------------------------------------
+            //
+            //---------------K2 and K4 Terms--------------------------
+            const double basemm=geom::ucm.GetMu(0)*llg::muB;
+            //field from k2_perp
+            const double sdk2perpdir=s[0]*anis::k2perpdir[0]+s[1]*anis::k2perpdir[1]+s[2]*anis::k2perpdir[2];
+            h[0]+=(2.0*anis::k2perp/basemm)*sdk2perpdir*anis::k2perpdir[0];
+            h[1]+=(2.0*anis::k2perp/basemm)*sdk2perpdir*anis::k2perpdir[1];
+            h[2]+=(2.0*anis::k2perp/basemm)*sdk2perpdir*anis::k2perpdir[2];
+            //field from k2_parallel
+            const double sdk2pardir=s[0]*anis::k2pardir[0]+s[1]*anis::k2pardir[1]+s[2]*anis::k2pardir[2];
+            h[0]+=(2.0*anis::k2par/basemm)*sdk2pardir*anis::k2pardir[0];
+            h[1]+=(2.0*anis::k2par/basemm)*sdk2pardir*anis::k2pardir[1];
+            h[2]+=(2.0*anis::k2par/basemm)*sdk2pardir*anis::k2pardir[2];
+
+            //field from k4 perp and par
+            for(unsigned int dir = 0 ; dir < 3; dir++)
+            {
+                const double sdk4perpdir=s[0]*anis::k4perpdirs(dir,0)+s[1]*anis::k4perpdirs(dir,1)+s[2]*anis::k4perpdirs(dir,2);
+                const double sdk4pardir=s[0]*anis::k4pardirs(dir,0)+s[1]*anis::k4pardirs(dir,1)+s[2]*anis::k4pardirs(dir,2);
+                h[0]+=(2.0*anis::k4perp/basemm)*sdk4perpdir*anis::k4perpdirs(dir,0);
+                h[1]+=(2.0*anis::k4perp/basemm)*sdk4perpdir*anis::k4perpdirs(dir,1);
+                h[2]+=(2.0*anis::k4perp/basemm)*sdk4perpdir*anis::k4perpdirs(dir,2);
+
+                h[0]+=(2.0*anis::k4par/basemm)*sdk4pardir*anis::k4pardirs(dir,0);
+                h[1]+=(2.0*anis::k4par/basemm)*sdk4pardir*anis::k4pardirs(dir,1);
+                h[2]+=(2.0*anis::k4par/basemm)*sdk4pardir*anis::k4pardirs(dir,2);
+            }
+
+
+            //--------------------------------------------------------
+
 
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};
