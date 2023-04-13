@@ -1,7 +1,7 @@
 // File: anis.cpp
 // Author: Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 13 Apr 2023 10:53:31 AM
+// Last-modified: 13 Apr 2023 12:53:26 PM
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -62,6 +62,23 @@ namespace anis
         }
         else
         {
+            //Need to run a check to make sure that all of the magnetic moments are the same
+            //because this part of the code has been hard coded!!!!!
+            const double basemm=geom::ucm.GetMu(0);
+            bool allEqual=true;
+            for(unsigned int t = 1 ; t < geom::ucm.NumAtomsUnitCell() ; t++)
+            {
+                if(fabs((geom::ucm.GetMu(t)-basemm)/basemm)>1e-6)
+                {
+                    allEqual=false;
+                    break;
+                }
+            }
+            if(!allEqual)
+            {
+                error::errPreamble(__FILE__,__LINE__);
+                error::errMessage("Because the K2 and K4 terms have been hard coded in a less general way, the magnetic moments of all magnetic species MUST be the same. This needs fixing in the future to make the code more general");
+            }
             libconfig::Setting &setting = config::cfg.lookup("anis");
             if(!setting.lookupValue("k2perp",k2perp))
             {

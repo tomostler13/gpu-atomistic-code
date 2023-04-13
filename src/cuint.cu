@@ -1,6 +1,6 @@
 // File: cuint.cu
 // Author:Tom Ostler
-// Last-modified: 12 Apr 2023 12:15:54 PM
+// Last-modified: 13 Apr 2023 02:07:04 PM
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -38,12 +38,23 @@ namespace cuint
     __constant__ double CK4perpdirs[3][3]; 
     __constant__ double CK4par;
     __constant__ double CK4pardirs[3][3];
+    __constant__ double Cbasemm;
 
 
     void copyConstData()
     {
         FIXOUT(config::Info,"Copying const data with cuint scope to card:" << std::flush);
         cudaMemcpyToSymbol(*(&Crdt),&llg::rdt,sizeof(double));
+        cudaMemcpyToSymbol(*(&CK2par),&anis::k2par,sizeof(double));
+        cudaMemcpyToSymbol(*(&CK2perp),&anis::k2perp,sizeof(double));
+        cudaMemcpyToSymbol(*(&CK4par),&anis::k4par,sizeof(double));
+        cudaMemcpyToSymbol(*(&CK4perp),&anis::k4perp,sizeof(double));
+        cudaMemcpyToSymbol(CK2pardir,anis::k2pardir.ptr(),3*sizeof(double));
+        cudaMemcpyToSymbol(CK2perpdir,anis::k2perpdir.ptr(),3*sizeof(double));
+        cudaMemcpyToSymbol(CK4pardirs,anis::k4pardirs.ptr(),9*sizeof(double));
+        cudaMemcpyToSymbol(CK4perpdirs,anis::k4perpdirs.ptr(),9*sizeof(double));
+        double bmm=geom::ucm.GetMu(0)*llg::muB;
+        cudaMemcpyToSymbol(*(&Cbasemm),&bmm,sizeof(double));
         config::Info << "Done" << std::endl;
     }
     __global__ void CHeun1(int N,double T,double appliedx,double appliedy,double appliedz,float *CH,double *Cspin,double *Cespin,float *Crand,double *Cfn,double *Csigma,double *Cllgpf,double *Clambda,double *Ck1u,double *Ck1udir,double *CHstg)
@@ -66,10 +77,65 @@ namespace cuint
             const double k1u=Ck1u[i];
             const double sdn = s[0]*k1udir[0] + s[1]*k1udir[1] + s[2]*k1udir[2];
 
-
             h[0]+=(k1u*sdn*k1udir[0]);
             h[1]+=(k1u*sdn*k1udir[1]);
             h[2]+=(k1u*sdn*k1udir[2]);
+
+            /*if(i==0)
+            {
+                printf("%4.10e\t%4.10e\t%4.10e\t%4.10e\n",2.0*CK2perp/Cbasemm,2.0*CK2par/Cbasemm,2.0*CK4perp/Cbasemm,2.0*CK4par/Cbasemm);
+                printf("CK2 par %4.10f\t%4.10f\t%4.10f\n",CK2pardir[0],CK2pardir[1],CK2pardir[2]);
+                printf("CK2 perp %4.10f\t%4.10f\t%4.10f\n",CK2perpdir[0],CK2perpdir[1],CK2perpdir[2]);
+                printf("CK4 par 1 %4.10f\t%4.10f\t%4.10f\n",CK4pardirs[0][0],CK4pardirs[0][1],CK4pardirs[0][2]);
+                printf("CK4 par 2 %4.10f\t%4.10f\t%4.10f\n",CK4pardirs[1][0],CK4pardirs[1][1],CK4pardirs[1][2]);
+                printf("CK4 par 3 %4.10f\t%4.10f\t%4.10f\n",CK4pardirs[2][0],CK4pardirs[2][1],CK4pardirs[2][2]);
+                printf("CK4 perp 1 %4.10f\t%4.10f\t%4.10f\n",CK4perpdirs[0][0],CK4perpdirs[0][1],CK4perpdirs[0][2]);
+                printf("CK4 perp 2 %4.10f\t%4.10f\t%4.10f\n",CK4perpdirs[1][0],CK4perpdirs[1][1],CK4perpdirs[1][2]);
+                printf("CK4 perp 3 %4.10f\t%4.10f\t%4.10f\n",CK4perpdirs[2][0],CK4perpdirs[2][1],CK4perpdirs[2][2]);
+            }*/
+            //field from k2_perp
+            const double sdk2perpdir=s[0]*CK2perpdir[0]+s[1]*CK2perpdir[1]+s[2]*CK2perpdir[2];
+            h[0]+=(2.0*CK2perp/Cbasemm)*sdk2perpdir*CK2perpdir[0];
+            h[1]+=(2.0*CK2perp/Cbasemm)*sdk2perpdir*CK2perpdir[1];
+            h[2]+=(2.0*CK2perp/Cbasemm)*sdk2perpdir*CK2perpdir[2];
+            /*if(i==0)
+            {
+                printf("CK2perp %4.5f\t%4.5f\t%4.5f\n",(2.0*CK2perp/Cbasemm)*sdk2perpdir*CK2perpdir[0],(2.0*CK2perp/Cbasemm)*sdk2perpdir*CK2perpdir[1],(2.0*CK2perp/Cbasemm)*sdk2perpdir*CK2perpdir[2]);
+            }*/
+            //field from k2_parallel
+            const double sdk2pardir=s[0]*CK2pardir[0]+s[1]*CK2pardir[1]+s[2]*CK2pardir[2];
+            h[0]+=(2.0*CK2par/Cbasemm)*sdk2pardir*CK2pardir[0];
+            h[1]+=(2.0*CK2par/Cbasemm)*sdk2pardir*CK2pardir[1];
+            h[2]+=(2.0*CK2par/Cbasemm)*sdk2pardir*CK2pardir[2];
+            /*if(i==0)
+            {
+                printf("CK2par %4.5f\t%4.5f\t%4.5f\n",(2.0*CK2par/Cbasemm)*sdk2pardir*CK2pardir[0],(2.0*CK2par/Cbasemm)*sdk2pardir*CK2pardir[1],(2.0*CK2par/Cbasemm)*sdk2pardir*CK2pardir[2]);
+            }*/
+
+            //field from k4 perp and par
+            for(unsigned int dir = 0 ; dir < 3; dir++)
+            {
+                const double sdk4perpdir=s[0]*CK4perpdirs[dir][0]+s[1]*CK4perpdirs[dir][1]+s[2]*CK4perpdirs[dir][2];
+                const double sdk4pardir=s[0]*CK4pardirs[dir][0]+s[1]*CK4pardirs[dir][1]+s[2]*CK4pardirs[dir][2];
+                h[0]+=(2.0*CK4perp/Cbasemm)*sdk4perpdir*CK4perpdirs[dir][0];
+                h[1]+=(2.0*CK4perp/Cbasemm)*sdk4perpdir*CK4perpdirs[dir][1];
+                h[2]+=(2.0*CK4perp/Cbasemm)*sdk4perpdir*CK4perpdirs[dir][2];
+                /*if(i==0)
+                {
+                    printf("CK4perp %4.5f\t%4.5f\t%4.5f\n",(2.0*CK4perp/Cbasemm)*sdk4perpdir*CK4perpdirs[dir][0],(2.0*CK4perp/Cbasemm)*sdk4perpdir*CK4perpdirs[dir][1],(2.0*CK4perp/Cbasemm)*sdk4perpdir*CK4perpdirs[dir][2]);
+                }*/
+
+
+                h[0]+=(2.0*CK4par/Cbasemm)*sdk4pardir*CK4pardirs[dir][0];
+                h[1]+=(2.0*CK4par/Cbasemm)*sdk4pardir*CK4pardirs[dir][1];
+                h[2]+=(2.0*CK4par/Cbasemm)*sdk4pardir*CK4pardirs[dir][2];
+                /*if(i==0)
+                {
+                    printf("CK4par %4.5f\t%4.5f\t%4.5f\n",(2.0*CK4par/Cbasemm)*sdk4pardir*CK4pardirs[dir][0],(2.0*CK4par/Cbasemm)*sdk4pardir*CK4pardirs[dir][1],(2.0*CK4par/Cbasemm)*sdk4pardir*CK4pardirs[dir][2]);
+                }*/
+            }
+
+
             //printf("%4.10f\t%4.10f\t%4.10f\n",h[0],h[1],h[2]);
 
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
@@ -120,6 +186,35 @@ namespace cuint
             h[0]+=(k1u*sdn*k1udir[0]);
             h[1]+=(k1u*sdn*k1udir[1]);
             h[2]+=(k1u*sdn*k1udir[2]);
+
+
+            //field from k2_perp
+            const double sdk2perpdir=s[0]*CK2perpdir[0]+s[1]*CK2perpdir[1]+s[2]*CK2perpdir[2];
+            h[0]+=(2.0*CK2perp/Cbasemm)*sdk2perpdir*CK2perpdir[0];
+            h[1]+=(2.0*CK2perp/Cbasemm)*sdk2perpdir*CK2perpdir[1];
+            h[2]+=(2.0*CK2perp/Cbasemm)*sdk2perpdir*CK2perpdir[2];
+            //field from k2_parallel
+            const double sdk2pardir=s[0]*CK2pardir[0]+s[1]*CK2pardir[1]+s[2]*CK2pardir[2];
+            h[0]+=(2.0*CK2par/Cbasemm)*sdk2pardir*CK2pardir[0];
+            h[1]+=(2.0*CK2par/Cbasemm)*sdk2pardir*CK2pardir[1];
+            h[2]+=(2.0*CK2par/Cbasemm)*sdk2pardir*CK2pardir[2];
+
+            //field from k4 perp and par
+            for(unsigned int dir = 0 ; dir < 3; dir++)
+            {
+                const double sdk4perpdir=s[0]*CK4perpdirs[dir][0]+s[1]*CK4perpdirs[dir][1]+s[2]*CK4perpdirs[dir][2];
+                const double sdk4pardir=s[0]*CK4pardirs[dir][0]+s[1]*CK4pardirs[dir][1]+s[2]*CK4pardirs[dir][2];
+                h[0]+=(2.0*CK4perp/Cbasemm)*sdk4perpdir*CK4perpdirs[dir][0];
+                h[1]+=(2.0*CK4perp/Cbasemm)*sdk4perpdir*CK4perpdirs[dir][1];
+                h[2]+=(2.0*CK4perp/Cbasemm)*sdk4perpdir*CK4perpdirs[dir][2];
+
+                h[0]+=(2.0*CK4par/Cbasemm)*sdk4pardir*CK4pardirs[dir][0];
+                h[1]+=(2.0*CK4par/Cbasemm)*sdk4pardir*CK4pardirs[dir][1];
+                h[2]+=(2.0*CK4par/Cbasemm)*sdk4pardir*CK4pardirs[dir][2];
+            }
+
+
+
             double ps[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
             const double sxh[3]={s[1]*h[2] - s[2]*h[1],s[2]*h[0]-s[0]*h[2],s[0]*h[1]-s[1]*h[0]};
             const double sxsxh[3]={s[1]*sxh[2]-s[2]*sxh[1],s[2]*sxh[0]-s[0]*sxh[2],s[0]*sxh[1]-s[1]*sxh[0]};

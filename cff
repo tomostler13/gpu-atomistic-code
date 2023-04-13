@@ -61,6 +61,6 @@ anis:
 simple:
 {
     EquilibrationTime=0e-12;
-    RunTime=50e-12;
+    RunTime=10e-12;
     Temperature=1e-6;
 };

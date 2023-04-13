@@ -1,7 +1,7 @@
 // File: exch.cpp
 // Author: Tom Ostler
 // Created: 18 Jan 2013
-// Last-modified: 10 Sep 2016 13:36:19
+// Last-modified: 13 Apr 2023 12:08:01 PM
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -122,6 +122,7 @@ namespace exch
                         }
                     }
 //                    cstr.close();
+                    config::Info << "Done" << std::endl;
                     ipem.close();
                     if(ipem.is_open())
                     {

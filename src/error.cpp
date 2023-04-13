@@ -1,6 +1,6 @@
 // File: error.cpp
 // Author:Tom Ostler
-// Last-modified: 19 Oct 2016 12:01:34
+// Last-modified: 13 Apr 2023 12:57:10 PM
 #include "../inc/error.h"
 #include <iostream>
 #include <cstdlib>
@@ -10,7 +10,7 @@ namespace error
 {
     void errWarnPreamble(std::string f,int l)
     {
-        std::cerr << "\n***Warning in File: " << f << ", at line: " << l <<std::flush;
+        std::cerr << "\n***Message regarding code functionality in File: " << f << ", at line: " << l <<std::flush;
     }
     void errPreamble(std::string f,int l)
     {
