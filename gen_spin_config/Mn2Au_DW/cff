@@ -2,7 +2,7 @@ Seed = 123456;
 system:
 {
     //number of unit cells
-    dim = [ 3 , 3 , 3 ];
+    dim = [ 2 , 3000 , 2 ];
     Unitcellfile="Mn2Au_ua.ucf";
     abc = [ 3.328e-10 , 3.328e-10 , 8.579e-10 ];
     Nm = [ 2 , 2 , 6 ];
@@ -35,7 +35,7 @@ llg:
         sapplied3 = [ -300e-3 , 0.0 , 0.0 ];
         sapplied4 = [  300e-3 , 0.0 , 0.0 ];
     };
-    MagnetizationCalculationMethod=5;
+    MagnetizationCalculationMethod=6;
 };
 cuda:
 {
@@ -63,6 +63,6 @@ anis:
 simple:
 {
     EquilibrationTime=0e-12;
-    RunTime=10e-12;
+    RunTime=25e-12;
     Temperature=1e-6;
 };

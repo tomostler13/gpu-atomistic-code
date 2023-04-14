@@ -1,6 +1,6 @@
 // File: gen_dw_inp.cpp
 // Author:Tom Ostler
-// Last-modified: 23 Aug 2022 15:45:44
+// Last-modified: 14 Apr 2023 11:01:15
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -22,7 +22,7 @@ int main(int argc,char *argv[])
     if(argc < 7)
     {
         error::errPreamble(__FILE__,__LINE__);
-        error::errMessage("You must give a config file followed by width - centre - direction of DW (0=x, 1=y,2=z) - direction of rotation of spins (0=x, 1=y,2=z) - init spin alignment (0=x, 1=y,2=z) , exiting");
+        error::errMessage("You must give a config file followed by: width (A) - centre (A) - direction of DW (0=x, 1=y,2=z) - direction of rotation of spins (0=x, 1=y,2=z) - init spin alignment (0=x, 1=y,2=z) , exiting");
     }
 
     double delta=atof(argv[2]);
