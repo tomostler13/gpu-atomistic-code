@@ -1,7 +1,7 @@
 // File: anis.cpp
 // Author: Tom Ostler
 // Created: 21 Jan 2013
-// Last-modified: 13 Apr 2023 12:53:26 PM
+// Last-modified: 28 Apr 2023 04:15:39 PM
 #include "../inc/arrays.h"
 #include "../inc/error.h"
 #include "../inc/config.h"
@@ -39,7 +39,7 @@ namespace anis
             error::errWarnPreamble(__FILE__,__LINE__);
             error::errWarning("Setting class anis does not exist, setting defaults (all off).");
             k2perp = 0.0;
-            k2pardir = 0.0;
+            k2par = 0.0;
             k4par = 0.0;
             k4perp = 0.0;
             k2perpdir.IFill(0);

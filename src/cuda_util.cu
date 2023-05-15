@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 23 Aug 2022 15:17:35
+// Last-modified: 15 May 2023 03:14:49 PM
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -197,6 +197,7 @@ namespace cullg
         CUDA_CALL(cudaFree(Crand));
         CUDA_CALL(cudaFree(CH));
         CUDA_CALL(cudaFree(CHstg));
+        CUDA_CALL(cudaFree(CInitHstg));
         CUDA_CALL(cudaFree(Cfn));
         CUDA_CALL(cudaFree(Csigma));
         CUDA_CALL(cudaFree(Clambda));
@@ -399,10 +400,16 @@ namespace cullg
         }
         CUDA_CALL(cudaMalloc((void**)&CHDemag,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&CHstg,3*geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&CInitHstg,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&CDetFields,3*geom::nspins*sizeof(double)));
-        CUDA_CALL(cudaMalloc((void**)&Crand,3*geom::nspins*sizeof(float)));
+        curandN=3*geom::nspins;
+        if(curandN%2!=0)//Check if we have an odd number of random numbers (MUST BE EVEN!!!)
+        {
+            curandN=curandN+1;
+        }
+        CUDA_CALL(cudaMalloc((void**)&Crand,curandN*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Ck1udir,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&CH,3*geom::nspins*sizeof(float)));
         CUDA_CALL(cudaMalloc((void**)&Cfn,3*geom::nspins*sizeof(double)));
@@ -439,6 +446,7 @@ namespace cullg
             tnsda[3*i+2]=fields::Hstagz(i);
         }
         CUDA_CALL(cudaMemcpy(CHstg,tnsda,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CInitHstg,tnsda,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
 
         //copy the first order uniaxial anisotropy direction
         for(unsigned int i = 0 ; i < geom::nspins ; i++)
@@ -509,6 +517,7 @@ namespace cullg
             tnsda[3*i+2]=fields::Hstagz(i);
         }
         CUDA_CALL(cudaMemcpy(CHstg,tnsda,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CInitHstg,tnsda,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
     }
     void CsetStagFieldsZero()
     {
@@ -521,5 +530,6 @@ namespace cullg
             tnsda[3*i+2]=0.0;
         }
         CUDA_CALL(cudaMemcpy(CHstg,tnsda,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
+        CUDA_CALL(cudaMemcpy(CInitHstg,tnsda,geom::nspins*3*sizeof(double),cudaMemcpyHostToDevice));
     }
 }

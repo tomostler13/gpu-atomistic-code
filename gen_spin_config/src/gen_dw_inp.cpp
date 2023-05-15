@@ -1,6 +1,6 @@
 // File: gen_dw_inp.cpp
 // Author:Tom Ostler
-// Last-modified: 14 Apr 2023 11:01:15
+// Last-modified: 20 Apr 2023 01:06:39 PM
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -318,6 +318,7 @@ int main(int argc,char *argv[])
 
                     double s[3]={0.0,0.0,0.0};
                     s[initspinalign]=-init_sign(t)*tanh((xcart[dirwall]-width)/delta);
+                    //std::cout << init_sign(t) << "\t" << initspinalign << "\t" << tanh((xcart[dirwall]-width)/delta) << std::endl;
                     s[dirrot]=init_sign(t)*sqrt(1.0-s[initspinalign]*s[initspinalign]);
                     ofs << s[0] << "\t" << s[1] << "\t" << s[2] << std::endl;
                 }

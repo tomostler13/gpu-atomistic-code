@@ -1,11 +1,11 @@
 # Compilers
 LIBS= -lfftw3 -lfftw3f -lm  -lstdc++ -llapack -lblas# -lconfig++  -I/home/731392/lib/fftw/3.3.10/include -L/home/731392/lib/fftw/3.3.10/include
 STATIC_LINK=
-CPULIBS= -fopenmp -lpthread -I/home/731392/lib/libconfig/1.7.3/include -I/home/731392/lib/fftw/3.3.10/include -L/home/731392/lib/fftw/3.3.10/include -L/home/ViperAppsFiles/cuda/9.0.176/lib -I/home/ViperAppsFiles/cuda/9.0.176/include/
-CUDALIBS= -L/home/ViperAppsFiles/cuda/9.0.176/lib -I/home/ViperAppsFiles/cuda/9.0.176/include/ -lcurand -lcudart -lcufft -I/home/731392/lib/libconfig/1.7.3/include  -I/home/731392/lib/fftw/3.3.10/include -L/home/731392/lib/fftw/3.3.10/include
+CPULIBS= -fopenmp -lpthread -I/home/731392/lib/libconfig/1.7.3/include -I/home/731392/lib/fftw/3.3.10/include -L/home/731392/lib/fftw/3.3.10/include -L/home/ViperAppsFiles/cuda/11.5.0/lib -I/home/ViperAppsFiles/cuda/11.5.0/include/
+CUDALIBS= -L/home/ViperAppsFiles/cuda/11.5.0/lib -I/home/ViperAppsFiles/cuda/11.5.0/include/ -lcurand -lcudart -lcufft -I/home/731392/lib/libconfig/1.7.3/include  -I/home/731392/lib/fftw/3.3.10/include -L/home/731392/lib/fftw/3.3.10/include
 #CUDALIBS= -L/cm/shared/apps/cuda80/toolkit/8.0.61/lib64/ -lcudart -I/cm/shared/apps/cuda80/toolkit/8.0.61/include -L/cm/shared/apps/cuda80/toolkit/8.0.61/lib64/ -lcurand -I/cm/shared/apps/cuda80/toolkit/8.0.61/include -L/cm/shared/apps/cuda80/toolkit/8.0.61/lib64/ -lcufft -I/cm/shared/apps/cuda80/toolkit/8.0.61/include 
 STATIC_LINK=/home/731392/lib/libconfig/1.7.3/lib/libconfig++.a
 OPT_LEVEL=-O3
 GCC_FLAGS= $(OPT_LEVEL)
-NVCC_FLAGS= $(OPT_LEVEL) -I/home/ViperAppsFiles/cuda/9.0.176/include/ -m64 --ptxas-options=-v -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_60,code=compute_60
+NVCC_FLAGS= $(OPT_LEVEL) -I/home/ViperAppsFiles/cuda/11.5.0/include/ -m64 --ptxas-options=-v -gencode=arch=compute_86,code=sm_86 -gencode=arch=compute_86,code=compute_86
 # -ccbin /usr/bin/g++-4.4

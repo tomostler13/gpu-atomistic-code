@@ -1,7 +1,7 @@
 # Compilers
 SHELL:=/bin/bash
-LIBS=-L/home/731392/lib/libconfig/1.7.3/lib -lconfig++
-INC=-I/home/731392/lib/libconfig/1.7.3/include
+LIBS=-L/home/731392/lib/libconfig/1.7.3/lib -lconfig++ -I/home/731392/lib/fftw/3.3.10/include -L/home/731392/lib/fftw/3.3.10/include
+INC=-I/home/731392/lib/libconfig/1.7.3/include -I/home/731392/lib/fftw/3.3.10/include -L/home/731392/lib/fftw/3.3.10/include
 HOSTNAME=$(shell hostname)
 OPT_LEVEL=-O3
 GCC=g++ -g $(OPTLEVEL)

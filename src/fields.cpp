@@ -1,7 +1,7 @@
 // File: fields.cpp
 // Author:Tom Ostler
 // Created: 16 Jan 2013
-// Last-modified: 23 Aug 2022 15:13:19
+// Last-modified: 15 May 2023 03:09:55 PM
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -180,6 +180,20 @@ namespace fields
         }
         #ifdef CUDA
         cullg::CsetStagFields();
+        #endif
+    }
+    void incStagFields(double rampval)
+    {
+        #ifdef CUDA
+        cullg::rampStag(rampval);
+        #else
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            unsigned int splu=geom::lu(i,3);
+            fields::Hstagx(i)=rampval*fields::sofield(splu,0);
+            fields::Hstagy(i)=rampval*fields::sofield(splu,1);
+            fields::Hstagz(i)=rampval*fields::sofield(splu,2);
+        }
         #endif
     }
     void bfdip()

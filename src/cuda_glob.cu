@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 12 Apr 2023 12:43:08 PM
+// Last-modified: 15 May 2023 03:35:34 PM
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -47,6 +47,8 @@ namespace cullg
     int ksarzpblockspergrid=0;
     //rank of the FFT
     int nrank=3;
+    //How many random numbers to generate ((MUST BE EVEN)
+    int curandN=0;
     //device pointers for Fourier space calculations
     cufftComplex *CNk=NULL;
     cufftComplex *CSk=NULL;
@@ -64,7 +66,7 @@ namespace cullg
     //device pointers
     double *Cspin=NULL,*Cespin=NULL,*CDetFields=NULL;
     float *CH=NULL,*Crand=NULL,*Cmagmom=NULL,*CHDemag=NULL;
-    double *CHstg=NULL;
+    double *CHstg=NULL,*CInitHstg=NULL;
     double *Clambda=NULL,*Csigma=NULL,*Cfn=NULL,*Cllgpf=NULL,*Ck1u=NULL,*Ck1udir=NULL;
     //cufft plans
     cufftHandle FPc2c,SPc2c;

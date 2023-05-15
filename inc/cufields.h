@@ -4,6 +4,7 @@
 #define _CUFIELDS_H_
 namespace cufields
 {
+    extern __global__ void CincStagFields(unsigned int,double,double*,double*);
     extern __global__ void CFConv(int,unsigned int,cufftComplex*,cufftComplex*,cufftComplex*);
     extern __global__ void CSpMV_DIA(int,int*,float*,float*,float*,double*,float*,float*);
     extern __global__ void CSpMV_DIA_OffDiag(int,int*,float*,float*,float*,float*,float*,float*,float*,float*,float*,double*,float*,float*);

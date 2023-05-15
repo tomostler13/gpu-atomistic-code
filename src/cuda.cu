@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 12 Apr 2023 12:48:51 PM
+// Last-modified: 15 May 2023 03:36:43 PM
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/spins.h"
@@ -31,6 +31,12 @@
 #include <iostream>
 namespace cullg
 {
+
+
+    void rampStag(double rampval)
+    {
+        cufields::CincStagFields<<<blockspergrid,threadsperblock>>>(geom::nspins,rampval,CInitHstg,CHstg);
+    }
 
     void llgGPU(unsigned int& t)
     {
@@ -137,7 +143,7 @@ namespace cullg
             cufields::CSpMV_CSR_FourSpin<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj_jkl,Cadjncy_j,Cadjncy_k,Cadjncy_l,CH,Cspin);//,CH,Cspin);
         }
         //generate the random numbers
-        CURAND_CALL(curandGenerateNormal(gen,Crand,3*geom::nspins,0.0,1.0));
+        CURAND_CALL(curandGenerateNormal(gen,Crand,curandN,0.0,1.0));
 /*            float *temp=NULL;
             temp = new float [3*geom::nspins];
             CUDA_CALL(cudaMemcpy(temp,CH,3*geom::nspins*sizeof(float),cudaMemcpyDeviceToHost));
@@ -358,11 +364,11 @@ namespace cullg
             error::errMessage("CURAND failed to generate random number generator seeds");
         }
         check_cuda_errors(__FILE__,__LINE__);
-        if((cudaThreadSetLimit(cudaLimitStackSize,1024))!=cudaSuccess)
+        /*if((cudaThreadSetLimit(cudaLimitStackSize,1024))!=cudaSuccess)
         {
             error::errPreamble(__FILE__,__LINE__);
             error::errMessage("CUDA ERROR: Failed to set thread limit");
-        }
+        }*/
 
         config::Info << "Done" << std::endl;
         FIXOUT(config::Info,"Checking for any cuda errors:" << std::flush);

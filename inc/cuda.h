@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 12 Apr 2023 12:48:24 PM
+// Last-modified: 15 May 2023 03:43:49 PM
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -36,9 +36,10 @@ namespace cullg
 
     //device pointers
     extern  float *Crand,*CH,*CHDemag,*Cmagmom;
-    extern  double *Cfn,*Csigma,*Clambda,*Cllgpf,*Cspin,*Cespin,*Ck1u,*Ck1udir,*CDetFields,*CHstg;
+    extern  double *Cfn,*Csigma,*Clambda,*Cllgpf,*Cspin,*Cespin,*Ck1u,*Ck1udir,*CDetFields,*CHstg,*CInitHstg;
     //cufft plans
     extern cufftHandle SPc2c,FPc2c;
+    extern int curandN;
     //device pointers
     void allocate_memory_on_card();
     void setup_fourier_transform();
@@ -48,7 +49,7 @@ namespace cullg
     inline void check_cuda_errors(const char *filename, const int line_number)
     {
         #ifdef DEBUG
-        cudaThreadSynchronize();
+        cudaDeviceSynchronize();
         cudaError_t error = cudaGetLastError();
         if(error != cudaSuccess)
         {
@@ -57,6 +58,7 @@ namespace cullg
         }
         #endif
     };
+    void rampStag(double);
     void cuinit();
     void deallocate_cuda_memory();
     void CsetStagFieldsZero();

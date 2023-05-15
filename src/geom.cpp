@@ -1,7 +1,7 @@
 // File: geom.cpp
 // Author:Tom Ostler
 // Created: 15 Jan 2013
-// Last-modified: 12 Apr 2023 12:26:26 PM
+// Last-modified: 28 Apr 2023 04:15:27 PM
 #include "../inc/config.h"
 #include "../inc/error.h"
 #include "../inc/geom.h"
@@ -79,6 +79,12 @@ namespace geom
             config::openLogFile();
         }
         config::printline(config::Info);
+        //std::cout << "prims" << std::endl;
+        for(unsigned int j = 0 ; j < 3 ; j++)
+        {
+            //std::cout << geom::rprim(j,0) << "\t" << geom::rprim(j,1) << "\t" << geom::rprim(j,2) << std::endl;
+        }
+
         for(unsigned int i = 0 ; i < ucm.NumAtomsUnitCell() ; i++)
         {
             //output to the output file (up to 5)
@@ -88,6 +94,8 @@ namespace geom
                 double xred[3]={geom::ucm.GetXred(i,0),geom::ucm.GetXred(i,1),geom::ucm.GetXred(i,2)};
                 FIXOUT(config::Info,"Element:" << ucm.GetElement(i) << std::endl);
                 double ci[3]={0,0,0};
+                //std::cout << "Unit cell atom " << i << std::endl;
+                //std::cout << xred[0] << "\t" << xred[1] << "\t" << xred[2] << std::endl;
                 ci[0]=(xred[0]*geom::rprim(0,0)+xred[1]*geom::rprim(1,0)+xred[2]*geom::rprim(2,0));
                 ci[1]=(xred[0]*geom::rprim(0,1)+xred[1]*geom::rprim(1,1)+xred[2]*geom::rprim(2,1));
                 ci[2]=(xred[0]*geom::rprim(0,2)+xred[1]*geom::rprim(1,2)+xred[2]*geom::rprim(2,2));

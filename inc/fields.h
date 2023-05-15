@@ -1,7 +1,7 @@
 // File: fields.h
 // Author:Tom Ostler
 // Created: 17 Jan 2013
-// Last-modified: 19 Aug 2022 13:15:24
+// Last-modified: 15 May 2023 03:44:15 PM
 #include <fftw3.h>
 #include <libconfig.h++>
 #include <string>
@@ -29,6 +29,7 @@ namespace fields
     void dipeftdip();
     void setStagZero();
     void setStagField();
+    void incStagFields(double);
 
 }
 #endif /*_FIELDS_H_*/

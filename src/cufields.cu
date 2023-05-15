@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 23 Jun 2016 16:22:24
+// Last-modified: 15 May 2023 03:28:20 PM
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -40,6 +40,19 @@ namespace cufields
             cudaMemcpyToSymbol(JQ,&exch::JQ(0),sizeof(double));
         }
         config::Info << "Done" << std::endl;
+    }
+
+    //Kernel to ramp staggered field
+    __global__ void CincStagFields(unsigned int N,double rv,double *CInitHstg,double *CHstg)
+    {
+        const int i = blockDim.x*blockIdx.x + threadIdx.x;
+        if(i<N)
+        {
+            for(unsigned int j = 0 ; j < 3 ; j++)
+            {
+                CHstg[3*i+j]=rv*CInitHstg[3*i+j];
+            }
+        }
     }
 
     //calculate the four spin exchange and add to 
