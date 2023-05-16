@@ -1,7 +1,7 @@
 // File: ramp_field.cpp
 // Author: Tom Ostler
 // Created: 13 May 2015
-// Last-modified: 18 Oct 2016 13:18:55
+// Last-modified: 16 May 2023 14:18:05
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -290,5 +290,35 @@ void sim::ramp_field()
         error::errPreamble(__FILE__,__LINE__);
         error::errWarning("Could not close output file.");
     }
+
+
+    //OUTPUT DW PROFILE AT END
+    std::ofstream dwofs("dw_grid.out");
+    if(dwofs.is_open())
+    {
+        dwofs << geom::nspins << std::endl;
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            dwofs << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+        }
+        dwofs.close();
+        if(dwofs.is_open())
+        {
+            error::errWarnPreamble(__FILE__,__LINE__);
+            error::errWarning("Couldn't close dw_grid.out file");
+        }
+    }
+    else
+    {
+        error::errWarnPreamble(__FILE__,__LINE__);
+        error::errWarning("Couldn't open dw_grid.out file, redirection to std::cout, this could get messy.");
+        std::cout << geom::nspins << std::endl;
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            std::cout << geom::lu(i,0) << "\t" << geom::lu(i,1) << "\t" << geom::lu(i,2) << "\t" << spins::Sx[i] << "\t" << spins::Sy[i] << "\t" << spins::Sz[i] << std::endl;
+        }
+
+    }
+
 
 }
