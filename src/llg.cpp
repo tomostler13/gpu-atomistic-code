@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 23 Aug 2022 15:12:17
+// Last-modified: 18 May 2023 02:42:34 PM
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -14,6 +14,8 @@
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <cctype>
+#include <algorithm>
 #ifdef CUDA
 #include <cuda.h>
 #include "../inc/cuda.h"
@@ -22,11 +24,11 @@ namespace llg
 {
     double applied[3]={0,0,0},T,dt,rdt,gyro=1.76e11,muB=9.27e-24,kB=1.38e-23;
     Array2D<double> optrans;
-    unsigned int trans=0;
+    unsigned int trans=0,intscheme;
     bool exstr=false;
     Array<double> Ts,dps,cps;
     Array<double> llgpf;
-    std::string scm;
+    std::string scm,intschemestr;
 
     void initLLG()
     {
@@ -55,6 +57,7 @@ namespace llg
             FIXOUT(config::Info,"Order parameter transform (default):" << trans << std::endl);
             util::escheck=false;
             FIXOUT(config::Info,"Outputting exchange striction (default):" << config::isTF(util::escheck) << std::endl);
+            FIXOUT(config::Info,"Numerical integration method (default):" << "Heun" << std::endl);
 
         }
         else
@@ -302,6 +305,35 @@ namespace llg
                 FIXOUT(config::Info,"Timestep:" << dt << " seconds" << std::endl);
                 rdt=dt*gyro;
                 FIXOUT(config::Info,"Reduced timestep:" << rdt << std::endl);
+            }
+            if(!setting.lookupValue("intscheme",intschemestr))
+            {
+                error::errWarnPreamble(__FILE__,__LINE__);
+                error::errWarning("Integration scheme not set (llg.intscheme (string)), setting default heun");
+                intschemestr="heun";
+                intscheme=0;
+                FIXOUT(config::Info,"Numerical integration method (default):" << "Heun" << std::endl);
+            }
+            else
+            {
+                //Convert the string to lower case
+                std::transform(intschemestr.begin(),intschemestr.end(),intschemestr.begin(),[](unsigned char c){return std::tolower(c);});
+                //Check it is one of the recognised integration schemes
+                if(intschemestr=="heun")
+                {
+                    intscheme=0;
+                }
+                else if(intschemestr=="rk4")
+                {
+                    intscheme=1;
+                }
+                else
+                {
+                    error::errPreamble(__FILE__,__LINE__);
+                    error::errMessage("Read the integration scheme llg.intscheme (string) correctly, but the routine is not recognised.");
+                }
+
+                FIXOUT(config::Info,"Numerical integration method:" << intschemestr << std::endl);
             }
             int count=3;
             for(unsigned int i = 0 ; i < 3 ;i++)

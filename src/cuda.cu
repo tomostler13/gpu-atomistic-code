@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 15 May 2023 03:36:43 PM
+// Last-modified: 18 May 2023 02:43:12 PM
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/spins.h"
@@ -15,6 +15,7 @@
 #include "../inc/defines.h"
 #include "../inc/cufields.h"
 #include "../inc/cuint.h"
+#include "../inc/cuintRK4.h"
 #include "../inc/llg.h"
 #include "../inc/exch.h"
 //Cuda headers
@@ -384,7 +385,14 @@ namespace cullg
         config::printline(config::Info);
         //__constant__ memory only have .cu scope therefore to use the variables 
         //the variables have to be declared in each .cu file and the variables initialized.
-        cuint::copyConstData();
+        if(llg::intscheme==0)
+        {
+            cuint::copyConstData();
+        }
+        else if(llg::intscheme==1)
+        {
+            cuintRK4::copyConstData();
+        }
         cufields::copyConstData();
     }
 }

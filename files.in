@@ -43,8 +43,10 @@ obj/llg.o
 
 NVCCOBJ= \
 obj/cuda.o \
+obj/cudaRK4.o \
 obj/cuda_glob.o \
 obj/cuda_util.o \
 obj/cufields.o \
-obj/cuint.o
+obj/cuint.o \
+obj/cuintRK4.o
 

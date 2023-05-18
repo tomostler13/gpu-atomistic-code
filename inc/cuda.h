@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 15 May 2023 03:43:49 PM
+// Last-modified: 18 May 2023 02:51:45 PM
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -31,12 +31,14 @@ namespace cullg
     //offsets for the DIA sparse matrix multiplication
     extern int *Cdiagoffset,*Coffdiagoffset;
     //exchange tensor in DIA format
-    extern float *Cdxx,*Cdyy,*Cdzz;
-    extern float *Cdxy,*Cdxz,*Cdyx,*Cdyz,*Cdzx,*Cdzy;
+    extern double *Cdxx,*Cdyy,*Cdzz;
+    extern double *Cdxy,*Cdxz,*Cdyx,*Cdyz,*Cdzx,*Cdzy;
 
     //device pointers
-    extern  float *Crand,*CH,*CHDemag,*Cmagmom;
-    extern  double *Cfn,*Csigma,*Clambda,*Cllgpf,*Cspin,*Cespin,*Ck1u,*Ck1udir,*CDetFields,*CHstg,*CInitHstg;
+    extern  float *Crand,*CHDemag,*Cmagmom;
+    extern  double *CH,*Cfn,*Csigma,*Clambda,*Cllgpf,*Cspin,*Cespin,*Ck1u,*Ck1udir,*CDetFields,*CHstg,*CInitHstg;
+    //for RK4 integration
+    extern double *CRK4k1,*CRK4k2,*CRK4k3,*CRK4k4;
     //cufft plans
     extern cufftHandle SPc2c,FPc2c;
     extern int curandN;
@@ -64,5 +66,6 @@ namespace cullg
     void CsetStagFieldsZero();
     void CsetStagFields();
     void llgGPU(unsigned int&);
+    void llgGPURK4(unsigned int&);
 }
 #endif /*_CULLB_H_*/

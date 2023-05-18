@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 15 May 2023 03:35:34 PM
+// Last-modified: 18 May 2023 02:51:26 PM
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -60,14 +60,15 @@ namespace cullg
     unsigned int *Ckx=NULL,*Cky=NULL,*Ckz=NULL,*Cspec=NULL,*Cxadj=NULL,*Cadjncy=NULL,*Cxadj_jkl=NULL,*Cadjncy_j=NULL,*Cadjncy_k=NULL,*Cadjncy_l=NULL;
     int *Cdiagoffset=NULL,*Coffdiagoffset=NULL;
     //DIA format components of the exchange tensor
-    float *Cdxx=NULL,*Cdyy=NULL,*Cdzz=NULL;
-    float *Cdxy=NULL,*Cdxz=NULL,*Cdyx=NULL,*Cdyz=NULL,*Cdzx=NULL,*Cdzy=NULL;
+    double *Cdxx=NULL,*Cdyy=NULL,*Cdzz=NULL;
+    double *Cdxy=NULL,*Cdxz=NULL,*Cdyx=NULL,*Cdyz=NULL,*Cdzx=NULL,*Cdzy=NULL;
 
     //device pointers
     double *Cspin=NULL,*Cespin=NULL,*CDetFields=NULL;
-    float *CH=NULL,*Crand=NULL,*Cmagmom=NULL,*CHDemag=NULL;
-    double *CHstg=NULL,*CInitHstg=NULL;
+    float *Crand=NULL,*Cmagmom=NULL,*CHDemag=NULL;
+    double *CHstg=NULL,*CInitHstg=NULL,*CH=NULL,*CHRK4k2,*CHRK4k3,*CHRK4k4;
     double *Clambda=NULL,*Csigma=NULL,*Cfn=NULL,*Cllgpf=NULL,*Ck1u=NULL,*Ck1udir=NULL;
+    double *CRK4k1=NULL,*CRK4k2=NULL,*CRK4k3=NULL,*CRK4k4=NULL;
     //cufft plans
     cufftHandle FPc2c,SPc2c;
 

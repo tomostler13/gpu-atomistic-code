@@ -1,6 +1,6 @@
 // File: cufields.cu
 // Author:Tom Ostler
-// Last-modified: 15 May 2023 03:28:20 PM
+// Last-modified: 18 May 2023 10:58:44 AM
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -56,12 +56,12 @@ namespace cufields
     }
 
     //calculate the four spin exchange and add to 
-    __global__ void CSpMV_CSR_FourSpin(unsigned int N,unsigned int *Cxadj_jkl,unsigned int *Cadjncy_j,unsigned int *Cadjncy_k,unsigned int *Cadjncy_l,float *CH,double *Cspin)
+    __global__ void CSpMV_CSR_FourSpin(unsigned int N,unsigned int *Cxadj_jkl,unsigned int *Cadjncy_j,unsigned int *Cadjncy_k,unsigned int *Cadjncy_l,double *CH,double *Cspin)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
         {
-            float h[3]={0.0,0.0,0.0};
+            double h[3]={0.0,0.0,0.0};
             for(int q = Cxadj_jkl[i] ; q < Cxadj_jkl[i+1] ; q++)
             {
                 unsigned int j = Cadjncy_j[q];
@@ -96,20 +96,20 @@ namespace cufields
     // This is the diagonal part only
     __global__ void CSpMV_DIA(int N,
             int *offset,
-            float *dataxx,float *datayy,float *datazz,
+            double *dataxx,double *datayy,double *datazz,
             double *Cspin,
-            float *CHDemag,float *CH)
+            float *CHDemag,double *CH)
     {
         const int row = blockDim.x*blockIdx.x + threadIdx.x;
         //num_rows=N as we are ALWAYS dealing with a num_rows=num_cols
         if(row < N)
         {
             //contains sum over neighbours
-            float dot[3]={0,0,0};
+            double dot[3]={0,0,0};
             for(int n = 0 ; n < DND ; n++)
             {
                 int col = row + offset[n];
-                float val[3] = {dataxx[N*n + row],datayy[N*n + row],datazz[N*n + row]};
+                double val[3] = {dataxx[N*n + row],datayy[N*n + row],datazz[N*n + row]};
 //                printf("Data\t%4.5f\t%4.5f\t%4.5f\n",dataxx[N*n+row],datayy[N*n+row],datayy[N*n+row]);
                 if(col >= 0 && col < N)
                 {
@@ -126,31 +126,31 @@ namespace cufields
 //                printf("Spins\t%d\t%4.5f\t%4.5f\t%4.5f\n",col,Cspin[3*col],Cspin[3*col+1],Cspin[3*col+2]);
 //                printf("Fields\t%d\t%4.5f\t%4.5f\t%4.5f\n",row,dot[0],dot[1],dot[2]);
 
-            CH[3*row]=CHDemag[3*row]+dot[0];
-            CH[3*row+1]=CHDemag[3*row+1]+dot[1];
-            CH[3*row+2]=CHDemag[3*row+2]+dot[2];
+            CH[3*row]=static_cast<double>(CHDemag[3*row])+dot[0];
+            CH[3*row+1]=static_cast<double>(CHDemag[3*row+1])+dot[1];
+            CH[3*row+2]=static_cast<double>(CHDemag[3*row+2])+dot[2];
             //printf("Fields\t%d\t%4.5f\t%4.5f\t%4.5f\n",row,CH[3*row],CH[3*row+1],CH[3*row+2]);
         }
     }
     //off-diagonal part
     __global__ void CSpMV_DIA_OffDiag(int N,
             int *offset,
-            float *dataxx,float *dataxy,float *dataxz,
-            float *datayx,float *datayy,float *datayz,
-            float *datazx,float *datazy,float *datazz,
+            double *dataxx,double *dataxy,double *dataxz,
+            double *datayx,double *datayy,double *datayz,
+            double *datazx,double *datazy,double *datazz,
             double *Cspin,
-            float *CHDemag,float *CH)
+            float *CHDemag,double *CH)
     {
         const int row = blockDim.x*blockIdx.x + threadIdx.x;
         //num_rows=N as we are ALWAYS dealing with a num_rows=num_cols
         if(row < N)
         {
             //contains sum over neighbours
-            float dot[3]={0,0,0};
+            double dot[3]={0,0,0};
             for(int n = 0 ; n < DND ; n++)
             {
                 int col = row + offset[n];
-                float val[3][3] = {{dataxx[N*n + row],dataxy[N*n + row],dataxz[N*n + row]},{datayx[N*n + row],datayy[N*n + row],datayz[N*n+row]},{datazx[N*n + row],datazy[N*n + row],datazz[N*n + row]}};
+                double val[3][3] = {{dataxx[N*n + row],dataxy[N*n + row],dataxz[N*n + row]},{datayx[N*n + row],datayy[N*n + row],datayz[N*n+row]},{datazx[N*n + row],datazy[N*n + row],datazz[N*n + row]}};
 //                printf("Data\t%4.5f\t%4.5f\t%4.5f\n",dataxx[N*n+row],datayy[N*n+row],datayy[N*n+row]);
                 if(col >= 0 && col < N)
                 {
@@ -170,59 +170,59 @@ namespace cufields
 //                printf("Spins\t%d\t%4.5f\t%4.5f\t%4.5f\n",col,Cspin[3*col],Cspin[3*col+1],Cspin[3*col+2]);
 //                printf("Fields\t%d\t%4.5f\t%4.5f\t%4.5f\n",row,dot[0],dot[1],dot[2]);
 
-            CH[3*row]=CHDemag[3*row]+dot[0];
-            CH[3*row+1]=CHDemag[3*row+1]+dot[1];
-            CH[3*row+2]=CHDemag[3*row+2]+dot[2];
+            CH[3*row]=static_cast<double>(CHDemag[3*row])+dot[0];
+            CH[3*row+1]=static_cast<double>(CHDemag[3*row+1])+dot[1];
+            CH[3*row+2]=static_cast<double>(CHDemag[3*row+2])+dot[2];
             //printf("Fields\t%d\t%4.5f\t%4.5f\t%4.5f\n",row,CH[3*row],CH[3*row+1],CH[3*row+2]);
         }
     }
     // perform the CSR matrix multiplication.(diagonals only)
     __global__ void CSpMV_CSR(unsigned int N,
             unsigned int *xadj,unsigned int *adjncy,
-            float *dataxx,float *datayy,float *datazz,
+            double *dataxx,double *datayy,double *datazz,
             double *Cspin,
-            float *CHDemag,float *CH)
+            float *CHDemag,double *CH)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         //num_rows=N as we are ALWAYS dealing with a num_rows=num_cols
         if(i < N)
         {
             //contains sum over neighbours
-            float dot[3]={0,0,0};
+            double dot[3]={0,0,0};
             for(int n = xadj[i] ; n < xadj[i+1] ; n++)
             {
                 unsigned int neigh=adjncy[n];
-                float val[3] = {dataxx[n],datayy[n],datazz[n]};
+                double val[3] = {dataxx[n],datayy[n],datazz[n]};
                 for(unsigned int co = 0 ; co < 3 ; co++)
                 {
                     dot[co]+=(val[co]*Cspin[3*neigh+co]);
                 }
             }
-            CH[3*i]=CHDemag[3*i]+dot[0];
-            CH[3*i+1]=CHDemag[3*i+1]+dot[1];
-            CH[3*i+2]=CHDemag[3*i+2]+dot[2];
+            CH[3*i]=static_cast<double>(CHDemag[3*i])+dot[0];
+            CH[3*i+1]=static_cast<double>(CHDemag[3*i+1])+dot[1];
+            CH[3*i+2]=static_cast<double>(CHDemag[3*i+2])+dot[2];
 
         }
     }
     // perform the CSR matrix multiplication. (off-diagonals  +  diagonals)
     __global__ void CSpMV_CSR_OffDiag(unsigned int N,
             unsigned int *xadj,unsigned int *adjncy,
-            float *dataxx,float *dataxy,float *dataxz,
-            float *datayx,float *datayy,float *datayz,
-            float *datazx,float *datazy,float *datazz,
+            double *dataxx,double *dataxy,double *dataxz,
+            double *datayx,double *datayy,double *datayz,
+            double *datazx,double *datazy,double *datazz,
             double *Cspin,
-            float *CHDemag,float *CH)
+            float *CHDemag,double *CH)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         //num_rows=N as we are ALWAYS dealing with a num_rows=num_cols
         if(i < N)
         {
             //contains sum over neighbours
-            float dot[3]={0,0,0};
+            double dot[3]={0,0,0};
             for(int n = xadj[i] ; n < xadj[i+1] ; n++)
             {
                 unsigned int neigh=adjncy[n];
-                float val[3][3] = {{dataxx[n],dataxy[n],dataxz[n]},{datayx[n],datayy[n],datayz[n]},{datazx[n],datazy[n],datazz[n]}};
+                double val[3][3] = {{dataxx[n],dataxy[n],dataxz[n]},{datayx[n],datayy[n],datayz[n]},{datazx[n],datazy[n],datazz[n]}};
                 /*if(i==0)
                 {
                     printf("%d\n%d\n",i,neigh);
@@ -238,9 +238,9 @@ namespace cufields
                     }
                 }
             }
-            CH[3*i]=CHDemag[3*i]+dot[0];
-            CH[3*i+1]=CHDemag[3*i+1]+dot[1];
-            CH[3*i+2]=CHDemag[3*i+2]+dot[2];
+            CH[3*i]=static_cast<double>(CHDemag[3*i])+dot[0];
+            CH[3*i+1]=static_cast<double>(CHDemag[3*i+1])+dot[1];
+            CH[3*i+2]=static_cast<double>(CHDemag[3*i+2])+dot[2];
 
         }
     }
@@ -383,7 +383,7 @@ namespace cufields
         }
     }
 
-    __global__ void CCopyFields(int N,int zpN,float *CH,cufftComplex *CHr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
+    __global__ void CCopyFields(int N,int zpN,double *CH,cufftComplex *CHr,unsigned int *Ckx,unsigned int *Cky,unsigned int *Ckz,unsigned int *Cspec)
     {
         const int i = blockDim.x*blockIdx.x + threadIdx.x;
         if(i<N)
@@ -402,7 +402,7 @@ namespace cufields
             for(unsigned int lj = 0 ; lj < 3 ; lj++)
             {
                 unsigned int arluv=(((li*3+lj)*ZPDIM[0]*K[0]+lk)*ZPDIM[1]*K[1]+ll)*ZPDIM[2]*K[2]+lm;
-                CH[3*i+lj]=(CHr[arluv].x)/static_cast<float>(zpN);
+                CH[3*i+lj]=(static_cast<double>(CHr[arluv].x))/static_cast<float>(zpN);
             }
         }
     }
