@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 18 May 2023 02:51:02 PM
+// Last-modified: 18 May 2023 04:20:18 PM
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -412,9 +412,9 @@ namespace cullg
         CUDA_CALL(cudaMalloc((void**)&CHstg,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&CInitHstg,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
+        CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
         if(llg::intscheme==0)
         {
-            CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
             CUDA_CALL(cudaMalloc((void**)&Cfn,3*geom::nspins*sizeof(double)));
         }
         else if(llg::intscheme==1)//RK4

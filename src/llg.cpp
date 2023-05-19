@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 18 May 2023 02:42:34 PM
+// Last-modified: 18 May 2023 03:52:03 PM
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -641,7 +641,14 @@ namespace llg
         }
 
 #ifdef CUDA
-        cullg::llgGPU(t);
+        if(intscheme==0)
+        {
+            cullg::llgGPU(t);
+        }
+        else if(intscheme==1)
+        {
+            cullg::llgGPURK4(t);
+        }
 #else
         llgCPU::llgCPU(t);
 #endif
