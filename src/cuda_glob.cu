@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 18 May 2023 02:51:26 PM
+// Last-modified: 19 May 2023 11:59:53
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -66,9 +66,9 @@ namespace cullg
     //device pointers
     double *Cspin=NULL,*Cespin=NULL,*CDetFields=NULL;
     float *Crand=NULL,*Cmagmom=NULL,*CHDemag=NULL;
-    double *CHstg=NULL,*CInitHstg=NULL,*CH=NULL,*CHRK4k2,*CHRK4k3,*CHRK4k4;
+    double *CHstg=NULL,*CInitHstg=NULL,*CH=NULL;
     double *Clambda=NULL,*Csigma=NULL,*Cfn=NULL,*Cllgpf=NULL,*Ck1u=NULL,*Ck1udir=NULL;
-    double *CRK4k1=NULL,*CRK4k2=NULL,*CRK4k3=NULL,*CRK4k4=NULL;
+    double *CRKk1=NULL,*CRKk2=NULL,*CRKk3=NULL,*CRKk4=NULL,*CRKk5=NULL,*CRKk6=NULL;
     //cufft plans
     cufftHandle FPc2c,SPc2c;
 

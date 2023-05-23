@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 18 May 2023 04:20:18 PM
+// Last-modified: 19 May 2023 12:17:48
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -199,10 +199,19 @@ namespace cullg
         }
         else if(llg::intscheme==1)
         {
-            CUDA_CALL(cudaFree(CRK4k1));
-            CUDA_CALL(cudaFree(CRK4k2));
-            CUDA_CALL(cudaFree(CRK4k3));
-            CUDA_CALL(cudaFree(CRK4k4));
+            CUDA_CALL(cudaFree(CRKk1));
+            CUDA_CALL(cudaFree(CRKk2));
+            CUDA_CALL(cudaFree(CRKk3));
+            CUDA_CALL(cudaFree(CRKk4));
+        }
+        else if(llg::intscheme==2)
+        {
+            CUDA_CALL(cudaFree(CRKk1));
+            CUDA_CALL(cudaFree(CRKk2));
+            CUDA_CALL(cudaFree(CRKk3));
+            CUDA_CALL(cudaFree(CRKk4));
+            CUDA_CALL(cudaFree(CRKk5));
+            CUDA_CALL(cudaFree(CRKk6));
         }
         CUDA_CALL(cudaFree(CDetFields));
         CUDA_CALL(cudaFree(Crand));
@@ -419,12 +428,20 @@ namespace cullg
         }
         else if(llg::intscheme==1)//RK4
         {
-            CUDA_CALL(cudaMalloc((void**)&CRK4k1,3*geom::nspins*sizeof(double)));
-            CUDA_CALL(cudaMalloc((void**)&CRK4k2,3*geom::nspins*sizeof(double)));
-            CUDA_CALL(cudaMalloc((void**)&CRK4k3,3*geom::nspins*sizeof(double)));
-            CUDA_CALL(cudaMalloc((void**)&CRK4k4,3*geom::nspins*sizeof(double)));
+            CUDA_CALL(cudaMalloc((void**)&CRKk1,3*geom::nspins*sizeof(double)));
+            CUDA_CALL(cudaMalloc((void**)&CRKk2,3*geom::nspins*sizeof(double)));
+            CUDA_CALL(cudaMalloc((void**)&CRKk3,3*geom::nspins*sizeof(double)));
+            CUDA_CALL(cudaMalloc((void**)&CRKk4,3*geom::nspins*sizeof(double)));
         }
-
+        else if(llg::intscheme==2)//RK5
+        {
+            CUDA_CALL(cudaMalloc((void**)&CRKk1,3*geom::nspins*sizeof(double)));
+            CUDA_CALL(cudaMalloc((void**)&CRKk2,3*geom::nspins*sizeof(double)));
+            CUDA_CALL(cudaMalloc((void**)&CRKk3,3*geom::nspins*sizeof(double)));
+            CUDA_CALL(cudaMalloc((void**)&CRKk4,3*geom::nspins*sizeof(double)));
+            CUDA_CALL(cudaMalloc((void**)&CRKk5,3*geom::nspins*sizeof(double)));
+            CUDA_CALL(cudaMalloc((void**)&CRKk6,3*geom::nspins*sizeof(double)));
+        }
         CUDA_CALL(cudaMalloc((void**)&CDetFields,3*geom::nspins*sizeof(double)));
         curandN=3*geom::nspins;
         if(curandN%2!=0)//Check if we have an odd number of random numbers (MUST BE EVEN!!!)

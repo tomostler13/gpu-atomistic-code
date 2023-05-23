@@ -56,3 +56,4 @@ purge:
 tidy:	
 	@rm -f *~
 	@rm -f src/*~
+	@rm -f inc/*~

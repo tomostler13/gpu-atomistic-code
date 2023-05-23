@@ -1,7 +1,7 @@
 // File: llg.cpp
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 18 May 2023 03:52:03 PM
+// Last-modified: 19 May 2023 13:20:54
 #include "../inc/llg.h"
 #include "../inc/llgCPU.h"
 #include "../inc/config.h"
@@ -327,6 +327,10 @@ namespace llg
                 {
                     intscheme=1;
                 }
+                else if(intschemestr=="rk5")
+                {
+                    intscheme=2;
+                }
                 else
                 {
                     error::errPreamble(__FILE__,__LINE__);
@@ -648,6 +652,10 @@ namespace llg
         else if(intscheme==1)
         {
             cullg::llgGPURK4(t);
+        }
+        else if(intscheme==2)
+        {
+            cullg::llgGPURK5(t);
         }
 #else
         llgCPU::llgCPU(t);

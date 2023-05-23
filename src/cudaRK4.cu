@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 18 May 2023 05:09:16 PM
+// Last-modified: 19 May 2023 12:01:27
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/spins.h"
@@ -84,27 +84,27 @@ namespace cullg
                 if(!config::offdiag)
                 {
                     cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
-                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     //Here, we overwrite CH with a new field updated based on the S_n+dt*k1/2 field
                     cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
 
                 }
                 else if(config::offdiag)
                 {
                     cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cspin,CHDemag,CH);
-                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     //Here, we overwrite CH with a new field updated based on the S_n+dt*k1/2 field
                     cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                 }
             }
             else if(config::exchm==2)//CSR
@@ -112,26 +112,26 @@ namespace cullg
                 if(!config::offdiag)
                 {
                     cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
-                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     //Here, we overwrite CH with a new field updated based on the S_n+dt*k1/2 field
                     cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                 }
                 else if(config::offdiag)
                 {
                     cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cspin,CHDemag,CH);
-                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     //Here, we overwrite CH with a new field updated based on the S_n+dt*k1/2 field
                     cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                 }
             }
 
@@ -145,26 +145,26 @@ namespace cullg
                 if(!config::offdiag)
                 {
                     cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
-                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     //Here, we overwrite CH with a new field updated based on the S_n+dt*k1/2 field
                     cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_DIA<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                 }
                 else if(config::offdiag)
                 {
                     cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cspin,CHDemag,CH);
-                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     //Here, we overwrite CH with a new field updated based on the S_n+dt*k1/2 field
                     cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_DIA_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cdiagoffset,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                 }
             }
             else if(config::exchm==2)//CSR
@@ -172,30 +172,30 @@ namespace cullg
                 if(!config::offdiag)
                 {
                     cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cspin,CHDemag,CH);
-                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     //Here, we overwrite CH with a new field updated based on the S_n+dt*k1/2 field
                     cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_CSR<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdyy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                 }
                 else if(config::offdiag)
                 {
                     cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cspin,CHDemag,CH);
-                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k1<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk1,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     //Here, we overwrite CH with a new field updated based on the S_n+dt*k1/2 field
                     cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k2<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk2,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k3<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk3,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                     cufields::CSpMV_CSR_OffDiag<<<blockspergrid,threadsperblock>>>(geom::nspins,Cxadj,Cadjncy,Cdxx,Cdxy,Cdxz,Cdyx,Cdyy,Cdyz,Cdzx,Cdzy,Cdzz,Cespin,CHDemag,CH);
-                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRK4k4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
+                    cuintRK4::CdetRK4k4<<<blockspergrid,threadsperblock>>>(geom::nspins,llg::T,llg::applied[0],llg::applied[1],llg::applied[2],CH,Cspin,Cespin,CRKk4,Crand,Csigma,Cllgpf,Clambda,Ck1u,Ck1udir,CHstg);
                 }
             }
         }
-        cuintRK4::CdetSnp1<<<blockspergrid,threadsperblock>>>(geom::nspins,Cspin,CRK4k1,CRK4k2,CRK4k3,CRK4k4);
+        cuintRK4::CdetSnp1<<<blockspergrid,threadsperblock>>>(geom::nspins,Cspin,CRKk1,CRKk2,CRKk3,CRKk4);
         //generate the random numbers
 /*            float *temp=NULL;
             temp = new float [3*geom::nspins];

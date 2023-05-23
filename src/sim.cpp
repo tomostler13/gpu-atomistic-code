@@ -1,7 +1,7 @@
 // File: sim.cpp
 // Author:Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 13 Apr 2023 10:55:19 AM
+// Last-modified: 23 May 2023 10:57:43 AM
 #include "../inc/config.h"
 #include "../inc/sim.h"
 #include "../inc/geom.h"
@@ -15,6 +15,7 @@
 namespace sim
 {
     std::string sim_type;
+    double rampinc=0.0;
     void initSim()
     {
         config::Info.width(45);config::Info << std::right << "*" << "**Simulation details***" << std::endl;

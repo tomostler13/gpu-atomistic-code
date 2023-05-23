@@ -1,7 +1,7 @@
 // File: cuda.h
 // Author:Tom Ostler
 // Created: 22 Jan 2013
-// Last-modified: 18 May 2023 02:51:45 PM
+// Last-modified: 19 May 2023 13:24:15
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
@@ -38,7 +38,7 @@ namespace cullg
     extern  float *Crand,*CHDemag,*Cmagmom;
     extern  double *CH,*Cfn,*Csigma,*Clambda,*Cllgpf,*Cspin,*Cespin,*Ck1u,*Ck1udir,*CDetFields,*CHstg,*CInitHstg;
     //for RK4 integration
-    extern double *CRK4k1,*CRK4k2,*CRK4k3,*CRK4k4;
+    extern double *CRKk1,*CRKk2,*CRKk3,*CRKk4,*CRKk5,*CRKk6;
     //cufft plans
     extern cufftHandle SPc2c,FPc2c;
     extern int curandN;
@@ -67,5 +67,6 @@ namespace cullg
     void CsetStagFields();
     void llgGPU(unsigned int&);
     void llgGPURK4(unsigned int&);
+    void llgGPURK5(unsigned int&);
 }
 #endif /*_CULLB_H_*/

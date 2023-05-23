@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 18 May 2023 02:43:12 PM
+// Last-modified: 19 May 2023 13:56:33
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/spins.h"
@@ -16,6 +16,7 @@
 #include "../inc/cufields.h"
 #include "../inc/cuint.h"
 #include "../inc/cuintRK4.h"
+#include "../inc/cuintRK5.h"
 #include "../inc/llg.h"
 #include "../inc/exch.h"
 //Cuda headers
@@ -392,6 +393,10 @@ namespace cullg
         else if(llg::intscheme==1)
         {
             cuintRK4::copyConstData();
+        }
+        else if(llg::intscheme==2)
+        {
+            cuintRK5::copyConstData();
         }
         cufields::copyConstData();
     }

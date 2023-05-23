@@ -1,7 +1,7 @@
 // File: sim.h
 // Author:Tom Ostler
 // Created: 23 Jan 2013
-// Last-modified: 15 May 2023 03:45:54 PM
+// Last-modified: 23 May 2023 10:57:18 AM
 #include <iostream>
 #include <fstream>
 #ifndef _SIM_H_
@@ -18,5 +18,6 @@ namespace sim
     void thermal_hyst();
     void simple();
     void ramp_stag();
+    extern double rampinc;
 }
 #endif /*_SIM_H_*/
