@@ -1,6 +1,6 @@
-// File: cuintRK5.cu
+// File: cuintAdaptiveRK5.cu
 // Author:Tom Ostler
-// Last-modified: 19 May 2023 14:10:44
+// Last-modified: 01 Jun 2023 13:40:15
 #include "../inc/cufields.h"
 #include "../inc/cuda.h"
 #include "../inc/config.h"
@@ -43,12 +43,21 @@ namespace cuintRK5
     // Constants from Romeo et al. Physica B Vol. 403 464-468 (2008)
     __constant__ double Ai[6]={0.0,0.2,0.3,0.6,1.0,0.875};
     __constant__ double Ci[6]={37.0/378.0,0.0,250.0/621.0,125.0/594.0,0.0,512.0/1771.0};
+    //__constant__ double Ci[6]={1.0/6.0,1.0/3.0,1.0/3.0,1.0/6.0,0.0,0.0};
+
     __constant__ double Cpi[6]={2825.0/27648.0,0.0,18575.0/48384.0,13525.0/55296.0,277.0/14336.0,0.25};
+
     __constant__ double B21 = 0.2;
     __constant__ double B3j[2]={3.0/40.0,9.0/40.0};
     __constant__ double B4j[3]={0.3,-0.9,1.2};
     __constant__ double B5j[4]={-11.0/54,2.5,-70.0/27.0,35.0/27.0};
     __constant__ double B6j[5]={1631.0/55296.0,175.0/512.0,575.0/13824.0,44275.0/110592.0,253.0/4096.0};
+    
+    /*__constant__ double B21 = 0.5;
+    __constant__ double B3j[2]={0.0,0.5};
+    __constant__ double B4j[3]={0.0,0.0,1.0};
+    __constant__ double B5j[4]={0.0,0.0,0.0,0.0};
+    __constant__ double B6j[5]={0.0,0.0,0.0,0.0,0.0};*/
 
 
     void copyConstData()
@@ -146,7 +155,7 @@ namespace cuintRK5
             double es[3]={0.0,0.0,0.0};
             for(unsigned int j = 0 ; j < 3 ; j++)
             {
-                lk1[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
+                lk1[j] = Crdt*llgpf*(sxh[j]+lambda*sxsxh[j]);
                 es[j]=s[j]+Crdt*(B21*lk1[j]);
                 mods+=es[j]*es[j];
             }
@@ -239,7 +248,7 @@ namespace cuintRK5
             double mods=0.0;
             for(unsigned int j = 0 ; j < 3 ; j++)
             {
-                lk2[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
+                lk2[j] = Crdt*llgpf*(sxh[j]+lambda*sxsxh[j]);
                 //Cfn[3*i+j]=lfn[j];
                 es[j]=s[j]+Crdt*(B3j[0]*CRKk1[3*i+j]+B3j[1]*lk2[j]);
                 mods+=es[j]*es[j];
@@ -333,7 +342,7 @@ namespace cuintRK5
             double mods=0.0;
             for(unsigned int j = 0 ; j < 3 ; j++)
             {
-                lk3[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
+                lk3[j] = Crdt*llgpf*(sxh[j]+lambda*sxsxh[j]);
                 //Cfn[3*i+j]=lfn[j];
                 es[j]=s[j] + Crdt*(B4j[0]*CRKk1[3*i+j] + B4j[1]*CRKk2[3*i+j] + B4j[2]*lk3[j]);
                 mods+=es[j]*es[j];
@@ -426,7 +435,7 @@ namespace cuintRK5
             double mods=0.0;
             for(unsigned int j = 0 ; j < 3 ; j++)
             {
-                lk4[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
+                lk4[j] = Crdt*llgpf*(sxh[j]+lambda*sxsxh[j]);
                 es[j]=s[j]+Crdt*(B5j[0]*CRKk1[3*i+j] + B5j[1]*CRKk2[3*i+j] + B5j[2]*CRKk3[3*i+j] + B5j[3]*lk4[j]);
                 mods+=es[j]*es[j];
             }
@@ -518,7 +527,7 @@ namespace cuintRK5
             double mods=0.0;
             for(unsigned int j = 0 ; j < 3 ; j++)
             {
-                lk5[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
+                lk5[j] = Crdt*llgpf*(sxh[j]+lambda*sxsxh[j]);
                 es[j]=s[j]+Crdt*(B6j[0]*CRKk1[3*i+j] + B6j[1]*CRKk2[3*i+j] + B6j[2]*CRKk3[3*i+j] + B6j[3]*CRKk4[3*i+j] + B6j[4]*lk5[j]);
                 mods+=es[j]*es[j];
             }
@@ -609,7 +618,7 @@ namespace cuintRK5
             double lk6[3]={0,0,0};
             for(unsigned int j = 0 ; j < 3 ; j++)
             {
-                lk6[j] = llgpf*(sxh[j]+lambda*sxsxh[j]);
+                lk6[j] = Crdt*llgpf*(sxh[j]+lambda*sxsxh[j]);
             }
             for(unsigned int j = 0 ; j < 3 ; j++)
             {
@@ -627,7 +636,7 @@ namespace cuintRK5
             double ls[3]={Cspin[3*i],Cspin[3*i+1],Cspin[3*i+2]};
             for(unsigned int j = 0 ; j < 3 ; j++)
             {
-                ls[j]=ls[j]+ Crdt*(CRKk1[3*i+j]*Ci[0] + CRKk2[3*i+j]*Ci[1] + CRKk3[3*i+j]*Ci[2] + CRKk4[3*i+j]*Ci[3]+CRKk5[3*i+j]*Ci[4]+CRKk6[3*i+j]*Ci[5]);
+                ls[j]=ls[j]+ CRKk1[3*i+j]*Ci[0] + CRKk2[3*i+j]*Ci[1] + CRKk3[3*i+j]*Ci[2] + CRKk4[3*i+j]*Ci[3]+CRKk5[3*i+j]*Ci[4]+CRKk6[3*i+j]*Ci[5];
                 mods+=ls[j]*ls[j];
             }
             const double nrf=rsqrt(mods);

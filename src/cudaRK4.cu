@@ -1,6 +1,6 @@
 // File: cuda.cu
 // Author:Tom Ostler
-// Last-modified: 19 May 2023 12:01:27
+// Last-modified: 31 May 2023 16:39:28
 // Formerly cuLLB.cu
 #include "../inc/cuda.h"
 #include "../inc/spins.h"
@@ -34,10 +34,6 @@ namespace cullg
 {
 
 
-    /*void rampStag(double rampval)
-    {
-        cufields::CincStagFields<<<blockspergrid,threadsperblock>>>(geom::nspins,rampval,CInitHstg,CHstg);
-    }*/
 
     void llgGPURK4(unsigned int& t)
     {

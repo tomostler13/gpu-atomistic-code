@@ -1,7 +1,7 @@
 // File: ramp_field.cpp
 // Author: Tom Ostler
 // Created: 15 May 2023
-// Last-modified: 23 May 2023 10:58:31 AM
+// Last-modified: 31 May 2023 17:03:08
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -24,6 +24,8 @@ void sim::ramp_stag()
 {
     //rampinc is the increment (from 0 to 1 of the original staggered field value)
     double ramptime=0.0,runtime=0.0;
+    // How much the staggered field will change at each timestep
+    double dHstg=0.0;
     //rf is a unit vector to specify the direction in which the field
     //is changed
     unsigned int rampts=0,runts=0;

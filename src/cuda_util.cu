@@ -1,7 +1,7 @@
 // File: cuda.cu
 // Author:Tom Ostler
 // Created: 26/06/2014
-// Last-modified: 19 May 2023 12:17:48
+// Last-modified: 01 Jun 2023 12:21:29
 #include "../inc/cuda.h"
 #include "../inc/config.h"
 #include "../inc/spins.h"
@@ -422,6 +422,12 @@ namespace cullg
         CUDA_CALL(cudaMalloc((void**)&CInitHstg,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cspin,3*geom::nspins*sizeof(double)));
         CUDA_CALL(cudaMalloc((void**)&Cespin,3*geom::nspins*sizeof(double)));
+        double *zeros=new double[3*geom::nspins];
+        for(unsigned int i = 0 ; i < geom::nspins ; i++)
+        {
+            zeros[i]=0.0;
+        }
+        CUDA_CALL(cudaMemcpy(CHstg,zeros,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         if(llg::intscheme==0)
         {
             CUDA_CALL(cudaMalloc((void**)&Cfn,3*geom::nspins*sizeof(double)));
@@ -432,6 +438,10 @@ namespace cullg
             CUDA_CALL(cudaMalloc((void**)&CRKk2,3*geom::nspins*sizeof(double)));
             CUDA_CALL(cudaMalloc((void**)&CRKk3,3*geom::nspins*sizeof(double)));
             CUDA_CALL(cudaMalloc((void**)&CRKk4,3*geom::nspins*sizeof(double)));
+            CUDA_CALL(cudaMemcpy(CRKk1,zeros,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(CRKk2,zeros,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(CRKk3,zeros,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(CRKk4,zeros,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         }
         else if(llg::intscheme==2)//RK5
         {
@@ -441,6 +451,12 @@ namespace cullg
             CUDA_CALL(cudaMalloc((void**)&CRKk4,3*geom::nspins*sizeof(double)));
             CUDA_CALL(cudaMalloc((void**)&CRKk5,3*geom::nspins*sizeof(double)));
             CUDA_CALL(cudaMalloc((void**)&CRKk6,3*geom::nspins*sizeof(double)));
+            CUDA_CALL(cudaMemcpy(CRKk1,zeros,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(CRKk2,zeros,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(CRKk3,zeros,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(CRKk4,zeros,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(CRKk5,zeros,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
+            CUDA_CALL(cudaMemcpy(CRKk6,zeros,3*geom::nspins*sizeof(double),cudaMemcpyHostToDevice));
         }
         CUDA_CALL(cudaMalloc((void**)&CDetFields,3*geom::nspins*sizeof(double)));
         curandN=3*geom::nspins;
